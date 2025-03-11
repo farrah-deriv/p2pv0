@@ -2,23 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-rgb: 255, 255, 255;
-}
-
 body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
-  }
-
-  .w-1\/7 {
-    width: 14.285%;
   }
 }
 
@@ -102,13 +92,3 @@ body {
     @apply bg-background text-foreground;
   }
 }
-
-/* Add to the existing CSS */
-.dropdown-menu-content {
-  @apply py-1 rounded-lg border border-gray-200 shadow-lg;
-}
-
-.dropdown-menu-item {
-  @apply px-3 py-2 text-sm cursor-pointer hover:bg-gray-50 focus:bg-gray-50 focus:outline-none;
-}
-
