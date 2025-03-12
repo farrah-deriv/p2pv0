@@ -157,7 +157,10 @@ export default function BuySellPage() {
       {/* Advertisers Table */}
       <div>
         {isLoading ? (
-          <div className="text-center py-8">Loading ads...</div>
+          <div className="text-center py-12">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-red-500 border-r-transparent"></div>
+            <p className="mt-2 text-gray-600">Loading ads...</p>
+          </div>
         ) : error ? (
           <div className="text-center py-8 text-red-500">{error}</div>
         ) : adverts.length === 0 ? (
