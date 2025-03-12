@@ -16,7 +16,7 @@ export default function Header() {
   ]
 
   return (
-    <header className="border-b border-gray-200">
+    <header className="fixed top-0 left-0 right-0 z-10 bg-white border-b border-gray-200">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
@@ -33,7 +33,7 @@ export default function Header() {
                       href={item.href}
                       className={cn(
                         "inline-flex h-16 items-center border-b-2 px-1 text-sm font-medium",
-                        pathname.includes(item.href)
+                        pathname.includes(item.href) || (item.name === "Wallets" && pathname.includes("/profile"))
                           ? "border-red-500 text-red-500"
                           : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700",
                       )}

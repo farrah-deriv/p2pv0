@@ -51,13 +51,6 @@ export default function ProfilePage() {
     <>
       <Navigation />
 
-      <div className="flex justify-between items-center mb-6">
-        <div className="text-sm text-gray-500">
-          P2P balance <span className="inline-block ml-1 text-gray-400">ⓘ</span>
-        </div>
-        <div className="text-2xl font-bold">USD {userData.balance.toFixed(2)}</div>
-      </div>
-
       <UserInfo
         username={userData.username}
         rating={userData.rating}

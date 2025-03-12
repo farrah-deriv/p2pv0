@@ -29,13 +29,11 @@ export default function MyAdsPage() {
   })
   const [showDeletedBanner, setShowDeletedBanner] = useState(false)
 
-  // Update the fetchAds function to be more robust
   const fetchAds = async () => {
     try {
       setLoading(true)
-      setError(null) // Clear any previous errors
+      setError(null)
 
-      // Fetch user adverts using the specific endpoint with user ID from local variables
       console.log(`Fetching adverts for user ID: ${USER.id}`)
       const userAdverts = await getUserAdverts()
       console.log("User adverts response:", userAdverts)
@@ -44,23 +42,18 @@ export default function MyAdsPage() {
     } catch (err) {
       console.error("Error fetching ads:", err)
       setError("Failed to load ads. Please try again later.")
-      // Set empty array to avoid undefined errors
       setAds([])
     } finally {
       setLoading(false)
     }
   }
 
-  // Update the handleAdDeleted function to be more generic
   const handleAdUpdated = () => {
     console.log("Ad updated (deleted or status changed), refreshing list...")
-    // Reload the ads list after successful update
     fetchAds()
 
-    // If this was specifically a delete operation, show the deleted banner
     if (arguments[0] === "deleted") {
       setShowDeletedBanner(true)
-      // Hide the banner after 3 seconds
       setTimeout(() => {
         setShowDeletedBanner(false)
       }, 3000)
@@ -68,7 +61,6 @@ export default function MyAdsPage() {
   }
 
   useEffect(() => {
-    // Check for success data from ad creation
     const checkForSuccessData = () => {
       try {
         const successDataStr = localStorage.getItem("adCreationSuccess")
@@ -79,7 +71,6 @@ export default function MyAdsPage() {
             type: successData.type,
             id: successData.id,
           })
-          // Clear the success data
           localStorage.removeItem("adCreationSuccess")
         }
       } catch (err) {
@@ -88,7 +79,6 @@ export default function MyAdsPage() {
     }
 
     fetchAds().then(() => {
-      // Check for success data after loading ads
       checkForSuccessData()
     })
   }, [])
@@ -101,7 +91,6 @@ export default function MyAdsPage() {
     <>
       <Navigation />
 
-      {/* Ad deleted success banner */}
       {showDeletedBanner && (
         <div className="fixed top-0 left-0 right-0 bg-green-600 text-white py-4 z-50 flex items-center justify-center">
           <div className="flex items-center">
@@ -111,29 +100,31 @@ export default function MyAdsPage() {
         </div>
       )}
 
-      <MyAdsHeader hasAds={ads.length > 0} />
+      <div>
+        <MyAdsHeader hasAds={ads.length > 0} />
 
-      {loading ? (
-        <div className="text-center py-8">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-red-500 border-r-transparent"></div>
-          <p className="mt-2 text-gray-600">Loading your ads...</p>
-        </div>
-      ) : error ? (
-        <div className="text-center py-8 text-red-500">{error}</div>
-      ) : (
-        <MyAdsTable
-          ads={ads.map((ad) => ({
-            id: ad.id,
-            type: ad.type,
-            rate: ad.rate,
-            limits: `${ad.limits.currency} ${ad.limits.min.toFixed(2)} - ${ad.limits.max.toFixed(2)}`,
-            available: ad.available,
-            paymentMethods: ad.paymentMethods,
-            status: ad.status,
-          }))}
-          onAdDeleted={handleAdUpdated}
-        />
-      )}
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-red-500 border-r-transparent"></div>
+            <p className="mt-2 text-gray-600">Loading your ads...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">{error}</div>
+        ) : (
+          <MyAdsTable
+            ads={ads.map((ad) => ({
+              id: ad.id,
+              type: ad.type,
+              rate: ad.rate,
+              limits: `${ad.limits.currency} ${ad.limits.min.toFixed(2)} - ${ad.limits.max.toFixed(2)}`,
+              available: ad.available,
+              paymentMethods: ad.paymentMethods,
+              status: ad.status,
+            }))}
+            onAdDeleted={handleAdUpdated}
+          />
+        )}
+      </div>
 
       {successModal.show && (
         <StatusModal
