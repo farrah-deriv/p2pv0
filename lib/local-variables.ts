@@ -21,7 +21,7 @@ export const API = {
     profile: "/profile",
     balance: "/balance",
     paymentMethods: "/payment-methods",
-    advertisers: "/advertisers",
+    advertisers: "/users",
     transactions: "/transactions",
   },
 }

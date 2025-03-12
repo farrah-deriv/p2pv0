@@ -179,32 +179,32 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse table-fixed">
-        <thead>
-          <tr className="border-b text-sm text-gray-500">
-            <th className="text-left py-4 font-medium w-[18%]">Ad ID</th>
-            <th className="text-left py-4 font-medium w-[18%]">Rate (USD 1)</th>
-            <th className="text-left py-4 font-medium w-[16%]">Limits</th>
-            <th className="text-left py-4 font-medium w-[18%]">Available amount</th>
-            <th className="text-left py-4 font-medium w-[18%]">Payment methods</th>
-            <th className="text-left py-4 font-medium w-[100px]">Status</th>
-            <th className="text-left py-4 font-medium w-[15px]"></th>
+      <table className="w-full border-collapse table-auto">
+        <thead className="bg-gray-50">
+          <tr className="text-xs sm:text-sm text-gray-500">
+            <th className="text-left py-3 px-4 font-medium">Ad ID</th>
+            <th className="text-left py-3 px-4 font-medium">Rate (USD 1)</th>
+            <th className="text-left py-3 px-4 font-medium hidden sm:table-cell">Limits</th>
+            <th className="text-left py-3 px-4 font-medium hidden md:table-cell">Available amount</th>
+            <th className="text-left py-3 px-4 font-medium hidden lg:table-cell">Payment methods</th>
+            <th className="text-left py-3 px-4 font-medium">Status</th>
+            <th className="text-left py-3 px-4 font-medium"></th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="bg-white divide-y divide-gray-200">
           {ads.map((ad, index) => (
-            <tr key={index} className={`border-b ${ad.status === "Inactive" ? "grayscale" : ""}`}>
-              <td className="py-4">
+            <tr key={index} className={`hover:bg-gray-50 ${ad.status === "Inactive" ? "opacity-50" : ""}`}>
+              <td className="py-4 px-4">
                 <div className={`font-medium ${ad.type === "Buy" ? "text-green-600" : "text-red-600"}`}>{ad.type}</div>
-                <div className="text-gray-500">{ad.id}</div>
+                <div className="text-gray-500 text-xs">{ad.id}</div>
               </td>
-              <td className="py-4">
+              <td className="py-4 px-4">
                 <div className="font-medium">{ad.rate.value}</div>
-                <div className="text-gray-500 text-sm">{ad.rate.percentage}</div>
+                <div className="text-gray-500 text-xs">{ad.rate.percentage}</div>
               </td>
-              <td className="py-4">{formatLimits(ad.limits)}</td>
-              <td className="py-4">
-                <div className="mb-1">
+              <td className="py-4 px-4 hidden sm:table-cell">{formatLimits(ad.limits)}</td>
+              <td className="py-4 px-4 hidden md:table-cell">
+                <div className="mb-1 text-sm">
                   USD {(ad.available.current || 0).toFixed(2)} / {(ad.available.total || 0).toFixed(2)}
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full w-32 overflow-hidden">
@@ -216,9 +216,11 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
                   ></div>
                 </div>
               </td>
-              <td className="py-4 truncate">{ad.paymentMethods.join(", ")}</td>
-              <td className="py-4 whitespace-nowrap">{getStatusBadge(ad.status)}</td>
-              <td className="py-4 text-right">
+              <td className="py-4 px-4 hidden lg:table-cell">
+                <div className="truncate max-w-xs">{ad.paymentMethods.join(", ")}</div>
+              </td>
+              <td className="py-4 px-4">{getStatusBadge(ad.status)}</td>
+              <td className="py-4 px-4 text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="p-1 hover:bg-gray-100 rounded-full">
