@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { Check, X, ArrowLeft } from "lucide-react"
-import type { AdFormData } from "@/lib/types/ad"
+import type { AdFormData } from "../types"
 
 interface PaymentDetailsFormProps {
   onBack: () => void

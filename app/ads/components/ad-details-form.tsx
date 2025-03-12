@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { X } from "lucide-react"
-import type { AdFormData } from "@/lib/types/ad"
+import type { AdFormData } from "../types"
 
 interface AdDetailsFormProps {
   onNext: (data: Partial<AdFormData>) => void
