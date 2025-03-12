@@ -5,31 +5,8 @@ import { useRouter } from "next/navigation"
 import { MoreVertical, Pencil, Copy, Share2, Power, Trash2, Search } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-// Update imports to remove activateAd
-import { deleteAd, updateAd } from "@/services/api/api-my-ads"
-
-interface Ad {
-  id: string
-  type: "Buy" | "Sell"
-  rate: {
-    value: string
-    percentage: string
-  }
-  limits:
-    | {
-        min: number
-        max: number
-        currency: string
-      }
-    | string
-  available: {
-    current: number
-    total: number
-  }
-  paymentMethods: string[]
-  status: "Active" | "Inactive"
-  description?: string
-}
+import { deleteAd, updateAd } from "../api/api-ads"
+import type { Ad } from "../types"
 
 interface MyAdsTableProps {
   ads: Ad[]
@@ -69,7 +46,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
         description: ad.description || "",
       }),
     )
-    router.push(`/create-ad?mode=edit&id=${ad.id}`)
+    router.push(`/ads/create?mode=edit&id=${ad.id}`)
   }
 
   const handleCopy = (adId: string) => {
@@ -171,7 +148,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
           Looking to buy or sell USD? You can post your own ad for others to respond.
         </p>
         <Button
-          onClick={() => router.push("/create-ad")}
+          onClick={() => router.push("/ads/create")}
           className="bg-red-500 hover:bg-red-600 text-white rounded-full px-8"
         >
           Create ad

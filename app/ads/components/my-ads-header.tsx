@@ -18,7 +18,7 @@ export default function MyAdsHeader({ hasAds }: MyAdsHeaderProps) {
     <div className="mt-4 mb-6">
       <div className="container mx-auto">
         <Button
-          onClick={() => router.push("/create-ad")}
+          onClick={() => router.push("/ads/create")}
           className="bg-red-500 hover:bg-red-600 text-white rounded-full px-6"
         >
           Create ad
