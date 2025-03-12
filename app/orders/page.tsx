@@ -62,24 +62,24 @@ export default function OrdersPage() {
 
       {/* Tabs */}
       <div className="mb-6">
-        <div className="inline-flex bg-gray-100 rounded-lg">
-          <button
-            className={`px-6 py-3 rounded-lg text-base font-medium ${
-              activeTab === "active" ? "bg-white shadow-sm" : "text-gray-500"
-            }`}
-            onClick={() => setActiveTab("active")}
-          >
-            Active orders
-          </button>
-          <button
-            className={`px-6 py-3 rounded-lg text-base font-medium ${
-              activeTab === "past" ? "bg-white shadow-sm" : "text-gray-500"
-            }`}
-            onClick={() => setActiveTab("past")}
-          >
-            Past orders
-          </button>
-        </div>
+        <div className="inline-flex bg-gray-100 rounded-lg p-1">
+            <button
+              className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium ${
+                activeTab === "active" ? "bg-white shadow-sm" : "text-gray-500"
+              }`}
+              onClick={() => setActiveTab("active")}
+            >
+              Active orders
+            </button>
+            <button
+              className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium ${
+                activeTab === "past" ? "bg-white shadow-sm" : "text-gray-500"
+              }`}
+              onClick={() => setActiveTab("past")}
+            >
+              Past orders
+            </button>
+          </div>
       </div>
 
       {/* Content */}
