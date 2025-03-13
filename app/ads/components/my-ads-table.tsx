@@ -7,6 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from "@/components/ui/button"
 import { deleteAd, updateAd } from "../api/api-ads"
 import type { Ad } from "../types"
+import StatusModal from "@/components/ui/status-modal"
 
 interface MyAdsTableProps {
   ads: Ad[]
@@ -17,6 +18,13 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
   const router = useRouter()
   const [isDeleting, setIsDeleting] = useState(false)
   const [isTogglingStatus, setIsTogglingStatus] = useState(false)
+
+  // Add state for error modals
+  const [errorModal, setErrorModal] = useState({
+    show: false,
+    title: "",
+    message: "",
+  })
 
   // Format limits to display as a string
   const formatLimits = (limits: Ad["limits"]) => {
@@ -104,8 +112,16 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
         exchange_rate_type: "fixed",
         order_expiry_period: 15,
         description: ad.description || "",
-        payment_method_names: ad.paymentMethods,
+        payment_method_names: ad.type === "Buy" ? ad.paymentMethods : [],
       })
+
+      // Check for errors in the response
+      if (updateResult.errors && updateResult.errors.length > 0) {
+        const errorMessage =
+          updateResult.errors[0].message ||
+          `Failed to ${ad.status === "Active" ? "deactivate" : "activate"} ad. Please try again.`
+        throw new Error(errorMessage)
+      }
 
       console.log(`Ad ${isListed ? "activated" : "deactivated"} successfully:`, updateResult)
 
@@ -115,7 +131,16 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
       }
     } catch (error) {
       console.error("Failed to toggle status:", error)
-      alert(`Failed to ${ad.status === "Active" ? "deactivate" : "activate"} ad. Please try again.`)
+
+      // Show error modal instead of alert
+      setErrorModal({
+        show: true,
+        title: `Failed to ${ad.status === "Active" ? "Deactivate" : "Activate"} Ad`,
+        message:
+          error instanceof Error
+            ? error.message
+            : `Failed to ${ad.status === "Active" ? "deactivate" : "activate"} ad. Please try again.`,
+      })
     } finally {
       setIsTogglingStatus(false)
     }
@@ -124,7 +149,13 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
   const handleDelete = async (adId: string) => {
     try {
       setIsDeleting(true)
-      await deleteAd(adId)
+      const result = await deleteAd(adId)
+
+      // Check for errors in the response
+      if (result.errors && result.errors.length > 0) {
+        const errorMessage = result.errors[0].message || "Failed to delete ad. Please try again."
+        throw new Error(errorMessage)
+      }
 
       // Call the onAdDeleted callback to refresh the list and show success message
       if (onAdDeleted) {
@@ -132,9 +163,25 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
       }
     } catch (error) {
       console.error("Failed to delete ad:", error)
+
+      // Show error modal
+      setErrorModal({
+        show: true,
+        title: "Failed to Delete Ad",
+        message: error instanceof Error ? error.message : "Failed to delete ad. Please try again.",
+      })
     } finally {
       setIsDeleting(false)
     }
+  }
+
+  // Function to close error modal
+  const handleCloseErrorModal = () => {
+    setErrorModal({
+      show: false,
+      title: "",
+      message: "",
+    })
   }
 
   if (ads.length === 0) {
@@ -159,101 +206,121 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
 
   // Update the table structure to have a fixed header and scrollable body
   return (
-    <div className="flex flex-col h-full">
-      {/* Fixed table header */}
-      <div className="w-full bg-white">
-        <table className="w-full border-collapse table-fixed">
-          <thead>
-            <tr className="border-b text-sm text-gray-500">
-              <th className="text-left py-4 font-medium w-[18%]">Ad ID</th>
-              <th className="text-left py-4 font-medium w-[18%]">Rate (USD 1)</th>
-              <th className="text-left py-4 font-medium w-[16%]">Limits</th>
-              <th className="text-left py-4 font-medium w-[18%]">Available amount</th>
-              <th className="text-left py-4 font-medium w-[18%]">Payment methods</th>
-              <th className="text-left py-4 font-medium w-[100px]">Status</th>
-              <th className="text-left py-4 font-medium w-[15px]"></th>
-            </tr>
-          </thead>
-        </table>
+    <>
+      <div className="flex flex-col h-full">
+        {/* Fixed table header */}
+        <div className="w-full bg-white">
+          <table className="w-full border-collapse table-fixed">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left py-4 font-bold text-[#101213] text-base leading-[22px] w-[18%]">Ad ID</th>
+                <th className="text-left py-4 font-bold text-[#101213] text-base leading-[22px] w-[18%]">
+                  Rate (USD 1)
+                </th>
+                <th className="text-left py-4 font-bold text-[#101213] text-base leading-[22px] w-[16%]">Limits</th>
+                <th className="text-left py-4 font-bold text-[#101213] text-base leading-[22px] w-[18%]">
+                  Available amount
+                </th>
+                <th className="text-left py-4 font-bold text-[#101213] text-base leading-[22px] w-[18%]">
+                  Payment methods
+                </th>
+                <th className="text-left py-4 font-bold text-[#101213] text-base leading-[22px] w-[100px]">Status</th>
+                <th className="text-left py-4 font-bold text-[#101213] text-base leading-[22px] w-[15px]"></th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+
+        {/* Scrollable table body */}
+        <div className="flex-1 overflow-y-auto">
+          <table className="w-full border-collapse table-fixed">
+            <tbody>
+              {ads.map((ad, index) => (
+                <tr key={index} className={`border-b ${ad.status === "Inactive" ? "grayscale opacity-50" : ""}`}>
+                  <td className="py-4 w-[18%]">
+                    <div>
+                      <span className={`font-medium ${ad.type === "Buy" ? "text-green-600" : "text-red-600"}`}>
+                        {ad.type}
+                      </span>
+                      <span className="text-[#101213] font-medium"> {ad.id}</span>
+                    </div>
+                  </td>
+                  <td className="py-4 w-[18%]">
+                    <div className="font-medium">{ad.rate.value}</div>
+                    <div className="text-gray-500 text-sm">{ad.rate.percentage}</div>
+                  </td>
+                  <td className="py-4 w-[16%]">{formatLimits(ad.limits)}</td>
+                  <td className="py-4 w-[18%]">
+                    <div className="mb-1">
+                      USD {(ad.available.current || 0).toFixed(2)} / {(ad.available.total || 0).toFixed(2)}
+                    </div>
+                    <div className="h-2 bg-gray-200 rounded-full w-32 overflow-hidden">
+                      <div
+                        className="h-full bg-black rounded-full"
+                        style={{
+                          width: `${ad.available.total ? ((ad.available.current || 0) / ad.available.total) * 100 : 0}%`,
+                        }}
+                      ></div>
+                    </div>
+                  </td>
+                  <td className="py-4 w-[18%] truncate">{ad.paymentMethods.join(", ")}</td>
+                  <td className="py-4 w-[100px] whitespace-nowrap">{getStatusBadge(ad.status)}</td>
+                  <td className="py-4 w-[15px] text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="p-1 hover:bg-gray-100 rounded-full">
+                          <MoreVertical className="h-5 w-5 text-gray-500" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-[160px]">
+                        <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleEdit(ad)}>
+                          <Pencil className="h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleCopy(ad.id)}>
+                          <Copy className="h-4 w-4" />
+                          Copy
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleShare(ad.id)}>
+                          <Share2 className="h-4 w-4" />
+                          Share
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="flex items-center gap-2"
+                          onSelect={() => handleToggleStatus(ad)}
+                          disabled={isTogglingStatus}
+                        >
+                          <Power className="h-4 w-4" />
+                          {isTogglingStatus ? "Updating..." : ad.status === "Active" ? "Deactivate" : "Activate"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="flex items-center gap-2 text-red-500 focus:text-red-500"
+                          onSelect={() => handleDelete(ad.id)}
+                          disabled={isDeleting}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          {isDeleting ? "Deleting..." : "Delete"}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Scrollable table body */}
-      <div className="flex-1 overflow-y-auto">
-        <table className="w-full border-collapse table-fixed">
-          <tbody>
-            {ads.map((ad, index) => (
-              <tr key={index} className={`border-b ${ad.status === "Inactive" ? "grayscale opacity-50" : ""}`}>
-                <td className="py-4 w-[18%]">
-                  <div className={`font-medium ${ad.type === "Buy" ? "text-green-600" : "text-red-600"}`}>
-                    {ad.type}
-                  </div>
-                  <div className="text-gray-500">{ad.id}</div>
-                </td>
-                <td className="py-4 w-[18%]">
-                  <div className="font-medium">{ad.rate.value}</div>
-                  <div className="text-gray-500 text-sm">{ad.rate.percentage}</div>
-                </td>
-                <td className="py-4 w-[16%]">{formatLimits(ad.limits)}</td>
-                <td className="py-4 w-[18%]">
-                  <div className="mb-1">
-                    USD {(ad.available.current || 0).toFixed(2)} / {(ad.available.total || 0).toFixed(2)}
-                  </div>
-                  <div className="h-2 bg-gray-200 rounded-full w-32 overflow-hidden">
-                    <div
-                      className="h-full bg-black rounded-full"
-                      style={{
-                        width: `${ad.available.total ? ((ad.available.current || 0) / ad.available.total) * 100 : 0}%`,
-                      }}
-                    ></div>
-                  </div>
-                </td>
-                <td className="py-4 w-[18%] truncate">{ad.paymentMethods.join(", ")}</td>
-                <td className="py-4 w-[100px] whitespace-nowrap">{getStatusBadge(ad.status)}</td>
-                <td className="py-4 w-[15px] text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="p-1 hover:bg-gray-100 rounded-full">
-                        <MoreVertical className="h-5 w-5 text-gray-500" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[160px]">
-                      <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleEdit(ad)}>
-                        <Pencil className="h-4 w-4" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleCopy(ad.id)}>
-                        <Copy className="h-4 w-4" />
-                        Copy
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleShare(ad.id)}>
-                        <Share2 className="h-4 w-4" />
-                        Share
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="flex items-center gap-2"
-                        onSelect={() => handleToggleStatus(ad)}
-                        disabled={isTogglingStatus}
-                      >
-                        <Power className="h-4 w-4" />
-                        {isTogglingStatus ? "Updating..." : ad.status === "Active" ? "Deactivate" : "Activate"}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="flex items-center gap-2 text-red-500 focus:text-red-500"
-                        onSelect={() => handleDelete(ad.id)}
-                        disabled={isDeleting}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        {isDeleting ? "Deleting..." : "Delete"}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      {/* Error Modal */}
+      {errorModal.show && (
+        <StatusModal
+          type="error"
+          title={errorModal.title}
+          message={errorModal.message}
+          onClose={handleCloseErrorModal}
+        />
+      )}
+    </>
   )
 }
 

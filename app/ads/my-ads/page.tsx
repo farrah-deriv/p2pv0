@@ -26,6 +26,13 @@ export default function MyAdsPage() {
   const [showDeletedBanner, setShowDeletedBanner] = useState(false)
   const [showUpdatedBanner, setShowUpdatedBanner] = useState(false)
 
+  // Add error modal state
+  const [errorModal, setErrorModal] = useState({
+    show: false,
+    title: "Error",
+    message: "",
+  })
+
   const fetchAds = async () => {
     try {
       setLoading(true)
@@ -38,6 +45,13 @@ export default function MyAdsPage() {
       console.error("Error fetching ads:", err)
       setError("Failed to load ads. Please try again later.")
       setAds([])
+
+      // Show error modal
+      setErrorModal({
+        show: true,
+        title: "Error Loading Ads",
+        message: err instanceof Error ? err.message : "Failed to load ads. Please try again later.",
+      })
     } finally {
       setLoading(false)
     }
@@ -89,6 +103,10 @@ export default function MyAdsPage() {
 
   const handleCloseSuccessModal = () => {
     setSuccessModal((prev) => ({ ...prev, show: false }))
+  }
+
+  const handleCloseErrorModal = () => {
+    setErrorModal((prev) => ({ ...prev, show: false }))
   }
 
   return (
@@ -159,6 +177,15 @@ export default function MyAdsPage() {
           message="You've successfully created Ad!"
           subMessage="If your ad doesn't receive an order within 3 days, it will be deactivated."
           onClose={handleCloseSuccessModal}
+        />
+      )}
+
+      {errorModal.show && (
+        <StatusModal
+          type="error"
+          title={errorModal.title}
+          message={errorModal.message}
+          onClose={handleCloseErrorModal}
         />
       )}
     </div>

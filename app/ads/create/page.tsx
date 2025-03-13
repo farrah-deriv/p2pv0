@@ -26,6 +26,11 @@ export default function CreateAdPage() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+
+  // Add these new state variables at the top of the component
+  const [adFormValid, setAdFormValid] = useState(false)
+  const [paymentFormValid, setPaymentFormValid] = useState(false)
 
   // Use a ref to store the current form data for the button click handler
   const formDataRef = useRef<Partial<AdFormData>>({})
@@ -33,7 +38,6 @@ export default function CreateAdPage() {
   const steps = [
     { title: "Ad details", completed: currentStep > 0 },
     { title: "Payment details", completed: currentStep > 1 },
-    { title: "Ad conditions", completed: false },
   ]
 
   // Load edit data if in edit mode
@@ -99,21 +103,99 @@ export default function CreateAdPage() {
     loadEditData()
   }, [isEditMode])
 
-  const handleAdDetailsNext = (data: Partial<AdFormData>) => {
+  // Add these event listeners after the useEffect for loading edit data
+  useEffect(() => {
+    // Listen for validation changes from the ad details form
+    const handleAdFormValidation = (e: any) => {
+      setAdFormValid(e.detail.isValid)
+      if (e.detail.isValid) {
+        // Update form data if valid
+        const updatedData = { ...formData, ...e.detail.formData }
+        formDataRef.current = updatedData
+      }
+    }
+
+    // Listen for validation changes from the payment details form
+    const handlePaymentFormValidation = (e: any) => {
+      setPaymentFormValid(e.detail.isValid)
+      if (e.detail.isValid) {
+        // Update form data if valid
+        const updatedData = { ...formData, ...e.detail.formData }
+        formDataRef.current = updatedData
+      }
+    }
+
+    // Add event listeners
+    document.addEventListener("adFormValidationChange", handleAdFormValidation)
+    document.addEventListener("paymentFormValidationChange", handlePaymentFormValidation)
+
+    // Clean up event listeners
+    return () => {
+      document.removeEventListener("adFormValidationChange", handleAdFormValidation)
+      document.removeEventListener("paymentFormValidationChange", handlePaymentFormValidation)
+    }
+  }, [formData])
+
+  const handleAdDetailsNext = (data: Partial<AdFormData>, errors?: Record<string, string>) => {
     const updatedData = { ...formData, ...data }
     setFormData(updatedData)
     formDataRef.current = updatedData
-    setCurrentStep(1)
+
+    // Update form errors state
+    setFormErrors(errors || {})
+
+    // Only proceed to next step if there are no errors
+    if (!errors || Object.keys(errors).length === 0) {
+      setCurrentStep(1)
+    }
 
     // Log the updated form data
     console.group("📝 Updated Form Data (Ad Details)")
     console.log("Form Data:", updatedData)
+    console.log("Form Errors:", errors)
     console.groupEnd()
   }
 
-  const handlePaymentDetailsSubmit = async (data: Partial<AdFormData>) => {
+  // Helper function to format error messages from the API response
+  const formatErrorMessage = (errors: any[]): string => {
+    if (!errors || errors.length === 0) {
+      return "An unknown error occurred"
+    }
+
+    // Check if errors have a specific format
+    if (errors[0].message) {
+      return errors[0].message
+    }
+
+    if (errors[0].code) {
+      // Map error codes to user-friendly messages
+      const errorCodeMap: Record<string, string> = {
+        AdvertExchangeRateDuplicate: "You already have an ad with this exchange rate. Please use a different rate.",
+        AdvertLimitReached: "You've reached the maximum number of ads allowed.",
+        InvalidExchangeRate: "The exchange rate you provided is invalid.",
+        InvalidOrderAmount: "The order amount limits are invalid.",
+        InsufficientBalance: "You don't have enough balance to create this ad.",
+      }
+
+      return errorCodeMap[errors[0].code] || `Error: ${errors[0].code}. Please try again or contact support.`
+    }
+
+    // If we can't determine a specific error message, return a generic one
+    return "There was an error processing your request. Please try again."
+  }
+
+  const handlePaymentDetailsSubmit = async (data: Partial<AdFormData>, errors?: Record<string, string>) => {
     const finalData = { ...formData, ...data }
     formDataRef.current = finalData
+
+    // Update form errors
+    setFormErrors(errors || {})
+
+    // Only proceed with submission if there are no errors
+    if (errors && Object.keys(errors).length > 0) {
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -135,11 +217,19 @@ export default function CreateAdPage() {
           exchange_rate_type: "fixed",
           order_expiry_period: 15,
           description: finalData.instructions || "",
-          payment_method_names: finalData.paymentMethods || [],
+          // Only include payment methods for buy ads
+          ...(finalData.type !== "sell" && { payment_method_names: finalData.paymentMethods || [] }),
         }
 
         console.log("Update payload:", payload)
-        await updateAd(adId, payload)
+        const updateResult = await updateAd(adId, payload)
+
+        // Check for errors in the response
+        if (updateResult.errors && updateResult.errors.length > 0) {
+          // Handle errors from the API response
+          const errorMessage = formatErrorMessage(updateResult.errors)
+          throw new Error(errorMessage)
+        }
 
         // Clear edit data
         localStorage.removeItem("editAdData")
@@ -163,10 +253,20 @@ export default function CreateAdPage() {
           description: finalData.instructions || "",
           is_active: 1,
           order_expiry_period: 15,
-          payment_method_names: finalData.paymentMethods || [],
+          // Only include payment methods for buy ads
+          ...(finalData.type !== "sell"
+            ? { payment_method_names: finalData.paymentMethods || [] }
+            : { payment_method_names: [] }),
         }
 
         const result = await createAd(payload)
+
+        // Check for errors in the response even if HTTP status is 200
+        if (result.errors && result.errors.length > 0) {
+          // Handle errors from the API response
+          const errorMessage = formatErrorMessage(result.errors)
+          throw new Error(errorMessage)
+        }
 
         // Store success data in localStorage before navigation
         localStorage.setItem(
@@ -181,6 +281,7 @@ export default function CreateAdPage() {
         router.push("/ads/my-ads")
       }
     } catch (error) {
+      // Error handling remains the same
       let errorMessage = isEditMode
         ? "Failed to update ad. Please try again."
         : "Failed to create ad. Please try again."
@@ -217,6 +318,15 @@ export default function CreateAdPage() {
   }
 
   const handleButtonClick = () => {
+    // Don't proceed if the button should be disabled
+    if (currentStep === 0 && !adFormValid) {
+      return
+    }
+
+    if (currentStep === 1 && (!paymentFormValid || isSubmitting)) {
+      return
+    }
+
     if (currentStep === 0) {
       // Get the current form data from the ref
       const adDetailsFormData = document.getElementById("ad-details-form") as HTMLFormElement
@@ -252,10 +362,12 @@ export default function CreateAdPage() {
   }
 
   return (
-    <div className="flex h-screen pt-16">
-      <div className="w-[240px] bg-gray-50 h-full p-6">
-        <h1 className="text-xl font-semibold mb-6">{isEditMode ? "Edit Ad" : "Create Ad"}</h1>
-        <ProgressSteps currentStep={currentStep} steps={steps} />
+    <div className="flex h-screen -mt-4 -mx-4 pt-16">
+      <div className="w-[240px] bg-gray-50 h-full">
+        <div className="p-6">
+          <h1 className="text-xl font-semibold mb-6">{isEditMode ? "Edit Ad" : "Create Ad"}</h1>
+          <ProgressSteps currentStep={currentStep} steps={steps} />
+        </div>
       </div>
 
       <div className="flex-1 relative">
@@ -283,13 +395,17 @@ export default function CreateAdPage() {
         <div className="fixed bottom-6 right-6">
           <button
             onClick={handleButtonClick}
-            disabled={isSubmitting}
-            className={`px-8 py-2.5 rounded-full text-sm font-medium
-              ${currentStep === 0
-                ? "bg-gray-100 text-gray-900 hover:bg-gray-200"
+            disabled={isSubmitting || (currentStep === 0 && !adFormValid) || (currentStep === 1 && !paymentFormValid)}
+            className={`px-8 py-2.5 rounded-full text-sm font-medium transition-colors w-36 h-10 flex items-center justify-center
+            ${currentStep === 0
+                ? adFormValid
+                  ? "bg-red-500 text-white hover:bg-red-600"
+                  : "bg-gray-100 text-gray-500 cursor-not-allowed"
                 : isSubmitting
                   ? "bg-red-400 text-white cursor-not-allowed"
-                  : "bg-red-500 text-white hover:bg-red-600"
+                  : paymentFormValid
+                    ? "bg-red-500 text-white hover:bg-red-600"
+                    : "bg-gray-100 text-gray-500 cursor-not-allowed"
               }`}
           >
             {isSubmitting ? (
