@@ -58,10 +58,9 @@ export default function BuySellPage() {
 
   const debouncedFetchAdverts = useCallback(
     debounce((query: string) => {
-      setSearchQuery(query)
       fetchAdverts()
     }, 300),
-    [fetchAdverts],
+    [activeTab, currency, paymentMethod, fetchAdverts],
   )
 
   const handleAdvertiserClick = (userId: number) => {
@@ -80,7 +79,16 @@ export default function BuySellPage() {
               className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium ${
                 activeTab === "buy" ? "bg-white shadow-sm" : "text-gray-500"
               }`}
-              onClick={() => setActiveTab("buy")}
+              onClick={() => {
+                setActiveTab("buy")
+                setIsLoading(true)
+                // Reset search query when switching tabs
+                setSearchQuery("")
+                // Explicitly fetch adverts with the new type
+                setTimeout(() => {
+                  fetchAdverts()
+                }, 0)
+              }}
             >
               Buy
             </button>
@@ -88,7 +96,16 @@ export default function BuySellPage() {
               className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium ${
                 activeTab === "sell" ? "bg-white shadow-sm" : "text-gray-500"
               }`}
-              onClick={() => setActiveTab("sell")}
+              onClick={() => {
+                setActiveTab("sell")
+                setIsLoading(true)
+                // Reset search query when switching tabs
+                setSearchQuery("")
+                // Explicitly fetch adverts with the new type
+                setTimeout(() => {
+                  fetchAdverts()
+                }, 0)
+              }}
             >
               Sell
             </button>
@@ -125,7 +142,18 @@ export default function BuySellPage() {
               <Input
                 className="pl-10 w-full"
                 placeholder="Enter nickname"
-                onChange={(e) => debouncedFetchAdverts(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value
+                  setSearchQuery(value)
+                  // Use the debounced function to prevent too many API calls
+                  debouncedFetchAdverts(value)
+                }}
+                onKeyDown={(e) => {
+                  // Also fetch when user presses Enter
+                  if (e.key === "Enter") {
+                    fetchAdverts()
+                  }
+                }}
               />
             </div>
 
