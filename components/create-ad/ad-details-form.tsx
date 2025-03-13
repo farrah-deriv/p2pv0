@@ -203,8 +203,10 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
-                      className={`text-left pl-3 pr-16 h-10 ${
-                        touched.totalAmount && formErrors.totalAmount ? "border-red-500 focus:ring-red-500" : ""
+                      className={`text-left pl-3 pr-16 h-10 transition-all duration-200 ${
+                        touched.totalAmount && formErrors.totalAmount
+                          ? "border-red-500 focus:border-red-500 border-2"
+                          : "border-gray-200 focus:border-black hover:border-gray-300"
                       }`}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">USD</span>
@@ -225,8 +227,10 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
-                      className={`text-left pl-3 pr-16 h-10 ${
-                        touched.fixedRate && formErrors.fixedRate ? "border-red-500 focus:ring-red-500" : ""
+                      className={`text-left pl-3 pr-16 h-10 transition-all duration-200 ${
+                        touched.fixedRate && formErrors.fixedRate
+                          ? "border-red-500 focus:border-red-500 border-2"
+                          : "border-gray-200 focus:border-black hover:border-gray-300"
                       }`}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">IDR</span>
@@ -253,8 +257,10 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
-                      className={`text-left pl-3 pr-16 h-10 ${
-                        touched.minAmount && formErrors.minAmount ? "border-red-500 focus:ring-red-500" : ""
+                      className={`text-left pl-3 pr-16 h-10 transition-all duration-200 ${
+                        touched.minAmount && formErrors.minAmount
+                          ? "border-red-500 focus:border-red-500 border-2"
+                          : "border-gray-200 focus:border-black hover:border-gray-300"
                       }`}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">USD</span>
@@ -275,8 +281,10 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
-                      className={`text-left pl-3 pr-16 h-10 ${
-                        touched.maxAmount && formErrors.maxAmount ? "border-red-500 focus:ring-red-500" : ""
+                      className={`text-left pl-3 pr-16 h-10 transition-all duration-200 ${
+                        touched.maxAmount && formErrors.maxAmount
+                          ? "border-red-500 focus:border-red-500 border-2"
+                          : "border-gray-200 focus:border-black hover:border-gray-300"
                       }`}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">USD</span>

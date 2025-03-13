@@ -8,7 +8,7 @@ import type { AdFormData } from "../types"
 
 interface PaymentDetailsFormProps {
   onBack: () => void
-  onSubmit: (data: Partial<AdFormData>) => void
+  onSubmit: (data: Partial<AdFormData>, errors?: Record<string, string>) => void
   onClose: () => void
   initialData: Partial<AdFormData>
   isSubmitting?: boolean
@@ -35,7 +35,16 @@ export default function PaymentDetailsForm({
     }
   }, [initialData])
 
+  // Update the component to conditionally render the payment methods section based on ad type
+  // and adjust validation logic accordingly
+
+  // First, modify the isFormValid function to not require payment methods for "sell" ads
   const isFormValid = () => {
+    // If it's a sell ad, we don't need payment methods
+    if (initialData.type === "sell") {
+      return true
+    }
+    // For buy ads, we still require at least one payment method
     return paymentMethods.length > 0
   }
 
@@ -43,16 +52,21 @@ export default function PaymentDetailsForm({
     e.preventDefault()
     setTouched(true)
 
-    if (!isFormValid()) {
-      return
-    }
+    // Check if form is valid
+    const formValid = isFormValid()
+    const errors = !formValid ? { paymentMethods: "At least one payment method is required" } : undefined
 
     const formData = {
       paymentMethods,
       instructions,
     }
 
-    onSubmit(formData)
+    // If form is valid, submit; otherwise, pass errors
+    if (formValid) {
+      onSubmit(formData)
+    } else {
+      onSubmit(formData, errors)
+    }
   }
 
   const availablePaymentMethods = ["Bank Transfer", "PayPal", "Wise", "Neteller", "Skrill"]
@@ -68,6 +82,23 @@ export default function PaymentDetailsForm({
 
   // Determine if the button should be enabled
   const buttonEnabled = paymentMethods.length > 0 && !isSubmitting
+
+  // Then, update the useEffect for validation to account for the ad type
+  useEffect(() => {
+    const isValid = initialData.type === "sell" ? true : paymentMethods.length > 0
+    // Use a custom event to communicate the form state to the parent
+    const event = new CustomEvent("paymentFormValidationChange", {
+      bubbles: true,
+      detail: {
+        isValid,
+        formData: {
+          paymentMethods: initialData.type === "sell" ? [] : paymentMethods,
+          instructions,
+        },
+      },
+    })
+    document.dispatchEvent(event)
+  }, [paymentMethods, instructions, initialData.type])
 
   return (
     <div className="h-full flex flex-col">
@@ -99,29 +130,31 @@ export default function PaymentDetailsForm({
               </div>
             </div>
 
-            <div>
-              <h3 className="text-base font-medium mb-6">Select payment methods</h3>
-              <div className="space-y-2">
-                {availablePaymentMethods.map((method) => (
-                  <button
-                    key={method}
-                    type="button"
-                    onClick={() => togglePaymentMethod(method)}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded border ${
-                      paymentMethods.includes(method)
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <span className="text-sm">{method}</span>
-                    {paymentMethods.includes(method) && <Check className="h-4 w-4 text-red-500" />}
-                  </button>
-                ))}
-                {touched && paymentMethods.length === 0 && (
-                  <p className="text-red-500 text-xs mt-1">At least one payment method is required</p>
-                )}
+            {initialData.type === "buy" ? (
+              <div>
+                <h3 className="text-base font-medium mb-6">Select payment methods</h3>
+                <div className="space-y-2">
+                  {availablePaymentMethods.map((method) => (
+                    <button
+                      key={method}
+                      type="button"
+                      onClick={() => togglePaymentMethod(method)}
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded border ${
+                        paymentMethods.includes(method)
+                          ? "border-green-500 bg-green-50"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <span className="text-sm">{method}</span>
+                      {paymentMethods.includes(method) && <Check className="h-4 w-4 text-green-500" />}
+                    </button>
+                  ))}
+                  {touched && paymentMethods.length === 0 && (
+                    <p className="text-red-500 text-xs mt-1">At least one payment method is required</p>
+                  )}
+                </div>
               </div>
-            </div>
+            ) : null}
 
             <div>
               <h3 className="text-base font-medium mb-6">Instructions (Optional)</h3>
@@ -144,56 +177,6 @@ export default function PaymentDetailsForm({
           </div>
         </div>
       </form>
-
-      {/* Fixed positioned button at bottom right */}
-      <div className="fixed bottom-6 right-6">
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={!buttonEnabled}
-          style={{
-            backgroundColor: buttonEnabled ? "#EE4444" : "#E5E7EB",
-            color: buttonEnabled ? "white" : "#9CA3AF",
-            borderRadius: "9999px",
-            padding: "0.625rem 2rem",
-            fontSize: "0.875rem",
-            fontWeight: "500",
-            border: "none",
-            outline: "none",
-            cursor: buttonEnabled ? "pointer" : "not-allowed",
-            transition: "background-color 0.2s",
-            boxShadow: "none",
-            position: "relative",
-            zIndex: 10,
-            width: "auto",
-            height: "auto",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {isSubmitting ? (
-            <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <span>{isEditMode ? "Saving..." : "Creating..."}</span>
-              <span
-                style={{
-                  display: "inline-block",
-                  height: "1rem",
-                  width: "1rem",
-                  borderRadius: "50%",
-                  border: "2px solid white",
-                  borderTopColor: "transparent",
-                  animation: "spin 1s linear infinite",
-                }}
-              ></span>
-            </span>
-          ) : isEditMode ? (
-            "Save Changes"
-          ) : (
-            "Create Ad"
-          )}
-        </button>
-      </div>
     </div>
   )
 }

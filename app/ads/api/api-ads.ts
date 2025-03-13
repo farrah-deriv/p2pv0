@@ -148,7 +148,7 @@ export async function getMyAds(filters?: AdFilters): Promise<MyAd[]> {
 /**
  * Update an advertisement
  */
-export async function updateAd(id: string, adData: any): Promise<{ success: boolean }> {
+export async function updateAd(id: string, adData: any): Promise<{ success: boolean; errors?: any[] }> {
   try {
     const url = `${API.baseUrl}${API.endpoints.ads}/${id}`
     const headers = {
@@ -220,19 +220,39 @@ export async function updateAd(id: string, adData: any): Promise<{ success: bool
       console.error("Error Response:", response.status, response.statusText)
       console.error("Response Body:", responseText)
       console.groupEnd()
-      throw new Error(`Failed to update ad: ${response.statusText || responseText}`)
+
+      // Extract error information
+      let errors = []
+      if (responseData && responseData.errors) {
+        errors = responseData.errors
+      } else {
+        errors = [{ message: `Failed to update ad: ${response.statusText || responseText}` }]
+      }
+
+      return {
+        success: false,
+        errors: errors,
+      }
     }
 
     console.log("✅ Successfully updated ad")
     console.groupEnd()
 
-    return { success: true }
+    return {
+      success: true,
+      errors: responseData.errors || [],
+    }
   } catch (error) {
     console.group("💥 Update Ad Exception")
     console.error("Error:", error)
     console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
     console.groupEnd()
-    throw error
+
+    // Return error in a structured format
+    return {
+      success: false,
+      errors: [{ message: error instanceof Error ? error.message : "An unexpected error occurred" }],
+    }
   }
 }
 
@@ -240,7 +260,11 @@ export async function updateAd(id: string, adData: any): Promise<{ success: bool
  * Toggle ad status (activate/deactivate)
  * This now uses the updateAd function to update all properties
  */
-export async function toggleAdStatus(id: string, isActive: boolean, currentAd: MyAd): Promise<{ success: boolean }> {
+export async function toggleAdStatus(
+  id: string,
+  isActive: boolean,
+  currentAd: MyAd,
+): Promise<{ success: boolean; errors?: any[] }> {
   try {
     console.group(`📤 Toggle Ad Status (${isActive ? "Activate" : "Deactivate"})`)
     console.log("Ad ID:", id)
@@ -267,7 +291,7 @@ export async function toggleAdStatus(id: string, isActive: boolean, currentAd: M
       exchange_rate_type: "fixed",
       order_expiry_period: 15, // Default value if not available
       description: "", // Default value if not available
-      payment_method_names: currentAd.paymentMethods,
+      payment_method_names: currentAd.type === "Buy" ? currentAd.paymentMethods : [],
     }
 
     console.log("Prepared Ad Data for Update:", adData)
@@ -288,14 +312,19 @@ export async function toggleAdStatus(id: string, isActive: boolean, currentAd: M
     console.error("Error:", error)
     console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
     console.groupEnd()
-    throw error
+
+    // Return error in a structured format
+    return {
+      success: false,
+      errors: [{ message: error instanceof Error ? error.message : "An unexpected error occurred" }],
+    }
   }
 }
 
 /**
  * Delete an advertisement
  */
-export async function deleteAd(id: string): Promise<{ success: boolean }> {
+export async function deleteAd(id: string): Promise<{ success: boolean; errors?: any[] }> {
   try {
     const url = `${API.baseUrl}${API.endpoints.ads}/${id}`
     const headers = {
@@ -338,7 +367,19 @@ export async function deleteAd(id: string): Promise<{ success: boolean }> {
     if (!response.ok) {
       console.error("Error Response:", response.status, response.statusText)
       console.groupEnd()
-      throw new Error(`Failed to delete ad: ${response.statusText}`)
+
+      // Extract error information
+      let errors = []
+      if (responseData && responseData.errors) {
+        errors = responseData.errors
+      } else {
+        errors = [{ message: `Failed to delete ad: ${response.statusText}` }]
+      }
+
+      return {
+        success: false,
+        errors: errors,
+      }
     }
 
     console.log("✅ Successfully deleted ad")
@@ -350,14 +391,21 @@ export async function deleteAd(id: string): Promise<{ success: boolean }> {
     console.error("Error:", error)
     console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
     console.groupEnd()
-    throw error
+
+    // Return error in a structured format
+    return {
+      success: false,
+      errors: [{ message: error instanceof Error ? error.message : "An unexpected error occurred" }],
+    }
   }
 }
 
 /**
  * Create a new advertisement
  */
-export async function createAd(payload: CreateAdPayload): Promise<{ success: boolean; data: CreateAdResponse }> {
+export async function createAd(
+  payload: CreateAdPayload,
+): Promise<{ success: boolean; data: CreateAdResponse; errors?: any[] }> {
   try {
     const url = `${API.baseUrl}${API.endpoints.ads}`
     const headers = {
@@ -392,15 +440,15 @@ export async function createAd(payload: CreateAdPayload): Promise<{ success: boo
     console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     const responseText = await response.text()
-    let data
+    let responseData
 
     try {
-      data = JSON.parse(responseText)
-      console.log("Response Body (parsed):", data)
+      responseData = JSON.parse(responseText)
+      console.log("Response Body (parsed):", responseData)
     } catch (e) {
       console.warn("⚠️ Could not parse response as JSON:", e)
       console.log("Response Body (raw):", responseText)
-      data = { raw: responseText }
+      responseData = { raw: responseText }
     }
 
     // Handle error responses
@@ -409,13 +457,13 @@ export async function createAd(payload: CreateAdPayload): Promise<{ success: boo
       console.error("HTTP Status:", response.status, response.statusText)
 
       // Extract error information from the response
-      let errorMessage = data.error || `Error creating advertisement: ${response.statusText}`
+      let errorMessage = responseData.error || `Error creating advertisement: ${response.statusText}`
       let errorCode = null
 
       // Check for the specific error structure with errors array
-      if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
-        if (data.errors[0].code) {
-          errorCode = data.errors[0].code
+      if (responseData.errors && Array.isArray(responseData.errors) && responseData.errors.length > 0) {
+        if (responseData.errors[0].code) {
+          errorCode = responseData.errors[0].code
           console.error("Error Code:", errorCode)
 
           // Map error codes to user-friendly messages
@@ -438,8 +486,8 @@ export async function createAd(payload: CreateAdPayload): Promise<{ success: boo
             default:
               errorMessage = `Error: ${errorCode}. Please try again or contact support.`
           }
-        } else if (data.errors[0].message) {
-          errorMessage = data.errors[0].message
+        } else if (responseData.errors[0].message) {
+          errorMessage = responseData.errors[0].message
         }
       }
 
@@ -464,13 +512,16 @@ export async function createAd(payload: CreateAdPayload): Promise<{ success: boo
       console.error("Error Details:", errorMessage)
       console.groupEnd()
 
-      // If we have an error code, include it in the error object
-      if (errorCode) {
-        const error = new Error(errorMessage)
-        error.name = errorCode
-        throw error
-      } else {
-        throw new Error(errorMessage)
+      // Return structured error response
+      return {
+        success: false,
+        data: {
+          id: "",
+          type: payload.type,
+          status: "inactive",
+          created_at: new Date().toISOString(),
+        },
+        errors: responseData.errors || [{ message: errorMessage }],
       }
     }
 
@@ -481,11 +532,12 @@ export async function createAd(payload: CreateAdPayload): Promise<{ success: boo
     return {
       success: true,
       data: {
-        id: data.id || "000000",
-        type: data.type || payload.type,
-        status: data.status || "active",
-        created_at: data.created_at || new Date().toISOString(),
+        id: responseData.data?.id || "000000",
+        type: responseData.data?.type || payload.type,
+        status: responseData.data?.status || "active",
+        created_at: responseData.data?.created_at || new Date().toISOString(),
       },
+      errors: responseData.errors || [],
     }
   } catch (error) {
     // Log any exceptions
@@ -494,14 +546,29 @@ export async function createAd(payload: CreateAdPayload): Promise<{ success: boo
     console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
     console.groupEnd()
 
-    throw error
+    // Return error in a structured format
+    return {
+      success: false,
+      data: {
+        id: "",
+        type: payload.type,
+        status: "inactive",
+        created_at: new Date().toISOString(),
+      },
+      errors: [
+        {
+          message: error instanceof Error ? error.message : "An unexpected error occurred",
+          code: error instanceof Error ? error.name : "UnknownError",
+        },
+      ],
+    }
   }
 }
 
 /**
  * Activate an advertisement (specific function for troubleshooting)
  */
-export async function activateAd(id: string): Promise<{ success: boolean }> {
+export async function activateAd(id: string): Promise<{ success: boolean; errors?: any[] }> {
   try {
     // First, let's try to get the current ad data to use for activation
     console.group(`📤 Activating Ad ${id}`)
@@ -513,7 +580,10 @@ export async function activateAd(id: string): Promise<{ success: boolean }> {
 
     if (!adToActivate) {
       console.error("Could not find ad with ID:", id)
-      throw new Error("Ad not found")
+      return {
+        success: false,
+        errors: [{ message: "Ad not found" }],
+      }
     }
 
     console.log("Found ad to activate:", adToActivate)
@@ -537,7 +607,7 @@ export async function activateAd(id: string): Promise<{ success: boolean }> {
       exchange_rate_type: "fixed",
       order_expiry_period: 15,
       description: "",
-      payment_method_names: adToActivate.paymentMethods,
+      payment_method_names: adToActivate.type === "Buy" ? adToActivate.paymentMethods : [],
     }
 
     console.log("Activation payload:", payload)
@@ -591,7 +661,19 @@ export async function activateAd(id: string): Promise<{ success: boolean }> {
       console.error("Error Response:", response.status, response.statusText)
       console.error("Response Body:", responseText)
       console.groupEnd()
-      throw new Error(`Failed to activate ad: ${response.statusText || responseText}`)
+
+      // Extract error information
+      let errors = []
+      if (responseData && responseData.errors) {
+        errors = responseData.errors
+      } else {
+        errors = [{ message: `Failed to activate ad: ${response.statusText || responseText}` }]
+      }
+
+      return {
+        success: false,
+        errors: errors,
+      }
     }
 
     console.log("✅ Successfully activated ad")
@@ -603,7 +685,12 @@ export async function activateAd(id: string): Promise<{ success: boolean }> {
     console.error("Error:", error)
     console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
     console.groupEnd()
-    throw error
+
+    // Return error in a structured format
+    return {
+      success: false,
+      errors: [{ message: error instanceof Error ? error.message : "An unexpected error occurred" }],
+    }
   }
 }
 

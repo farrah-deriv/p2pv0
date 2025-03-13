@@ -7,7 +7,7 @@ import { X } from "lucide-react"
 import type { AdFormData } from "../types"
 
 interface AdDetailsFormProps {
-  onNext: (data: Partial<AdFormData>) => void
+  onNext: (data: Partial<AdFormData>, errors?: ValidationErrors) => void
   onClose: () => void
   initialData?: Partial<AdFormData>
   isEditMode?: boolean
@@ -37,10 +37,14 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
 
   // Check if form is valid for enabling/disabling the Next button
   const isFormValid = () => {
-    const hasValues = totalAmount && fixedRate && minAmount && maxAmount
+    // Check if all required fields have values
+    const hasValues = !!totalAmount && !!fixedRate && !!minAmount && !!maxAmount
+
+    // Check if there are no validation errors
     const hasNoErrors = Object.keys(formErrors).length === 0
-    const allFieldsValid = hasValues && hasNoErrors
-    return allFieldsValid
+
+    // Both conditions must be true
+    return hasValues && hasNoErrors
   }
 
   // Update state when initialData changes (important for edit mode)
@@ -118,6 +122,17 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
     // Check for validation errors
     if (!isFormValid()) {
       console.error("Form has validation errors:", formErrors)
+
+      // Pass the data along with the errors to the parent
+      const formData = {
+        type,
+        totalAmount: Number.parseFloat(totalAmount) || 0,
+        fixedRate: Number.parseFloat(fixedRate) || 0,
+        minAmount: Number.parseFloat(minAmount) || 0,
+        maxAmount: Number.parseFloat(maxAmount) || 0,
+      }
+
+      onNext(formData, formErrors)
       return
     }
 
@@ -132,6 +147,26 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
 
     onNext(formData)
   }
+
+  useEffect(() => {
+    // This will run whenever the form validation state changes
+    const isValid = isFormValid()
+    // Use a custom event to communicate the form state to the parent
+    const event = new CustomEvent("adFormValidationChange", {
+      bubbles: true,
+      detail: {
+        isValid,
+        formData: {
+          type,
+          totalAmount: Number.parseFloat(totalAmount) || 0,
+          fixedRate: Number.parseFloat(fixedRate) || 0,
+          minAmount: Number.parseFloat(minAmount) || 0,
+          maxAmount: Number.parseFloat(maxAmount) || 0,
+        },
+      },
+    })
+    document.dispatchEvent(event)
+  }, [totalAmount, fixedRate, minAmount, maxAmount, formErrors])
 
   return (
     <div className="h-full flex flex-col">
@@ -203,8 +238,10 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
-                      className={`text-left pl-3 pr-16 h-10 ${
-                        touched.totalAmount && formErrors.totalAmount ? "border-red-500 focus:ring-red-500" : ""
+                      className={`text-left pl-3 pr-16 h-10 transition-all duration-200 ${
+                        touched.totalAmount && formErrors.totalAmount
+                          ? "border-red-500 focus:border-red-500 border-2"
+                          : "border-gray-200 focus:border-black hover:border-gray-300"
                       }`}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">USD</span>
@@ -225,8 +262,10 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
-                      className={`text-left pl-3 pr-16 h-10 ${
-                        touched.fixedRate && formErrors.fixedRate ? "border-red-500 focus:ring-red-500" : ""
+                      className={`text-left pl-3 pr-16 h-10 transition-all duration-200 ${
+                        touched.fixedRate && formErrors.fixedRate
+                          ? "border-red-500 focus:border-red-500 border-2"
+                          : "border-gray-200 focus:border-black hover:border-gray-300"
                       }`}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">IDR</span>
@@ -253,8 +292,10 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
-                      className={`text-left pl-3 pr-16 h-10 ${
-                        touched.minAmount && formErrors.minAmount ? "border-red-500 focus:ring-red-500" : ""
+                      className={`text-left pl-3 pr-16 h-10 transition-all duration-200 ${
+                        touched.minAmount && formErrors.minAmount
+                          ? "border-red-500 focus:border-red-500 border-2"
+                          : "border-gray-200 focus:border-black hover:border-gray-300"
                       }`}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">USD</span>
@@ -275,8 +316,10 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
-                      className={`text-left pl-3 pr-16 h-10 ${
-                        touched.maxAmount && formErrors.maxAmount ? "border-red-500 focus:ring-red-500" : ""
+                      className={`text-left pl-3 pr-16 h-10 transition-all duration-200 ${
+                        touched.maxAmount && formErrors.maxAmount
+                          ? "border-red-500 focus:border-red-500 border-2"
+                          : "border-gray-200 focus:border-black hover:border-gray-300"
                       }`}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">USD</span>
@@ -290,33 +333,6 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
           </div>
         </div>
       </form>
-
-      {/* Fixed positioned button at bottom right - using a plain HTML button with direct styling */}
-      <div className="fixed bottom-6 right-6">
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={!isFormValid()}
-          className="next-button"
-          style={{
-            backgroundColor: isFormValid() ? "#EE4444" : "#E5E7EB",
-            color: isFormValid() ? "white" : "#9CA3AF",
-            borderRadius: "9999px",
-            padding: "0.625rem 2rem",
-            fontSize: "0.875rem",
-            fontWeight: "500",
-            border: "none",
-            outline: "none",
-            cursor: isFormValid() ? "pointer" : "not-allowed",
-            transition: "background-color 0.2s",
-            boxShadow: "none",
-            position: "relative",
-            zIndex: 10,
-          }}
-        >
-          Next
-        </button>
-      </div>
     </div>
   )
 }
