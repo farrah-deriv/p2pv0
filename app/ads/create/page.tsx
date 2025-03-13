@@ -362,7 +362,7 @@ export default function CreateAdPage() {
   }
 
   return (
-    <div className="flex h-screen -mt-4 -mx-4">
+    <div className="flex h-screen -mt-4 -mx-4 pt-16">
       <div className="w-[240px] bg-gray-50 h-full">
         <div className="p-6">
           <h1 className="text-xl font-semibold mb-6">{isEditMode ? "Edit Ad" : "Create Ad"}</h1>
@@ -397,8 +397,7 @@ export default function CreateAdPage() {
             onClick={handleButtonClick}
             disabled={isSubmitting || (currentStep === 0 && !adFormValid) || (currentStep === 1 && !paymentFormValid)}
             className={`px-8 py-2.5 rounded-full text-sm font-medium transition-colors w-36 h-10 flex items-center justify-center
-            ${
-              currentStep === 0
+            ${currentStep === 0
                 ? adFormValid
                   ? "bg-red-500 text-white hover:bg-red-600"
                   : "bg-gray-100 text-gray-500 cursor-not-allowed"
@@ -407,7 +406,7 @@ export default function CreateAdPage() {
                   : paymentFormValid
                     ? "bg-red-500 text-white hover:bg-red-600"
                     : "bg-gray-100 text-gray-500 cursor-not-allowed"
-            }`}
+              }`}
           >
             {isSubmitting ? (
               <div className="flex items-center gap-2">
