@@ -7,6 +7,7 @@ import Navigation from "@/components/navigation"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
+import { USER } from "@/lib/local-variables"
 // Update the import for Advertisement type
 import type { Advertisement } from "@/services/api/api-buy-sell"
 import { BuySellAPI } from "@/services/api"
@@ -18,13 +19,14 @@ export default function BuySellPage() {
   const [currency, setCurrency] = useState("IDR")
   const [paymentMethod, setPaymentMethod] = useState("All")
   const [searchQuery, setSearchQuery] = useState("")
+  const [sortBy, setSortBy] = useState("exchange_rate")
   const [adverts, setAdverts] = useState<Advertisement[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchAdverts()
-  }, [activeTab, currency, paymentMethod, searchQuery])
+  }, [activeTab, currency, paymentMethod, searchQuery, sortBy])
 
   // Update the fetchAdverts function to ensure adverts is always an array
   const fetchAdverts = async () => {
@@ -36,6 +38,7 @@ export default function BuySellPage() {
         currency: currency,
         paymentMethod: paymentMethod !== "All" ? paymentMethod : undefined,
         nickname: searchQuery,
+        sortBy: sortBy,
       }
       const data = await BuySellAPI.getAdvertisements(params)
 
@@ -81,13 +84,6 @@ export default function BuySellPage() {
               }`}
               onClick={() => {
                 setActiveTab("buy")
-                setIsLoading(true)
-                // Reset search query when switching tabs
-                setSearchQuery("")
-                // Explicitly fetch adverts with the new type
-                setTimeout(() => {
-                  fetchAdverts()
-                }, 0)
               }}
             >
               Buy
@@ -98,13 +94,6 @@ export default function BuySellPage() {
               }`}
               onClick={() => {
                 setActiveTab("sell")
-                setIsLoading(true)
-                // Reset search query when switching tabs
-                setSearchQuery("")
-                // Explicitly fetch adverts with the new type
-                setTimeout(() => {
-                  fetchAdverts()
-                }, 0)
               }}
             >
               Sell
@@ -157,14 +146,13 @@ export default function BuySellPage() {
               />
             </div>
 
-            <Select defaultValue="Exchange rate">
+            <Select defaultValue="exchange_rate" onValueChange={setSortBy}>
               <SelectTrigger className="w-full sm:w-[200px]">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Exchange rate">Sort by: Exchange rate</SelectItem>
-                <SelectItem value="Completion">Sort by: Completion</SelectItem>
-                <SelectItem value="Rating">Sort by: Rating</SelectItem>
+                <SelectItem value="exchange_rate">Sort by: Exchange rate</SelectItem>
+                <SelectItem value="user_rating_average">Sort by: Rating</SelectItem>
               </SelectContent>
             </Select>
 
@@ -175,7 +163,6 @@ export default function BuySellPage() {
               <SelectContent>
                 <SelectItem value="All">Filter by</SelectItem>
                 <SelectItem value="Following">Following</SelectItem>
-                <SelectItem value="Online">Online</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -270,9 +257,9 @@ export default function BuySellPage() {
                     </td>
                     <td className="py-4 px-4 hidden sm:table-cell">{ad.payment_method_names?.join(", ") || "-"}</td>
                     <td className="py-4 px-4 text-right">
-                      <Button className="bg-red-500 hover:bg-red-600 text-white rounded-full text-xs sm:text-sm">
-                        {ad.type === "buy" ? "Sell" : "Buy"} {ad.account_currency}
-                      </Button>
+                      {USER.id != ad.user.id && <Button className="bg-red-500 hover:bg-red-600 text-white rounded-full text-xs sm:text-sm">
+                        {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
+                      </Button>}
                     </td>
                   </tr>
                 ))}

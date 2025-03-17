@@ -32,7 +32,8 @@ export interface SearchParams {
   currency?: string
   paymentMethod?: string
   amount?: number
-  nickname?: string
+  nickname?: string,
+  sortBy?: string,
 }
 
 /**
@@ -43,11 +44,12 @@ export async function getAdvertisements(params?: SearchParams): Promise<Advertis
     const queryParams = new URLSearchParams()
 
     if (params) {
-      if (params.type) queryParams.append("type", params.type)
-      if (params.currency) queryParams.append("currency", params.currency)
+      if (params.type) queryParams.append("advert_type", params.type)
+      if (params.currency) queryParams.append("payment_currency", params.currency)
       if (params.paymentMethod) queryParams.append("paymentMethod", params.paymentMethod)
       if (params.amount) queryParams.append("amount", params.amount.toString())
       if (params.nickname) queryParams.append("nickname", params.nickname)
+      if (params.sortBy) queryParams.append("sort_by", params.sortBy)
     }
 
     const queryString = queryParams.toString() ? `?${queryParams.toString()}` : ""
