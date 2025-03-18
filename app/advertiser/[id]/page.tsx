@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { ArrowLeft, Star, Clock, Info, MoreVertical, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { USER } from "@/lib/local-variables"
 import { BuySellAPI } from "@/services/api"
 import type { Advertisement } from "@/services/api/api-buy-sell"
 
@@ -420,7 +421,10 @@ export default function AdvertiserProfilePage() {
                   </td>
                   <td className="py-4 px-4">{ad.payment_method_names?.join(", ")}</td>
                   <td className="py-4 px-4 text-right">
-                    <Button className="bg-red-500 hover:bg-red-600 text-white rounded-full">Buy USD</Button>
+                      {USER.id !== ad.user.id && <Button className="bg-red-500 hover:bg-red-600 text-white rounded-full">
+                      {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
+                      </Button>
+                    }
                   </td>
                 </tr>
               ))

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { OrdersAPI } from "@/services/api"
 import type { Order } from "@/services/api/api-orders"
+import OrderChat from "@/components/order-chat"
 
 export default function OrderDetailsPage() {
   const router = useRouter()
@@ -79,28 +80,28 @@ export default function OrderDetailsPage() {
 
   return (
     <>
-      <div className="mx-auto mt-[64px]">
-        <div className="flex flex-col gap-6">
-          {/* Left panel - Order details */}
-          <div className="w-full rounded-lg">
-            <div className="flex justify-between items-center py-4">
+      <div className="container mx-auto mt-[64px] px-4">
+        <div className="flex flex-col">
+          <div className="flex justify-between items-center py-4">
               <h1 className="text-xl font-bold">{orderType} order</h1>
               <button onClick={() => router.push("/orders")} className="text-gray-500 hover:text-gray-700">
                 <X className="h-5 w-5" />
               </button>
             </div>
-
-            <div className="bg-blue-50 p-4 flex justify-between items-center">
+          {/* Left panel - Order details */}
+          <div className="flex flex-row gap-6">
+          <div className="w-full lg:w-1/2 rounded-lg">
+            <div className="bg-blue-50 p-4 flex justify-between items-center border border-blue-50 rounded-lg">
               <div className="flex items-center">
                 <span className="text-blue-600 font-medium">Complete payment</span>
               </div>
-              <div className="flex items-center text-gray-600">
+              <div className="flex items-center text-blue-600">
                 <Clock className="h-4 w-4 mr-1" />
                 <span>Time left: {timeLeft}</span>
               </div>
             </div>
 
-            <div className="p-4">
+            <div className="p-4 border rounded-lg mt-3">
               <div className="flex justify-between items-center mb-4">
                 <div>
                   <p className="text-gray-500 text-sm">You pay</p>
@@ -113,7 +114,7 @@ export default function OrderDetailsPage() {
                   </p>
                 </div>
                 <button
-                  className="text-blue-600 flex items-center text-sm"
+                  className="flex items-center text-sm"
                   onClick={() => {
                     /* View details logic */
                   }}
@@ -130,7 +131,7 @@ export default function OrderDetailsPage() {
             </div>
 
             <Tabs defaultValue="payment">
-              <TabsList className="border-b w-full rounded-none justify-start h-auto">
+              <TabsList className="bg-transparent w-full rounded-none justify-start h-auto">
                 <TabsTrigger
                   value="payment"
                   className="py-3 px-4 data-[state=active]:border-b-2 data-[state=active]:border-red-500 data-[state=active]:shadow-none rounded-none"
@@ -150,7 +151,7 @@ export default function OrderDetailsPage() {
                   <div className="flex">
                     <AlertCircle className="h-5 w-5 text-yellow-600 mr-2 flex-shrink-0" />
                     <p className="text-sm text-yellow-800">
-                      Don’t risk your funds with cash transactions. Use bank transfers or e-wallets instead.
+                      Don't risk your funds with cash transactions. Use bank transfers or e-wallets instead.
                     </p>
                   </div>
                 </div>
@@ -185,6 +186,15 @@ export default function OrderDetailsPage() {
                 I've paid
               </Button>
             </div>
+          </div>
+           {/* Right panel - Chat */}
+          <div className="w-full lg:w-1/2 border rounded-lg overflow-hidden flex flex-col h-[600px]">
+            <OrderChat
+              orderId={orderId}
+              counterpartyName={counterpartyNickname || "User"}
+              counterpartyInitial={(counterpartyNickname || "U")[0].toUpperCase()}
+            />
+          </div>
           </div>
         </div>
       </div>
