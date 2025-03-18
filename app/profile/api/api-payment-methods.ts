@@ -42,68 +42,45 @@ export async function getUserPaymentMethods(): Promise<PaymentMethod[]> {
 /**
  * Add a new payment method
  */
-export async function addPaymentMethod(
-  method: string,
-  fields: Record<string, string>,
-): Promise<{ success: boolean; data?: PaymentMethod; errors?: any[] }> {
+export async function addPaymentMethod(method: string, fields: Record<string, any>) {
   try {
-    const url = `${API.baseUrl}/user-payment-methods`
-    const headers = {
-      ...AUTH.getAuthHeader(),
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    }
+    // Format method name to match API expectations (lowercase, no spaces)
+    const formattedMethod = method.toLowerCase().replace(/\s+/g, "_")
 
-    // Restructure the request body to match expected API format
-    const requestBody = {
-      data: {
-        method: method.toLowerCase(),
-        fields: fields,
-      },
-    }
-
-    const body = JSON.stringify(requestBody)
-
-    console.group("📤 POST Add Payment Method Request")
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("Request Body:", body)
-    console.groupEnd()
-
-    const response = await fetch(url, {
+    const response = await fetch(`${API.baseUrl}/user-payment-methods`, {
       method: "POST",
-      headers,
-      body,
+      headers: {
+        ...AUTH.getAuthHeader(),
+        accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        data: {
+          method: formattedMethod,
+          fields: fields, // Pass fields directly as they're already properly structured
+        },
+      }),
     })
 
-    const responseText = await response.text()
-    let responseData = {}
-
-    // Only try to parse as JSON if there's content and it looks like JSON
-    if (responseText && (responseText.startsWith("{") || responseText.startsWith("["))) {
-      try {
-        responseData = JSON.parse(responseText)
-      } catch (e) {
-        console.warn("⚠️ Could not parse response as JSON:", e)
-      }
-    }
-
     if (!response.ok) {
-      return {
-        success: false,
-        errors: responseData.errors || [{ message: `Failed to add payment method: ${response.statusText}` }],
-      }
+      const errorData = await response.json().catch(() => null)
+      throw new Error(errorData?.message || `HTTP error! status: ${response.status}`)
     }
 
+    const result = await response.json()
     return {
       success: true,
-      data: responseData.data,
+      data: result,
     }
   } catch (error) {
-    console.error("Failed to add payment method:", error)
+    console.error("Error adding payment method:", error)
     return {
       success: false,
-      errors: [{ message: error instanceof Error ? error.message : "An unexpected error occurred" }],
+      errors: [
+        {
+          message: error instanceof Error ? error.message : "Failed to add payment method",
+        },
+      ],
     }
   }
 }

@@ -6,6 +6,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { API, AUTH } from "@/lib/local-variables"
 import { Shimmer } from "./ui/shimmer"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
+import StatusModal from "@/components/ui/status-modal"
+import { ProfileAPI } from "../api"
 
 interface PaymentMethod {
   id: string
@@ -17,10 +19,25 @@ interface PaymentMethod {
 }
 
 export default function PaymentMethodsTab() {
+  // Add state for delete confirmation modal and success/error modals
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const isMobile = useIsMobile()
+
+  // Add these new state variables for modals
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState({
+    show: false,
+    methodId: "",
+    methodName: "",
+  })
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [statusModal, setStatusModal] = useState({
+    show: false,
+    type: "success" as "success" | "error",
+    title: "",
+    message: "",
+  })
 
   useEffect(() => {
     fetchPaymentMethods()
@@ -134,9 +151,67 @@ export default function PaymentMethodsTab() {
     }
   }
 
-  const handleDeletePaymentMethod = (id: string) => {
-    // Implementation for deleting a payment method
-    console.log("Delete payment method:", id)
+  // Update the handleDeletePaymentMethod function to show confirmation modal
+  const handleDeletePaymentMethod = (id: string, name: string) => {
+    setDeleteConfirmModal({
+      show: true,
+      methodId: id,
+      methodName: name,
+    })
+  }
+
+  // Add a function to confirm deletion
+  const confirmDeletePaymentMethod = async () => {
+    try {
+      setIsDeleting(true)
+      const result = await ProfileAPI.PaymentMethods.deletePaymentMethod(deleteConfirmModal.methodId)
+
+      if (result.success) {
+        // Close the confirmation modal
+        setDeleteConfirmModal({ show: false, methodId: "", methodName: "" })
+
+        // Show success modal
+        setStatusModal({
+          show: true,
+          type: "success",
+          title: "Payment method deleted",
+          message: "Your payment method has been successfully deleted.",
+        })
+
+        // Refresh the payment methods list
+        fetchPaymentMethods()
+      } else {
+        // Show error modal
+        setStatusModal({
+          show: true,
+          type: "error",
+          title: "Failed to delete payment method",
+          message: (result.errors && result.errors[0]?.message) || "An error occurred. Please try again.",
+        })
+      }
+    } catch (error) {
+      console.error("Error deleting payment method:", error)
+
+      // Show error modal
+      setStatusModal({
+        show: true,
+        type: "error",
+        title: "Failed to delete payment method",
+        message: error instanceof Error ? error.message : "An error occurred. Please try again.",
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  // Add a function to cancel deletion
+  const cancelDeletePaymentMethod = () => {
+    setDeleteConfirmModal({ show: false, methodId: "", methodName: "" })
+  }
+
+  // Add a function to close status modal
+  const closeStatusModal = () => {
+    setStatusModal((prev) => ({ ...prev, show: false }))
   }
 
   // Group payment methods by category
@@ -271,7 +346,7 @@ export default function PaymentMethodsTab() {
                     <DropdownMenuContent align="end" className="w-[160px]">
                       <DropdownMenuItem
                         className="flex items-center gap-2 text-red-500 focus:text-red-500"
-                        onSelect={() => handleDeletePaymentMethod(method.id)}
+                        onSelect={() => handleDeletePaymentMethod(method.id, method.name)}
                       >
                         Delete
                       </DropdownMenuItem>
@@ -310,7 +385,7 @@ export default function PaymentMethodsTab() {
                     <DropdownMenuContent align="end" className="w-[160px]">
                       <DropdownMenuItem
                         className="flex items-center gap-2 text-red-500 focus:text-red-500"
-                        onSelect={() => handleDeletePaymentMethod(method.id)}
+                        onSelect={() => handleDeletePaymentMethod(method.id, method.name)}
                       >
                         Delete
                       </DropdownMenuItem>
@@ -349,7 +424,7 @@ export default function PaymentMethodsTab() {
                     <DropdownMenuContent align="end" className="w-[160px]">
                       <DropdownMenuItem
                         className="flex items-center gap-2 text-red-500 focus:text-red-500"
-                        onSelect={() => handleDeletePaymentMethod(method.id)}
+                        onSelect={() => handleDeletePaymentMethod(method.id, method.name)}
                       >
                         Delete
                       </DropdownMenuItem>
@@ -363,6 +438,44 @@ export default function PaymentMethodsTab() {
           <p className="text-gray-500 italic">No other payment methods are added at the moment</p>
         )}
       </div>
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmModal.show && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h2 className="text-xl font-semibold mb-4 text-center">Delete payment method?</h2>
+            <p className="text-gray-600 mb-6 text-center">
+              Are you sure you want to delete {deleteConfirmModal.methodName}? You will not be able to restore it.
+            </p>
+
+            <div className="space-y-3">
+              <button
+                onClick={confirmDeletePaymentMethod}
+                disabled={isDeleting}
+                className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium"
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </button>
+
+              <button
+                onClick={cancelDeletePaymentMethod}
+                className="w-full py-3 border border-gray-300 text-gray-700 rounded-lg font-medium"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Status Modal */}
+      {statusModal.show && (
+        <StatusModal
+          type={statusModal.type}
+          title={statusModal.title}
+          message={statusModal.message}
+          onClose={closeStatusModal}
+        />
+      )}
     </div>
   )
 }
