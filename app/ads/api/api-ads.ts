@@ -71,6 +71,8 @@ export async function getUserAdverts(): Promise<MyAd[]> {
       const exchangeRate = advert.exchange_rate || 0
       const currency = advert.payment_currency || "USD"
       const isActive = advert.is_active !== undefined ? advert.is_active : true
+      const availableAmount = advert.available_amount || 0
+      const actualMaxAmount = advert.actual_maximum_order_amount || maxAmount
 
       // Determine status based on is_active flag
       const status: "Active" | "Inactive" = isActive ? "Active" : "Inactive"
@@ -89,8 +91,8 @@ export async function getUserAdverts(): Promise<MyAd[]> {
           currency: "USD",
         },
         available: {
-          current: advert.available_amount || minAmount,
-          total: maxAmount,
+          current: availableAmount,
+          total: actualMaxAmount,
           currency: "USD",
         },
         paymentMethods: advert.payment_method_names || [],
@@ -483,6 +485,9 @@ export async function createAd(
             case "InsufficientBalance":
               errorMessage = "You don't have enough balance to create this ad."
               break
+            case "AdvertTotalAmountExceeded":
+              errorMessage = "The total amount exceeds your available balance. Please enter a smaller amount."
+              break
             default:
               errorMessage = `Error: ${errorCode}. Please try again or contact support.`
           }
@@ -512,17 +517,12 @@ export async function createAd(
       console.error("Error Details:", errorMessage)
       console.groupEnd()
 
-      // Return structured error response
-      return {
-        success: false,
-        data: {
-          id: "",
-          type: payload.type,
-          status: "inactive",
-          created_at: new Date().toISOString(),
-        },
-        errors: responseData.errors || [{ message: errorMessage }],
+      // Create an error object with the appropriate name/code
+      const error = new Error(errorMessage)
+      if (errorCode) {
+        error.name = errorCode
       }
+      throw error
     }
 
     // Return success response

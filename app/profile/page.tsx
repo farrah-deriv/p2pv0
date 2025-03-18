@@ -2,8 +2,7 @@ import Navigation from "@/components/navigation"
 import UserInfo from "@/components/profile/user-info"
 import BusinessHours from "@/components/profile/business-hours"
 import TradeLimits from "@/components/profile/trade-limits"
-import StatsTabs from "@/components/profile/stats-tabs"
-import StatsGrid from "@/components/profile/stats-grid"
+import StatsTabs from "./components/stats-tabs"
 
 export default function ProfilePage() {
   // Mock data - in a real app, this would come from an API
@@ -67,9 +66,7 @@ export default function ProfilePage() {
         <TradeLimits buyLimit={userData.tradeLimits.buy} sellLimit={userData.tradeLimits.sell} />
       </div>
 
-      <StatsTabs>
-        <StatsGrid stats={userData.stats} />
-      </StatsTabs>
+      <StatsTabs stats={userData.stats} />
     </>
   )
 }

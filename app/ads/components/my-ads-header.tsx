@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button"
 
 interface MyAdsHeaderProps {
   hasAds: boolean
+  isMobile: boolean
 }
 
-export default function MyAdsHeader({ hasAds }: MyAdsHeaderProps) {
+export default function MyAdsHeader({ hasAds, isMobile }: MyAdsHeaderProps) {
   const router = useRouter()
 
   if (!hasAds) {
@@ -19,7 +20,7 @@ export default function MyAdsHeader({ hasAds }: MyAdsHeaderProps) {
       <div className="container mx-auto">
         <Button
           onClick={() => router.push("/ads/create")}
-          className="bg-red-500 hover:bg-red-600 text-white rounded-full px-6"
+          className={`bg-red-500 hover:bg-red-600 text-white rounded-full ${isMobile ? "w-full" : "px-6"}`}
         >
           Create ad
         </Button>

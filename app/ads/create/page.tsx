@@ -8,12 +8,14 @@ import PaymentDetailsForm from "../components/payment-details-form"
 import StatusModal from "@/components/ui/status-modal"
 import type { AdFormData, StatusModalState } from "../types"
 import { createAd, updateAd } from "../api/api-ads"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 export default function CreateAdPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const isEditMode = searchParams.get("mode") === "edit"
   const adId = searchParams.get("id")
+  const isMobile = useIsMobile()
 
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState<Partial<AdFormData>>({})
@@ -175,6 +177,8 @@ export default function CreateAdPage() {
         InvalidExchangeRate: "The exchange rate you provided is invalid.",
         InvalidOrderAmount: "The order amount limits are invalid.",
         InsufficientBalance: "You don't have enough balance to create this ad.",
+        // Add the new error code mapping
+        AdvertTotalAmountExceeded: "The total amount exceeds your available balance. Please enter a smaller amount.",
       }
 
       return errorCodeMap[errors[0].code] || `Error: ${errors[0].code}. Please try again or contact support.`
@@ -238,7 +242,7 @@ export default function CreateAdPage() {
         localStorage.setItem("adUpdateSuccess", JSON.stringify({ success: true }))
 
         // Navigate back to ads list
-        router.push("/ads/my-ads")
+        router.push("/ads")
       } else {
         // Create new ad
         const payload = {
@@ -278,7 +282,7 @@ export default function CreateAdPage() {
         )
 
         // Navigate to the ads screen
-        router.push("/ads/my-ads")
+        router.push("/ads")
       }
     } catch (error) {
       // Error handling remains the same
@@ -301,6 +305,9 @@ export default function CreateAdPage() {
         } else if (error.name === "InvalidExchangeRate" || error.name === "InvalidOrderAmount") {
           errorTitle = "Invalid values"
           errorMessage = error.message
+        } else if (error.name === "AdvertTotalAmountExceeded") {
+          errorTitle = "Amount exceeds balance"
+          errorMessage = "The total amount exceeds your available balance. Please enter a smaller amount."
         } else {
           errorMessage = error.message || errorMessage
         }
@@ -347,7 +354,7 @@ export default function CreateAdPage() {
   }
 
   const handleClose = () => {
-    router.push("/ads/my-ads")
+    router.push("/ads")
   }
 
   if (isLoading) {
@@ -362,13 +369,16 @@ export default function CreateAdPage() {
   }
 
   return (
-    <div className="flex h-screen -mt-4 -mx-4 pt-16">
-      <div className="w-[240px] bg-gray-50 h-full">
-        <div className="p-6">
-          <h1 className="text-xl font-semibold mb-6">{isEditMode ? "Edit Ad" : "Create Ad"}</h1>
-          <ProgressSteps currentStep={currentStep} steps={steps} />
+    <div className={`flex ${isMobile ? "flex-col" : "h-screen"} -mt-4 -mx-4`}>
+      {/* Sidebar for desktop only - hidden on mobile */}
+      {!isMobile && (
+        <div className="w-[240px] bg-gray-50 h-full">
+          <div className="p-6">
+            <h1 className="text-xl font-semibold mb-6">{isEditMode ? "Edit Ad" : "Create Ad"}</h1>
+            <ProgressSteps currentStep={currentStep} steps={steps} />
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="flex-1 relative">
         <div className="max-w-[800px] mx-auto">
@@ -397,7 +407,8 @@ export default function CreateAdPage() {
             onClick={handleButtonClick}
             disabled={isSubmitting || (currentStep === 0 && !adFormValid) || (currentStep === 1 && !paymentFormValid)}
             className={`px-8 py-2.5 rounded-full text-sm font-medium transition-colors w-36 h-10 flex items-center justify-center
-            ${currentStep === 0
+            ${
+              currentStep === 0
                 ? adFormValid
                   ? "bg-red-500 text-white hover:bg-red-600"
                   : "bg-gray-100 text-gray-500 cursor-not-allowed"
@@ -406,7 +417,7 @@ export default function CreateAdPage() {
                   : paymentFormValid
                     ? "bg-red-500 text-white hover:bg-red-600"
                     : "bg-gray-100 text-gray-500 cursor-not-allowed"
-              }`}
+            }`}
           >
             {isSubmitting ? (
               <div className="flex items-center gap-2">
