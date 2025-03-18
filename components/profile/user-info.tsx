@@ -1,9 +1,5 @@
-"use client"
-
-import { useState, useEffect } from "react"
 import { Star, Check, Info } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
-import { USER } from "@/lib/local-variables"
 
 interface UserInfoProps {
   username: string
@@ -28,32 +24,14 @@ export default function UserInfo({
   realName,
   isVerified,
 }: UserInfoProps) {
-  const [nickname, setNickname] = useState(username)
-  const [isLoading, setIsLoading] = useState(false)
-
-  useEffect(() => {
-    // Instead of making an API call that's failing, let's use the USER object from local variables
-    // This is a more reliable approach since we already have the user data locally
-    try {
-      if (USER && USER.nickname) {
-        console.log("Using nickname from local variables:", USER.nickname)
-        setNickname(USER.nickname)
-      } else {
-        console.log("No nickname found in local variables, using prop:", username)
-      }
-    } catch (error) {
-      console.error("Error accessing user data:", error)
-    }
-  }, [username])
-
   return (
     <div className="mb-8">
       <div className="flex items-start gap-4">
         <div className="h-16 w-16 rounded-full bg-gray-900 flex items-center justify-center text-white font-bold text-xl">
-          {nickname.charAt(0).toUpperCase()}
+          {username.charAt(0).toUpperCase()}
         </div>
         <div className="flex-1">
-          <h2 className="text-xl font-bold">{nickname}</h2>
+          <h2 className="text-xl font-bold">{username}</h2>
           <div className="flex items-center gap-4 mt-1 text-sm">
             <div className="flex items-center">
               <Star className="h-4 w-4 text-yellow-500 mr-1" />

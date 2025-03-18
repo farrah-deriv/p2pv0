@@ -2,22 +2,22 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { MoreVertical, Pencil, Copy, Share2, Power, Trash2, Search } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Pencil, Power, Trash2, Search, ChevronRight, Copy, Share2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { deleteAd, updateAd } from "../api/api-ads"
-import type { Ad } from "../types"
+import type { MyAd } from "../types"
 import StatusModal from "@/components/ui/status-modal"
 
-interface MyAdsTableProps {
-  ads: Ad[]
+interface MyAdsMobileViewProps {
+  ads: MyAd[]
   onAdDeleted?: (status?: string) => void
 }
 
-export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
+export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewProps) {
   const router = useRouter()
   const [isDeleting, setIsDeleting] = useState(false)
   const [isTogglingStatus, setIsTogglingStatus] = useState(false)
+  const [selectedAd, setSelectedAd] = useState<string | null>(null)
 
   // Add state for error modals
   const [errorModal, setErrorModal] = useState({
@@ -32,14 +32,6 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     adId: "",
   })
 
-  // Format limits to display as a string
-  const formatLimits = (limits: Ad["limits"]) => {
-    if (typeof limits === "string") {
-      return limits
-    }
-    return `${limits.currency} ${limits.min.toFixed(2)} - ${limits.max.toFixed(2)}`
-  }
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Active":
@@ -51,57 +43,31 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     }
   }
 
-  const handleEdit = (ad: Ad) => {
+  const handleEdit = (ad: MyAd) => {
     // Store the ad data in localStorage for the edit flow
     localStorage.setItem(
       "editAdData",
       JSON.stringify({
         ...ad,
-        description: ad.description || "",
+        description: "",
       }),
     )
     router.push(`/ads/create?mode=edit&id=${ad.id}`)
   }
 
-  const handleCopy = (adId: string) => {
-    console.log("Copy ad:", adId)
-    // Add copy functionality
-  }
-
-  const handleShare = (adId: string) => {
-    console.log("Share ad:", adId)
-    // Add share functionality
-  }
-
-  const handleToggleStatus = async (ad: Ad) => {
+  const handleToggleStatus = async (ad: MyAd) => {
     try {
       setIsTogglingStatus(true)
       console.log(
         `Toggling status for ad ${ad.id} from ${ad.status} to ${ad.status === "Active" ? "Inactive" : "Active"}`,
       )
 
-      // Parse the limits if it's a string
-      let minAmount = 0
-      let maxAmount = 0
-      let currency = "USD"
-
-      if (typeof ad.limits === "string") {
-        const limitsMatch = ad.limits.match(/([A-Z]+) (\d+\.\d+) - (\d+\.\d+)/)
-        currency = limitsMatch ? limitsMatch[1] : "USD"
-        minAmount = limitsMatch ? Number.parseFloat(limitsMatch[2]) : 0
-        maxAmount = limitsMatch ? Number.parseFloat(limitsMatch[3]) : 0
-      } else {
-        minAmount = ad.limits.min
-        maxAmount = ad.limits.max
-        currency = ad.limits.currency
-      }
-
       // Extract rate value from string (e.g., "IDR 14500.0000" -> 14500.0000)
-      let rateValue = 0
+      let exchangeRate = 0
       if (ad.rate && ad.rate.value) {
         const rateMatch = ad.rate.value.match(/([A-Z]+)\s+(\d+(?:\.\d+)?)/)
         if (rateMatch && rateMatch[2]) {
-          rateValue = Number.parseFloat(rateMatch[2])
+          exchangeRate = Number.parseFloat(rateMatch[2])
         }
       }
 
@@ -111,13 +77,13 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
       // Update the ad with all current values but change isListed
       const updateResult = await updateAd(ad.id, {
         is_active: isListed,
-        minimum_order_amount: minAmount,
-        maximum_order_amount: maxAmount,
+        minimum_order_amount: ad.limits.min,
+        maximum_order_amount: ad.limits.max,
         available_amount: ad.available.current,
-        exchange_rate: rateValue,
+        exchange_rate: exchangeRate,
         exchange_rate_type: "fixed",
         order_expiry_period: 15,
-        description: ad.description || "",
+        description: "",
         payment_method_names: ad.type === "Buy" ? ad.paymentMethods : [],
       })
 
@@ -207,6 +173,15 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     })
   }
 
+  // Toggle ad details
+  const toggleAdDetails = (adId: string) => {
+    if (selectedAd === adId) {
+      setSelectedAd(null)
+    } else {
+      setSelectedAd(adId)
+    }
+  }
+
   if (ads.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
@@ -227,110 +202,114 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     )
   }
 
-  // Update the table structure to have a fixed header and scrollable body
   return (
     <>
-      <div className="flex flex-col h-full">
-        {/* Fixed table header */}
-        <div className="w-full bg-white">
-          <table className="w-full border-collapse table-fixed">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left py-4 font-bold text-[#101213] text-base leading-[22px] w-[18%]">Ad ID</th>
-                <th className="text-left py-4 font-bold text-[#101213] text-base leading-[22px] w-[18%]">
-                  Rate (USD 1)
-                </th>
-                <th className="text-left py-4 font-bold text-[#101213] text-base leading-[22px] w-[16%]">Limits</th>
-                <th className="text-left py-4 font-bold text-[#101213] text-base leading-[22px] w-[18%]">
-                  Available amount
-                </th>
-                <th className="text-left py-4 font-bold text-[#101213] text-base leading-[22px] w-[18%]">
-                  Payment methods
-                </th>
-                <th className="text-left py-4 font-bold text-[#101213] text-base leading-[22px] w-[100px]">Status</th>
-                <th className="text-left py-4 font-bold text-[#101213] text-base leading-[22px] w-[15px]"></th>
-              </tr>
-            </thead>
-          </table>
-        </div>
+      <div className="space-y-4 pb-4">
+        {ads.map((ad) => (
+          <div
+            key={ad.id}
+            className={`border rounded-lg overflow-hidden ${ad.status === "Inactive" ? "opacity-70" : ""}`}
+          >
+            {/* Card header */}
+            <div
+              className="p-4 flex justify-between items-center cursor-pointer"
+              onClick={() => toggleAdDetails(ad.id)}
+            >
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className={`font-medium ${ad.type === "Buy" ? "text-green-600" : "text-red-600"}`}>
+                    {ad.type}
+                  </span>
+                  <span className="text-gray-900 font-medium">{ad.id}</span>
+                  <div className="ml-2">{getStatusBadge(ad.status)}</div>
+                </div>
+                <div className="mt-1 text-sm text-gray-500">{ad.rate.value}</div>
+              </div>
+              <ChevronRight
+                className={`h-5 w-5 text-gray-400 transition-transform ${selectedAd === ad.id ? "rotate-90" : ""}`}
+              />
+            </div>
 
-        {/* Scrollable table body */}
-        <div className="flex-1 overflow-y-auto">
-          <table className="w-full border-collapse table-fixed">
-            <tbody>
-              {ads.map((ad, index) => (
-                <tr key={index} className={`border-b ${ad.status === "Inactive" ? "grayscale opacity-50" : ""}`}>
-                  <td className="py-4 w-[18%]">
-                    <div>
-                      <span className={`font-medium ${ad.type === "Buy" ? "text-green-600" : "text-red-600"}`}>
-                        {ad.type}
-                      </span>
-                      <span className="text-[#101213] font-medium"> {ad.id}</span>
+            {/* Expanded details */}
+            {selectedAd === ad.id && (
+              <div className="px-4 pb-4 border-t pt-3">
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-sm text-gray-500">Limits</div>
+                    <div className="font-medium">
+                      {ad.limits.currency} {ad.limits.min.toFixed(2)} - {ad.limits.max.toFixed(2)}
                     </div>
-                  </td>
-                  <td className="py-4 w-[18%]">
-                    <div className="font-medium">{ad.rate.value}</div>
-                    <div className="text-gray-500 text-sm">{ad.rate.percentage}</div>
-                  </td>
-                  <td className="py-4 w-[16%]">{formatLimits(ad.limits)}</td>
-                  <td className="py-4 w-[18%]">
-                    <div className="mb-1">
-                      USD {(ad.available.current || 0).toFixed(2)} / {(ad.available.total || 0).toFixed(2)}
+                  </div>
+
+                  <div>
+                    <div className="text-sm text-gray-500">Available amount</div>
+                    <div className="font-medium mb-1">
+                      {ad.available.currency} {ad.available.current.toFixed(2)} / {ad.available.total.toFixed(2)}
                     </div>
-                    <div className="h-2 bg-gray-200 rounded-full w-32 overflow-hidden">
+                    <div className="h-2 bg-gray-200 rounded-full w-full overflow-hidden">
                       <div
                         className="h-full bg-black rounded-full"
                         style={{
-                          width: `${ad.available.total ? ((ad.available.current || 0) / ad.available.total) * 100 : 0}%`,
+                          width: `${ad.available.total ? (ad.available.current / ad.available.total) * 100 : 0}%`,
                         }}
                       ></div>
                     </div>
-                  </td>
-                  <td className="py-4 w-[18%] truncate">{ad.paymentMethods.join(", ")}</td>
-                  <td className="py-4 w-[100px] whitespace-nowrap">{getStatusBadge(ad.status)}</td>
-                  <td className="py-4 w-[15px] text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="p-1 hover:bg-gray-100 rounded-full">
-                          <MoreVertical className="h-5 w-5 text-gray-500" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-[160px]">
-                        <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleEdit(ad)}>
-                          <Pencil className="h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="flex items-center gap-2"
-                          onSelect={() => handleToggleStatus(ad)}
-                          disabled={isTogglingStatus}
-                        >
-                          <Power className="h-4 w-4" />
-                          {isTogglingStatus ? "Updating..." : ad.status === "Active" ? "Deactivate" : "Activate"}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-2 text-gray-400" disabled>
-                          <Copy className="h-4 w-4" />
-                          Copy
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-2 text-gray-400" disabled>
-                          <Share2 className="h-4 w-4" />
-                          Share
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="flex items-center gap-2 text-red-500 focus:text-red-500"
-                          onSelect={() => handleDelete(ad.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+
+                  <div>
+                    <div className="text-sm text-gray-500">Payment methods</div>
+                    <div className="font-medium">{ad.paymentMethods.join(", ")}</div>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex flex-wrap gap-2 mt-4 pt-2 border-t">
+                    <button
+                      onClick={() => handleEdit(ad)}
+                      className="flex items-center gap-1 px-3 py-2 bg-gray-100 rounded-md text-sm"
+                    >
+                      <Pencil className="h-4 w-4" />
+                      Edit
+                    </button>
+
+                    <button
+                      onClick={() => handleToggleStatus(ad)}
+                      disabled={isTogglingStatus}
+                      className="flex items-center gap-1 px-3 py-2 bg-gray-100 rounded-md text-sm"
+                    >
+                      <Power className="h-4 w-4" />
+                      {isTogglingStatus ? "Updating..." : ad.status === "Active" ? "Deactivate" : "Activate"}
+                    </button>
+
+                    {/* Disabled buttons for Copy and Share */}
+                    <button
+                      className="flex items-center gap-1 px-3 py-2 bg-gray-100 rounded-md text-sm text-gray-400 cursor-not-allowed"
+                      disabled
+                    >
+                      <Copy className="h-4 w-4" />
+                      Copy
+                    </button>
+
+                    <button
+                      className="flex items-center gap-1 px-3 py-2 bg-gray-100 rounded-md text-sm text-gray-400 cursor-not-allowed"
+                      disabled
+                    >
+                      <Share2 className="h-4 w-4" />
+                      Share
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(ad.id)}
+                      className="flex items-center gap-1 px-3 py-2 bg-red-100 text-red-600 rounded-md text-sm"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
       {/* Delete Confirmation Modal */}

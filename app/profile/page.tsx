@@ -2,8 +2,7 @@ import Navigation from "@/components/navigation"
 import UserInfo from "@/components/profile/user-info"
 import BusinessHours from "@/components/profile/business-hours"
 import TradeLimits from "@/components/profile/trade-limits"
-import StatsTabs from "@/components/profile/stats-tabs"
-import StatsGrid from "@/components/profile/stats-grid"
+import StatsTabs from "./components/stats-tabs"
 
 export default function ProfilePage() {
   // Mock data - in a real app, this would come from an API
@@ -51,6 +50,13 @@ export default function ProfilePage() {
     <>
       <Navigation />
 
+      <div className="flex justify-between items-center mb-6">
+        <div className="text-sm text-gray-500">
+          P2P balance <span className="inline-block ml-1 text-gray-400">ⓘ</span>
+        </div>
+        <div className="text-2xl font-bold">USD {userData.balance.toFixed(2)}</div>
+      </div>
+
       <UserInfo
         username={userData.username}
         rating={userData.rating}
@@ -67,9 +73,7 @@ export default function ProfilePage() {
         <TradeLimits buyLimit={userData.tradeLimits.buy} sellLimit={userData.tradeLimits.sell} />
       </div>
 
-      <StatsTabs>
-        <StatsGrid stats={userData.stats} />
-      </StatsTabs>
+      <StatsTabs stats={userData.stats} />
     </>
   )
 }

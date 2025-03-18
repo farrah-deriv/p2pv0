@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { X } from "lucide-react"
 import type { AdFormData } from "../types"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface AdDetailsFormProps {
   onNext: (data: Partial<AdFormData>, errors?: ValidationErrors) => void
@@ -21,6 +22,8 @@ interface ValidationErrors {
 }
 
 export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode }: AdDetailsFormProps) {
+  const isMobile = useIsMobile()
+
   // Initialize state with initialData values or defaults
   const [type, setType] = useState<"buy" | "sell">(initialData?.type || "buy")
   const [totalAmount, setTotalAmount] = useState(initialData?.totalAmount?.toString() || "")
@@ -197,9 +200,11 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       className="peer sr-only"
                     />
                     <div
-                      className={`h-6 w-6 rounded-full border-2 transition-colors
-                      ${type === "buy" ? "border-red-500" : "border-gray-200"}`}
-                    />
+                      className={`h-5 w-5 rounded-full border-2 transition-colors flex items-center justify-center
+                    ${type === "buy" ? "border-red-500 border-[3px]" : "border-gray-300"}`}
+                    >
+                      {type === "buy" && <div className="h-2 w-2 rounded-full bg-red-500"></div>}
+                    </div>
                   </div>
                   <span className="text-lg">Buy USD</span>
                 </label>
@@ -214,9 +219,11 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       className="peer sr-only"
                     />
                     <div
-                      className={`h-6 w-6 rounded-full border-2 transition-colors
-                      ${type === "sell" ? "border-red-500" : "border-gray-200"}`}
-                    />
+                      className={`h-5 w-5 rounded-full border-2 transition-colors flex items-center justify-center
+                    ${type === "sell" ? "border-red-500 border-[3px]" : "border-gray-300"}`}
+                    >
+                      {type === "sell" && <div className="h-2 w-2 rounded-full bg-red-500"></div>}
+                    </div>
                   </div>
                   <span className="text-lg">Sell USD</span>
                 </label>
@@ -225,7 +232,7 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
 
             <div>
               <h3 className="text-base font-medium mb-6">Set amount and rate</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className={`${isMobile ? "space-y-4" : "grid grid-cols-2 gap-4"}`}>
                 <div>
                   <label className="text-sm text-gray-500 mb-2 block">Total amount</label>
                   <div className="relative">
@@ -279,7 +286,7 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
 
             <div>
               <h3 className="text-base font-medium mb-6">Order amount limit</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className={`${isMobile ? "space-y-4" : "grid grid-cols-2 gap-4"}`}>
                 <div>
                   <label className="text-sm text-gray-500 mb-2 block">Minimum order amount</label>
                   <div className="relative">

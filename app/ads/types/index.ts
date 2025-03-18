@@ -59,6 +59,7 @@ export interface APIAdvert {
   payment_currency?: string
   payment_method_names: string[]
   type?: string
+  user_rating_average?: number
 }
 
 export interface MyAd {

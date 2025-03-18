@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { Check, X, ArrowLeft } from "lucide-react"
 import type { AdFormData } from "../types"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface PaymentDetailsFormProps {
   onBack: () => void
@@ -23,6 +24,7 @@ export default function PaymentDetailsForm({
   isSubmitting = false,
   isEditMode = false,
 }: PaymentDetailsFormProps) {
+  const isMobile = useIsMobile()
   const [paymentMethods, setPaymentMethods] = useState<string[]>(initialData.paymentMethods || [])
   const [instructions, setInstructions] = useState(initialData.instructions || "")
   const [touched, setTouched] = useState(false)
@@ -79,9 +81,6 @@ export default function PaymentDetailsForm({
       setPaymentMethods([...paymentMethods, method])
     }
   }
-
-  // Determine if the button should be enabled
-  const buttonEnabled = paymentMethods.length > 0 && !isSubmitting
 
   // Then, update the useEffect for validation to account for the ad type
   useEffect(() => {
