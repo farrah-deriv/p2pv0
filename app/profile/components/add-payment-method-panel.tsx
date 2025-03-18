@@ -135,16 +135,62 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
     }
 
     if (validateForm()) {
-      // Format fields for API request
-      const fields = {
-        ...details,
-        instructions,
+      // Get the method value (not label) for the API
+      const methodValue = selectedMethod
+
+      // Structure fields based on payment method type
+      let fields: Record<string, any> = {}
+
+      switch (methodValue) {
+        case "bank_transfer":
+          fields = {
+            account_number: details.account_number,
+            swift_code: details.swift_code,
+            bank_name: details.bank_name,
+            branch: details.branch,
+          }
+          break
+
+        case "alipay":
+          fields = {
+            alipay_id: details.alipay_id,
+          }
+          break
+
+        case "google_pay":
+        case "paypal":
+        case "skrill":
+          fields = {
+            identifier: details.identifier,
+          }
+          break
+
+        case "nequi":
+          fields = {
+            account_number: details.account_number,
+          }
+          break
+
+        case "wechat_pay":
+          fields = {
+            phone_number: details.phone_number,
+          }
+          break
+
+        case "other":
+          fields = {
+            identifier: details.identifier,
+            method_name: details.method_name,
+          }
+          break
       }
 
-      // Get the method label for display
-      const methodLabel = PAYMENT_METHODS.find((m) => m.value === selectedMethod)?.label || selectedMethod
+      // Add instructions if present
+      if (instructions.trim()) {
+        fields.instructions = instructions.trim()
+      }
 
-      onAdd(methodLabel, fields)
+      onAdd(methodValue, fields)
     }
   }
 
