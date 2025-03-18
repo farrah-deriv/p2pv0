@@ -12,6 +12,8 @@ import { USER } from "@/lib/local-variables"
 import type { Advertisement } from "@/services/api/api-buy-sell"
 import { BuySellAPI } from "@/services/api"
 import { debounce } from "lodash"
+import FilterPopup, { type FilterOptions } from "@/components/buy-sell/filter-popup"
+import OrderSidebar from "@/components/buy-sell/order-sidebar"
 
 export default function BuySellPage() {
   const router = useRouter()
@@ -23,10 +25,18 @@ export default function BuySellPage() {
   const [adverts, setAdverts] = useState<Advertisement[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false)
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+    fromFollowing: false,
+  })
+
+  // Add state for order sidebar
+  const [isOrderSidebarOpen, setIsOrderSidebarOpen] = useState(false)
+  const [selectedAd, setSelectedAd] = useState<Advertisement | null>(null)
 
   useEffect(() => {
     fetchAdverts()
-  }, [activeTab, currency, paymentMethod, searchQuery, sortBy])
+  }, [activeTab, currency, paymentMethod, searchQuery, sortBy, filterOptions])
 
   // Update the fetchAdverts function to ensure adverts is always an array
   const fetchAdverts = async () => {
@@ -40,6 +50,14 @@ export default function BuySellPage() {
         nickname: searchQuery,
         sortBy: sortBy,
       }
+
+      // Apply additional filters
+      if (filterOptions.fromFollowing) {
+        // Use favourites_only: 1 parameter for the API
+        params.favourites_only = 1
+      }
+      // Note: withinLimits would typically be handled by the backend
+
       const data = await BuySellAPI.getAdvertisements(params)
 
       // Ensure data is an array before setting it
@@ -69,6 +87,27 @@ export default function BuySellPage() {
   const handleAdvertiserClick = (userId: number) => {
     router.push(`/advertiser/${userId}`)
   }
+
+  // Handle opening the order sidebar
+  const handleOrderClick = (ad: Advertisement) => {
+    setSelectedAd(ad)
+    setIsOrderSidebarOpen(true)
+  }
+
+  useEffect(() => {
+    if (isFilterPopupOpen) {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (!(event.target as Element).closest(".filter-dropdown-container")) {
+          // setIsFilterPopupOpen(false)
+        }
+      }
+
+      document.addEventListener("mousedown", handleClickOutside)
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside)
+      }
+    }
+  }, [isFilterPopupOpen])
 
   return (
     <>
@@ -156,15 +195,37 @@ export default function BuySellPage() {
               </SelectContent>
             </Select>
 
-            <Select defaultValue="All">
-              <SelectTrigger className="w-full sm:w-[150px]">
-                <SelectValue placeholder="Filter by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">Filter by</SelectItem>
-                <SelectItem value="Following">Following</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="relative w-full sm:w-[150px]">
+              <button
+                onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
+                className="w-full h-10 px-3 py-2 flex items-center justify-between rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <span className="text-sm">Filter by</span>
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 15 15"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 opacity-50"
+                >
+                  <path
+                    d="M4.93179 5.43179C4.75605 5.60753 4.75605 5.89245 4.93179 6.06819C5.10753 6.24392 5.39245 6.24392 5.56819 6.06819L7.49999 4.13638L9.43179 6.06819C9.60753 6.24392 9.89245 6.24392 10.0682 6.06819C10.2439 5.89245 10.2439 5.60753 10.0682 5.43179L7.81819 3.18179C7.73379 3.0974 7.61933 3.04999 7.49999 3.04999C7.38064 3.04999 7.26618 3.0974 7.18179 3.18179L4.93179 5.43179ZM10.0682 9.56819C10.2439 9.39245 10.2439 9.10753 10.0682 8.93179C9.89245 8.75606 9.60753 8.75606 9.43179 8.93179L7.49999 10.8636L5.56819 8.93179C5.39245 8.75606 5.10753 8.75606 4.93179 8.93179C4.75605 9.10753 4.75605 9.39245 4.93179 9.56819L7.18179 11.8182C7.26618 11.9026 7.38064 11.95 7.49999 11.95C7.61933 11.95 7.73379 11.9026 7.81819 11.8182L10.0682 9.56819Z"
+                    fill="currentColor"
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              </button>
+              {isFilterPopupOpen && (
+                <FilterPopup
+                  isOpen={isFilterPopupOpen}
+                  onClose={() => setIsFilterPopupOpen(false)}
+                  onApply={setFilterOptions}
+                  initialFilters={filterOptions}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -223,7 +284,7 @@ export default function BuySellPage() {
                             {ad.user.user_rating_average && (
                               <span className="flex items-center">
                                 <span className="text-yellow-500 mr-1">★</span>
-                                ad.user.user_rating_average
+                                {ad.user.user_rating_average}
                               </span>
                             )}
                           </div>
@@ -257,9 +318,14 @@ export default function BuySellPage() {
                     </td>
                     <td className="py-4 px-4 hidden sm:table-cell">{ad.payment_method_names?.join(", ") || "-"}</td>
                     <td className="py-4 px-4 text-right">
-                      {USER.id != ad.user.id && <Button className="bg-red-500 hover:bg-red-600 text-white rounded-full text-xs sm:text-sm">
-                        {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
-                      </Button>}
+                      {USER.id != ad.user.id && (
+                        <Button
+                          className="bg-red-500 hover:bg-red-600 text-white rounded-full text-xs sm:text-sm"
+                          onClick={() => handleOrderClick(ad)}
+                        >
+                          {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -268,6 +334,14 @@ export default function BuySellPage() {
           </div>
         )}
       </div>
+
+      {/* Order Sidebar */}
+      <OrderSidebar
+        isOpen={isOrderSidebarOpen}
+        onClose={() => setIsOrderSidebarOpen(false)}
+        ad={selectedAd}
+        orderType={activeTab}
+      />
     </>
   )
 }
