@@ -57,7 +57,7 @@ export default function AdvertiserProfilePage() {
     try {
       // Fetch advertiser profile
       const advertiserData = await BuySellAPI.getAdvertiserById(id)
-      const transformedProfile = transformAdvertiserData(advertiserData, id)
+      const transformedProfile = transformAdvertiserData(advertiserData.data, id)
       setProfile(transformedProfile)
 
       // Fetch advertiser's ads

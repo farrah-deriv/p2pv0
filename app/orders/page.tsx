@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle } from 'lucide-react'
 import Navigation from "@/components/navigation"
 import { Button } from "@/components/ui/button"
 import { OrdersAPI } from "@/services/api"
@@ -10,10 +10,10 @@ import type { Order } from "@/services/api/api-orders"
 
 export default function OrdersPage() {
   const router = useRouter()
+  const [activeTab, setActiveTab] = useState<"active" | "past">("active")
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<"active" | "past">("active")
 
   useEffect(() => {
     fetchOrders()
@@ -26,17 +26,20 @@ export default function OrdersPage() {
       // Determine filters based on active tab
       const filters: {
         status?: "Pending" | "Completed" | "Cancelled" | "Disputed"
+        is_open?: boolean
       } = {}
 
       if (activeTab === "active") {
-        filters.status = "Pending"
+        filters.is_open = true
+      } else if (activeTab === "past") {
+        filters.is_open = false
       }
-      // For past orders, we'll fetch all and filter client-side
+      // For past orders, we'll fetch with is_open: false and still filter client-side
 
-      const data = await OrdersAPI.getOrders(filters)
+      const orders = await OrdersAPI.getOrders(filters)
 
       // Ensure data is an array before filtering
-      const ordersArray = Array.isArray(data) ? data : []
+      const ordersArray = Array.isArray(orders.data) ? orders.data : []
 
       // If we're on the "past" tab, filter to only show completed and cancelled orders
       const filteredData =
@@ -56,6 +59,37 @@ export default function OrdersPage() {
     }
   }
 
+  // Function to format date as DD MMM YYYY
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    })
+  }
+
+  // Function to get status badge style
+  const getStatusBadgeStyle = (status: string) => {
+    switch (status) {
+      case "Completed":
+        return "bg-green-100 text-green-800"
+      case "Cancelled":
+        return "bg-gray-100 text-gray-800"
+      case "Disputed":
+        return "bg-yellow-100 text-yellow-800"
+      case "Expired":
+        return "bg-gray-100 text-gray-800"
+      default:
+        return "bg-blue-100 text-blue-800"
+    }
+  }
+
+  // Function to navigate to order details
+  const navigateToOrderDetails = (orderId: string) => {
+    router.push(`/orders/${orderId}`)
+  }
+
   return (
     <>
       <Navigation />
@@ -63,23 +97,23 @@ export default function OrdersPage() {
       {/* Tabs */}
       <div className="mb-6">
         <div className="inline-flex bg-gray-100 rounded-lg p-1">
-            <button
-              className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium ${
-                activeTab === "active" ? "bg-white shadow-sm" : "text-gray-500"
-              }`}
-              onClick={() => setActiveTab("active")}
-            >
-              Active orders
-            </button>
-            <button
-              className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium ${
-                activeTab === "past" ? "bg-white shadow-sm" : "text-gray-500"
-              }`}
-              onClick={() => setActiveTab("past")}
-            >
-              Past orders
-            </button>
-          </div>
+          <button
+            className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium ${
+              activeTab === "active" ? "bg-white shadow-sm" : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("active")}
+          >
+            Active orders
+          </button>
+          <button
+            className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium ${
+              activeTab === "past" ? "bg-white shadow-sm" : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("past")}
+          >
+            Past orders
+          </button>
+        </div>
       </div>
 
       {/* Content */}
@@ -112,51 +146,59 @@ export default function OrdersPage() {
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
-            <thead className="bg-gray-50">
-              <tr className="text-xs sm:text-sm text-gray-500">
-                <th className="text-left py-3 px-4 font-medium">Order ID</th>
-                <th className="text-left py-3 px-4 font-medium">Type</th>
-                <th className="text-left py-3 px-4 font-medium">Amount</th>
-                <th className="text-left py-3 px-4 font-medium">Status</th>
-                <th className="text-left py-3 px-4 font-medium">Counterparty</th>
-                <th className="text-left py-3 px-4 font-medium">Created</th>
-                <th className="text-right py-3 px-4 font-medium"></th>
+            <thead className="border-b">
+              <tr className="text-sm text-left">
+                <th className="py-4 px-4 font-medium">Order ID</th>
+                {activeTab === "past" && <th className="py-4 px-4 font-medium">Date</th>}
+                <th className="py-4 px-4 font-medium">Counterparty</th>
+                <th className="py-4 px-4 font-medium">Status</th>
+                <th className="py-4 px-4 font-medium">Send</th>
+                <th className="py-4 px-4 font-medium">Receive</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {orders.map((order) => (
-                <tr key={order.id} className="hover:bg-gray-50">
-                  <td className="py-4 px-4 font-medium">{order.id}</td>
+                <tr
+                  key={order.id}
+                  className="border-b hover:bg-gray-50 cursor-pointer transition-colors"
+                  onClick={() => navigateToOrderDetails(order.id)}
+                >
                   <td className="py-4 px-4">
-                    <span className={order.type === "Buy" ? "text-green-600" : "text-red-600"}>{order.type}</span>
+                    <div className="flex items-center">
+                      <span
+                        className={
+                          order.advert.type === "Buy" ? "text-green-600 font-medium" : "text-red-600 font-medium"
+                        }
+                      >
+                        {order.type}
+                      </span>
+                      <span className="ml-1">{order.id}</span>
+                    </div>
                   </td>
+                  {activeTab === "past" && (
+                    <td className="py-4 px-4">{order.createdAt ? formatDate(order.createdAt) : "N/A"}</td>
+                  )}
+                  <td className="py-4 px-4">{order.advert.user.nickname}</td>
                   <td className="py-4 px-4">
-                    {order.amount.value.toFixed(2)} {order.amount.currency}
-                  </td>
-                  <td className="py-4 px-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs ${
-                        order.status === "Completed"
-                          ? "bg-green-100 text-green-800"
-                          : order.status === "Cancelled"
-                            ? "bg-red-100 text-red-800"
-                            : order.status === "Disputed"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-blue-100 text-blue-800"
-                      }`}
-                    >
+                    <span className={`px-3 py-1 rounded-full text-xs ${getStatusBadgeStyle(order.status)}`}>
                       {order.status}
                     </span>
                   </td>
-                  <td className="py-4 px-4">{order.counterparty.nickname}</td>
-                  <td className="py-4 px-4">{new Date(order.createdAt).toLocaleDateString()}</td>
-                  <td className="py-4 px-4 text-right">
-                    <Button
-                      onClick={() => router.push(`/orders/${order.id}`)}
-                      className="bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-full text-xs"
-                    >
-                      View
-                    </Button>
+                  <td className="py-4 px-4">
+                    {order.advert.payment_currency}{" "}
+                    {typeof order.amount === "object" && order.amount.value
+                      ? Number(order.amount.value).toFixed(2)
+                      : typeof order.amount === "number"
+                        ? order.amount.toFixed(2)
+                        : Number(order.amount).toFixed(2)}
+                  </td>
+                  <td className="py-4 px-4">
+                    {order.advert.account_currency}{" "}
+                    {typeof order.price === 'object' && order.price.value 
+                      ? Number(order.price.value).toFixed(2)
+                      : typeof order.price === 'number' 
+                        ? order.price.toFixed(2) 
+                        : Number(order.price).toFixed(2)}
                   </td>
                 </tr>
               ))}

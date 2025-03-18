@@ -5,29 +5,31 @@ export interface Order {
   id: string
   type: "Buy" | "Sell"
   status: "Pending" | "Completed" | "Cancelled" | "Disputed"
-  amount: {
-    value: number
-    currency: string
-  }
+  amount: value
   rate: {
     value: string
     currency: string
   }
-  counterparty: {
-    id: number
-    nickname: string
+  advert: {
+    user: {
+      id: number
+      nickname: string
+    }
   }
+  price: value,
   paymentMethod: string
   createdAt: string
   expiresAt: string
   completedAt?: string
   cancelledAt?: string
+  payment_currency: string
 }
 
 export interface OrderFilters {
   status?: "Pending" | "Completed" | "Cancelled" | "Disputed"
   type?: "Buy" | "Sell"
   period?: "today" | "week" | "month" | "all"
+  is_open?: boolean
 }
 
 // API Functions
@@ -42,6 +44,7 @@ export async function getOrders(filters?: OrderFilters): Promise<Order[]> {
       if (filters.status) queryParams.append("status", filters.status)
       if (filters.type) queryParams.append("type", filters.type)
       if (filters.period) queryParams.append("period", filters.period)
+      if (filters.is_open !== undefined) queryParams.append("is_open", filters.is_open.toString())
     }
 
     const queryString = queryParams.toString() ? `?${queryParams.toString()}` : ""
@@ -412,5 +415,127 @@ export async function disputeOrder(orderId: string, reason: string): Promise<{ s
     console.groupEnd()
     throw error
   }
+}
+
+/**
+ * Create a new order
+ */
+export async function createOrder(advertId: number, amount: number): Promise<Order> {
+  try {
+    const url = `${API.baseUrl}${API.endpoints.orders}`
+    const headers = {
+      ...AUTH.getAuthHeader(),
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    }
+    const body = JSON.stringify({
+      data: {
+        advert_id: advertId,
+        amount: amount,
+      },
+    })
+
+    // Log request details
+    console.group("📤 POST Create Order Request")
+    console.log("URL:", url)
+    console.log("Headers:", headers)
+    console.log("Request Body:", body)
+    console.groupEnd()
+
+    const startTime = performance.now()
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body,
+    })
+    const endTime = performance.now()
+
+    // Log response details
+    console.group("📥 POST Create Order Response")
+    console.log("Status:", response.status, response.statusText)
+    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
+    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
+
+    if (!response.ok) {
+      console.error("Error Response:", response.status, response.statusText)
+      console.groupEnd()
+      throw new Error(`Error creating order: ${response.statusText}`)
+    }
+
+    const responseText = await response.text()
+    let data
+
+    try {
+      data = JSON.parse(responseText)
+      console.log("Response Body (parsed):", data)
+    } catch (e) {
+      console.warn("⚠️ Could not parse response as JSON:", e)
+      console.log("Response Body (raw):", responseText)
+      throw new Error("Invalid response format")
+    }
+
+    console.log("✅ Successfully created order")
+    console.groupEnd()
+
+    return data
+  } catch (error) {
+    console.group("💥 Create Order Exception")
+    console.error("Error:", error)
+    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
+    console.groupEnd()
+    throw error
+  }
+}
+
+export const OrdersAPI = {
+  // Keep existing methods...
+  getOrders: getOrders,
+  getOrderById: getOrderById,
+  markPaymentAsSent: markPaymentAsSent,
+  releasePayment: releasePayment,
+  cancelOrder: cancelOrder,
+  disputeOrder: disputeOrder,
+  createOrder: createOrder,
+
+  // Add this new method
+  getOrderByIdMock: async (orderId: string): Promise<Order> => {
+    // In a real app, this would be an API call
+    // For now, we'll simulate a delay and return mock data
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    // This is mock data - in a real app, you'd fetch from an API
+    return {
+      id: orderId,
+      type: "Buy",
+      status: "Pending",
+      amount: {
+        value: 145000.0,
+        currency: "IDR",
+      },
+      rate: {
+        value: "10.00",
+        currency: "USD",
+      },
+      counterparty: {
+        id: 123,
+        nickname: "Mariana_Rueda",
+      },
+      paymentMethod: "Bank Transfer",
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date().toISOString(),
+      advert: {
+        id: "adv123",
+        type: "Sell",
+        payment_currency: "IDR",
+        account_currency: "USD",
+        user: {
+          id: "usr123",
+          nickname: "Mariana_Rueda",
+          is_favourite: false,
+          is_online: true,
+        },
+      },
+    }
+  },
 }
 

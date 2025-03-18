@@ -1,12 +1,15 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { usePathname } from "next/navigation"
 import { ArrowLeft, Info } from "lucide-react"
+import BalanceInfoPopup from "@/components/balance-info-popup"
 
 export default function Navigation() {
   const pathname = usePathname()
+  const [isBalanceInfoOpen, setIsBalanceInfoOpen] = useState(false)
 
   const navItems = [
     { name: "Buy/Sell", href: "/" },
@@ -26,7 +29,13 @@ export default function Navigation() {
           <div className="text-right">
             <div className="flex items-center justify-end gap-1 text-sm text-gray-500 mb-1">
               P2P balance
-              <Info className="h-4 w-4 text-gray-400" />
+              <button
+                onClick={() => setIsBalanceInfoOpen(true)}
+                className="focus:outline-none"
+                aria-label="P2P balance information"
+              >
+                <Info className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+              </button>
             </div>
             <div className="font-bold">USD 1,234.56</div>
           </div>
@@ -51,6 +60,8 @@ export default function Navigation() {
           ))}
         </ul>
       </nav>
+
+      <BalanceInfoPopup isOpen={isBalanceInfoOpen} onClose={() => setIsBalanceInfoOpen(false)} />
     </div>
   )
 }

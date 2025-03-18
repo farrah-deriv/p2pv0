@@ -32,8 +32,10 @@ export interface SearchParams {
   currency?: string
   paymentMethod?: string
   amount?: number
-  nickname?: string,
-  sortBy?: string,
+  nickname?: string
+  sortBy?: string
+  following?: boolean
+  favourites_only?: number // Add this parameter for filtering by favourites
 }
 
 /**
@@ -50,6 +52,7 @@ export async function getAdvertisements(params?: SearchParams): Promise<Advertis
       if (params.amount) queryParams.append("amount", params.amount.toString())
       if (params.nickname) queryParams.append("nickname", params.nickname)
       if (params.sortBy) queryParams.append("sort_by", params.sortBy)
+      if (params.favourites_only) queryParams.append("favourites_only", params.favourites_only.toString())
     }
 
     const queryString = queryParams.toString() ? `?${queryParams.toString()}` : ""
