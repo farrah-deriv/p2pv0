@@ -16,7 +16,7 @@ export default function Header() {
   ]
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-10 bg-white border-b border-gray-200">
+    <header className="hidden md:block fixed top-0 left-0 right-0 z-10 bg-white border-b border-gray-200">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">

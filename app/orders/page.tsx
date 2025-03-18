@@ -148,15 +148,15 @@ export default function OrdersPage() {
           <table className="w-full border-collapse">
             <thead className="border-b">
               <tr className="text-sm text-left">
-                <th className="py-4 px-4 font-medium">Order ID</th>
+                <th className="py-4 px-4 font-bold">Order ID</th>
                 {activeTab === "past" && <th className="py-4 px-4 font-medium">Date</th>}
-                <th className="py-4 px-4 font-medium">Counterparty</th>
-                <th className="py-4 px-4 font-medium">Status</th>
-                <th className="py-4 px-4 font-medium">Send</th>
-                <th className="py-4 px-4 font-medium">Receive</th>
+                <th className="py-4 px-4 font-bold">Counterparty</th>
+                <th className="py-4 px-4 font-bold">Status</th>
+                <th className="py-4 px-4 font-bold">Send</th>
+                <th className="py-4 px-4 font-bold">Receive</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="text-sm font-normal">
               {orders.map((order) => (
                 <tr
                   key={order.id}
