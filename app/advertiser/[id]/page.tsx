@@ -237,7 +237,7 @@ export default function AdvertiserProfilePage() {
     return (
       <div className="container mx-auto px-4 py-8 pt-20">
         <div className="text-center py-8">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-red-500 border-r-transparent"></div>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid  border-r-transparent"></div>
           <p className="mt-2 text-gray-600">Loading advertiser...</p>
         </div>
       </div>
@@ -247,9 +247,9 @@ export default function AdvertiserProfilePage() {
   if (error && !profile) {
     return (
       <div className="container mx-auto px-4 py-8 pt-20">
-        <div className="text-center py-8 text-red-500">
+        <div className="text-center py-8">
           <p>{error}</p>
-          <Button onClick={() => router.back()} className="mt-4 bg-red-500 hover:bg-red-600 text-white">
+          <Button onClick={() => router.back()} className="mt-4 text-white">
             Go Back
           </Button>
         </div>
@@ -392,20 +392,20 @@ export default function AdvertiserProfilePage() {
       {/* Ads table */}
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
-          <thead className="bg-gray-50">
-            <tr className="text-xs sm:text-sm text-gray-500">
-              <th className="text-left py-3 px-4 font-medium">Rates</th>
-              <th className="text-left py-3 px-4 font-medium">Limits</th>
-              <th className="text-left py-3 px-4 font-medium">Payment methods</th>
-              <th className="text-right py-3 px-4 font-medium"></th>
+          <thead className="border-b">
+            <tr className="text-sm">
+              <th className="text-left py-4 px-4 font-bold">Rates</th>
+              <th className="text-left py-4 px-4 font-bold">Limits</th>
+              <th className="text-left py-4 px-4 font-bold">Payment methods</th>
+              <th className="text-right py-4 px-4 font-bold"></th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white divide-y divide-gray-200 font-normal text-sm">
             {filteredAdverts.length > 0 ? (
               filteredAdverts.map((ad) => (
                 <tr key={ad.id} className="hover:bg-gray-50">
                   <td className="py-4 px-4">
-                    <div className="font-medium">
+                    <div className="font-bold">
                       IDR {ad.exchange_rate.toLocaleString("en-US", { minimumFractionDigits: 4 })}
                     </div>
                     {ad.exchange_rate_type === "floating" && <div className="text-xs text-gray-500">0.1%</div>}
@@ -421,10 +421,11 @@ export default function AdvertiserProfilePage() {
                   </td>
                   <td className="py-4 px-4">{ad.payment_method_names?.join(", ")}</td>
                   <td className="py-4 px-4 text-right">
-                      {USER.id !== ad.user.id && <Button className="bg-red-500 hover:bg-red-600 text-white rounded-full">
-                      {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
+                    {USER.id !== ad.user.id && (
+                      <Button className="text-white rounded-full">
+                        {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
                       </Button>
-                    }
+                    )}
                   </td>
                 </tr>
               ))

@@ -20,12 +20,7 @@ export default function Header() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center">
-              <div className="h-10 w-10 rounded-full bg-red-500 flex items-center justify-center text-white font-bold text-xl">
-                d
-              </div>
-            </Link>
-            <nav className="ml-8 hidden md:flex">
+            <nav className="hidden md:flex">
               <ul className="flex space-x-8">
                 {navItems.map((item) => (
                   <li key={item.name}>
@@ -34,7 +29,7 @@ export default function Header() {
                       className={cn(
                         "inline-flex h-16 items-center border-b-2 px-1 text-sm font-medium",
                         item.name === "Wallets"
-                          ? "border-red-500"
+                          ? ""
                           : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700",
                       )}
                     >

@@ -23,8 +23,8 @@ export default function MobileFooterNav() {
 
           return (
             <Link key={item.name} href={item.href} className="flex flex-col items-center justify-center w-full h-full">
-              <Icon className={`h-5 w-5 mb-1 ${isActive ? "text-red-500" : "text-gray-500"}`} />
-              <span className={`text-xs ${isActive ? "text-red-500 font-medium" : "text-gray-500"}`}>{item.name}</span>
+              <Icon className={`h-5 w-5 mb-1 ${isActive ? "" : "text-gray-500"}`} />
+              <span className={`text-xs ${isActive ? " font-medium" : "text-gray-500"}`}>{item.name}</span>
             </Link>
           )
         })}
