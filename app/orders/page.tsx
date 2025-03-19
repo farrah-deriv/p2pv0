@@ -7,6 +7,7 @@ import Navigation from "@/components/navigation"
 import { Button } from "@/components/ui/button"
 import { OrdersAPI } from "@/services/api"
 import type { Order } from "@/services/api/api-orders"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function OrdersPage() {
   const router = useRouter()
@@ -96,24 +97,12 @@ export default function OrdersPage() {
 
       {/* Tabs */}
       <div className="mb-6">
-        <div className="inline-flex bg-slate-100 rounded-lg p-1">
-          <button
-            className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium ${
-              activeTab === "active" ? "bg-white shadow-sm" : "text-slate-500"
-            }`}
-            onClick={() => setActiveTab("active")}
-          >
-            Active orders
-          </button>
-          <button
-            className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium ${
-              activeTab === "past" ? "bg-white shadow-sm" : "text-slate-500"
-            }`}
-            onClick={() => setActiveTab("past")}
-          >
-            Past orders
-          </button>
-        </div>
+        <Tabs defaultValue={activeTab} onValueChange={(value) => setActiveTab(value as "active" | "past")}>
+          <TabsList>
+            <TabsTrigger value="active">Active orders</TabsTrigger>
+            <TabsTrigger value="past">Past orders</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
       {/* Content */}
@@ -136,10 +125,7 @@ export default function OrdersPage() {
           </div>
           <h2 className="text-xl font-medium text-slate-900 mb-2">No orders found</h2>
           <p className="text-slate-500">Start by placing your first order.</p>
-          <Button
-            onClick={() => router.push("/")}
-            className="mt-8 text-white rounded-full px-6"
-          >
+          <Button onClick={() => router.push("/")} className="mt-8 text-white rounded-full px-6">
             Browse Ads
           </Button>
         </div>
@@ -165,11 +151,7 @@ export default function OrdersPage() {
                 >
                   <td className="py-4 px-4">
                     <div className="flex items-center">
-                      <span
-                        className={
-                          order.advert.type === "Buy" ? "text-green-600 font-medium" : "font-medium"
-                        }
-                      >
+                      <span className={order.advert.type === "Buy" ? "text-green-600 font-medium" : "font-medium"}>
                         {order.type}
                       </span>
                       <span className="ml-1">{order.id}</span>

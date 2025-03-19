@@ -1,8 +1,8 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { X, Building, CreditCard, Check, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,6 +17,7 @@ interface OrderSidebarProps {
 }
 
 export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSidebarProps) {
+  const router = useRouter();
   const [amount, setAmount] = useState("")
   const [totalAmount, setTotalAmount] = useState("0")
   const [validationError, setValidationError] = useState<string | null>(null)
@@ -78,8 +79,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
 
       // Call the API to create the order
       const order = await createOrder(ad.id, numAmount)
-
-      window.location.href= "/orders/" + order.data.id
+      router.push("/orders/" + order.data.id);
     } catch (error) {
       console.error("Failed to create order:", error)
       setOrderStatus({
@@ -142,7 +142,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
             <>
               <div className="flex-1 p-4 space-y-6">
                 {/* P2P Balance */}
-                <div className="flex items-center justify-between p-4 rounded-lg">
+                <div className="flex items-center justify-between py-4 rounded-lg">
                   <div className="flex items-center">
                     <span className="font-medium">P2P balance</span>
                   </div>

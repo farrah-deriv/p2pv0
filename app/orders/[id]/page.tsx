@@ -172,13 +172,15 @@ export default function OrderDetailsPage() {
               <div className="p-4 flex gap-4">
                 <Button
                   variant="outline"
-                  className="flex-1 py-6 rounded-full"
+                  size="sm"
+                  className="flex-1"
                   onClick={() => setShowCancelConfirmation(true)}
                 >
                   Cancel order
                 </Button>
                 <Button
-                  className="flex-1 py-6 rounded-full text-white"
+                  className="flex-1"
+                  size="sm"
                   onClick={() => {
                     /* Mark as paid logic */
                   }}
@@ -224,7 +226,7 @@ export default function OrderDetailsPage() {
                   setShowCancelConfirmation(false)
                   // You would typically call a function like cancelOrder(orderId) here
                 }}
-                className="w-full py-3 rounded-full"
+                className="w-full"
               >
                 Cancel order
               </Button>

@@ -22,7 +22,7 @@ export default function BalanceInfoPopup({ isOpen, onClose }: BalanceInfoPopupPr
         </div>
 
         <div className="mb-6">
-          <p className="text-xl font-bold mb-4">Your Deriv P2P balance only contains:</p>
+          <p className="text-lg font-bold mb-4">Your Deriv P2P balance only contains:</p>
           <ul className="space-y-4 list-disc pl-6">
             <li className="text-md">Funds you receive from buying/selling USD on Deriv P2P.</li>
             <li className="text-md">Deposits you made through non-reversible payment methods.</li>
@@ -37,7 +37,7 @@ export default function BalanceInfoPopup({ isOpen, onClose }: BalanceInfoPopupPr
           </p>
         </div>
 
-        <Button onClick={onClose} className="w-full py-3 rounded-full">
+        <Button onClick={onClose} className="w-full" size="sm">
           OK
         </Button>
       </div>
