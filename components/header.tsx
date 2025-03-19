@@ -16,7 +16,7 @@ export default function Header() {
   ]
 
   return (
-    <header className="hidden md:block fixed top-0 left-0 right-0 z-10 bg-white border-b border-gray-200">
+    <header className="hidden md:block fixed top-0 left-0 right-0 z-10 bg-white border-b border-slate-200">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
@@ -30,7 +30,7 @@ export default function Header() {
                         "inline-flex h-16 items-center border-b-2 px-1 text-sm font-medium",
                         item.name === "Wallets"
                           ? ""
-                          : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700",
+                          : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700",
                       )}
                     >
                       {item.name}
@@ -41,7 +41,7 @@ export default function Header() {
             </nav>
           </div>
           <div className="flex items-center space-x-4">
-            <Link href="/profile" className="text-gray-500 hover:text-gray-700">
+            <Link href="/profile" className="text-slate-500 hover:text-slate-700">
               <User className="h-5 w-5" />
             </Link>
           </div>

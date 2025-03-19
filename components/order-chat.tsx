@@ -63,12 +63,12 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
     <div className="flex flex-col h-full">
       {/* Counterparty info */}
       <div className="flex items-center p-4 border-b">
-        <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white font-bold mr-3">
+        <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-white font-bold mr-3">
           {counterpartyInitial}
         </div>
         <div>
           <div className="font-medium">{counterpartyName}</div>
-          <div className="text-sm text-gray-500">Seen {formatLastSeen(lastSeen)}</div>
+          <div className="text-sm text-slate-500">Seen {formatLastSeen(lastSeen)}</div>
         </div>
       </div>
 
@@ -96,11 +96,11 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
           <div key={msg.id} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
             <div
               className={`max-w-[80%] rounded-lg p-3 ${
-                msg.sender === "user" ? "" : "bg-gray-100"
+                msg.sender === "user" ? "" : "bg-slate-100"
               }`}
             >
               <div>{msg.text}</div>
-              <div className={`text-xs mt-1 ${msg.sender === "user" ? "" : "text-gray-500"}`}>
+              <div className={`text-xs mt-1 ${msg.sender === "user" ? "" : "text-slate-500"}`}>
                 {formatMessageTime(msg.timestamp)}
               </div>
             </div>
@@ -112,7 +112,7 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
       {/* Message input */}
       <div className="p-4 border-t">
         <div className="flex items-center">
-          <button className="p-2 text-gray-500 hover:text-gray-700">
+          <button className="p-2 text-slate-500 hover:text-slate-700">
             <Paperclip className="h-5 w-5" />
           </button>
           <div className="flex-1 relative">
@@ -127,13 +127,13 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
             <button
               onClick={handleSendMessage}
               disabled={message.trim() === ""}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 disabled:text-gray-300"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-slate-400 disabled:text-slate-300"
             >
               <Send className="h-5 w-5" />
             </button>
           </div>
         </div>
-        <div className="text-right text-xs text-gray-500 mt-1">
+        <div className="text-right text-xs text-slate-500 mt-1">
           {message.length}/{maxLength}
         </div>
       </div>

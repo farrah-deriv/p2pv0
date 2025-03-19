@@ -16,7 +16,7 @@ export default function BalanceInfoPopup({ isOpen, onClose }: BalanceInfoPopupPr
       <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 relative">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-bold">Deriv P2P balance</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-700">
             <X className="h-5 w-5" />
           </button>
         </div>

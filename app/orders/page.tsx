@@ -75,11 +75,11 @@ export default function OrdersPage() {
       case "Completed":
         return "bg-green-100 text-green-800"
       case "Cancelled":
-        return "bg-gray-100 text-gray-800"
+        return "bg-slate-100 text-slate-800"
       case "Disputed":
         return "bg-yellow-100 text-yellow-800"
       case "Expired":
-        return "bg-gray-100 text-gray-800"
+        return "bg-slate-100 text-slate-800"
       default:
         return "bg-blue-100 text-blue-800"
     }
@@ -96,10 +96,10 @@ export default function OrdersPage() {
 
       {/* Tabs */}
       <div className="mb-6">
-        <div className="inline-flex bg-gray-100 rounded-lg p-1">
+        <div className="inline-flex bg-slate-100 rounded-lg p-1">
           <button
             className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium ${
-              activeTab === "active" ? "bg-white shadow-sm" : "text-gray-500"
+              activeTab === "active" ? "bg-white shadow-sm" : "text-slate-500"
             }`}
             onClick={() => setActiveTab("active")}
           >
@@ -107,7 +107,7 @@ export default function OrdersPage() {
           </button>
           <button
             className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium ${
-              activeTab === "past" ? "bg-white shadow-sm" : "text-gray-500"
+              activeTab === "past" ? "bg-white shadow-sm" : "text-slate-500"
             }`}
             onClick={() => setActiveTab("past")}
           >
@@ -120,7 +120,7 @@ export default function OrdersPage() {
       {isLoading ? (
         <div className="text-center py-12">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-r-transparent"></div>
-          <p className="mt-2 text-gray-600">Loading orders...</p>
+          <p className="mt-2 text-slate-600">Loading orders...</p>
         </div>
       ) : error ? (
         <div className="text-center py-12">
@@ -131,11 +131,11 @@ export default function OrdersPage() {
         </div>
       ) : orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16">
-          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-            <AlertCircle className="h-6 w-6 text-gray-400" />
+          <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+            <AlertCircle className="h-6 w-6 text-slate-400" />
           </div>
-          <h2 className="text-xl font-medium text-gray-900 mb-2">No orders found</h2>
-          <p className="text-gray-500">Start by placing your first order.</p>
+          <h2 className="text-xl font-medium text-slate-900 mb-2">No orders found</h2>
+          <p className="text-slate-500">Start by placing your first order.</p>
           <Button
             onClick={() => router.push("/")}
             className="mt-8 text-white rounded-full px-6"
@@ -160,7 +160,7 @@ export default function OrdersPage() {
               {orders.map((order) => (
                 <tr
                   key={order.id}
-                  className="border-b hover:bg-gray-50 cursor-pointer transition-colors"
+                  className="border-b hover:bg-slate-50 cursor-pointer transition-colors"
                   onClick={() => navigateToOrderDetails(order.id)}
                 >
                   <td className="py-4 px-4">
