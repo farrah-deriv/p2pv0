@@ -32,7 +32,7 @@ export default function FilterPopup({ isOpen, onClose, onApply, initialFilters }
 
   return (
     <div className="absolute z-50 mt-1 right-0 top-full" onClick={(e) => e.stopPropagation()}>
-      <div className="bg-white rounded-lg shadow-lg w-[320px] border border-gray-200">
+      <div className="bg-white rounded-lg shadow-lg w-[320px] border border-slate-200">
         <div className="p-4 space-y-4">
           <div className="flex space-x-3">
             <div className="relative flex items-center justify-center">

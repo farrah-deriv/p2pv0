@@ -47,7 +47,7 @@ export default function OrderDetailsPage() {
         <Navigation />
         <div className="text-center py-12">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid  border-r-transparent"></div>
-          <p className="mt-2 text-gray-600">Loading order details...</p>
+          <p className="mt-2 text-slate-600">Loading order details...</p>
         </div>
       </>
     )
@@ -84,7 +84,7 @@ export default function OrderDetailsPage() {
         <div className="flex flex-col">
           <div className="flex justify-between items-center py-4">
             <h1 className="text-xl font-bold">{orderType} order</h1>
-            <button onClick={() => router.push("/orders")} className="text-gray-500 hover:text-gray-700">
+            <button onClick={() => router.push("/orders")} className="text-slate-500 hover:text-slate-700">
               <X className="h-5 w-5" />
             </button>
           </div>
@@ -104,7 +104,7 @@ export default function OrderDetailsPage() {
               <div className="p-4 border rounded-lg mt-3">
                 <div className="flex justify-between items-center mb-4">
                   <div>
-                    <p className="text-gray-500 text-sm">You pay</p>
+                    <p className="text-slate-500 text-sm">You pay</p>
                     <p className="text-lg font-bold">
                       {advertPaymentCurrency}{" "}
                       {Number(orderAmount).toLocaleString(undefined, {
@@ -125,7 +125,7 @@ export default function OrderDetailsPage() {
                 </div>
 
                 <div>
-                  <p className="text-gray-500 text-sm">Seller</p>
+                  <p className="text-slate-500 text-sm">Seller</p>
                   <p className="font-medium">{counterpartyNickname}</p>
                 </div>
               </div>
@@ -159,13 +159,13 @@ export default function OrderDetailsPage() {
                   <div className="border rounded-md p-4">
                     <div className="flex items-center">
                       <DollarSign className="h-5 w-5 text-blue-500 mr-2" />
-                      <p className="text-gray-700">User didn't add any payment methods.</p>
+                      <p className="text-slate-700">User didn't add any payment methods.</p>
                     </div>
                   </div>
                 </TabsContent>
 
                 <TabsContent value="contact" className="p-4">
-                  <p className="text-gray-600">No additional contact details or instructions provided.</p>
+                  <p className="text-slate-600">No additional contact details or instructions provided.</p>
                 </TabsContent>
               </Tabs>
 
@@ -203,12 +203,12 @@ export default function OrderDetailsPage() {
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 relative">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold">Cancelling your order?</h2>
-              <button onClick={() => setShowCancelConfirmation(false)} className="text-gray-500 hover:text-gray-700">
+              <button onClick={() => setShowCancelConfirmation(false)} className="text-slate-500 hover:text-slate-700">
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <p className="text-gray-700 mb-6">Don't cancel if you've already paid.</p>
+            <p className="text-slate-700 mb-6">Don't cancel if you've already paid.</p>
 
             <div className="space-y-3">
               <Button

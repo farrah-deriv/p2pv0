@@ -122,10 +122,10 @@ export default function BuySellPage() {
         <div className="mb-6">
           <div className="flex flex-row justify-between items-center gap-4">
             {/* Buy/Sell Toggle */}
-            <div className="grid grid-cols-2 gap-2 bg-gray-100 p-1 rounded-lg md:inline-flex md:w-auto">
+            <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-lg md:inline-flex md:w-auto">
               <button
                 className={`px-4 h-8 flex items-center justify-center rounded-md text-sm font-medium ${
-                  activeTab === "buy" ? "bg-white shadow-sm text-black" : "text-gray-500 bg-transparent"
+                  activeTab === "buy" ? "bg-white shadow-sm text-black" : "text-slate-500 bg-transparent"
                 }`}
                 onClick={() => setActiveTab("buy")}
               >
@@ -133,7 +133,7 @@ export default function BuySellPage() {
               </button>
               <button
                 className={`px-4 h-8 flex items-center justify-center rounded-md text-sm font-medium ${
-                  activeTab === "sell" ? "bg-white shadow-sm text-black" : "text-gray-500 bg-transparent"
+                  activeTab === "sell" ? "bg-white shadow-sm text-black" : "text-slate-500 bg-transparent"
                 }`}
                 onClick={() => setActiveTab("sell")}
               >
@@ -200,7 +200,7 @@ export default function BuySellPage() {
             {/* Mobile Search Input (conditionally shown) */}
             {isSearchOpen && (
               <div className="md:hidden relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
                 <Input
                   className="pl-10 w-full"
                   placeholder="Enter nickname"
@@ -233,7 +233,7 @@ export default function BuySellPage() {
               </Select>
 
               <div className="relative flex-grow w-full sm:w-auto sm:max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
                 <Input
                   className="pl-10 w-full"
                   placeholder="Enter nickname"
@@ -300,16 +300,16 @@ export default function BuySellPage() {
           {isLoading ? (
             <div className="text-center py-12">
               <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-r-transparent"></div>
-              <p className="mt-2 text-gray-600">Loading ads...</p>
+              <p className="mt-2 text-slate-600">Loading ads...</p>
             </div>
           ) : error ? (
             <div className="text-center py-8">{error}</div>
           ) : adverts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
-              <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center mb-4">
-                <AlertCircle className="h-8 w-8 text-gray-400" />
+              <div className="w-16 h-16 rounded-full bg-slate-200 flex items-center justify-center mb-4">
+                <AlertCircle className="h-8 w-8 text-slate-400" />
               </div>
-              <p className="text-xl font-medium text-gray-800">No ads available.</p>
+              <p className="text-xl font-medium text-slate-800">No ads available.</p>
             </div>
           ) : (
             <>
@@ -318,7 +318,7 @@ export default function BuySellPage() {
                 {adverts.map((ad) => (
                   <div key={ad.id} className="border rounded-lg p-4 bg-white">
                     <div className="flex items-center mb-2">
-                      <div className="h-10 w-10 flex-shrink-0 rounded-full bg-gray-900 flex items-center justify-center text-white font-bold text-xl mr-3">
+                      <div className="h-10 w-10 flex-shrink-0 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-xl mr-3">
                         {(ad.user?.nickname || "U").charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1">
@@ -335,7 +335,7 @@ export default function BuySellPage() {
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center text-xs text-gray-500">
+                        <div className="flex items-center text-xs text-slate-500">
                           {ad.user.user_rating_average && (
                             <span className="flex items-center">
                               <span className="text-yellow-500 mr-1">★</span>
@@ -365,13 +365,13 @@ export default function BuySellPage() {
                       {ad.actual_maximum_order_amount?.toFixed(2) || "N/A"}
                     </div>
 
-                    <div className="flex items-center text-sm text-gray-500 mb-3">
+                    <div className="flex items-center text-sm text-slate-500 mb-3">
                       <Clock className="h-4 w-4 mr-1" />
                       {ad.order_expiry_period} min
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <div className="text-sm text-gray-600">{ad.payment_method_names?.join(" | ") || "-"}</div>
+                      <div className="text-sm text-slate-600">{ad.payment_method_names?.join(" | ") || "-"}</div>
 
                       {USER.id != ad.user.id && (
                         <Button
@@ -398,12 +398,12 @@ export default function BuySellPage() {
                       <th className="text-right py-4 px-4 font-bold"></th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200 font-normal text-sm">
+                  <tbody className="bg-white divide-y divide-slate-200 font-normal text-sm">
                     {adverts.map((ad) => (
-                      <tr key={ad.id} className="hover:bg-gray-50">
+                      <tr key={ad.id} className="hover:bg-slate-50">
                         <td className="py-4 px-4">
                           <div className="flex items-center">
-                            <div className="h-10 w-10 flex-shrink-0 rounded-full bg-gray-900 flex items-center justify-center text-white font-bold text-xl mr-3">
+                            <div className="h-10 w-10 flex-shrink-0 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-xl mr-3">
                               {(ad.user?.nickname || "U").charAt(0).toUpperCase()}
                             </div>
                             <div>
@@ -420,7 +420,7 @@ export default function BuySellPage() {
                                   </span>
                                 )}
                               </div>
-                              <div className="flex items-center text-xs sm:text-sm text-gray-500">
+                              <div className="flex items-center text-xs sm:text-sm text-slate-500">
                                 {ad.user.user_rating_average && (
                                   <span className="flex items-center">
                                     <span className="text-yellow-500 mr-1">★</span>
@@ -444,7 +444,7 @@ export default function BuySellPage() {
                           <div>{`${ad.account_currency} ${ad.minimum_order_amount?.toFixed(2) || "N/A"} - ${
                             ad.actual_maximum_order_amount?.toFixed(2) || "N/A"
                           }`}</div>
-                          <div className="flex items-center text-xs sm:text-sm text-gray-500">
+                          <div className="flex items-center text-xs sm:text-sm text-slate-500">
                             <Clock className="h-4 w-4 mr-1" />
                             {ad.order_expiry_period} min
                           </div>
