@@ -79,16 +79,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
       // Call the API to create the order
       const order = await createOrder(ad.id, numAmount)
 
-      // Show success message
-      setOrderStatus({
-        success: true,
-        message: `Order created successfully! Order ID: ${order.id}`,
-      })
-
-      // Close the sidebar after a delay
-      setTimeout(() => {
-        handleClose()
-      }, 2000)
+      window.location.href= "/orders/" + order.data.id
     } catch (error) {
       console.error("Failed to create order:", error)
       setOrderStatus({
@@ -142,7 +133,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
           {/* Header */}
           <div className="flex items-center justify-between border-b p-4">
             <h2 className="text-xl font-semibold">{title}</h2>
-            <button onClick={handleClose} className="p-1 rounded-full hover:bg-gray-100">
+            <button onClick={handleClose} className="p-1 rounded-full">
               <X className="h-5 w-5" />
             </button>
           </div>
@@ -151,11 +142,8 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
             <>
               <div className="flex-1 p-4 space-y-6">
                 {/* P2P Balance */}
-                <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg">
+                <div className="flex items-center justify-between p-4 rounded-lg">
                   <div className="flex items-center">
-                    <div className="bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">
-                      <span className="text-xs font-bold">P2P</span>
-                    </div>
                     <span className="font-medium">P2P balance</span>
                   </div>
                   <span className="font-bold">USD {formattedBalance}</span>
@@ -166,17 +154,17 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                   <h3 className="text-lg font-semibold mb-4">Advertiser info</h3>
                   <div className="space-y-3">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Seller</span>
+                      <span>Seller</span>
                       <span className="font-medium">{ad.user?.nickname || "Unknown"}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Exchange rate (USD 1)</span>
+                      <span>Exchange rate (USD 1)</span>
                       <span className="font-medium">
                         {ad.payment_currency} {ad.exchange_rate?.toFixed(2) || "N/A"}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Order completion time</span>
+                      <span>Order completion time</span>
                       <span className="font-medium">{ad.order_expiry_period} min</span>
                     </div>
                   </div>
@@ -202,7 +190,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                 {/* Seller Instructions */}
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Seller's instructions</h3>
-                  <p className="text-gray-600 text-sm">
+                  <p className="text-sm">
                     Kindly transfer the payment to the account details provided after placing the order. Ensure the
                     exact amount is transferred.
                   </p>
@@ -217,14 +205,14 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                         type="number"
                         value={amount}
                         onChange={handleAmountChange}
-                        className={`rounded-r-none border-r-0 ${validationError ? "border-red-500" : ""}`}
+                        className={`rounded-r-none border-r-0 ${validationError}`}
                       />
                       <div className="flex items-center justify-center px-4 border border-l-0 rounded-r-md">
                         {ad.account_currency}
                       </div>
                     </div>
-                    {validationError && <p className="text-xs text-red-500 mt-1">{validationError}</p>}
-                    <p className="text-xs text-gray-500 mt-1">
+                    {validationError && <p className="text-xs mt-1">{validationError}</p>}
+                    <p className="text-xs mt-1">
                       Order limit: {ad.account_currency} {minLimit} - {maxLimit}
                     </p>
                   </div>
@@ -246,7 +234,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
 
                 <Button
                   onClick={handleSubmit}
-                  className="w-full bg-red-500 hover:bg-red-600 text-white rounded-full"
+                  className="w-full text-white rounded-full"
                   disabled={!!validationError || isSubmitting}
                 >
                   {isSubmitting ? (
@@ -260,7 +248,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                 </Button>
                 {orderStatus && (
                   <div
-                    className={`mt-4 p-3 rounded-lg flex items-start ${orderStatus.success ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}
+                    className={`mt-4 p-3 rounded-lg flex items-start ${orderStatus.success ? "bg-green-50 text-green-800" : ""}`}
                   >
                     {orderStatus.success ? (
                       <Check className="h-5 w-5 mr-2 flex-shrink-0" />

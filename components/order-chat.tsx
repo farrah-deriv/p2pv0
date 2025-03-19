@@ -79,16 +79,15 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
             <AlertCircle className="h-5 w-5" />
           </div>
           <div>
-          <div>
-            <span className="font-bold">Important:</span> Deriv will never contact you via WhatsApp to ask for your
-            personal information. Always ignore any messages from numbers claiming to be from Deriv.
-          </div>
-          <div className="mb-2">
-            <span className="font-bold">Note:</span> In case of a dispute, we'll use this chat as a reference.
-          </div>
+            <div>
+              <span className="font-bold">Important:</span> Deriv will never contact you via WhatsApp to ask for your
+              personal information. Always ignore any messages from numbers claiming to be from Deriv.
+            </div>
+            <div className="mb-2">
+              <span className="font-bold">Note:</span> In case of a dispute, we'll use this chat as a reference.
+            </div>
           </div>
         </div>
-        
       </div>
 
       {/* Messages */}
@@ -97,11 +96,11 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
           <div key={msg.id} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
             <div
               className={`max-w-[80%] rounded-lg p-3 ${
-                msg.sender === "user" ? "bg-red-500 text-white" : "bg-gray-100"
+                msg.sender === "user" ? "" : "bg-gray-100"
               }`}
             >
               <div>{msg.text}</div>
-              <div className={`text-xs mt-1 ${msg.sender === "user" ? "text-red-100" : "text-gray-500"}`}>
+              <div className={`text-xs mt-1 ${msg.sender === "user" ? "" : "text-gray-500"}`}>
                 {formatMessageTime(msg.timestamp)}
               </div>
             </div>
@@ -122,13 +121,13 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
               onChange={(e) => setMessage(e.target.value.slice(0, maxLength))}
               onKeyDown={handleKeyDown}
               placeholder="Enter message"
-              className="w-full border rounded-lg p-2 pr-10 resize-none focus:outline-none focus:ring-1 focus:ring-red-500"
+              className="w-full border rounded-lg p-2 pr-10 resize-none focus:outline-none focus:ring-1"
               rows={1}
             />
             <button
               onClick={handleSendMessage}
               disabled={message.trim() === ""}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 disabled:text-gray-300"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 disabled:text-gray-300"
             >
               <Send className="h-5 w-5" />
             </button>

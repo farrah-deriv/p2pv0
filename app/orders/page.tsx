@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle } from "lucide-react"
 import Navigation from "@/components/navigation"
 import { Button } from "@/components/ui/button"
 import { OrdersAPI } from "@/services/api"
@@ -119,13 +119,13 @@ export default function OrdersPage() {
       {/* Content */}
       {isLoading ? (
         <div className="text-center py-12">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-red-500 border-r-transparent"></div>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-r-transparent"></div>
           <p className="mt-2 text-gray-600">Loading orders...</p>
         </div>
       ) : error ? (
-        <div className="text-center py-12 text-red-500">
+        <div className="text-center py-12">
           <p>{error}</p>
-          <Button onClick={fetchOrders} className="mt-4 bg-red-500 hover:bg-red-600 text-white">
+          <Button onClick={fetchOrders} className="mt-4 text-white">
             Try Again
           </Button>
         </div>
@@ -138,7 +138,7 @@ export default function OrdersPage() {
           <p className="text-gray-500">Start by placing your first order.</p>
           <Button
             onClick={() => router.push("/")}
-            className="mt-8 bg-red-500 hover:bg-red-600 text-white rounded-full px-6"
+            className="mt-8 text-white rounded-full px-6"
           >
             Browse Ads
           </Button>
@@ -167,7 +167,7 @@ export default function OrdersPage() {
                     <div className="flex items-center">
                       <span
                         className={
-                          order.advert.type === "Buy" ? "text-green-600 font-medium" : "text-red-600 font-medium"
+                          order.advert.type === "Buy" ? "text-green-600 font-medium" : "font-medium"
                         }
                       >
                         {order.type}
@@ -194,10 +194,10 @@ export default function OrdersPage() {
                   </td>
                   <td className="py-4 px-4">
                     {order.advert.account_currency}{" "}
-                    {typeof order.price === 'object' && order.price.value 
+                    {typeof order.price === "object" && order.price.value
                       ? Number(order.price.value).toFixed(2)
-                      : typeof order.price === 'number' 
-                        ? order.price.toFixed(2) 
+                      : typeof order.price === "number"
+                        ? order.price.toFixed(2)
                         : Number(order.price).toFixed(2)}
                   </td>
                 </tr>

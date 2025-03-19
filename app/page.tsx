@@ -299,11 +299,11 @@ export default function BuySellPage() {
         <div>
           {isLoading ? (
             <div className="text-center py-12">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-red-500 border-r-transparent"></div>
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-r-transparent"></div>
               <p className="mt-2 text-gray-600">Loading ads...</p>
             </div>
           ) : error ? (
-            <div className="text-center py-8 text-red-500">{error}</div>
+            <div className="text-center py-8">{error}</div>
           ) : adverts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
               <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center mb-4">
@@ -325,7 +325,7 @@ export default function BuySellPage() {
                         <div className="flex items-center">
                           <button
                             onClick={() => handleAdvertiserClick(ad.user?.id || 0)}
-                            className="font-medium hover:text-red-500 hover:underline cursor-pointer"
+                            className="font-medium hover:underline cursor-pointer"
                           >
                             {ad.user?.nickname || "Unknown"}
                           </button>
@@ -375,7 +375,7 @@ export default function BuySellPage() {
 
                       {USER.id != ad.user.id && (
                         <Button
-                          className="bg-red-500 hover:bg-red-600 text-white rounded-full text-sm"
+                          className="text-white rounded-full text-sm"
                           onClick={() => handleOrderClick(ad)}
                         >
                           {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
@@ -410,7 +410,7 @@ export default function BuySellPage() {
                               <div className="flex items-center">
                                 <button
                                   onClick={() => handleAdvertiserClick(ad.user?.id || 0)}
-                                  className="hover:text-red-500 hover:underline cursor-pointer"
+                                  className="hover:underline cursor-pointer"
                                 >
                                   {ad.user?.nickname || "Unknown"}
                                 </button>
@@ -453,7 +453,7 @@ export default function BuySellPage() {
                         <td className="py-4 px-4 text-right">
                           {USER.id != ad.user.id && (
                             <Button
-                              className="bg-red-500 hover:bg-red-600 text-white rounded-full text-xs sm:text-sm"
+                              className="text-white rounded-full text-xs sm:text-sm"
                               onClick={() => handleOrderClick(ad)}
                             >
                               {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}

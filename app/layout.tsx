@@ -24,7 +24,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <div className="container mx-auto px-4 pb-20 md:pb-0">
-          <Header />
+            <Header />
             {children}
             <MobileFooterNav />
           </div>

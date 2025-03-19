@@ -37,7 +37,7 @@ export default function BalanceInfoPopup({ isOpen, onClose }: BalanceInfoPopupPr
           </p>
         </div>
 
-        <Button onClick={onClose} className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-full">
+        <Button onClick={onClose} className="w-full py-3 rounded-full">
           OK
         </Button>
       </div>
