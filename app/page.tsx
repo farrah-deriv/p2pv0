@@ -14,6 +14,7 @@ import { debounce } from "lodash"
 import FilterPopup, { type FilterOptions } from "@/components/buy-sell/filter-popup"
 import OrderSidebar from "@/components/buy-sell/order-sidebar"
 import MobileFooterNav from "@/components/mobile-footer-nav"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function BuySellPage() {
   const router = useRouter()
@@ -122,24 +123,16 @@ export default function BuySellPage() {
         <div className="mb-6">
           <div className="flex flex-row justify-between items-center gap-4">
             {/* Buy/Sell Toggle */}
-            <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-lg md:inline-flex md:w-auto">
-              <button
-                className={`px-4 h-8 flex items-center justify-center rounded-md text-sm font-medium ${
-                  activeTab === "buy" ? "bg-white shadow-sm text-black" : "text-slate-500 bg-transparent"
-                }`}
-                onClick={() => setActiveTab("buy")}
-              >
-                Buy
-              </button>
-              <button
-                className={`px-4 h-8 flex items-center justify-center rounded-md text-sm font-medium ${
-                  activeTab === "sell" ? "bg-white shadow-sm text-black" : "text-slate-500 bg-transparent"
-                }`}
-                onClick={() => setActiveTab("sell")}
-              >
-                Sell
-              </button>
-            </div>
+            <Tabs
+              defaultValue={activeTab}
+              onValueChange={(value) => setActiveTab(value as "buy" | "sell")}
+              className="w-auto"
+            >
+              <TabsList>
+                <TabsTrigger value="buy">Buy</TabsTrigger>
+                <TabsTrigger value="sell">Sell</TabsTrigger>
+              </TabsList>
+            </Tabs>
 
             {/* Mobile Filter Controls */}
             <div className="md:hidden grid grid-cols-2 gap-2">
@@ -374,10 +367,7 @@ export default function BuySellPage() {
                       <div className="text-sm text-slate-600">{ad.payment_method_names?.join(" | ") || "-"}</div>
 
                       {USER.id != ad.user.id && (
-                        <Button
-                          className="text-white rounded-full text-sm"
-                          onClick={() => handleOrderClick(ad)}
-                        >
+                        <Button size="sm" onClick={() => handleOrderClick(ad)}>
                           {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
                         </Button>
                       )}
@@ -453,7 +443,7 @@ export default function BuySellPage() {
                         <td className="py-4 px-4 text-right">
                           {USER.id != ad.user.id && (
                             <Button
-                              className="text-white rounded-full text-xs sm:text-sm"
+                              size="sm"
                               onClick={() => handleOrderClick(ad)}
                             >
                               {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
