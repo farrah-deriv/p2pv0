@@ -10,7 +10,7 @@ import StatusModal from "@/components/ui/status-modal"
 import { ProfileAPI } from "../api"
 import NotificationBanner from "./notification-banner"
 import EditPaymentMethodPanel from "./edit-payment-method-panel"
-import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog"
+import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
 import { Card, CardContent } from "@/components/ui/card"
 
 interface PaymentMethod {
