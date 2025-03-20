@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { deleteAd, updateAd } from "../api/api-ads"
 import type { MyAd } from "../types"
 import StatusModal from "@/components/ui/status-modal"
+import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
+import { Badge } from "@/components/ui/badge"
 
 interface MyAdsMobileViewProps {
   ads: MyAd[]
@@ -32,14 +34,15 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
     adId: "",
   })
 
+  // Update the getStatusBadge function to use default styles
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Active":
-        return <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">Active</span>
+        return <Badge variant="default">Active</Badge>
       case "Inactive":
-        return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs">Inactive</span>
+        return <Badge variant="destructive">Inactive</Badge>
       default:
-        return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs">Inactive</span>
+        return <Badge variant="destructive">Inactive</Badge>
     }
   }
 
@@ -217,7 +220,7 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
             >
               <div>
                 <div className="flex items-center gap-2">
-                  <span className={`font-medium ${ad.type === "Buy" ? "text-green-600" : "text-red-600"}`}>
+                  <span className={`font-medium ${ad.type === "Buy" ? "text-green-600" : "text-amber-600"}`}>
                     {ad.type}
                   </span>
                   <span className="text-gray-900 font-medium">{ad.id}</span>
@@ -313,31 +316,14 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
       </div>
 
       {/* Delete Confirmation Modal */}
-      {deleteConfirmModal.show && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h2 className="text-xl font-semibold mb-4 text-center">Delete ad?</h2>
-            <p className="text-gray-600 mb-6 text-center">You will not be able to restore it.</p>
-
-            <div className="space-y-3">
-              <button
-                onClick={confirmDelete}
-                disabled={isDeleting}
-                className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium"
-              >
-                {isDeleting ? "Deleting..." : "Delete"}
-              </button>
-
-              <button
-                onClick={cancelDelete}
-                className="w-full py-3 border border-gray-300 text-gray-700 rounded-lg font-medium"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteConfirmationDialog
+        open={deleteConfirmModal.show}
+        title="Delete ad?"
+        description="You will not be able to restore it."
+        isDeleting={isDeleting}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
 
       {/* Error Modal */}
       {errorModal.show && (

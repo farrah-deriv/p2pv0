@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input"
 import { X } from "lucide-react"
 import type { AdFormData } from "../types"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
 
 interface AdDetailsFormProps {
   onNext: (data: Partial<AdFormData>, errors?: ValidationErrors) => void
@@ -188,46 +190,25 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
           <div className="space-y-12">
             <div>
               <h3 className="text-base font-medium mb-6">Select trade type</h3>
-              <div className="flex gap-12">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <div className="relative">
-                    <input
-                      type="radio"
-                      name="trade-type"
-                      value="buy"
-                      checked={type === "buy"}
-                      onChange={(e) => setType(e.target.value as "buy" | "sell")}
-                      className="peer sr-only"
-                    />
-                    <div
-                      className={`h-5 w-5 rounded-full border-2 transition-colors flex items-center justify-center
-                    ${type === "buy" ? "border-red-500 border-[3px]" : "border-gray-300"}`}
-                    >
-                      {type === "buy" && <div className="h-2 w-2 rounded-full bg-red-500"></div>}
-                    </div>
-                  </div>
-                  <span className="text-lg">Buy USD</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <div className="relative">
-                    <input
-                      type="radio"
-                      name="trade-type"
-                      value="sell"
-                      checked={type === "sell"}
-                      onChange={(e) => setType(e.target.value as "buy" | "sell")}
-                      className="peer sr-only"
-                    />
-                    <div
-                      className={`h-5 w-5 rounded-full border-2 transition-colors flex items-center justify-center
-                    ${type === "sell" ? "border-red-500 border-[3px]" : "border-gray-300"}`}
-                    >
-                      {type === "sell" && <div className="h-2 w-2 rounded-full bg-red-500"></div>}
-                    </div>
-                  </div>
-                  <span className="text-lg">Sell USD</span>
-                </label>
-              </div>
+              <RadioGroup
+                value={type}
+                onValueChange={(value) => setType(value as "buy" | "sell")}
+                className="flex gap-12"
+                defaultValue="buy"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="buy" id="buy" aria-label="Buy USD" />
+                  <Label htmlFor="buy" className="text-lg cursor-pointer">
+                    Buy USD
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="sell" id="sell" aria-label="Sell USD" />
+                  <Label htmlFor="sell" className="text-lg cursor-pointer">
+                    Sell USD
+                  </Label>
+                </div>
+              </RadioGroup>
             </div>
 
             <div>
@@ -245,16 +226,11 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
-                      className={`text-left pl-3 pr-16 h-10 transition-all duration-200 ${
-                        touched.totalAmount && formErrors.totalAmount
-                          ? "border-red-500 focus:border-red-500 border-2"
-                          : "border-gray-200 focus:border-black hover:border-gray-300"
-                      }`}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">USD</span>
                   </div>
                   {touched.totalAmount && formErrors.totalAmount && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.totalAmount}</p>
+                    <p className="text-xs mt-1">{formErrors.totalAmount}</p>
                   )}
                 </div>
                 <div>
@@ -269,17 +245,10 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
-                      className={`text-left pl-3 pr-16 h-10 transition-all duration-200 ${
-                        touched.fixedRate && formErrors.fixedRate
-                          ? "border-red-500 focus:border-red-500 border-2"
-                          : "border-gray-200 focus:border-black hover:border-gray-300"
-                      }`}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">IDR</span>
                   </div>
-                  {touched.fixedRate && formErrors.fixedRate && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.fixedRate}</p>
-                  )}
+                  {touched.fixedRate && formErrors.fixedRate && <p className="text-xs mt-1">{formErrors.fixedRate}</p>}
                 </div>
               </div>
             </div>
@@ -299,17 +268,10 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
-                      className={`text-left pl-3 pr-16 h-10 transition-all duration-200 ${
-                        touched.minAmount && formErrors.minAmount
-                          ? "border-red-500 focus:border-red-500 border-2"
-                          : "border-gray-200 focus:border-black hover:border-gray-300"
-                      }`}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">USD</span>
                   </div>
-                  {touched.minAmount && formErrors.minAmount && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.minAmount}</p>
-                  )}
+                  {touched.minAmount && formErrors.minAmount && <p className="text-xs mt-1">{formErrors.minAmount}</p>}
                 </div>
                 <div>
                   <label className="text-sm text-gray-500 mb-2 block">Maximum order amount</label>
@@ -323,17 +285,10 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
-                      className={`text-left pl-3 pr-16 h-10 transition-all duration-200 ${
-                        touched.maxAmount && formErrors.maxAmount
-                          ? "border-red-500 focus:border-red-500 border-2"
-                          : "border-gray-200 focus:border-black hover:border-gray-300"
-                      }`}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">USD</span>
                   </div>
-                  {touched.maxAmount && formErrors.maxAmount && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.maxAmount}</p>
-                  )}
+                  {touched.maxAmount && formErrors.maxAmount && <p className="text-xs mt-1">{formErrors.maxAmount}</p>}
                 </div>
               </div>
             </div>

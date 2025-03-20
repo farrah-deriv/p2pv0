@@ -9,6 +9,7 @@ import StatusModal from "@/components/ui/status-modal"
 import type { AdFormData, StatusModalState } from "../types"
 import { createAd, updateAd } from "../api/api-ads"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { Button } from "@/components/ui/button"
 
 export default function CreateAdPage() {
   const router = useRouter()
@@ -403,26 +404,18 @@ export default function CreateAdPage() {
 
         {/* Fixed positioned button at bottom right */}
         <div className="fixed bottom-6 right-6">
-          <button
+          <Button
             onClick={handleButtonClick}
             disabled={isSubmitting || (currentStep === 0 && !adFormValid) || (currentStep === 1 && !paymentFormValid)}
-            className={`px-8 py-2.5 rounded-full text-sm font-medium transition-colors w-36 h-10 flex items-center justify-center
-            ${
-              currentStep === 0
-                ? adFormValid
-                  ? "bg-red-500 text-white hover:bg-red-600"
-                  : "bg-gray-100 text-gray-500 cursor-not-allowed"
-                : isSubmitting
-                  ? "bg-red-400 text-white cursor-not-allowed"
-                  : paymentFormValid
-                    ? "bg-red-500 text-white hover:bg-red-600"
-                    : "bg-gray-100 text-gray-500 cursor-not-allowed"
-            }`}
+            variant={
+              (currentStep === 0 && !adFormValid) || (currentStep === 1 && !paymentFormValid) ? "outline" : "default"
+            }
+            size="sm"
           >
             {isSubmitting ? (
               <div className="flex items-center gap-2">
                 <span>{isEditMode ? "Saving..." : "Creating..."}</span>
-                <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
               </div>
             ) : currentStep === 0 ? (
               "Next"
@@ -431,7 +424,7 @@ export default function CreateAdPage() {
             ) : (
               "Create Ad"
             )}
-          </button>
+          </Button>
         </div>
       </div>
 

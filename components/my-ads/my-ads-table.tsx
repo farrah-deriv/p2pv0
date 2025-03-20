@@ -7,6 +7,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from "@/components/ui/button"
 // Update imports to remove activateAd
 import { deleteAd, updateAd } from "@/services/api/api-my-ads"
+// Add Badge import at the top with other imports
+import { Badge } from "@/components/ui/badge"
 
 interface Ad {
   id: string
@@ -49,14 +51,15 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     return `${limits.currency} ${limits.min.toFixed(2)} - ${limits.max.toFixed(2)}`
   }
 
+  // Replace the getStatusBadge function with this implementation
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Active":
-        return <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">Active</span>
+        return <Badge variant="default">Active</Badge>
       case "Inactive":
-        return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs">Inactive</span>
+        return <Badge variant="destructive">Inactive</Badge>
       default:
-        return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs">Inactive</span>
+        return <Badge variant="destructive">Inactive</Badge>
     }
   }
 
@@ -170,10 +173,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
         <p className="text-gray-600 mb-6 text-center">
           Looking to buy or sell USD? You can post your own ad for others to respond.
         </p>
-        <Button
-          onClick={() => router.push("/create-ad")}
-          className="bg-red-500 hover:bg-red-600 text-white rounded-full px-8"
-        >
+        <Button onClick={() => router.push("/create-ad")} size="sm">
           Create ad
         </Button>
       </div>
@@ -260,11 +260,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
                         <Power className="h-4 w-4" />
                         {isTogglingStatus ? "Updating..." : ad.status === "Active" ? "Deactivate" : "Activate"}
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="flex items-center gap-2 text-red-500 focus:text-red-500"
-                        onSelect={() => handleDelete(ad.id)}
-                        disabled={isDeleting}
-                      >
+                      <DropdownMenuItem onSelect={() => handleDelete(ad.id)} disabled={isDeleting}>
                         <Trash2 className="h-4 w-4" />
                         {isDeleting ? "Deleting..." : "Delete"}
                       </DropdownMenuItem>

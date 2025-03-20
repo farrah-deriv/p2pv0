@@ -203,16 +203,11 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
-                      className={`text-left pl-3 pr-16 h-10 transition-all duration-200 ${
-                        touched.totalAmount && formErrors.totalAmount
-                          ? "border-red-500 focus:border-red-500 border-2"
-                          : "border-gray-200 focus:border-black hover:border-gray-300"
-                      }`}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">USD</span>
                   </div>
                   {touched.totalAmount && formErrors.totalAmount && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.totalAmount}</p>
+                    <p className="text-xs mt-1">{formErrors.totalAmount}</p>
                   )}
                 </div>
                 <div>
@@ -227,17 +222,10 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
-                      className={`text-left pl-3 pr-16 h-10 transition-all duration-200 ${
-                        touched.fixedRate && formErrors.fixedRate
-                          ? "border-red-500 focus:border-red-500 border-2"
-                          : "border-gray-200 focus:border-black hover:border-gray-300"
-                      }`}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">IDR</span>
                   </div>
-                  {touched.fixedRate && formErrors.fixedRate && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.fixedRate}</p>
-                  )}
+                  {touched.fixedRate && formErrors.fixedRate && <p className="text-xs mt-1">{formErrors.fixedRate}</p>}
                 </div>
               </div>
             </div>
@@ -257,17 +245,10 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
-                      className={`text-left pl-3 pr-16 h-10 transition-all duration-200 ${
-                        touched.minAmount && formErrors.minAmount
-                          ? "border-red-500 focus:border-red-500 border-2"
-                          : "border-gray-200 focus:border-black hover:border-gray-300"
-                      }`}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">USD</span>
                   </div>
-                  {touched.minAmount && formErrors.minAmount && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.minAmount}</p>
-                  )}
+                  {touched.minAmount && formErrors.minAmount && <p className="text-xs mt-1">{formErrors.minAmount}</p>}
                 </div>
                 <div>
                   <label className="text-sm text-gray-500 mb-2 block">Maximum order amount</label>
@@ -281,17 +262,10 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
-                      className={`text-left pl-3 pr-16 h-10 transition-all duration-200 ${
-                        touched.maxAmount && formErrors.maxAmount
-                          ? "border-red-500 focus:border-red-500 border-2"
-                          : "border-gray-200 focus:border-black hover:border-gray-300"
-                      }`}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">USD</span>
                   </div>
-                  {touched.maxAmount && formErrors.maxAmount && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.maxAmount}</p>
-                  )}
+                  {touched.maxAmount && formErrors.maxAmount && <p className="text-xs mt-1">{formErrors.maxAmount}</p>}
                 </div>
               </div>
             </div>
@@ -307,8 +281,8 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
           disabled={!isFormValid()}
           className="next-button"
           style={{
-            backgroundColor: isFormValid() ? "#EE4444" : "#E5E7EB",
-            color: isFormValid() ? "white" : "#9CA3AF",
+            backgroundColor: isFormValid() ? "hsl(var(--primary))" : "#E5E7EB",
+            color: isFormValid() ? "hsl(var(--primary-foreground))" : "#9CA3AF",
             borderRadius: "9999px",
             padding: "0.625rem 2rem",
             fontSize: "0.875rem",

@@ -60,7 +60,7 @@ export default function UserInfo({
               <span className="text-gray-700">{rating}</span>
             </div>
             <div className="flex items-center text-gray-700">
-              <Check className="h-4 w-4 text-green-500 mr-1" />
+              <Check className="h-4 w-4 text-primary mr-1" />
               <span>{completionRate}</span>
               <Info className="h-4 w-4 ml-1 text-gray-400" />
             </div>
@@ -69,19 +69,19 @@ export default function UserInfo({
           </div>
           <div className="flex flex-wrap gap-2 mt-3">
             {isVerified.id && (
-              <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs flex items-center">
+              <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs flex items-center">
                 <Check className="h-3 w-3 mr-1" />
                 ID
               </div>
             )}
             {isVerified.address && (
-              <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs flex items-center">
+              <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs flex items-center">
                 <Check className="h-3 w-3 mr-1" />
                 Address
               </div>
             )}
             {isVerified.phone && (
-              <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs flex items-center">
+              <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs flex items-center">
                 <Check className="h-3 w-3 mr-1" />
                 Phone number
               </div>
