@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { deleteAd, updateAd } from "../api/api-ads"
 import type { MyAd } from "../types"
 import StatusModal from "@/components/ui/status-modal"
-import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog"
+import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
 import { Badge } from "@/components/ui/badge"
 
 interface MyAdsMobileViewProps {

@@ -10,6 +10,7 @@ import type { Ad } from "../types"
 import StatusModal from "@/components/ui/status-modal"
 // Add Badge import at the top with other imports
 import { Badge } from "@/components/ui/badge"
+import { DeleteConfirmationDialog } from "../components/delete-confirmation-dialog"
 
 interface MobileMyAdsListProps {
   ads: Ad[]
@@ -315,22 +316,12 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmModal.show && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h2 className="text-xl font-semibold mb-4 text-center">Delete ad?</h2>
-            <p className="text-gray-600 mb-6 text-center">You will not be able to restore it.</p>
-
-            <div className="space-y-3">
-              <Button onClick={confirmDelete} disabled={isDeleting} size="sm" className="w-full">
-                {isDeleting ? "Deleting..." : "Delete"}
-              </Button>
-
-              <Button onClick={cancelDelete} variant="outline" size="sm" className="w-full">
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </div>
+        <DeleteConfirmationDialog
+          isOpen={deleteConfirmModal.show}
+          onConfirm={confirmDelete}
+          onCancel={cancelDelete}
+          isLoading={isDeleting}
+        />
       )}
 
       {/* Error Modal */}

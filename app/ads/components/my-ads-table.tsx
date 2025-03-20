@@ -8,7 +8,10 @@ import { Button } from "@/components/ui/button"
 import { deleteAd, updateAd } from "../api/api-ads"
 import type { Ad } from "../types"
 import StatusModal from "@/components/ui/status-modal"
-import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog"
+// Update the import for DeleteConfirmationDialog
+// Replace this line:
+// With this:
+import { DeleteConfirmationDialog } from "../components/delete-confirmation-dialog"
 // Add Badge import at the top with other imports
 import { Badge } from "@/components/ui/badge"
 
