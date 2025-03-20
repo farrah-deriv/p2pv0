@@ -7,10 +7,12 @@ import MyAdsHeader from "./components/my-ads-header"
 import StatusModal from "@/components/ui/status-modal"
 import { getUserAdverts } from "./api/api-ads"
 import { USER } from "@/lib/local-variables"
-import { Check } from "lucide-react"
+import { Check, PlusCircle } from "lucide-react"
 import type { MyAd, SuccessData } from "./types"
 import MobileMyAdsList from "./components/mobile-my-ads-list"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation"
 
 export default function AdsPage() {
   const [ads, setAds] = useState<MyAd[]>([])
@@ -28,6 +30,7 @@ export default function AdsPage() {
   const [showDeletedBanner, setShowDeletedBanner] = useState(false)
   const [showUpdatedBanner, setShowUpdatedBanner] = useState(false)
   const isMobile = useIsMobile()
+  const router = useRouter()
 
   // Add error modal state
   const [errorModal, setErrorModal] = useState({
@@ -145,6 +148,10 @@ export default function AdsPage() {
       {/* Fixed controls section */}
       <div className="flex-none container mx-auto px-4">
         <MyAdsHeader hasAds={ads.length > 0} />
+        <Button onClick={() => router.push("/ads/create")} size="sm">
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Create Ad
+        </Button>
       </div>
 
       {/* Content area with fixed table header and scrollable body */}

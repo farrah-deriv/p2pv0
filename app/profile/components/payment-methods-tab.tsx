@@ -1,13 +1,17 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { MoreVertical } from "lucide-react"
+import { useState, useEffect, useCallback } from "react"
+import { MoreVertical, Edit, Trash } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { API, AUTH } from "@/lib/local-variables"
 import { Shimmer } from "./ui/shimmer"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import StatusModal from "@/components/ui/status-modal"
 import { ProfileAPI } from "../api"
+import NotificationBanner from "./notification-banner"
+import EditPaymentMethodPanel from "./edit-payment-method-panel"
+import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog"
+import { Card, CardContent } from "@/components/ui/card"
 
 interface PaymentMethod {
   id: string
@@ -15,6 +19,7 @@ interface PaymentMethod {
   type: string
   category: "bank_transfer" | "e_wallet" | "other"
   details: Record<string, string>
+  instructions?: string
   isDefault?: boolean
 }
 
@@ -34,16 +39,24 @@ export default function PaymentMethodsTab() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [statusModal, setStatusModal] = useState({
     show: false,
-    type: "success" as "success" | "error",
+    type: "error" as "success" | "error",
     title: "",
     message: "",
   })
+  const [notification, setNotification] = useState<{ show: boolean; message: string }>({
+    show: false,
+    message: "",
+  })
 
-  useEffect(() => {
-    fetchPaymentMethods()
-  }, [])
+  // Add state for edit panel
+  const [editPanel, setEditPanel] = useState({
+    show: false,
+    paymentMethod: null as PaymentMethod | null,
+  })
+  const [isEditing, setIsEditing] = useState(false)
 
-  const fetchPaymentMethods = async () => {
+  // Use useCallback to memoize the fetchPaymentMethods function
+  const fetchPaymentMethods = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
@@ -64,6 +77,8 @@ export default function PaymentMethodsTab() {
       const startTime = performance.now()
       const response = await fetch(url, {
         headers,
+        // Add cache: 'no-store' to ensure we always get fresh data
+        cache: "no-store",
       })
       const endTime = performance.now()
 
@@ -133,6 +148,7 @@ export default function PaymentMethodsTab() {
           type: methodType,
           category: category,
           details: details,
+          instructions: method.fields?.instructions?.value || "",
           isDefault: false, // Default value, update if API provides this info
         }
       })
@@ -148,6 +164,101 @@ export default function PaymentMethodsTab() {
       setError(error instanceof Error ? error.message : "Failed to load payment methods")
     } finally {
       setIsLoading(false)
+    }
+  }, [])
+
+  // Fetch payment methods on mount
+  useEffect(() => {
+    console.log("🔄 Fetching payment methods...")
+    fetchPaymentMethods()
+  }, [fetchPaymentMethods])
+
+  // Handle edit payment method
+  const handleEditPaymentMethod = (method: PaymentMethod) => {
+    setEditPanel({
+      show: true,
+      paymentMethod: method,
+    })
+  }
+
+  // Handle save payment method
+  const handleSavePaymentMethod = async (id: string, fields: Record<string, string>) => {
+    try {
+      setIsEditing(true)
+
+      // Format fields based on payment method type
+      const paymentMethod = paymentMethods.find((m) => m.id === id)
+      let formattedFields: Record<string, any> = {}
+
+      if (paymentMethod?.type === "alipay") {
+        // For Alipay, ensure we have the account field
+        formattedFields = {
+          account: fields.account,
+        }
+      } else {
+        // For other methods, just pass the fields as is
+        formattedFields = { ...fields }
+      }
+
+      // Remove instructions from fields and handle it separately
+      const { instructions, ...restFields } = formattedFields
+
+      // If instructions exist, add them back in the correct format
+      if (instructions) {
+        formattedFields.instructions = instructions
+      }
+
+      const result = await ProfileAPI.PaymentMethods.updatePaymentMethod(id, formattedFields)
+
+      if (result.success) {
+        // Show notification banner
+        setNotification({
+          show: true,
+          message: "Payment method details updated successfully.",
+        })
+
+        // Refresh the payment methods list
+        fetchPaymentMethods()
+      } else {
+        // Get error message based on error code
+        let errorMessage = "Failed to update payment method. Please try again."
+
+        if (result.errors && result.errors.length > 0) {
+          const errorCode = result.errors[0].code
+
+          // Map error codes to user-friendly messages
+          if (errorCode === "PaymentMethodUsedByOpenOrder") {
+            errorMessage = "This payment method is currently being used by an open order and cannot be modified."
+          } else if (result.errors[0].message) {
+            errorMessage = result.errors[0].message
+          }
+        }
+
+        // Show error modal
+        setStatusModal({
+          show: true,
+          type: "error",
+          title: "Failed to update payment method",
+          message: errorMessage,
+        })
+      }
+    } catch (error) {
+      console.error("Error updating payment method:", error)
+
+      // Show error modal
+      setStatusModal({
+        show: true,
+        type: "error",
+        title: "Failed to update payment method",
+        message: error instanceof Error ? error.message : "An error occurred. Please try again.",
+      })
+    } finally {
+      // Always close the edit panel, whether successful or not
+      setEditPanel({
+        show: false,
+        paymentMethod: null,
+      })
+      setIsEditing(false)
     }
   }
 
@@ -170,12 +281,10 @@ export default function PaymentMethodsTab() {
         // Close the confirmation modal
         setDeleteConfirmModal({ show: false, methodId: "", methodName: "" })
 
-        // Show success modal
-        setStatusModal({
+        // Show notification banner instead of success modal
+        setNotification({
           show: true,
-          type: "success",
-          title: "Payment method deleted",
-          message: "Your payment method has been successfully deleted.",
+          message: "Payment method deleted.",
         })
 
         // Refresh the payment methods list
@@ -297,63 +406,67 @@ export default function PaymentMethodsTab() {
     return (
       <div className="flex flex-col items-center justify-center py-8">
         <p className="text-red-500 mb-4">{error}</p>
-        <button onClick={fetchPaymentMethods} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+        <button
+          onClick={fetchPaymentMethods}
+          className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded"
+        >
           Try again
         </button>
       </div>
     )
   }
 
-  // Remove the mock data and only show API data
-  // Remove these mock data blocks:
-  // const mockBankTransfers = [
-  //   { id: "1", name: "Bank Name", details: { account: "1234" } },
-  //   { id: "2", name: "Bank Name", details: { account: "1234" } },
-  //   { id: "3", name: "Bank Name", details: { account: "1234" } },
-  // ]
-
-  // const mockEWallets = [
-  //   { id: "4", name: "E-Wallet Name", details: { account: "email@address" } },
-  // ]
-
-  // const mockOthers = [
-  //   { id: "5", name: "Payment Name", details: { account: "details or email@address" } },
-  // ]
-
   return (
     <div>
+      {notification.show && (
+        <NotificationBanner
+          message={notification.message}
+          onClose={() => setNotification({ show: false, message: "" })}
+        />
+      )}
+
       {/* Bank transfer */}
-      <div className="mb-8">
+      <div className="mb-8 mt-6">
         <h3 className="text-xl font-bold mb-4">Bank transfer</h3>
         {bankTransfers.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {bankTransfers.map((method) => (
-              <div key={method.id} className="border rounded-lg p-4">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-start gap-3">
-                    {getBankIcon()}
-                    <div>
-                      <div className="font-medium text-lg">{method.name}</div>
-                      <div className="text-gray-500">{formatAccountDetails(method as PaymentMethod)}</div>
+              <Card key={method.id} className="overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-start gap-3">
+                      {getBankIcon()}
+                      <div>
+                        <div className="font-medium text-lg">Bank Transfer</div>
+                        <div className="text-gray-500">ID: {method.id}</div>
+                      </div>
                     </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="p-1 hover:bg-gray-100 rounded-full">
+                          <MoreVertical className="h-5 w-5 text-gray-500" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-[160px]">
+                        <DropdownMenuItem
+                          className="flex items-center gap-2 text-gray-700 focus:text-gray-700"
+                          onSelect={() => handleEditPaymentMethod(method)}
+                        >
+                          <Edit className="h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="flex items-center gap-2 text-destructive focus:text-destructive"
+                          onSelect={() => handleDeletePaymentMethod(method.id, method.name)}
+                        >
+                          <Trash className="h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="p-1 hover:bg-gray-100 rounded-full">
-                        <MoreVertical className="h-5 w-5 text-gray-500" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[160px]">
-                      <DropdownMenuItem
-                        className="flex items-center gap-2 text-red-500 focus:text-red-500"
-                        onSelect={() => handleDeletePaymentMethod(method.id, method.name)}
-                      >
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         ) : (
@@ -367,32 +480,42 @@ export default function PaymentMethodsTab() {
         {eWallets.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {eWallets.map((method) => (
-              <div key={method.id} className="border rounded-lg p-4">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-start gap-3">
-                    {getEWalletIcon()}
-                    <div>
-                      <div className="font-medium text-lg">{method.name}</div>
-                      <div className="text-gray-500">{method.details?.account || ""}</div>
+              <Card key={method.id} className="overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-start gap-3">
+                      {getEWalletIcon()}
+                      <div>
+                        <div className="font-medium text-lg">{method.name}</div>
+                        <div className="text-gray-500">ID: {method.id}</div>
+                      </div>
                     </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="p-1 hover:bg-gray-100 rounded-full">
+                          <MoreVertical className="h-5 w-5 text-gray-500" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-[160px]">
+                        <DropdownMenuItem
+                          className="flex items-center gap-2 text-gray-700 focus:text-gray-700"
+                          onSelect={() => handleEditPaymentMethod(method)}
+                        >
+                          <Edit className="h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="flex items-center gap-2 text-destructive focus:text-destructive"
+                          onSelect={() => handleDeletePaymentMethod(method.id, method.name)}
+                        >
+                          <Trash className="h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="p-1 hover:bg-gray-100 rounded-full">
-                        <MoreVertical className="h-5 w-5 text-gray-500" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[160px]">
-                      <DropdownMenuItem
-                        className="flex items-center gap-2 text-red-500 focus:text-red-500"
-                        onSelect={() => handleDeletePaymentMethod(method.id, method.name)}
-                      >
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         ) : (
@@ -400,74 +523,27 @@ export default function PaymentMethodsTab() {
         )}
       </div>
 
-      {/* Others */}
-      <div>
-        <h3 className="text-xl font-bold mb-4">Others</h3>
-        {others.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {others.map((method) => (
-              <div key={method.id} className="border rounded-lg p-4">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-start gap-3">
-                    {getOtherIcon()}
-                    <div>
-                      <div className="font-medium text-lg">{method.name}</div>
-                      <div className="text-gray-500">{method.details?.account || ""}</div>
-                    </div>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="p-1 hover:bg-gray-100 rounded-full">
-                        <MoreVertical className="h-5 w-5 text-gray-500" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[160px]">
-                      <DropdownMenuItem
-                        className="flex items-center gap-2 text-red-500 focus:text-red-500"
-                        onSelect={() => handleDeletePaymentMethod(method.id, method.name)}
-                      >
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-500 italic">No other payment methods are added at the moment</p>
-        )}
-      </div>
       {/* Delete Confirmation Modal */}
-      {deleteConfirmModal.show && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h2 className="text-xl font-semibold mb-4 text-center">Delete payment method?</h2>
-            <p className="text-gray-600 mb-6 text-center">
-              Are you sure you want to delete {deleteConfirmModal.methodName}? You will not be able to restore it.
-            </p>
+      <DeleteConfirmationDialog
+        open={deleteConfirmModal.show}
+        title="Delete payment method?"
+        description={`Are you sure you want to delete ${deleteConfirmModal.methodName}? You will not be able to restore it.`}
+        isDeleting={isDeleting}
+        onConfirm={confirmDeletePaymentMethod}
+        onCancel={cancelDeletePaymentMethod}
+      />
 
-            <div className="space-y-3">
-              <button
-                onClick={confirmDeletePaymentMethod}
-                disabled={isDeleting}
-                className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium"
-              >
-                {isDeleting ? "Deleting..." : "Delete"}
-              </button>
-
-              <button
-                onClick={cancelDeletePaymentMethod}
-                className="w-full py-3 border border-gray-300 text-gray-700 rounded-lg font-medium"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Edit Payment Method Panel */}
+      {editPanel.show && editPanel.paymentMethod && (
+        <EditPaymentMethodPanel
+          paymentMethod={editPanel.paymentMethod}
+          onClose={() => setEditPanel({ show: false, paymentMethod: null })}
+          onSave={handleSavePaymentMethod}
+          isLoading={isEditing}
+        />
       )}
 
-      {/* Status Modal */}
+      {/* Error Modal - only show for errors, not for success */}
       {statusModal.show && (
         <StatusModal
           type={statusModal.type}

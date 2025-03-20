@@ -94,10 +94,10 @@ export default function AddPaymentMethodModal({ onClose, onAdd, isLoading }: Add
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">
-            <Button type="button" onClick={onClose} variant="outline" className="border-gray-300 text-gray-700">
+            <Button type="button" onClick={onClose} variant="outline" size="sm">
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading} className="bg-red-500 hover:bg-red-600 text-white">
+            <Button type="submit" disabled={isLoading} size="sm">
               {isLoading ? "Adding..." : "Add"}
             </Button>
           </div>

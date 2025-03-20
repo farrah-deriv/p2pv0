@@ -6,6 +6,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Check, X, ArrowLeft } from "lucide-react"
 import type { AdFormData } from "../types"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { InfoIcon } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
 
 interface PaymentDetailsFormProps {
   onBack: () => void
@@ -119,37 +122,37 @@ export default function PaymentDetailsForm({
       <form id="payment-details-form" onSubmit={handleSubmit} className="flex-1 p-6">
         <div className="max-w-[800px] mx-auto h-full flex flex-col justify-between">
           <div className="space-y-12">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <div className="flex items-center gap-2 text-sm text-blue-900">
+            <Alert variant="info" className="bg-blue-50 border-blue-200 text-blue-900">
+              <InfoIcon className="h-4 w-4 text-blue-900" />
+              <AlertDescription className="flex items-center gap-2 text-sm">
                 <span>
                   You're {isEditMode ? "editing" : "creating"} an ad to {initialData.type} USD{" "}
                   {initialData.totalAmount?.toFixed(2)}
                 </span>
                 <span>for IDR {((initialData.totalAmount || 0) * (initialData.fixedRate || 0)).toFixed(2)}</span>
-              </div>
-            </div>
+              </AlertDescription>
+            </Alert>
 
             {initialData.type === "buy" ? (
               <div>
                 <h3 className="text-base font-medium mb-6">Select payment methods</h3>
                 <div className="space-y-2">
                   {availablePaymentMethods.map((method) => (
-                    <button
+                    <Card
                       key={method}
-                      type="button"
-                      onClick={() => togglePaymentMethod(method)}
-                      className={`w-full flex items-center justify-between px-4 py-3 rounded border ${
-                        paymentMethods.includes(method)
-                          ? "border-green-500 bg-green-50"
-                          : "border-gray-200 hover:border-gray-300"
+                      className={`cursor-pointer hover:border-gray-300 ${
+                        paymentMethods.includes(method) ? "border-primary bg-primary/5" : ""
                       }`}
+                      onClick={() => togglePaymentMethod(method)}
                     >
-                      <span className="text-sm">{method}</span>
-                      {paymentMethods.includes(method) && <Check className="h-4 w-4 text-green-500" />}
-                    </button>
+                      <CardContent className="p-3 flex items-center justify-between">
+                        <span className="text-sm">{method}</span>
+                        {paymentMethods.includes(method) && <Check className="h-4 w-4 text-primary" />}
+                      </CardContent>
+                    </Card>
                   ))}
                   {touched && paymentMethods.length === 0 && (
-                    <p className="text-red-500 text-xs mt-1">At least one payment method is required</p>
+                    <p className="text-destructive text-xs mt-1">At least one payment method is required</p>
                   )}
                 </div>
               </div>

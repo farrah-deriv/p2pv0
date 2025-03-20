@@ -307,8 +307,8 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
           disabled={!isFormValid()}
           className="next-button"
           style={{
-            backgroundColor: isFormValid() ? "#EE4444" : "#E5E7EB",
-            color: isFormValid() ? "white" : "#9CA3AF",
+            backgroundColor: isFormValid() ? "hsl(var(--primary))" : "#E5E7EB",
+            color: isFormValid() ? "hsl(var(--primary-foreground))" : "#9CA3AF",
             borderRadius: "9999px",
             padding: "0.625rem 2rem",
             fontSize: "0.875rem",

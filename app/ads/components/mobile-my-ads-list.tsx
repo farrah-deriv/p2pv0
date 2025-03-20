@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button"
 import { deleteAd, updateAd } from "../api/api-ads"
 import type { Ad } from "../types"
 import StatusModal from "@/components/ui/status-modal"
+// Add Badge import at the top with other imports
+import { Badge } from "@/components/ui/badge"
 
 interface MobileMyAdsListProps {
   ads: Ad[]
@@ -32,14 +34,15 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
     adId: "",
   })
 
+  // Replace the getStatusBadge function with this implementation
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Active":
-        return <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">Active</span>
+        return <Badge variant="default">Active</Badge>
       case "Inactive":
-        return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs">Inactive</span>
+        return <Badge variant="destructive">Inactive</Badge>
       default:
-        return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs">Inactive</span>
+        return <Badge variant="destructive">Inactive</Badge>
     }
   }
 
@@ -209,10 +212,7 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
         <p className="text-gray-600 mb-6 text-center">
           Looking to buy or sell USD? You can post your own ad for others to respond.
         </p>
-        <Button
-          onClick={() => router.push("/ads/create")}
-          className="bg-red-500 hover:bg-red-600 text-white rounded-full px-8"
-        >
+        <Button onClick={() => router.push("/ads/create")} size="sm">
           Create ad
         </Button>
       </div>
@@ -227,7 +227,7 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
             <div className="flex justify-between items-start mb-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className={`font-medium ${ad.type === "Buy" ? "text-green-600" : "text-red-600"}`}>
+                  <span className={`font-medium ${ad.type === "Buy" ? "text-primary" : "text-secondary"}`}>
                     {ad.type}
                   </span>
                   <span className="text-gray-800 font-medium">{ad.id}</span>
@@ -253,18 +253,15 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
                     <Power className="h-4 w-4" />
                     {isTogglingStatus ? "Updating..." : ad.status === "Active" ? "Deactivate" : "Activate"}
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="flex items-center gap-2 text-gray-400" disabled>
+                  <DropdownMenuItem disabled>
                     <Copy className="h-4 w-4" />
                     Copy
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="flex items-center gap-2 text-gray-400" disabled>
+                  <DropdownMenuItem disabled>
                     <Share2 className="h-4 w-4" />
                     Share
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="flex items-center gap-2 text-red-500 focus:text-red-500"
-                    onSelect={() => handleDelete(ad.id)}
-                  >
+                  <DropdownMenuItem onSelect={() => handleDelete(ad.id)}>
                     <Trash2 className="h-4 w-4" />
                     Delete
                   </DropdownMenuItem>
@@ -324,20 +321,13 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
             <p className="text-gray-600 mb-6 text-center">You will not be able to restore it.</p>
 
             <div className="space-y-3">
-              <button
-                onClick={confirmDelete}
-                disabled={isDeleting}
-                className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium"
-              >
+              <Button onClick={confirmDelete} disabled={isDeleting} size="sm" className="w-full">
                 {isDeleting ? "Deleting..." : "Delete"}
-              </button>
+              </Button>
 
-              <button
-                onClick={cancelDelete}
-                className="w-full py-3 border border-gray-300 text-gray-700 rounded-lg font-medium"
-              >
+              <Button onClick={cancelDelete} variant="outline" size="sm" className="w-full">
                 Cancel
-              </button>
+              </Button>
             </div>
           </div>
         </div>

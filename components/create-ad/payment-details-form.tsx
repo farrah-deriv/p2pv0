@@ -152,8 +152,8 @@ export default function PaymentDetailsForm({
           onClick={handleSubmit}
           disabled={!buttonEnabled}
           style={{
-            backgroundColor: buttonEnabled ? "#EE4444" : "#E5E7EB",
-            color: buttonEnabled ? "white" : "#9CA3AF",
+            backgroundColor: buttonEnabled ? "hsl(var(--primary))" : "#E5E7EB",
+            color: buttonEnabled ? "hsl(var(--primary-foreground))" : "#9CA3AF",
             borderRadius: "9999px",
             padding: "0.625rem 2rem",
             fontSize: "0.875rem",
@@ -181,7 +181,7 @@ export default function PaymentDetailsForm({
                   height: "1rem",
                   width: "1rem",
                   borderRadius: "50%",
-                  border: "2px solid white",
+                  border: "2px solid hsl(var(--primary-foreground))",
                   borderTopColor: "transparent",
                   animation: "spin 1s linear infinite",
                 }}

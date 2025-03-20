@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { cn } from "@/lib/utils"
 
 interface AddPaymentMethodPanelProps {
   onClose: () => void
@@ -21,49 +22,16 @@ const PAYMENT_METHODS = [
     value: "bank_transfer",
     label: "Bank Transfer",
     fields: [
-      { name: "account_number", label: "Account Number", type: "text" },
-      { name: "swift_code", label: "SWIFT or IFSC code", type: "text" },
-      { name: "bank_name", label: "Bank Name", type: "text" },
-      { name: "branch", label: "Branch", type: "text" },
+      { name: "account", label: "Account Number", type: "text", required: true },
+      { name: "bank_code", label: "SWIFT or IFSC code", type: "text", required: false },
+      { name: "bank_name", label: "Bank Name", type: "text", required: true },
+      { name: "branch", label: "Branch", type: "text", required: false },
     ],
   },
   {
     value: "alipay",
     label: "Alipay",
     fields: [{ name: "alipay_id", label: "Alipay ID", type: "text" }],
-  },
-  {
-    value: "google_pay",
-    label: "Google Pay",
-    fields: [{ name: "identifier", label: "Phone number or UPID", type: "text" }],
-  },
-  {
-    value: "nequi",
-    label: "Nequi",
-    fields: [{ name: "account_number", label: "Nequi Account Number", type: "text" }],
-  },
-  {
-    value: "paypal",
-    label: "PayPal",
-    fields: [{ name: "identifier", label: "Email or phone number", type: "text" }],
-  },
-  {
-    value: "skrill",
-    label: "Skrill",
-    fields: [{ name: "identifier", label: "Email or phone number", type: "text" }],
-  },
-  {
-    value: "wechat_pay",
-    label: "WeChat Pay",
-    fields: [{ name: "phone_number", label: "Phone number", type: "tel" }],
-  },
-  {
-    value: "other",
-    label: "Other",
-    fields: [
-      { name: "identifier", label: "Account ID / phone number / email", type: "text" },
-      { name: "method_name", label: "Payment method name", type: "text" },
-    ],
   },
 ]
 
@@ -97,7 +65,7 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
 
     if (method) {
       method.fields.forEach((field) => {
-        if (!details[field.name]?.trim()) {
+        if (!details[field.name]?.trim() && field.required) {
           newErrors[field.name] = `${field.label} is required`
         }
       })
@@ -135,62 +103,16 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
     }
 
     if (validateForm()) {
-      // Get the method value (not label) for the API
-      const methodValue = selectedMethod
-
-      // Structure fields based on payment method type
-      let fields: Record<string, any> = {}
-
-      switch (methodValue) {
-        case "bank_transfer":
-          fields = {
-            account_number: details.account_number,
-            swift_code: details.swift_code,
-            bank_name: details.bank_name,
-            branch: details.branch,
-          }
-          break
-
-        case "alipay":
-          fields = {
-            alipay_id: details.alipay_id,
-          }
-          break
-
-        case "google_pay":
-        case "paypal":
-        case "skrill":
-          fields = {
-            identifier: details.identifier,
-          }
-          break
-
-        case "nequi":
-          fields = {
-            account_number: details.account_number,
-          }
-          break
-
-        case "wechat_pay":
-          fields = {
-            phone_number: details.phone_number,
-          }
-          break
-
-        case "other":
-          fields = {
-            identifier: details.identifier,
-            method_name: details.method_name,
-          }
-          break
-      }
+      // Create a fields object with all the form field values
+      const fieldValues = { ...details }
 
       // Add instructions if present
       if (instructions.trim()) {
-        fields.instructions = instructions.trim()
+        fieldValues.instructions = instructions.trim()
       }
 
-      onAdd(methodValue, fields)
+      // Pass the method value and field values to the parent component
+      onAdd(selectedMethod, fieldValues)
     }
   }
 
@@ -213,7 +135,7 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
           <div>
             <label className="block text-sm font-medium text-gray-500 mb-2">Choose your payment method</label>
             <Select value={selectedMethod} onValueChange={(value) => setSelectedMethod(value)}>
-              <SelectTrigger className={errors.method ? "border-red-500" : ""}>
+              <SelectTrigger className={errors.method ? "border-destructive" : ""}>
                 <SelectValue placeholder="Select payment method" />
               </SelectTrigger>
               <SelectContent>
@@ -224,7 +146,7 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
                 ))}
               </SelectContent>
             </Select>
-            {errors.method && <p className="mt-1 text-xs text-red-500">{errors.method}</p>}
+            {errors.method && <p className="mt-1 text-xs text-destructive">{errors.method}</p>}
           </div>
 
           {selectedMethodConfig && (
@@ -240,10 +162,10 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
                     value={details[field.name] || ""}
                     onChange={(e) => handleInputChange(field.name, e.target.value)}
                     placeholder={`Enter ${field.label.toLowerCase()}`}
-                    className={touched[field.name] && errors[field.name] ? "border-red-500" : ""}
+                    className={cn(touched[field.name] && errors[field.name] && "border-destructive")}
                   />
                   {touched[field.name] && errors[field.name] && (
-                    <p className="mt-1 text-xs text-red-500">{errors[field.name]}</p>
+                    <p className="mt-1 text-xs text-destructive">{errors[field.name]}</p>
                   )}
                 </div>
               ))}
@@ -270,12 +192,7 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
       </form>
 
       <div className="p-6 border-t">
-        <Button
-          type="button"
-          onClick={handleSubmit}
-          disabled={isLoading || !selectedMethod}
-          className="w-full bg-red-500 hover:bg-red-600 text-white rounded-md"
-        >
+        <Button type="submit" onClick={handleSubmit} disabled={isLoading || !selectedMethod} size="sm">
           {isLoading ? "Adding..." : "Add"}
         </Button>
       </div>
