@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { cn } from "@/lib/utils"
 
 interface AddPaymentMethodPanelProps {
   onClose: () => void
@@ -135,7 +134,7 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
           <div>
             <label className="block text-sm font-medium text-gray-500 mb-2">Choose your payment method</label>
             <Select value={selectedMethod} onValueChange={(value) => setSelectedMethod(value)}>
-              <SelectTrigger className={errors.method ? "border-destructive" : ""}>
+              <SelectTrigger>
                 <SelectValue placeholder="Select payment method" />
               </SelectTrigger>
               <SelectContent>
@@ -146,7 +145,7 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
                 ))}
               </SelectContent>
             </Select>
-            {errors.method && <p className="mt-1 text-xs text-destructive">{errors.method}</p>}
+            {errors.method && <p className="mt-1 text-xs">{errors.method}</p>}
           </div>
 
           {selectedMethodConfig && (
@@ -162,11 +161,8 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
                     value={details[field.name] || ""}
                     onChange={(e) => handleInputChange(field.name, e.target.value)}
                     placeholder={`Enter ${field.label.toLowerCase()}`}
-                    className={cn(touched[field.name] && errors[field.name] && "border-destructive")}
                   />
-                  {touched[field.name] && errors[field.name] && (
-                    <p className="mt-1 text-xs text-destructive">{errors[field.name]}</p>
-                  )}
+                  {touched[field.name] && errors[field.name] && <p className="mt-1 text-xs">{errors[field.name]}</p>}
                 </div>
               ))}
             </div>

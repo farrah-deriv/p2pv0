@@ -7,7 +7,6 @@ import { X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 
 interface EditPaymentMethodPanelProps {
   onClose: () => void
@@ -172,11 +171,8 @@ export default function EditPaymentMethodPanel({
                     value={fieldValue || ""}
                     onChange={(e) => handleInputChange(fieldName, e.target.value)}
                     placeholder={`Enter ${getFieldLabel(fieldName).toLowerCase()}`}
-                    className={cn(touched[fieldName] && errors[fieldName] && "border-destructive")}
                   />
-                  {touched[fieldName] && errors[fieldName] && (
-                    <p className="mt-1 text-xs text-destructive">{errors[fieldName]}</p>
-                  )}
+                  {touched[fieldName] && errors[fieldName] && <p className="mt-1 text-xs">{errors[fieldName]}</p>}
                 </div>
               ))}
           </div>
@@ -206,4 +202,5 @@ export default function EditPaymentMethodPanel({
     </div>
   )
 }
+
 

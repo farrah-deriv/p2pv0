@@ -71,9 +71,8 @@ export default function AddPaymentMethodModal({ onClose, onAdd, isLoading }: Add
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Bank Transfer, PayPal"
-              className={`w-full ${errors.name ? "border-red-500" : ""}`}
             />
-            {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
+            {errors.name && <p className="mt-1 text-xs">{errors.name}</p>}
           </div>
 
           <div>
@@ -85,9 +84,9 @@ export default function AddPaymentMethodModal({ onClose, onAdd, isLoading }: Add
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
               placeholder="Provide details about your payment method"
-              className={`min-h-[120px] ${errors.instructions ? "border-red-500" : ""}`}
+              className="min-h-[120px]"
             />
-            {errors.instructions && <p className="mt-1 text-xs text-red-500">{errors.instructions}</p>}
+            {errors.instructions && <p className="mt-1 text-xs">{errors.instructions}</p>}
             <p className="mt-2 text-xs text-gray-500">
               These instructions will be shown to the counterparty during the order process.
             </p>
