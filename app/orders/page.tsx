@@ -125,7 +125,7 @@ export default function OrdersPage() {
           </div>
           <h2 className="text-xl font-medium text-slate-900 mb-2">No orders found</h2>
           <p className="text-slate-500">Start by placing your first order.</p>
-          <Button onClick={() => router.push("/")} className="mt-8 text-white rounded-full px-6">
+          <Button size="sm" onClick={() => router.push("/")} className="mt-8">
             Browse Ads
           </Button>
         </div>

@@ -129,8 +129,12 @@ export default function BuySellPage() {
               className="w-auto"
             >
               <TabsList>
-                <TabsTrigger value="buy">Buy</TabsTrigger>
-                <TabsTrigger value="sell">Sell</TabsTrigger>
+                <TabsTrigger value="buy" className="min-w-[40px]">
+                  Buy
+                </TabsTrigger>
+                <TabsTrigger value="sell" className="min-w-[40px]">
+                  Sell
+                </TabsTrigger>
               </TabsList>
             </Tabs>
 
@@ -381,11 +385,11 @@ export default function BuySellPage() {
                 <table className="w-full border-collapse">
                   <thead className="border-b">
                     <tr className="text-sm">
-                      <th className="text-left py-4 px-4 font-bold">Advertisers</th>
-                      <th className="text-left py-4 px-4 font-bold">Rates</th>
-                      <th className="text-left py-4 px-4 font-bold">Order limits</th>
-                      <th className="text-left py-4 px-4 font-bold hidden sm:table-cell">Payment methods</th>
-                      <th className="text-right py-4 px-4 font-bold"></th>
+                      <th className="text-left py-4 px-4 text-slate-600 font-normal">Advertisers</th>
+                      <th className="text-left py-4 px-4 text-slate-600 font-normal">Rates</th>
+                      <th className="text-left py-4 px-4 text-slate-600 font-normal">Order limits</th>
+                      <th className="text-left py-4 px-4 text-slate-600 hidden sm:table-cell font-normal">Payment methods</th>
+                      <th className="text-right py-4 px-4"></th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-200 font-normal text-sm">
@@ -442,10 +446,7 @@ export default function BuySellPage() {
                         <td className="py-4 px-4 hidden sm:table-cell">{ad.payment_method_names?.join(", ") || "-"}</td>
                         <td className="py-4 px-4 text-right">
                           {USER.id != ad.user.id && (
-                            <Button
-                              size="sm"
-                              onClick={() => handleOrderClick(ad)}
-                            >
+                            <Button size="sm" onClick={() => handleOrderClick(ad)}>
                               {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
                             </Button>
                           )}
