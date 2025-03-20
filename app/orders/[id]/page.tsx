@@ -215,7 +215,7 @@ export default function OrderDetailsPage() {
             <div className="space-y-3">
               <Button
                 onClick={() => setShowCancelConfirmation(false)}
-                className="w-full text-white py-3 rounded-full"
+                className="w-full"
               >
                 Keep order
               </Button>
