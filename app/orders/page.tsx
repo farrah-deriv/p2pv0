@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { OrdersAPI } from "@/services/api"
 import type { Order } from "@/services/api/api-orders"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 export default function OrdersPage() {
   const router = useRouter()
@@ -131,61 +132,57 @@ export default function OrdersPage() {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead className="border-b">
-              <tr className="text-sm text-left">
-                <th className="py-4 px-4 font-bold">Order ID</th>
-                {activeTab === "past" && <th className="py-4 px-4 font-medium">Date</th>}
-                <th className="py-4 px-4 font-bold">Counterparty</th>
-                <th className="py-4 px-4 font-bold">Status</th>
-                <th className="py-4 px-4 font-bold">Send</th>
-                <th className="py-4 px-4 font-bold">Receive</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm font-normal">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="py-4 px-4 text-slate-600 font-normal">Order ID</TableHead>
+                {activeTab === "past" && <TableHead className="py-4 px-4 text-slate-600 font-normal">Date</TableHead>}
+                <TableHead className="py-4 px-4 text-slate-600 font-normal">Counterparty</TableHead>
+                <TableHead className="py-4 px-4 text-slate-600 font-normal">Status</TableHead>
+                <TableHead className="py-4 px-4 text-slate-600 font-normal">Send</TableHead>
+                <TableHead className="py-4 px-4 text-slate-600 font-normal">Receive</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {orders.map((order) => (
-                <tr
-                  key={order.id}
-                  className="border-b hover:bg-slate-50 cursor-pointer transition-colors"
-                  onClick={() => navigateToOrderDetails(order.id)}
-                >
-                  <td className="py-4 px-4">
+                <TableRow key={order.id} className="cursor-pointer" onClick={() => navigateToOrderDetails(order.id)}>
+                  <TableCell className="py-4 px-4">
                     <div className="flex items-center">
                       <span className={order.advert.type === "Buy" ? "text-green-600 font-medium" : "font-medium"}>
                         {order.type}
                       </span>
                       <span className="ml-1">{order.id}</span>
                     </div>
-                  </td>
+                  </TableCell>
                   {activeTab === "past" && (
-                    <td className="py-4 px-4">{order.createdAt ? formatDate(order.createdAt) : "N/A"}</td>
+                    <TableCell className="py-4 px-4">{order.createdAt ? formatDate(order.createdAt) : "N/A"}</TableCell>
                   )}
-                  <td className="py-4 px-4">{order.advert.user.nickname}</td>
-                  <td className="py-4 px-4">
+                  <TableCell className="py-4 px-4">{order.advert.user.nickname}</TableCell>
+                  <TableCell className="py-4 px-4">
                     <span className={`px-3 py-1 rounded-full text-xs ${getStatusBadgeStyle(order.status)}`}>
                       {order.status}
                     </span>
-                  </td>
-                  <td className="py-4 px-4">
+                  </TableCell>
+                  <TableCell className="py-4 px-4">
                     {order.advert.payment_currency}{" "}
                     {typeof order.amount === "object" && order.amount.value
                       ? Number(order.amount.value).toFixed(2)
                       : typeof order.amount === "number"
                         ? order.amount.toFixed(2)
                         : Number(order.amount).toFixed(2)}
-                  </td>
-                  <td className="py-4 px-4">
+                  </TableCell>
+                  <TableCell className="py-4 px-4">
                     {order.advert.account_currency}{" "}
                     {typeof order.price === "object" && order.price.value
                       ? Number(order.price.value).toFixed(2)
                       : typeof order.price === "number"
                         ? order.price.toFixed(2)
                         : Number(order.price).toFixed(2)}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </>

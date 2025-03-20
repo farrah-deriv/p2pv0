@@ -15,6 +15,7 @@ import FilterPopup, { type FilterOptions } from "@/components/buy-sell/filter-po
 import OrderSidebar from "@/components/buy-sell/order-sidebar"
 import MobileFooterNav from "@/components/mobile-footer-nav"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 export default function BuySellPage() {
   const router = useRouter()
@@ -382,20 +383,22 @@ export default function BuySellPage() {
 
               {/* Desktop Table View */}
               <div className="hidden md:block overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead className="border-b">
-                    <tr className="text-sm">
-                      <th className="text-left py-4 px-4 text-slate-600 font-normal">Advertisers</th>
-                      <th className="text-left py-4 px-4 text-slate-600 font-normal">Rates</th>
-                      <th className="text-left py-4 px-4 text-slate-600 font-normal">Order limits</th>
-                      <th className="text-left py-4 px-4 text-slate-600 hidden sm:table-cell font-normal">Payment methods</th>
-                      <th className="text-right py-4 px-4"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-slate-200 font-normal text-sm">
+                <Table>
+                  <TableHeader className="border-b">
+                    <TableRow className="text-sm">
+                      <TableHead className="text-left py-4 px-4 text-slate-600 font-normal">Advertisers</TableHead>
+                      <TableHead className="text-left py-4 px-4 text-slate-600 font-normal">Rates</TableHead>
+                      <TableHead className="text-left py-4 px-4 text-slate-600 font-normal">Order limits</TableHead>
+                      <TableHead className="text-left py-4 px-4 text-slate-600 hidden sm:table-cell font-normal">
+                        Payment methods
+                      </TableHead>
+                      <TableHead className="text-right py-4 px-4"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody className="bg-white divide-y divide-slate-200 font-normal text-sm">
                     {adverts.map((ad) => (
-                      <tr key={ad.id} className="hover:bg-slate-50">
-                        <td className="py-4 px-4">
+                      <TableRow key={ad.id}>
+                        <TableCell className="py-4 px-4">
                           <div className="flex items-center">
                             <div className="h-10 w-10 flex-shrink-0 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-xl mr-3">
                               {(ad.user?.nickname || "U").charAt(0).toUpperCase()}
@@ -424,8 +427,8 @@ export default function BuySellPage() {
                               </div>
                             </div>
                           </div>
-                        </td>
-                        <td className="py-4 px-4 font-bold">
+                        </TableCell>
+                        <TableCell className="py-4 px-4 font-bold">
                           {ad.payment_currency}{" "}
                           {ad.exchange_rate
                             ? ad.exchange_rate.toLocaleString(undefined, {
@@ -433,8 +436,8 @@ export default function BuySellPage() {
                                 maximumFractionDigits: 2,
                               })
                             : "N/A"}
-                        </td>
-                        <td className="py-4 px-4">
+                        </TableCell>
+                        <TableCell className="py-4 px-4">
                           <div>{`${ad.account_currency} ${ad.minimum_order_amount?.toFixed(2) || "N/A"} - ${
                             ad.actual_maximum_order_amount?.toFixed(2) || "N/A"
                           }`}</div>
@@ -442,19 +445,21 @@ export default function BuySellPage() {
                             <Clock className="h-4 w-4 mr-1" />
                             {ad.order_expiry_period} min
                           </div>
-                        </td>
-                        <td className="py-4 px-4 hidden sm:table-cell">{ad.payment_method_names?.join(", ") || "-"}</td>
-                        <td className="py-4 px-4 text-right">
+                        </TableCell>
+                        <TableCell className="py-4 px-4 hidden sm:table-cell">
+                          {ad.payment_method_names?.join(", ") || "-"}
+                        </TableCell>
+                        <TableCell className="py-4 px-4 text-right">
                           {USER.id != ad.user.id && (
                             <Button size="sm" onClick={() => handleOrderClick(ad)}>
                               {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
                             </Button>
                           )}
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             </>
           )}
