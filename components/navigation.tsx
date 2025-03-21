@@ -14,7 +14,7 @@ export default function Navigation() {
   const navItems = [
     { name: "Buy/Sell", href: "/" },
     { name: "Orders", href: "/orders" },
-    { name: "My ads", href: "/my-ads" },
+    { name: "My ads", href: "/ads" },
     { name: "Profile", href: "/profile" },
   ]
 
@@ -67,4 +67,5 @@ export default function Navigation() {
     </div>
   )
 }
+
 
