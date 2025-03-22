@@ -23,10 +23,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <div className="container mx-auto px-4 pb-20 md:pb-0">
-            <Header />
-            {children}
-            <MobileFooterNav />
+          <div className="container mx-auto flex flex-col h-screen overflow-hidden">
+            <Header className="flex-shrink-0" />
+            <main className="flex-1 overflow-hidden">{children}</main>
+            <MobileFooterNav className="flex-shrink-0 md:hidden" />
           </div>
         </ThemeProvider>
       </body>

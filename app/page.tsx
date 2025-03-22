@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import { Search, AlertCircle, Clock, Filter } from "lucide-react"
+import { AlertCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Navigation from "@/components/navigation"
 import { Input } from "@/components/ui/input"
@@ -16,6 +16,8 @@ import OrderSidebar from "@/components/buy-sell/order-sidebar"
 import MobileFooterNav from "@/components/mobile-footer-nav"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import Image from "next/image"
+import { SafetyWarningBanner } from "@/components/safety-warning-banner"
 
 export default function BuySellPage() {
   const router = useRouter()
@@ -115,34 +117,46 @@ export default function BuySellPage() {
   }, [isFilterPopupOpen])
 
   return (
-    <>
-      <Navigation />
+    <div className="flex flex-col h-screen overflow-hidden px-4">
+      {/* Fixed Header Section */}
+      <div className="flex-shrink-0">
+        {/* Desktop Navigation */}
+        <Navigation title="P2P Wallet" />
 
-      {/* Main content with padding for mobile footer */}
-      <div className="pb-20 md:pb-0">
-        {/* Buy/Sell Toggle - Mobile Style */}
-        <div className="mb-6">
-          <div className="flex flex-row justify-between items-center gap-4">
-            {/* Buy/Sell Toggle */}
-            <Tabs
-              defaultValue={activeTab}
-              onValueChange={(value) => setActiveTab(value as "buy" | "sell")}
-              className="w-auto"
-            >
-              <TabsList>
-                <TabsTrigger value="buy" className="min-w-[40px]">
-                  Buy
-                </TabsTrigger>
-                <TabsTrigger value="sell" className="min-w-[40px]">
-                  Sell
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+        {!isSearchOpen && (
+          <div className="bg-white">
+            {/* Safety Warning Banner */}
+            <SafetyWarningBanner />
+          </div>
+        )}
 
-            {/* Mobile Filter Controls */}
-            <div className="md:hidden grid grid-cols-2 gap-2">
+        {/* Buy/Sell Toggle and Filters - Fixed */}
+        <div className="mb-4 md:mb-6 md:flex justify-between items-center">
+          {!isSearchOpen && (
+            <div className="flex flex-row justify-between items-center gap-4">
+              {/* Buy/Sell Toggle */}
+              <Tabs
+                defaultValue={activeTab}
+                onValueChange={(value) => setActiveTab(value as "buy" | "sell")}
+                className="w-full"
+              >
+                <TabsList className="w-full md:w-auto">
+                  <TabsTrigger className="w-full md:w-auto" value="buy">
+                    Buy
+                  </TabsTrigger>
+                  <TabsTrigger className="w-full md:w-auto" value="sell">
+                    Sell
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          )}
+
+          {/* Responsive Filters Row */}
+          <div className="flex flex-wrap gap-2 md:gap-3 md:px-0 mt-4 md:mt-0">
+            {!isSearchOpen && (
               <Select value={currency} onValueChange={setCurrency}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="flex-1 md:flex-none w-auto">
                   <SelectValue placeholder="Currency" />
                 </SelectTrigger>
                 <SelectContent>
@@ -152,102 +166,48 @@ export default function BuySellPage() {
                   <SelectItem value="GBP">GBP</SelectItem>
                 </SelectContent>
               </Select>
-
-              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Payment method" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">Payment (All)</SelectItem>
-                  <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
-                  <SelectItem value="PayPal">PayPal</SelectItem>
-                  <SelectItem value="Neteller">Neteller</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Mobile Search and Filter Buttons */}
-            <div className="md:hidden grid grid-cols-2 gap-2">
-              <button
-                onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className="flex items-center justify-center h-10 rounded-md border border-input bg-background px-3"
-              >
-                <Search className="h-4 w-4 mr-2" />
-                <span>Search</span>
-              </button>
-
-              <div ref={filterButtonRef} className="relative filter-dropdown-container">
-                <button
-                  onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
-                  className="flex items-center justify-center w-full h-10 rounded-md border border-input bg-background px-3"
-                >
-                  <Filter className="h-4 w-4 mr-2" />
-                  <span>Filter</span>
-                </button>
-                {isFilterPopupOpen && (
-                  <FilterPopup
-                    isOpen={isFilterPopupOpen}
-                    onClose={() => setIsFilterPopupOpen(false)}
-                    onApply={setFilterOptions}
-                    initialFilters={filterOptions}
-                  />
-                )}
-              </div>
-            </div>
-
-            {/* Mobile Search Input (conditionally shown) */}
-            {isSearchOpen && (
-              <div className="md:hidden relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
-                <Input
-                  className="pl-10 w-full"
-                  placeholder="Enter nickname"
-                  onChange={(e) => {
-                    const value = e.target.value
-                    setSearchQuery(value)
-                    debouncedFetchAdverts(value)
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      fetchAdverts()
-                    }
-                  }}
-                />
-              </div>
             )}
 
-            {/* Desktop Filters Row */}
-            <div className="hidden md:flex flex-wrap gap-3">
-              <Select value={currency} onValueChange={setCurrency}>
-                <SelectTrigger className="w-full sm:w-[100px]">
-                  <SelectValue placeholder="Currency" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="IDR">IDR</SelectItem>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
-                  <SelectItem value="GBP">GBP</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <div className="relative flex-grow w-full sm:w-auto sm:max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
-                <Input
-                  className="pl-10 w-full"
-                  placeholder="Enter nickname"
-                  onChange={(e) => {
-                    const value = e.target.value
-                    setSearchQuery(value)
-                    debouncedFetchAdverts(value)
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      fetchAdverts()
-                    }
-                  }}
+            <div className="hidden md:block relative flex-grow w-full sm:w-auto sm:max-w-md">
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
+                <Image
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-M1TMmjYwGjHFhjLbq4bbWyCgHduG6y.png"
+                  alt="Search"
+                  width={24}
+                  height={24}
                 />
               </div>
+              <Input
+                className="pl-10 w-full"
+                placeholder="Enter nickname"
+                onChange={(e) => {
+                  const value = e.target.value
+                  setSearchQuery(value)
+                  debouncedFetchAdverts(value)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    fetchAdverts()
+                  }
+                }}
+              />
+            </div>
 
+            {!isSearchOpen && (
+              <button
+                className="md:hidden border rounded-md p-1 flex-shrink-0"
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+              >
+                <Image
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-M1TMmjYwGjHFhjLbq4bbWyCgHduG6y.png"
+                  alt="Search"
+                  width={24}
+                  height={24}
+                />
+              </button>
+            )}
+
+            <div className="hidden md:block">
               <Select defaultValue="exchange_rate" onValueChange={setSortBy}>
                 <SelectTrigger className="w-full sm:w-[200px]">
                   <SelectValue placeholder="Sort by" />
@@ -257,20 +217,29 @@ export default function BuySellPage() {
                   <SelectItem value="user_rating_average">Sort by: Rating</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
 
-              <div className="relative w-full sm:w-[150px] filter-dropdown-container">
+            <div className="relative filter-dropdown-container flex-shrink-0">
+              {!isSearchOpen && (
                 <button
                   onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
-                  className="w-full h-10 px-3 py-2 flex items-center justify-between rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-10 px-3 py-2 md:w-[150px] flex items-center justify-between rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:border-[#000000] active:border-[#000000] disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <span className="text-sm">Filter by</span>
+                  <span className="text-sm hidden md:inline">Filter by</span>
+                  <Image
+                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-ZxfykGAof1EQnZpfz0QS1g3UZJHqO2.png"
+                    alt="Sort"
+                    width={24}
+                    height={24}
+                    className="md:hidden"
+                  />
                   <svg
                     width="15"
                     height="15"
                     viewBox="0 0 15 15"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 opacity-50"
+                    className="h-4 w-4 opacity-50 hidden md:inline"
                   >
                     <path
                       d="M4.93179 5.43179C4.75605 5.60753 4.75605 5.89245 4.93179 6.06819C5.10753 6.24392 5.39245 6.24392 5.56819 6.06819L7.49999 4.13638L9.43179 6.06819C9.60753 6.24392 9.89245 6.24392 10.0682 6.06819C10.2439 5.89245 10.2439 5.60753 10.0682 5.43179L7.81819 3.18179C7.73379 3.0974 7.61933 3.04999 7.49999 3.04999C7.38064 3.04999 7.26618 3.0974 7.18179 3.18179L4.93179 5.43179ZM10.0682 9.56819C10.2439 9.39245 10.2439 9.10753 10.0682 8.93179C9.89245 8.75606 9.60753 8.75606 9.43179 8.93179L7.49999 10.8636L5.56819 8.93179C5.39245 8.75606 5.10753 8.75606 4.93179 8.93179C4.75605 9.10753 4.75605 9.39245 4.93179 9.56819L7.18179 11.8182C7.26618 11.9026 7.38064 11.95 7.49999 11.95C7.61933 11.95 7.73379 11.9026 7.81819 11.8182L10.0682 9.56819Z"
@@ -280,19 +249,50 @@ export default function BuySellPage() {
                     ></path>
                   </svg>
                 </button>
-                {isFilterPopupOpen && (
-                  <FilterPopup
-                    isOpen={isFilterPopupOpen}
-                    onClose={() => setIsFilterPopupOpen(false)}
-                    onApply={setFilterOptions}
-                    initialFilters={filterOptions}
-                  />
-                )}
-              </div>
+              )}
+              {isFilterPopupOpen && (
+                <FilterPopup
+                  isOpen={isFilterPopupOpen}
+                  onClose={() => setIsFilterPopupOpen(false)}
+                  onApply={setFilterOptions}
+                  initialFilters={filterOptions}
+                />
+              )}
             </div>
           </div>
-        </div>
 
+          {/* Mobile Search Input (conditionally shown) */}
+          {isSearchOpen && (
+            <div className="md:hidden relative mt-4">
+              <div className="absolute left-2 top-1/2 transform -translate-y-1/2 text-slate-400">
+                <Image
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-M1TMmjYwGjHFhjLbq4bbWyCgHduG6y.png"
+                  alt="Search"
+                  width={24}
+                  height={24}
+                />
+              </div>
+              <Input
+                className="pl-10 w-full focus:ring-0 focus:border-[#000000] focus:outline-none"
+                placeholder="Enter nickname"
+                onChange={(e) => {
+                  const value = e.target.value
+                  setSearchQuery(value)
+                  debouncedFetchAdverts(value)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    fetchAdverts()
+                  }
+                }}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto pb-20 md:pb-4">
         {/* Advertisers List */}
         <div>
           {isLoading ? (
@@ -304,10 +304,39 @@ export default function BuySellPage() {
             <div className="text-center py-8">{error}</div>
           ) : adverts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
-              <div className="w-16 h-16 rounded-full bg-slate-200 flex items-center justify-center mb-4">
-                <AlertCircle className="h-8 w-8 text-slate-400" />
-              </div>
-              <p className="text-xl font-medium text-slate-800">No ads available.</p>
+              {searchQuery ? (
+                <>
+                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="text-slate-400"
+                    >
+                      <path
+                        d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-medium text-slate-800 mb-2">No results for "{searchQuery}"</h3>
+                  <p className="text-slate-600 text-center">
+                    We couldn't find an advertiser with that nickname. Try a different name.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="w-16 h-16 rounded-full bg-slate-200 flex items-center justify-center mb-4">
+                    <AlertCircle className="h-8 w-8 text-slate-400" />
+                  </div>
+                  <p className="text-xl font-medium text-slate-800">No ads available.</p>
+                </>
+              )}
             </div>
           ) : (
             <>
@@ -315,9 +344,9 @@ export default function BuySellPage() {
               <div className="md:hidden space-y-4">
                 {adverts.map((ad) => (
                   <div key={ad.id} className="border rounded-lg p-4 bg-white">
-                    <div className="flex items-center mb-2">
-                      <div className="h-10 w-10 flex-shrink-0 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-xl mr-3">
-                        {(ad.user?.nickname || "U").charAt(0).toUpperCase()}
+                    <div className="flex items-center mb-3">
+                      <div className="h-8 w-8 flex-shrink-0 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-sm mr-2">
+                        {(ad.user?.nickname?.charAt(0) || "U").toUpperCase()}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center">
@@ -333,22 +362,38 @@ export default function BuySellPage() {
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center text-xs text-slate-500">
-                          {ad.user.user_rating_average && (
-                            <span className="flex items-center">
-                              <span className="text-yellow-500 mr-1">★</span>
-                              {ad.user.user_rating_average}
-                            </span>
-                          )}
-                          <span className="mx-2">•</span>
-                          <span>{ad.user.completed_orders_count || 0} orders</span>
-                          <span className="mx-2">•</span>
-                          <span>{ad.user.completion_rate || 0}% completion</span>
-                        </div>
                       </div>
                     </div>
 
-                    <div className="text-lg font-bold my-2">
+                    <div className="flex items-center text-xs text-slate-500 mb-2">
+                      {ad.user.rating_average && (
+                        <span className="flex items-center">
+                          <Image
+                            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-6OumZ18zNMtAEyxgeIh25pHnlCud1B.png"
+                            alt="Rating"
+                            width={16}
+                            height={16}
+                            className="mr-1"
+                          />
+                          <span className="text-[#FFAD3A]">{ad.user.rating_average.toFixed(1)}</span>
+                        </span>
+                      )}
+                      {ad.user.completed_orders_count > 0 && (
+                        <>
+                          <span className="mx-2">•</span>
+                          <span>{ad.user.completed_orders_count} orders</span>
+                        </>
+                      )}
+
+                      {ad.user.completion_rate > 0 && (
+                        <>
+                          <span className="mx-2">•</span>
+                          <span>{ad.user.completion_rate}% completion</span>
+                        </>
+                      )}
+                    </div>
+
+                    <div className="text-lg font-bold mb-2">
                       {ad.account_currency} 1.00 = {ad.payment_currency}{" "}
                       {ad.exchange_rate
                         ? ad.exchange_rate.toLocaleString(undefined, {
@@ -363,16 +408,39 @@ export default function BuySellPage() {
                       {ad.actual_maximum_order_amount?.toFixed(2) || "N/A"}
                     </div>
 
-                    <div className="flex items-center text-sm text-slate-500 mb-3">
-                      <Clock className="h-4 w-4 mr-1" />
-                      {ad.order_expiry_period} min
+                    <div className="flex items-center text-xs text-slate-500 mb-3 mt-1">
+                      <div className="flex items-center bg-slate-100 rounded-sm px-2 py-1">
+                        <Image
+                          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-yvSdAuwjE496WbipvfAqwVr5jalzr4.png"
+                          alt="Clock"
+                          width={12}
+                          height={12}
+                          className="mr-1"
+                        />
+                        <span>{ad.order_expiry_period} min</span>
+                      </div>
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <div className="text-sm text-slate-600">{ad.payment_method_names?.join(" | ") || "-"}</div>
+                      <div className="flex flex-wrap gap-2">
+                        {ad.payment_method_names?.map((method, index) => (
+                          <div key={index} className="flex items-center">
+                            <div
+                              className={`h-2 w-2 rounded-full mr-2 ${
+                                method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"
+                              }`}
+                            ></div>
+                            <span className="text-sm">{method}</span>
+                          </div>
+                        ))}
+                      </div>
 
                       {USER.id != ad.user.id && (
-                        <Button size="sm" onClick={() => handleOrderClick(ad)}>
+                        <Button
+                          size="sm"
+                          onClick={() => handleOrderClick(ad)}
+                          className="rounded-full bg-[#00C390] hover:bg-[#00B380]"
+                        >
                           {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
                         </Button>
                       )}
@@ -382,9 +450,9 @@ export default function BuySellPage() {
               </div>
 
               {/* Desktop Table View */}
-              <div className="hidden md:block overflow-x-auto">
+              <div className="hidden md:block">
                 <Table>
-                  <TableHeader className="border-b">
+                  <TableHeader className="border-b sticky top-0 bg-white">
                     <TableRow className="text-sm">
                       <TableHead className="text-left py-4 px-4 text-slate-600 font-normal">Advertisers</TableHead>
                       <TableHead className="text-left py-4 px-4 text-slate-600 font-normal">Rates</TableHead>
@@ -418,10 +486,16 @@ export default function BuySellPage() {
                                 )}
                               </div>
                               <div className="flex items-center text-xs sm:text-sm text-slate-500">
-                                {ad.user.user_rating_average && (
+                                {ad.user.rating_average && (
                                   <span className="flex items-center">
-                                    <span className="text-yellow-500 mr-1">★</span>
-                                    {ad.user.user_rating_average}
+                                    <Image
+                                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-6OumZ18zNMtAEyxgeIh25pHnlCud1B.png"
+                                      alt="Rating"
+                                      width={16}
+                                      height={16}
+                                      className="mr-1"
+                                    />
+                                    <span className="text-[#FFAD3A]">{ad.user.rating_average.toFixed(1)}</span>
                                   </span>
                                 )}
                               </div>
@@ -441,17 +515,36 @@ export default function BuySellPage() {
                           <div>{`${ad.account_currency} ${ad.minimum_order_amount?.toFixed(2) || "N/A"} - ${
                             ad.actual_maximum_order_amount?.toFixed(2) || "N/A"
                           }`}</div>
-                          <div className="flex items-center text-xs sm:text-sm text-slate-500">
-                            <Clock className="h-4 w-4 mr-1" />
-                            {ad.order_expiry_period} min
+                          <div className="flex items-center text-xs text-slate-500 mt-1">
+                            <div className="flex items-center bg-slate-100 rounded-sm px-2 py-1">
+                              <Image
+                                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-yvSdAuwjE496WbipvfAqwVr5jalzr4.png"
+                                alt="Clock"
+                                width={12}
+                                height={12}
+                                className="mr-1"
+                              />
+                              <span>{ad.order_expiry_period} min</span>
+                            </div>
                           </div>
                         </TableCell>
-                        <TableCell className="py-4 px-4 hidden sm:table-cell">
-                          {ad.payment_method_names?.join(", ") || "-"}
+                        <TableCell className="py-4 px-4 sm:table-cell">
+                          <div className="flex flex-wrap gap-2">
+                            {ad.payment_method_names?.map((method, index) => (
+                              <div key={index} className="flex items-center">
+                                <div
+                                  className={`h-2 w-2 rounded-full mr-2 ${
+                                    method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"
+                                  }`}
+                                ></div>
+                                <span className="text-sm">{method}</span>
+                              </div>
+                            ))}
+                          </div>
                         </TableCell>
                         <TableCell className="py-4 px-4 text-right">
                           {USER.id != ad.user.id && (
-                            <Button size="sm" onClick={() => handleOrderClick(ad)}>
+                            <Button size="sm" onClick={() => handleOrderClick(ad)} className="rounded-full">
                               {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
                             </Button>
                           )}
@@ -465,18 +558,16 @@ export default function BuySellPage() {
           )}
         </div>
       </div>
-
-      {/* Mobile Footer Navigation */}
-      <MobileFooterNav />
-
-      {/* Order Sidebar */}
+      <div className="flex-shrink-0">
+        <MobileFooterNav />
+      </div>
       <OrderSidebar
         isOpen={isOrderSidebarOpen}
         onClose={() => setIsOrderSidebarOpen(false)}
         ad={selectedAd}
         orderType={activeTab}
       />
-    </>
+    </div>
   )
 }
 
