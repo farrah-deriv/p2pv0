@@ -17,7 +17,7 @@ interface OrderSidebarProps {
 }
 
 export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSidebarProps) {
-  const router = useRouter();
+  const router = useRouter()
   const [amount, setAmount] = useState("")
   const [totalAmount, setTotalAmount] = useState("0")
   const [validationError, setValidationError] = useState<string | null>(null)
@@ -79,7 +79,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
 
       // Call the API to create the order
       const order = await createOrder(ad.id, numAmount)
-      router.push("/orders/" + order.data.id);
+      router.push("/orders/" + order.data.id)
     } catch (error) {
       console.error("Failed to create order:", error)
       setOrderStatus({

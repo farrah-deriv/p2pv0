@@ -1,33 +1,105 @@
 "use client"
 
-import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeftRight, FileText, LayoutGrid, User } from "lucide-react"
+import { usePathname } from "next/navigation"
+import Image from "next/image"
 
 export default function MobileFooterNav() {
   const pathname = usePathname()
 
-  const navItems = [
-    { name: "Buy/Sell", href: "/", icon: ArrowLeftRight },
-    { name: "Orders", href: "/orders", icon: FileText },
-    { name: "My ads", href: "/my-ads", icon: LayoutGrid },
-    { name: "Profile", href: "/profile", icon: User },
-  ]
-
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50">
-      <div className="flex justify-around items-center h-16">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href
-          const Icon = item.icon
-
-          return (
-            <Link key={item.name} href={item.href} className="flex flex-col items-center justify-center w-full h-full">
-              <Icon className={`h-5 w-5 mb-1 ${isActive ? "" : "text-slate-500"}`} />
-              <span className={`text-xs ${isActive ? " font-medium" : "text-slate-500"}`}>{item.name}</span>
-            </Link>
-          )
-        })}
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t md:hidden z-40">
+      <div className="grid grid-cols-4 h-16">
+        <Link
+          href="/"
+          className={`flex flex-col items-center justify-center ${
+            pathname === "/" || pathname.startsWith("/advertiser") ? "text-[#00D0FF] font-bold" : "text-slate-700"
+          }`}
+        >
+          <Image
+            src="/icons/buy-sell-icon.png"
+            alt="Buy/Sell"
+            width={20}
+            height={20}
+            className={
+              pathname === "/" || pathname.startsWith("/advertiser") ? "filter-to-primary" : "brightness-50 opacity-70"
+            }
+            style={
+              pathname === "/"
+                ? {
+                    filter: "invert(67%) sepia(87%) saturate(1231%) hue-rotate(152deg) brightness(103%) contrast(103%)",
+                  }
+                : {}
+            }
+          />
+          <span className="text-xs mt-1">Buy/Sell</span>
+        </Link>
+        <Link
+          href="/orders"
+          className={`flex flex-col items-center justify-center ${
+            pathname.startsWith("/orders") ? "text-[#00D0FF] font-bold" : "text-slate-700"
+          }`}
+        >
+          <Image
+            src="/icons/orders-icon.png"
+            alt="Orders"
+            width={20}
+            height={20}
+            className={pathname.startsWith("/orders") ? "filter-to-primary" : "brightness-50 opacity-70"}
+            style={
+              pathname.startsWith("/orders")
+                ? {
+                    filter: "invert(67%) sepia(87%) saturate(1231%) hue-rotate(152deg) brightness(103%) contrast(103%)",
+                  }
+                : {}
+            }
+          />
+          <span className="text-xs mt-1">Orders</span>
+        </Link>
+        <Link
+          href="/my-ads"
+          className={`flex flex-col items-center justify-center ${
+            pathname.startsWith("/my-ads") ? "text-[#00D0FF] font-bold" : "text-slate-700"
+          }`}
+        >
+          <Image
+            src="/icons/my-ads-icon.png"
+            alt="My ads"
+            width={20}
+            height={20}
+            className={pathname.startsWith("/my-ads") ? "filter-to-primary" : "brightness-50 opacity-70"}
+            style={
+              pathname.startsWith("/my-ads")
+                ? {
+                    filter: "invert(67%) sepia(87%) saturate(1231%) hue-rotate(152deg) brightness(103%) contrast(103%)",
+                  }
+                : {}
+            }
+          />
+          <span className="text-xs mt-1">My ads</span>
+        </Link>
+        <Link
+          href="/profile"
+          className={`flex flex-col items-center justify-center ${
+            pathname.startsWith("/profile") ? "text-[#00D0FF] font-bold" : "text-slate-700"
+          }`}
+        >
+          <Image
+            src="/icons/profile-icon.png"
+            alt="Profile"
+            width={20}
+            height={20}
+            className={pathname.startsWith("/profile") ? "filter-to-primary" : "brightness-50 opacity-70"}
+            style={
+              pathname.startsWith("/profile")
+                ? {
+                    filter: "invert(67%) sepia(87%) saturate(1231%) hue-rotate(152deg) brightness(103%) contrast(103%)",
+                  }
+                : {}
+            }
+          />
+          <span className="text-xs mt-1">Profile</span>
+        </Link>
       </div>
     </div>
   )

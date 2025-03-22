@@ -94,11 +94,7 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
-            <div
-              className={`max-w-[80%] rounded-lg p-3 ${
-                msg.sender === "user" ? "" : "bg-slate-100"
-              }`}
-            >
+            <div className={`max-w-[80%] rounded-lg p-3 ${msg.sender === "user" ? "" : "bg-slate-100"}`}>
               <div>{msg.text}</div>
               <div className={`text-xs mt-1 ${msg.sender === "user" ? "" : "text-slate-500"}`}>
                 {formatMessageTime(msg.timestamp)}

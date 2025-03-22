@@ -43,19 +43,19 @@ export default function OrderDetailsPage() {
 
   if (isLoading) {
     return (
-      <>
+      <div className="px-4">
         <Navigation />
         <div className="text-center py-12">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid  border-r-transparent"></div>
           <p className="mt-2 text-slate-600">Loading order details...</p>
         </div>
-      </>
+      </div>
     )
   }
 
   if (error || !order) {
     return (
-      <>
+      <div className="px-4">
         <Navigation />
         <div className="text-center py-12">
           <p>{error || "Order not found"}</p>
@@ -63,7 +63,7 @@ export default function OrderDetailsPage() {
             Try Again
           </Button>
         </div>
-      </>
+      </div>
     )
   }
 
@@ -79,15 +79,10 @@ export default function OrderDetailsPage() {
   const orderAmount = order.amount ? Number(order.amount).toFixed(2) : "0.00"
 
   return (
-    <>
-      <div className="container mx-auto mt-[64px] px-4">
+    <div className="px-4">
+      <Navigation isVisible={false} title={`${orderType} order`} />
+      <div className="container mx-auto">
         <div className="flex flex-col">
-          <div className="flex justify-between items-center py-4">
-            <h1 className="text-xl font-bold">{orderType} order</h1>
-            <button onClick={() => router.push("/orders")} className="text-slate-500 hover:text-slate-700">
-              <X className="h-5 w-5" />
-            </button>
-          </div>
           {/* Left panel - Order details */}
           <div className="flex flex-row gap-6">
             <div className="w-full lg:w-1/2 rounded-lg">
@@ -170,12 +165,7 @@ export default function OrderDetailsPage() {
               </Tabs>
 
               <div className="p-4 flex gap-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => setShowCancelConfirmation(true)}
-                >
+                <Button variant="outline" size="sm" className="flex-1" onClick={() => setShowCancelConfirmation(true)}>
                   Cancel order
                 </Button>
                 <Button
@@ -213,10 +203,7 @@ export default function OrderDetailsPage() {
             <p className="text-slate-700 mb-6">Don't cancel if you've already paid.</p>
 
             <div className="space-y-3">
-              <Button
-                onClick={() => setShowCancelConfirmation(false)}
-                className="w-full"
-              >
+              <Button onClick={() => setShowCancelConfirmation(false)} className="w-full">
                 Keep order
               </Button>
               <Button
@@ -234,7 +221,7 @@ export default function OrderDetailsPage() {
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }
 

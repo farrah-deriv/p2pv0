@@ -8,7 +8,7 @@ export interface Advertisement {
     id: number
     is_favourite: boolean
     created_at: number
-    user_rating_average?: number
+    rating_average?: number
   }
   account_currency: string
   actual_maximum_order_amount: number
