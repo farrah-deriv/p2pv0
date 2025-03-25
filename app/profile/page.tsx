@@ -3,6 +3,7 @@ import UserInfo from "@/components/profile/user-info"
 import BusinessHours from "@/components/profile/business-hours"
 import TradeLimits from "@/components/profile/trade-limits"
 import StatsTabs from "./components/stats-tabs"
+import { SafetyWarningBanner } from "@/components/safety-warning-banner"
 
 export default function ProfilePage() {
   // Mock data - in a real app, this would come from an API
@@ -50,7 +51,7 @@ export default function ProfilePage() {
     <div className="px-4">
 
       <Navigation />
-
+      <SafetyWarningBanner />
       <UserInfo
         username={userData.username}
         rating={userData.rating}

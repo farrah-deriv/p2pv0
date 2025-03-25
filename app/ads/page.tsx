@@ -13,6 +13,7 @@ import MobileMyAdsList from "./components/mobile-my-ads-list"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
+import { SafetyWarningBanner } from "@/components/safety-warning-banner"
 
 export default function AdsPage() {
   const [ads, setAds] = useState<MyAd[]>([])
@@ -116,11 +117,13 @@ export default function AdsPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen px-4">
       {/* Fixed header section */}
-      <div className="flex-none px-4">
+      <div className="flex-none">
         <Navigation />
       </div>
+
+      <SafetyWarningBanner />
 
       {/* Fixed success banners - Updated with container class and rounded corners */}
       {showDeletedBanner && (
@@ -148,7 +151,7 @@ export default function AdsPage() {
       {/* Fixed controls section */}
       <div className="flex-none container mx-auto px-4">
         <MyAdsHeader hasAds={ads.length > 0} />
-        <Button onClick={() => router.push("/ads/create")} size="sm">
+        <Button className="mb-4" onClick={() => router.push("/ads/create")} size="sm">
           <PlusCircle className="mr-2 h-4 w-4" />
           Create Ad
         </Button>
