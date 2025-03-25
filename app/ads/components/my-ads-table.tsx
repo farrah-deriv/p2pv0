@@ -11,7 +11,7 @@ import StatusModal from "@/components/ui/status-modal"
 // Update the import for DeleteConfirmationDialog
 // Replace this line:
 // With this:
-import { DeleteConfirmationDialog } from "../components/delete-confirmation-dialog"
+import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
 // Add Badge import at the top with other imports
 import { Badge } from "@/components/ui/badge"
 

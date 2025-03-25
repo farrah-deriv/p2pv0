@@ -10,6 +10,7 @@ import StatusModal from "@/components/ui/status-modal"
 import { ProfileAPI } from "../api"
 import NotificationBanner from "./notification-banner"
 import EditPaymentMethodPanel from "./edit-payment-method-panel"
+import BankTransferEditPanel from "./bank-transfer-edit-panel"
 import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
 import { Card, CardContent } from "@/components/ui/card"
 
@@ -18,7 +19,7 @@ interface PaymentMethod {
   name: string
   type: string
   category: "bank_transfer" | "e_wallet" | "other"
-  details: Record<string, string>
+  details: Record<string, any> // Changed to any to handle nested objects
   instructions?: string
   isDefault?: boolean
 }
@@ -106,15 +107,34 @@ export default function PaymentMethodsTab() {
         data = { data: [] }
       }
 
+      // Add this new section for detailed raw response logging
       console.log("✅ Successfully fetched payment methods")
+      console.log("📋 RAW API RESPONSE:", responseText)
       console.groupEnd()
 
       // Process and categorize the payment methods from the new response format
-      const methods = data.data || []
-      console.log("Payment Methods Data:", methods)
+      const methodsData = data.data || []
+      console.log("Payment Methods Data:", methodsData)
+
+      // Log each method individually for better debugging
+      if (methodsData.length > 0) {
+        console.group("🔍 Individual Payment Methods")
+        methodsData.forEach((method, index) => {
+          console.group(`Method ${index + 1}: ${method.method || "Unknown"} (ID: ${method.id || "N/A"})`)
+          console.log("Full Method Object:", method)
+          console.log("Fields:", method.fields)
+          if (method.fields) {
+            Object.entries(method.fields).forEach(([key, value]) => {
+              console.log(`Field "${key}":`, value)
+            })
+          }
+          console.groupEnd()
+        })
+        console.groupEnd()
+      }
 
       // Transform the data to match our PaymentMethod interface
-      const transformedMethods = methods.map((method: any) => {
+      const transformedMethods = methodsData.map((method: any) => {
         // Get the method type (e.g., "alipay", "bank_transfer")
         const methodType = method.method || ""
 
@@ -129,26 +149,34 @@ export default function PaymentMethodsTab() {
           category = "e_wallet"
         }
 
-        // Extract details from the fields object
-        const details: Record<string, string> = {}
-        if (method.fields) {
-          Object.entries(method.fields).forEach(([key, fieldObj]: [string, any]) => {
-            if (fieldObj && fieldObj.value !== undefined) {
-              details[key] = fieldObj.value
+        // Extract instructions specifically for display
+        let instructions = ""
+        if (method.fields?.instructions) {
+          if (typeof method.fields.instructions === "object") {
+            if ("value" in method.fields.instructions) {
+              instructions = method.fields.instructions.value
+            } else if (
+              method.fields.instructions.value &&
+              typeof method.fields.instructions.value === "object" &&
+              "value" in method.fields.instructions.value
+            ) {
+              instructions = method.fields.instructions.value.value
             }
-          })
+          } else if (typeof method.fields.instructions === "string") {
+            instructions = method.fields.instructions
+          }
         }
 
         // Format the method name for display (capitalize first letter)
-        const name = methodType.charAt(0).toUpperCase() + methodType.slice(1)
+        const name = method.display_name || methodType.charAt(0).toUpperCase() + methodType.slice(1)
 
         return {
           id: String(method.id || ""),
           name: name,
           type: methodType,
           category: category,
-          details: details,
-          instructions: method.fields?.instructions?.value || "",
+          details: method.fields || {},
+          instructions: instructions,
           isDefault: false, // Default value, update if API provides this info
         }
       })
@@ -175,9 +203,17 @@ export default function PaymentMethodsTab() {
 
   // Handle edit payment method
   const handleEditPaymentMethod = (method: PaymentMethod) => {
+    console.log("Opening edit panel for method:", method)
+
+    // Create a cleaned version of the payment method for editing
+    const cleanedMethod = {
+      ...method,
+      details: { ...method.details },
+    }
+
     setEditPanel({
       show: true,
-      paymentMethod: method,
+      paymentMethod: cleanedMethod,
     })
   }
 
@@ -188,25 +224,14 @@ export default function PaymentMethodsTab() {
 
       // Format fields based on payment method type
       const paymentMethod = paymentMethods.find((m) => m.id === id)
-      let formattedFields: Record<string, any> = {}
+      const formattedFields: Record<string, any> = { ...fields }
 
-      if (paymentMethod?.type === "alipay") {
-        // For Alipay, ensure we have the account field
-        formattedFields = {
-          account: fields.account,
-        }
-      } else {
-        // For other methods, just pass the fields as is
-        formattedFields = { ...fields }
+      // Make sure to include method_type for the API to know which payment method type it is
+      if (paymentMethod) {
+        formattedFields.method_type = paymentMethod.type
       }
 
-      // Remove instructions from fields and handle it separately
-      const { instructions, ...restFields } = formattedFields
-
-      // If instructions exist, add them back in the correct format
-      if (instructions) {
-        formattedFields.instructions = instructions
-      }
+      console.log("Sending fields to API:", formattedFields)
 
       const result = await ProfileAPI.PaymentMethods.updatePaymentMethod(id, formattedFields)
 
@@ -373,8 +398,34 @@ export default function PaymentMethodsTab() {
       return ""
     }
 
-    // For the demo, just show the account value with a * prefix
-    return method.details.account ? `*${method.details.account}` : "*1234"
+    // Extract account value from the nested structure
+    let accountValue = ""
+    if (method.details.account) {
+      if (typeof method.details.account === "object" && "value" in method.details.account) {
+        accountValue = method.details.account.value
+      } else if (typeof method.details.account === "string") {
+        accountValue = method.details.account
+      }
+    }
+
+    return accountValue ? `*${accountValue}` : "*1234"
+  }
+
+  // Add a new helper function to extract display values from nested objects
+  const getDisplayValue = (field: any): string => {
+    if (!field) return ""
+
+    if (typeof field === "object") {
+      if ("value" in field) {
+        return field.value
+      } else if (field.value && typeof field.value === "object" && "value" in field.value) {
+        return field.value.value
+      }
+    } else if (typeof field === "string") {
+      return field
+    }
+
+    return ""
   }
 
   // Render loading state (shimmer)
@@ -533,15 +584,24 @@ export default function PaymentMethodsTab() {
         onCancel={cancelDeletePaymentMethod}
       />
 
-      {/* Edit Payment Method Panel */}
-      {editPanel.show && editPanel.paymentMethod && (
-        <EditPaymentMethodPanel
-          paymentMethod={editPanel.paymentMethod}
-          onClose={() => setEditPanel({ show: false, paymentMethod: null })}
-          onSave={handleSavePaymentMethod}
-          isLoading={isEditing}
-        />
-      )}
+      {/* Edit Payment Method Panel - conditionally render based on payment method type */}
+      {editPanel.show &&
+        editPanel.paymentMethod &&
+        (editPanel.paymentMethod.type === "bank_transfer" ? (
+          <BankTransferEditPanel
+            paymentMethod={editPanel.paymentMethod}
+            onClose={() => setEditPanel({ show: false, paymentMethod: null })}
+            onSave={handleSavePaymentMethod}
+            isLoading={isEditing}
+          />
+        ) : (
+          <EditPaymentMethodPanel
+            paymentMethod={editPanel.paymentMethod}
+            onClose={() => setEditPanel({ show: false, paymentMethod: null })}
+            onSave={handleSavePaymentMethod}
+            isLoading={isEditing}
+          />
+        ))}
 
       {/* Error Modal - only show for errors, not for success */}
       {statusModal.show && (

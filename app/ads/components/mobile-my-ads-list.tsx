@@ -10,7 +10,7 @@ import type { Ad } from "../types"
 import StatusModal from "@/components/ui/status-modal"
 // Add Badge import at the top with other imports
 import { Badge } from "@/components/ui/badge"
-import { DeleteConfirmationDialog } from "../components/delete-confirmation-dialog"
+import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
 
 interface MobileMyAdsListProps {
   ads: Ad[]

@@ -183,66 +183,71 @@ export async function addPaymentMethod(method: string, fields: Record<string, an
   }
 }
 
-// Update the updatePaymentMethod function to properly handle the error format
+// Update the updatePaymentMethod function to handle the bank transfer data correctly
 export async function updatePaymentMethod(id: string, fields: Record<string, any>): Promise<PaymentMethodResponse> {
   try {
     // Get the payment method type from the fields or use a default
     const methodType = fields.method_type || "unknown"
+    console.log("Updating payment method type:", methodType)
 
     // Create a properly formatted fields object based on the payment method
     let formattedFields: Record<string, any> = {}
 
-    if (methodType === "alipay") {
-      // Keep Alipay formatting as is
-      formattedFields = { ...fields }
-    } else if (methodType === "bank_transfer") {
-      // For bank transfer, format according to the screenshot structure
-      // Extract the basic fields first
-      const { instructions, ...restFields } = fields
+    if (methodType === "bank_transfer") {
+      // For bank transfer, format exactly according to the required structure
+      const { instructions, method_type, account, bank_name, bank_code, branch } = fields
 
-      // Format each field according to the structure
-      if (restFields.account) {
-        formattedFields.account = {
+      // Format fields according to the exact required structure
+      formattedFields = {
+        account: {
+          value: account || "",
           required: true,
-          value: restFields.account,
-        }
-      }
-
-      if (restFields.bank_code !== undefined) {
-        formattedFields.bank_code = {
-          display_name: "SWIFT or IFSC code",
-          required: false,
-          value: restFields.bank_code,
-        }
-      }
-
-      if (restFields.bank_name) {
-        formattedFields.bank_name = {
+        },
+        bank_name: {
+          value: bank_name || "",
+          required: true,
           display_name: "Bank Name",
-          required: true,
-          value: restFields.bank_name,
-        }
-      }
-
-      if (restFields.branch !== undefined) {
-        formattedFields.branch = {
-          display_name: "Branch",
+        },
+        bank_code: {
+          value: bank_code || "",
           required: false,
-          value: restFields.branch,
-        }
+          display_name: "SWIFT or IFSC code",
+        },
+        branch: {
+          value: branch || "",
+          required: false,
+          display_name: "Branch",
+        },
       }
 
       // Add instructions if present
       if (instructions) {
         formattedFields.instructions = {
-          display_name: "Instructions",
-          required: false,
           value: instructions,
+          required: false,
+          display_name: "Instructions",
         }
       }
+
+      console.log("Formatted bank transfer fields:", formattedFields)
+    } else if (methodType === "alipay") {
+      // For Alipay, include account and instructions directly in the fields object
+      formattedFields = {
+        account: fields.account || "",
+      }
+
+      // Add instructions if present
+      if (fields.instructions) {
+        formattedFields.instructions = fields.instructions
+      }
+
+      console.log("Formatted alipay fields:", formattedFields)
     } else {
       // For other methods, just pass the fields as is
-      formattedFields = { ...fields }
+      const { method_type, ...restFields } = fields
+      formattedFields = { ...restFields }
+
+      console.log("Formatted other fields:", formattedFields)
     }
 
     // Create the request body in the correct format
@@ -320,6 +325,7 @@ export async function updatePaymentMethod(id: string, fields: Record<string, any
     console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
     console.groupEnd()
 
+    // Return error in a structured format
     return {
       success: false,
       errors: [
@@ -330,6 +336,18 @@ export async function updatePaymentMethod(id: string, fields: Record<string, any
       ],
     }
   }
+}
+
+// Helper function to get display name for field
+function getDisplayName(fieldName: string): string {
+  const displayNames: Record<string, string> = {
+    account: "Account Number",
+    bank_code: "SWIFT or IFSC code",
+    bank_name: "Bank Name",
+    branch: "Branch",
+  }
+
+  return displayNames[fieldName] || fieldName.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
 }
 
 // Helper function to get user-friendly error messages from error codes

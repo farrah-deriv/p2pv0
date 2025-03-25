@@ -16,7 +16,7 @@ interface EditPaymentMethodPanelProps {
     id: string
     name: string
     type: string
-    details: Record<string, string>
+    details: Record<string, any> // Changed to any to handle nested objects
     instructions?: string
   }
 }
@@ -33,21 +33,76 @@ export default function EditPaymentMethodPanel({
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const [charCount, setCharCount] = useState(0)
 
-  // Initialize form with payment method details
+  // Update the useEffect hook to better handle the nested structure
   useEffect(() => {
     if (paymentMethod) {
+      console.log("Initializing edit form with payment method:", paymentMethod)
+
       // Set details from payment method
-      setDetails({
-        ...paymentMethod.details,
+      const formattedDetails: Record<string, string> = {
         method_type: paymentMethod.type, // Add method_type to track the payment method type
+      }
+
+      // Extract values from potentially nested objects in details
+      Object.entries(paymentMethod.details).forEach(([key, value]) => {
+        // Skip instructions as we handle it separately
+        if (key === "instructions") return
+
+        // Handle deeply nested objects
+        if (value && typeof value === "object") {
+          if ("value" in value) {
+            // Direct value property
+            formattedDetails[key] = value.value
+          } else if (value.value && typeof value.value === "object" && "value" in value.value) {
+            // Nested value property (value.value.value)
+            formattedDetails[key] = value.value.value
+          } else {
+            // Try to find any property that might contain the actual value
+            const nestedValue = Object.values(value).find((v) => typeof v === "string" || typeof v === "number")
+            if (nestedValue) {
+              formattedDetails[key] = String(nestedValue)
+            }
+          }
+        } else if (typeof value === "string") {
+          formattedDetails[key] = value
+        }
       })
 
-      // Set instructions if available
-      setInstructions(paymentMethod.instructions || "")
+      setDetails(formattedDetails)
+
+      // Set instructions if available - extract from nested object if needed
+      let instructionsValue = ""
+      const instructionsField = paymentMethod.details?.instructions
+
+      if (instructionsField) {
+        if (typeof instructionsField === "object") {
+          if ("value" in instructionsField) {
+            instructionsValue = instructionsField.value
+          } else if (
+            instructionsField.value &&
+            typeof instructionsField.value === "object" &&
+            "value" in instructionsField.value
+          ) {
+            instructionsValue = instructionsField.value.value
+          }
+        } else if (typeof instructionsField === "string") {
+          instructionsValue = instructionsField
+        }
+      } else if (paymentMethod.instructions) {
+        if (typeof paymentMethod.instructions === "object" && "value" in paymentMethod.instructions) {
+          instructionsValue = paymentMethod.instructions.value
+        } else if (typeof paymentMethod.instructions === "string") {
+          instructionsValue = paymentMethod.instructions
+        }
+      }
+
+      setInstructions(instructionsValue)
 
       // Reset errors and touched state
       setErrors({})
       setTouched({})
+
+      console.log("Formatted details for form:", formattedDetails)
     }
   }, [paymentMethod])
 
@@ -69,8 +124,8 @@ export default function EditPaymentMethodPanel({
         newErrors.identifier = "Identifier is required"
       }
     } else if (paymentMethod.type === "bank_transfer") {
-      if (!details.account_number?.trim()) {
-        newErrors.account_number = "Account number is required"
+      if (!details.account?.trim()) {
+        newErrors.account = "Account number is required"
       }
       if (!details.bank_name?.trim()) {
         newErrors.bank_name = "Bank name is required"
@@ -114,6 +169,8 @@ export default function EditPaymentMethodPanel({
         fieldValues.instructions = instructions.trim()
       }
 
+      console.log("Submitting field values:", fieldValues)
+
       // Pass the payment method ID and field values to the parent component
       onSave(paymentMethod.id, fieldValues)
     }
@@ -122,9 +179,9 @@ export default function EditPaymentMethodPanel({
   // Get field label based on field name
   const getFieldLabel = (fieldName: string): string => {
     const fieldLabels: Record<string, string> = {
-      account: "Alipay ID",
-      account_number: "Account Number",
+      account: "Account Number",
       swift_code: "SWIFT or IFSC code",
+      bank_code: "SWIFT or IFSC code",
       bank_name: "Bank Name",
       branch: "Branch",
       identifier: "Email or phone number",
@@ -159,7 +216,7 @@ export default function EditPaymentMethodPanel({
 
           <div className="space-y-4">
             {Object.entries(details)
-              .filter(([fieldName]) => fieldName !== "instructions") // Filter out instructions field to avoid duplication
+              .filter(([fieldName]) => fieldName !== "instructions" && fieldName !== "method_type") // Filter out instructions and method_type
               .map(([fieldName, fieldValue]) => (
                 <div key={fieldName}>
                   <label htmlFor={fieldName} className="block text-sm font-medium text-gray-500 mb-2">
@@ -172,7 +229,9 @@ export default function EditPaymentMethodPanel({
                     onChange={(e) => handleInputChange(fieldName, e.target.value)}
                     placeholder={`Enter ${getFieldLabel(fieldName).toLowerCase()}`}
                   />
-                  {touched[fieldName] && errors[fieldName] && <p className="mt-1 text-xs">{errors[fieldName]}</p>}
+                  {touched[fieldName] && errors[fieldName] && (
+                    <p className="mt-1 text-xs text-red-500">{errors[fieldName]}</p>
+                  )}
                 </div>
               ))}
           </div>
