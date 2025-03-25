@@ -278,7 +278,7 @@ export default function AdvertiserProfilePage() {
       <Navigation title="Back" isVisible={false} />
 
       {/* Profile header */}
-      <div className="flex flex-col md:flex-col justify-between">
+      <div className="flex flex-col md:flex-row justify-between">
         <div className="container mx-auto pb-6">
           <div className="flex flex-col md:flex-row md:items-start gap-4">
             <div className="flex-1">
@@ -313,7 +313,7 @@ export default function AdvertiserProfilePage() {
                   </div>
                   <div className="flex items-center text-xs text-slate-500 mt-2">
                     <span className="mr-3">{profile?.isOnline ? "Online" : "Offline"}</span>
-                    <span className="text-slate-400">|</span>
+                    {profile?.joinedDate && <span className="text-slate-400">|</span>}
                     <span className="ml-3">{profile?.joinedDate}</span>
                   </div>
                 </div>
@@ -457,10 +457,10 @@ export default function AdvertiserProfilePage() {
                           <div key={index} className="flex items-center">
                             <div
                               className={`h-2 w-2 rounded-full mr-1 ${method.toLowerCase().includes("bank")
-                                  ? "bg-green-500"
-                                  : method.toLowerCase().includes("skrill")
-                                    ? "bg-blue-500"
-                                    : "bg-yellow-500"
+                                ? "bg-green-500"
+                                : method.toLowerCase().includes("skrill")
+                                  ? "bg-blue-500"
+                                  : "bg-yellow-500"
                                 }`}
                             ></div>
                             <span className="text-sm">{method}</span>
@@ -512,10 +512,10 @@ export default function AdvertiserProfilePage() {
                                 <div key={index} className="flex items-center">
                                   <div
                                     className={`h-2 w-2 rounded-full mr-1 ${method.toLowerCase().includes("bank")
-                                        ? "bg-green-500"
-                                        : method.toLowerCase().includes("skrill")
-                                          ? "bg-blue-500"
-                                          : "bg-yellow-500"
+                                      ? "bg-green-500"
+                                      : method.toLowerCase().includes("skrill")
+                                        ? "bg-blue-500"
+                                        : "bg-yellow-500"
                                       }`}
                                   ></div>
                                   <span className="text-sm">{method}</span>
