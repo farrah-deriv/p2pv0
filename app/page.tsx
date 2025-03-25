@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Navigation from "@/components/navigation"
 import { Input } from "@/components/ui/input"
@@ -43,10 +43,10 @@ export default function BuySellPage() {
 
   useEffect(() => {
     fetchAdverts()
-  }, [activeTab, currency, paymentMethod, searchQuery, sortBy, filterOptions])
+  }, [activeTab, currency, paymentMethod, sortBy, filterOptions])
 
   // Update the fetchAdverts function to ensure adverts is always an array
-  const fetchAdverts = async () => {
+  const fetchAdverts = async (query = null) => {
     setIsLoading(true)
     setError(null)
     try {
@@ -54,7 +54,7 @@ export default function BuySellPage() {
         type: activeTab,
         currency: currency,
         paymentMethod: paymentMethod !== "All" ? paymentMethod : undefined,
-        nickname: searchQuery,
+        nickname: query !== null ? query : searchQuery,
         sortBy: sortBy,
       }
 
@@ -85,10 +85,10 @@ export default function BuySellPage() {
   }
 
   const debouncedFetchAdverts = useCallback(
-    debounce((query: string) => {
+    debounce(() => {
       fetchAdverts()
     }, 300),
-    [activeTab, currency, paymentMethod, fetchAdverts],
+    [activeTab, currency, paymentMethod, sortBy, filterOptions, searchQuery],
   )
 
   const handleAdvertiserClick = (userId: number) => {
@@ -99,6 +99,7 @@ export default function BuySellPage() {
   const handleOrderClick = (ad: Advertisement) => {
     setSelectedAd(ad)
     setIsOrderSidebarOpen(true)
+    setError(null);
   }
 
   useEffect(() => {
@@ -121,7 +122,7 @@ export default function BuySellPage() {
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Desktop Navigation */}
-        <Navigation title="P2P Wallet" />
+        {!isSearchOpen && <Navigation title="P2P Wallet" />}
 
         {!isSearchOpen && (
           <div className="bg-white">
@@ -140,7 +141,7 @@ export default function BuySellPage() {
                 onValueChange={(value) => setActiveTab(value as "buy" | "sell")}
                 className="w-full"
               >
-                <TabsList className="w-full md:w-auto">
+                <TabsList className="w-full md:min-w-3xs">
                   <TabsTrigger className="w-full md:w-auto" value="buy">
                     Buy
                   </TabsTrigger>
@@ -183,7 +184,12 @@ export default function BuySellPage() {
                 onChange={(e) => {
                   const value = e.target.value
                   setSearchQuery(value)
-                  debouncedFetchAdverts(value)
+                  if (value.trim() === "") {
+                    // If search is empty, fetch all adverts
+                    fetchAdverts("")
+                  } else {
+                    debouncedFetchAdverts()
+                  }
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -227,27 +233,12 @@ export default function BuySellPage() {
                 >
                   <span className="text-sm hidden md:inline">Filter by</span>
                   <Image
-                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-ZxfykGAof1EQnZpfz0QS1g3UZJHqO2.png"
-                    alt="Sort"
-                    width={24}
-                    height={24}
-                    className="md:hidden"
+                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-MaTVHgyEEk1geuXl77pbxjPzcQzTkb.png"
+                    alt="Dropdown"
+                    width={15}
+                    height={15}
+                    className="h-4 w-4 opacity-70 hidden md:inline"
                   />
-                  <svg
-                    width="15"
-                    height="15"
-                    viewBox="0 0 15 15"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 opacity-50 hidden md:inline"
-                  >
-                    <path
-                      d="M4.93179 5.43179C4.75605 5.60753 4.75605 5.89245 4.93179 6.06819C5.10753 6.24392 5.39245 6.24392 5.56819 6.06819L7.49999 4.13638L9.43179 6.06819C9.60753 6.24392 9.89245 6.24392 10.0682 6.06819C10.2439 5.89245 10.2439 5.60753 10.0682 5.43179L7.81819 3.18179C7.73379 3.0974 7.61933 3.04999 7.49999 3.04999C7.38064 3.04999 7.26618 3.0974 7.18179 3.18179L4.93179 5.43179ZM10.0682 9.56819C10.2439 9.39245 10.2439 9.10753 10.0682 8.93179C9.89245 8.75606 9.60753 8.75606 9.43179 8.93179L7.49999 10.8636L5.56819 8.93179C5.39245 8.75606 5.10753 8.75606 4.93179 8.93179C4.75605 9.10753 4.75605 9.39245 4.93179 9.56819L7.18179 11.8182C7.26618 11.9026 7.38064 11.95 7.49999 11.95C7.61933 11.95 7.73379 11.9026 7.81819 11.8182L10.0682 9.56819Z"
-                      fill="currentColor"
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                    ></path>
-                  </svg>
                 </button>
               )}
               {isFilterPopupOpen && (
@@ -263,29 +254,46 @@ export default function BuySellPage() {
 
           {/* Mobile Search Input (conditionally shown) */}
           {isSearchOpen && (
-            <div className="md:hidden relative mt-4">
-              <div className="absolute left-2 top-1/2 transform -translate-y-1/2 text-slate-400">
-                <Image
-                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-M1TMmjYwGjHFhjLbq4bbWyCgHduG6y.png"
-                  alt="Search"
-                  width={24}
-                  height={24}
+            <div className="md:hidden flex">
+              <div
+                href="/"
+                className="flex items-center text-slate-1400"
+                onClick={() => {
+                  setIsSearchOpen(false)
+                  setSearchQuery(null)
+                }}
+              >
+                <ArrowLeft className="h-5 w-5 mr-2" />
+              </div>
+              <div className="relative w-full">
+                <div className="absolute left-2 top-1/2 transform -translate-y-1/2 text-slate-400">
+                  <Image
+                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-M1TMmjYwGjHFhjLbq4bbWyCgHduG6y.png"
+                    alt="Search"
+                    width={24}
+                    height={24}
+                  />
+                </div>
+                <Input
+                  className="pl-10 w-full focus:ring-0 focus:border-[#000000] focus:outline-none"
+                  placeholder="Enter nickname"
+                  onChange={(e) => {
+                    const value = e.target.value
+                    setSearchQuery(value)
+                    if (value.trim() === "") {
+                      // If search is empty, fetch all adverts
+                      fetchAdverts("")
+                    } else {
+                      debouncedFetchAdverts()
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      fetchAdverts()
+                    }
+                  }}
                 />
               </div>
-              <Input
-                className="pl-10 w-full focus:ring-0 focus:border-[#000000] focus:outline-none"
-                placeholder="Enter nickname"
-                onChange={(e) => {
-                  const value = e.target.value
-                  setSearchQuery(value)
-                  debouncedFetchAdverts(value)
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    fetchAdverts()
-                  }
-                }}
-              />
             </div>
           )}
         </div>
@@ -544,7 +552,12 @@ export default function BuySellPage() {
                         </TableCell>
                         <TableCell className="py-4 px-4 text-right">
                           {USER.id != ad.user.id && (
-                            <Button size="sm" onClick={() => handleOrderClick(ad)} className="rounded-full">
+                            <Button
+                              variant={ad.type === "buy" ? "default" : "destructive"}
+                              size="sm"
+                              onClick={() => handleOrderClick(ad)}
+                              className="rounded-full"
+                            >
                               {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
                             </Button>
                           )}

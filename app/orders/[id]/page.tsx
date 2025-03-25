@@ -81,7 +81,7 @@ export default function OrderDetailsPage() {
   return (
     <div className="px-4">
       <Navigation isVisible={false} title={`${orderType} order`} />
-      <div className="container mx-auto">
+      <div className="container mx-auto px-4">
         <div className="flex flex-col">
           {/* Left panel - Order details */}
           <div className="flex flex-row gap-6">
