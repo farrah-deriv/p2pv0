@@ -106,7 +106,11 @@ export default function StatsTabs({ children, stats }: StatsTabsProps) {
         <div className="flex justify-between items-center mb-6">
           <TabsList className="bg-gray-100">
             {tabs.map((tab) => (
-              <TabsTrigger key={tab.id} value={tab.id} className="px-6 py-3 text-sm font-medium">
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className="px-6 py-3 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary"
+              >
                 {tab.label}
               </TabsTrigger>
             ))}
@@ -127,10 +131,16 @@ export default function StatsTabs({ children, stats }: StatsTabsProps) {
           <PaymentMethodsTab key={refreshKey} />
         </TabsContent>
         <TabsContent value="ads">
-          <div>Ad details content</div>
+          <div className="p-4 border rounded-lg">
+            <h3 className="text-lg font-medium mb-4">Ad details</h3>
+            <p className="text-gray-500">Your ad details will appear here.</p>
+          </div>
         </TabsContent>
         <TabsContent value="counterparties">
-          <div>My counterparties content</div>
+          <div className="p-4 border rounded-lg">
+            <h3 className="text-lg font-medium mb-4">My counterparties</h3>
+            <p className="text-gray-500">Your counterparties will appear here.</p>
+          </div>
         </TabsContent>
       </Tabs>
 

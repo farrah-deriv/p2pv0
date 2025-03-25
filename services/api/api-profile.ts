@@ -154,20 +154,29 @@ export async function getUserPaymentMethods(): Promise<PaymentMethod[]> {
  */
 export async function addPaymentMethod(name: string, instructions: string): Promise<PaymentMethod> {
   try {
+    const requestBody = { name, instructions }
+    console.log("Payment Method API - Request Body:", JSON.stringify(requestBody, null, 2))
+
     const response = await fetch(`${API.baseUrl}${API.endpoints.profile}/payment-methods`, {
       method: "POST",
       headers: {
         ...AUTH.getAuthHeader(),
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, instructions }),
+      body: JSON.stringify(requestBody),
     })
 
     if (!response.ok) {
+      const errorText = await response.text()
+      console.error(`Error adding payment method: ${response.status} ${response.statusText}`)
+      console.error("Error Response Body:", errorText)
       throw new Error(`Error adding payment method: ${response.statusText}`)
     }
 
-    return await response.json()
+    const responseData = await response.json()
+    console.log("Payment Method API - Response Body:", JSON.stringify(responseData, null, 2))
+
+    return responseData
   } catch (error) {
     console.error("Failed to add payment method:", error)
     throw error
