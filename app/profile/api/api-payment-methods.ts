@@ -188,7 +188,6 @@ export async function updatePaymentMethod(id: string, fields: Record<string, any
   try {
     // Get the payment method type from the fields or use a default
     const methodType = fields.method_type || "unknown"
-    console.log("Updating payment method type:", methodType)
 
     // Create a properly formatted fields object based on the payment method
     let formattedFields: Record<string, any> = {}
@@ -229,7 +228,6 @@ export async function updatePaymentMethod(id: string, fields: Record<string, any
         }
       }
 
-      console.log("Formatted bank transfer fields:", formattedFields)
     } else if (methodType === "alipay") {
       // For Alipay, include account and instructions directly in the fields object
       formattedFields = {
@@ -241,13 +239,13 @@ export async function updatePaymentMethod(id: string, fields: Record<string, any
         formattedFields.instructions = fields.instructions
       }
 
-      console.log("Formatted alipay fields:", formattedFields)
+
     } else {
       // For other methods, just pass the fields as is
       const { method_type, ...restFields } = fields
       formattedFields = { ...restFields }
 
-      console.log("Formatted other fields:", formattedFields)
+
     }
 
     // Create the request body in the correct format
