@@ -68,7 +68,7 @@ export default function ProfilePage() {
       </div>
 
       <StatsTabs stats={userData.stats} />
-    </>
+    </div>
   )
 }
 
