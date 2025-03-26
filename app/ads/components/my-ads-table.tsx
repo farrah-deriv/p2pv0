@@ -292,7 +292,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
                   </td>
                   <td className="py-4 w-[18%] truncate">{ad.paymentMethods.join(", ")}</td>
                   <td className="py-4 w-[100px] whitespace-nowrap">{getStatusBadge(ad.status)}</td>
-                  <td className="py-4 w-[15px] text-right">
+                  <td className="py-4 w-[40px] text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button className="p-1 hover:bg-gray-100 rounded-full">

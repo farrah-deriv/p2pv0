@@ -36,7 +36,7 @@ export default function EditPaymentMethodPanel({
   // Update the useEffect hook to better handle the nested structure
   useEffect(() => {
     if (paymentMethod) {
-
+      console.log("Initializing edit form with payment method:", paymentMethod)
 
       // Set details from payment method
       const formattedDetails: Record<string, string> = {
@@ -102,7 +102,7 @@ export default function EditPaymentMethodPanel({
       setErrors({})
       setTouched({})
 
-
+      console.log("Formatted details for form:", formattedDetails)
     }
   }, [paymentMethod])
 
@@ -169,7 +169,7 @@ export default function EditPaymentMethodPanel({
         fieldValues.instructions = instructions.trim()
       }
 
-
+      console.log("Submitting field values:", fieldValues)
 
       // Pass the payment method ID and field values to the parent component
       onSave(paymentMethod.id, fieldValues)
