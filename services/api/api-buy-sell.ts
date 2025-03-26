@@ -327,3 +327,181 @@ export async function getAdvertiserAds(advertiserId: string | number): Promise<A
   }
 }
 
+/**
+ * Toggle favourite status for an advertiser
+ * @param advertiserId - The ID of the advertiser to follow/unfollow
+ * @param isFavourite - Whether to add (true) or remove (false) from favourites
+ * @returns Promise with the result of the operation
+ */
+export async function toggleFavouriteAdvertiser(
+  advertiserId: number,
+  isFavourite: boolean,
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const url = `${API.baseUrl}${API.endpoints.userFavourites}`
+    const method = isFavourite ? "POST" : "DELETE"
+
+    const headers = {
+      ...AUTH.getAuthHeader(),
+      "Content-Type": "application/json",
+    }
+
+    const body = JSON.stringify({
+      data: {
+        user_id: advertiserId,
+      },
+    })
+
+    // Log request details
+    console.group(`📤 ${method} Favourite Advertiser Request`)
+    console.log("URL:", url)
+    console.log("Headers:", headers)
+    console.log("Body:", body)
+    console.log("Advertiser ID:", advertiserId)
+    console.log("Action:", isFavourite ? "Add to favourites" : "Remove from favourites")
+    console.groupEnd()
+
+    const startTime = performance.now()
+    const response = await fetch(url, {
+      method,
+      headers,
+      body,
+    })
+    const endTime = performance.now()
+
+    // Log response details
+    console.group(`📥 ${method} Favourite Advertiser Response`)
+    console.log("Status:", response.status, response.statusText)
+    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
+    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
+
+    if (!response.ok) {
+      console.error("Error Response:", response.status, response.statusText)
+      console.groupEnd()
+      return {
+        success: false,
+        message: `Failed to ${isFavourite ? "follow" : "unfollow"} advertiser: ${response.statusText}`,
+      }
+    }
+
+    const responseText = await response.text()
+    let data
+
+    try {
+      data = responseText ? JSON.parse(responseText) : {}
+      console.log("Response Body (parsed):", data)
+    } catch (e) {
+      console.warn("⚠️ Could not parse response as JSON:", e)
+      console.log("Response Body (raw):", responseText)
+      data = {}
+    }
+
+    console.log(`✅ Successfully ${isFavourite ? "followed" : "unfollowed"} advertiser`)
+    console.groupEnd()
+
+    return {
+      success: true,
+      message: `Successfully ${isFavourite ? "followed" : "unfollowed"} advertiser`,
+    }
+  } catch (error) {
+    console.group("💥 Toggle Favourite Advertiser Exception")
+    console.error("Error:", error)
+    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
+    console.groupEnd()
+
+    return {
+      success: false,
+      message: `Error: ${error instanceof Error ? error.message : "Unknown error occurred"}`,
+    }
+  }
+}
+
+/**
+ * Toggle block status for an advertiser
+ * @param advertiserId - The ID of the advertiser to block/unblock
+ * @param isBlocked - Whether to block (true) or unblock (false) the advertiser
+ * @returns Promise with the result of the operation
+ */
+export async function toggleBlockAdvertiser(
+  advertiserId: number,
+  isBlocked: boolean,
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const url = `${API.baseUrl}${API.endpoints.userBlocks}`
+    const method = isBlocked ? "POST" : "DELETE"
+
+    const headers = {
+      ...AUTH.getAuthHeader(),
+      "Content-Type": "application/json",
+    }
+
+    const body = JSON.stringify({
+      data: {
+        user_id: advertiserId,
+      },
+    })
+
+    // Log request details
+    console.group(`📤 ${method} Block Advertiser Request`)
+    console.log("URL:", url)
+    console.log("Headers:", headers)
+    console.log("Body:", body)
+    console.log("Advertiser ID:", advertiserId)
+    console.log("Action:", isBlocked ? "Block" : "Unblock")
+    console.groupEnd()
+
+    const startTime = performance.now()
+    const response = await fetch(url, {
+      method,
+      headers,
+      body,
+    })
+    const endTime = performance.now()
+
+    // Log response details
+    console.group(`📥 ${method} Block Advertiser Response`)
+    console.log("Status:", response.status, response.statusText)
+    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
+    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
+
+    if (!response.ok) {
+      console.error("Error Response:", response.status, response.statusText)
+      console.groupEnd()
+      return {
+        success: false,
+        message: `Failed to ${isBlocked ? "block" : "unblock"} advertiser: ${response.statusText}`,
+      }
+    }
+
+    const responseText = await response.text()
+    let data
+
+    try {
+      data = responseText ? JSON.parse(responseText) : {}
+      console.log("Response Body (parsed):", data)
+    } catch (e) {
+      console.warn("⚠️ Could not parse response as JSON:", e)
+      console.log("Response Body (raw):", responseText)
+      data = {}
+    }
+
+    console.log(`✅ Successfully ${isBlocked ? "blocked" : "unblocked"} advertiser`)
+    console.groupEnd()
+
+    return {
+      success: true,
+      message: `Successfully ${isBlocked ? "blocked" : "unblocked"} advertiser`,
+    }
+  } catch (error) {
+    console.group("💥 Toggle Block Advertiser Exception")
+    console.error("Error:", error)
+    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
+    console.groupEnd()
+
+    return {
+      success: false,
+      message: `Error: ${error instanceof Error ? error.message : "Unknown error occurred"}`,
+    }
+  }
+}
+

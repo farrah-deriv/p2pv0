@@ -98,7 +98,7 @@ export default function BuySellPage() {
   const handleOrderClick = (ad: Advertisement) => {
     setSelectedAd(ad)
     setIsOrderSidebarOpen(true)
-    setError(null);
+    setError(null)
   }
 
   useEffect(() => {
@@ -357,7 +357,7 @@ export default function BuySellPage() {
                             {ad.user?.nickname || "Unknown"}
                           </button>
                           {ad.user?.is_favourite && (
-                            <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                            <span className="ml-2 px-2 py-0.5 border border-[#29823B] text-[#29823B]text-xs rounded-sm">
                               Following
                             </span>
                           )}
@@ -479,7 +479,7 @@ export default function BuySellPage() {
                                   {ad.user?.nickname || "Unknown"}
                                 </button>
                                 {ad.user?.is_favourite && (
-                                  <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                                  <span className="ml-2 px-2 py-0.5 border border-[#29823B]  text-[#29823B] text-xs rounded-sm">
                                     Following
                                   </span>
                                 )}
@@ -545,7 +545,6 @@ export default function BuySellPage() {
                               variant={ad.type === "buy" ? "default" : "destructive"}
                               size="sm"
                               onClick={() => handleOrderClick(ad)}
-                              className="rounded-full"
                             >
                               {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
                             </Button>
