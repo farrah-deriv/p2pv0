@@ -229,7 +229,7 @@ export default function BuySellPage() {
                     alt="Dropdown"
                     width={15}
                     height={15}
-                    className="h-4 w-4 opacity-70 hidden md:inline"
+                    className="h-4 w-4 opacity-70 md:inline"
                   />
                 </button>
               )}
@@ -397,9 +397,9 @@ export default function BuySellPage() {
                       {ad.account_currency} 1.00 = {ad.payment_currency}{" "}
                       {ad.exchange_rate
                         ? ad.exchange_rate.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })
                         : "N/A"}
                     </div>
 
@@ -426,9 +426,8 @@ export default function BuySellPage() {
                         {ad.payment_method_names?.map((method, index) => (
                           <div key={index} className="flex items-center">
                             <div
-                              className={`h-2 w-2 rounded-full mr-2 ${
-                                method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"
-                              }`}
+                              className={`h-2 w-2 rounded-full mr-2 ${method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"
+                                }`}
                             ></div>
                             <span className="text-sm">{method}</span>
                           </div>
@@ -506,15 +505,14 @@ export default function BuySellPage() {
                           {ad.payment_currency}{" "}
                           {ad.exchange_rate
                             ? ad.exchange_rate.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })
                             : "N/A"}
                         </TableCell>
                         <TableCell className="py-4 px-4">
-                          <div>{`${ad.account_currency} ${ad.minimum_order_amount?.toFixed(2) || "N/A"} - ${
-                            ad.actual_maximum_order_amount?.toFixed(2) || "N/A"
-                          }`}</div>
+                          <div>{`${ad.account_currency} ${ad.minimum_order_amount?.toFixed(2) || "N/A"} - ${ad.actual_maximum_order_amount?.toFixed(2) || "N/A"
+                            }`}</div>
                           <div className="flex items-center text-xs text-slate-500 mt-1">
                             <div className="flex items-center bg-slate-100 rounded-sm px-2 py-1">
                               <Image
@@ -533,9 +531,8 @@ export default function BuySellPage() {
                             {ad.payment_method_names?.map((method, index) => (
                               <div key={index} className="flex items-center">
                                 <div
-                                  className={`h-2 w-2 rounded-full mr-2 ${
-                                    method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"
-                                  }`}
+                                  className={`h-2 w-2 rounded-full mr-2 ${method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"
+                                    }`}
                                 ></div>
                                 <span className="text-sm">{method}</span>
                               </div>
