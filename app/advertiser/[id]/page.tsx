@@ -4,11 +4,12 @@ import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import Navigation from "@/components/navigation"
-import { AlertCircle, Clock, User, Check } from "lucide-react"
+import { AlertCircle, Clock, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { USER } from "@/lib/local-variables"
 import { BuySellAPI } from "@/services/api"
 import type { Advertisement } from "@/services/api/api-buy-sell"
+import { toggleFavouriteAdvertiser, toggleBlockAdvertiser } from "@/services/api/api-buy-sell"
 import { cn } from "@/lib/utils"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -56,8 +57,11 @@ export default function AdvertiserProfilePage() {
   const [activeTab, setActiveTab] = useState<"buy" | "sell">("buy")
   const [activeSection, setActiveSection] = useState<"ads">("ads")
   const [isFollowing, setIsFollowing] = useState(false)
+  const [isBlocked, setIsBlocked] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isFollowLoading, setIsFollowLoading] = useState(false)
+  const [isBlockLoading, setIsBlockLoading] = useState(false)
 
   const fetchAdvertiserData = async () => {
     setIsLoading(true)
@@ -92,17 +96,22 @@ export default function AdvertiserProfilePage() {
   const transformAdvertiserData = (data: any, userId: string): AdvertiserProfile => {
     // If the API returns data in the expected format, use it
     // Otherwise, transform it or use default values
+
+    // Set the initial following state based on the API response
+    setIsFollowing(data.is_favourite || false)
+    setIsBlocked(data.is_blocked || false)
+
     return {
       id: userId,
-      nickname: data.nickname,
+      nickname: data.nickname || "Unknown",
       isOnline: data.is_online || false,
-      joinedDate: data.joined_date,
+      joinedDate: data.joined_date || `Joined ${Math.floor(Math.random() * 365)} days ago`,
       rating: {
         score: data.rating?.score || data.rating || 0,
         count: data.rating?.count || data.rating_count || 0,
       },
       completionRate: data.completion_rate || 0,
-      ordersCount: data.order_count_lifetime || 0,
+      ordersCount: data.orders_count || 0,
       isVerified: {
         id: data.is_verified?.id || false,
         address: data.is_verified?.address || false,
@@ -241,9 +250,48 @@ export default function AdvertiserProfilePage() {
     ]
   }
 
-  const toggleFollow = () => {
-    setIsFollowing(!isFollowing)
-    // Here you would typically call an API to update the follow status
+  const toggleFollow = async () => {
+    if (!profile) return
+
+    setIsFollowLoading(true)
+    try {
+      // Call the API to toggle the favourite status
+      const result = await toggleFavouriteAdvertiser(profile.id, !isFollowing)
+
+      if (result.success) {
+        // Update the UI state
+        setIsFollowing(!isFollowing)
+        console.log(result.message)
+      } else {
+        console.error("Failed to toggle follow status:", result.message)
+      }
+    } catch (error) {
+      console.error("Error toggling follow status:", error)
+    } finally {
+      setIsFollowLoading(false)
+    }
+  }
+
+  const toggleBlock = async () => {
+    if (!profile) return
+
+    setIsBlockLoading(true)
+    try {
+      // Call the API to toggle the block status
+      const result = await toggleBlockAdvertiser(profile.id, !isBlocked)
+
+      if (result.success) {
+        // Update the UI state
+        setIsBlocked(!isBlocked)
+        console.log(result.message)
+      } else {
+        console.error("Failed to toggle block status:", result.message)
+      }
+    } catch (error) {
+      console.error("Error toggling block status:", error)
+    } finally {
+      setIsBlockLoading(false)
+    }
   }
 
   if (isLoading) {
@@ -294,26 +342,39 @@ export default function AdvertiserProfilePage() {
                 <div>
                   <div className="flex">
                     <h2 className="text-lg font-bold">{profile?.nickname}</h2>
-                    <div className="flex items-center gap-3 md:mt-0 ml-[16px]">
+                    <div className="flex items-center md:mt-0 ml-[16px]">
                       <Button
                         onClick={toggleFollow}
                         variant={isFollowing ? "default" : "outline"}
                         className={cn(
                           "text-xs",
-                          isFollowing ? "bg-blue-500 hover:bg-blue-600 text-white" : "border-slate-300",
+                          isFollowing ? "bg-[#00D0FF] hover:bg-[#00D0FF] text-[#000]" : "border-slate-300",
                         )}
+                        disabled={isFollowLoading}
                       >
-                        <User className="h-4 w-4 mr-2" />
+                        {isFollowLoading ? (
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent mr-2"></div>
+                        ) : (
+                          <Image src="/icons/follow-icon.png" alt="Follow" width={16} height={16} className="mr-2" />
+                        )}
                         {isFollowing ? "Following" : "Follow"}
                       </Button>
-                      <Button variant="outline" className="text-xs border-slate-300">
-                        Block
+                      <Button
+                        variant="link"
+                        className={cn("text-xs", isBlocked && "text-red-500")}
+                        onClick={toggleBlock}
+                        disabled={isBlockLoading}
+                      >
+                        {isBlockLoading ? (
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent mr-2"></div>
+                        ) : null}
+                        {isBlocked ? "Unblock" : "Block"}
                       </Button>
                     </div>
                   </div>
                   <div className="flex items-center text-xs text-slate-500 mt-2">
                     <span className="mr-3">{profile?.isOnline ? "Online" : "Offline"}</span>
-                    {profile?.joinedDate && <span className="text-slate-400">|</span>}
+                    <span className="text-slate-400">|</span>
                     <span className="ml-3">{profile?.joinedDate}</span>
                   </div>
                 </div>
@@ -456,12 +517,13 @@ export default function AdvertiserProfilePage() {
                         {ad.payment_method_names?.map((method, index) => (
                           <div key={index} className="flex items-center">
                             <div
-                              className={`h-2 w-2 rounded-full mr-1 ${method.toLowerCase().includes("bank")
-                                ? "bg-green-500"
-                                : method.toLowerCase().includes("skrill")
-                                  ? "bg-blue-500"
-                                  : "bg-yellow-500"
-                                }`}
+                              className={`h-2 w-2 rounded-full mr-1 ${
+                                method.toLowerCase().includes("bank")
+                                  ? "bg-green-500"
+                                  : method.toLowerCase().includes("skrill")
+                                    ? "bg-blue-500"
+                                    : "bg-yellow-500"
+                              }`}
                             ></div>
                             <span className="text-sm">{method}</span>
                           </div>
@@ -511,12 +573,13 @@ export default function AdvertiserProfilePage() {
                               {ad.payment_method_names?.map((method, index) => (
                                 <div key={index} className="flex items-center">
                                   <div
-                                    className={`h-2 w-2 rounded-full mr-1 ${method.toLowerCase().includes("bank")
-                                      ? "bg-green-500"
-                                      : method.toLowerCase().includes("skrill")
-                                        ? "bg-blue-500"
-                                        : "bg-yellow-500"
-                                      }`}
+                                    className={`h-2 w-2 rounded-full mr-1 ${
+                                      method.toLowerCase().includes("bank")
+                                        ? "bg-green-500"
+                                        : method.toLowerCase().includes("skrill")
+                                          ? "bg-blue-500"
+                                          : "bg-yellow-500"
+                                    }`}
                                   ></div>
                                   <span className="text-sm">{method}</span>
                                 </div>
