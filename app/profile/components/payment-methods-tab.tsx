@@ -109,7 +109,7 @@ export default function PaymentMethodsTab() {
 
       // Add this new section for detailed raw response logging
       console.log("✅ Successfully fetched payment methods")
-
+      console.log("📋 RAW API RESPONSE:", responseText)
       console.groupEnd()
 
       // Process and categorize the payment methods from the new response format

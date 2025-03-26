@@ -226,6 +226,7 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
+                      className="pr-12"
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">USD</span>
                   </div>
@@ -245,6 +246,7 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
+                      className="pr-12"
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">IDR</span>
                   </div>
@@ -268,6 +270,7 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
+                      className="pr-12"
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">USD</span>
                   </div>
@@ -285,6 +288,7 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                       required
                       min="0.01"
                       step="0.01"
+                      className="pr-12"
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">USD</span>
                   </div>
