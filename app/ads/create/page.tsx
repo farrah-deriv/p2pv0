@@ -370,7 +370,7 @@ export default function CreateAdPage() {
   }
 
   return (
-    <div className={`flex ${isMobile ? "flex-col" : "h-screen"} -mt-4 -mx-4`}>
+    <div className={`flex ${isMobile ? "flex-col" : "h-screen"} mt-16 -mx-4`}>
       {/* Sidebar for desktop only - hidden on mobile */}
       {!isMobile && (
         <div className="w-[240px] bg-gray-50 h-full">
