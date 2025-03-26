@@ -17,7 +17,6 @@ import MobileFooterNav from "@/components/mobile-footer-nav"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import Image from "next/image"
-import { SafetyWarningBanner } from "@/components/safety-warning-banner"
 
 export default function BuySellPage() {
   const router = useRouter()
@@ -123,13 +122,6 @@ export default function BuySellPage() {
       <div className="flex-shrink-0">
         {/* Desktop Navigation */}
         {!isSearchOpen && <Navigation title="P2P Wallet" />}
-
-        {!isSearchOpen && (
-          <div className="bg-white">
-            {/* Safety Warning Banner */}
-            <SafetyWarningBanner />
-          </div>
-        )}
 
         {/* Buy/Sell Toggle and Filters - Fixed */}
         <div className="mb-4 md:mb-6 md:flex justify-between items-center">

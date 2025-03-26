@@ -11,7 +11,6 @@ import type { Order } from "@/services/api/api-orders"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent } from "@/components/ui/card"
-import { SafetyWarningBanner } from "@/components/safety-warning-banner"
 
 export default function OrdersPage() {
   const router = useRouter()
@@ -221,9 +220,6 @@ export default function OrdersPage() {
     <div className="flex flex-col h-full px-4">
       <div className="flex-shrink-0">
         <Navigation />
-
-        {/* Safety Warning Banner */}
-        <SafetyWarningBanner />
 
         {/* Tabs */}
         <div className="mb-6">
