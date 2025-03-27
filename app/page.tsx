@@ -530,12 +530,11 @@ export default function BuySellPage() {
                           <div className="flex flex-wrap gap-2">
                             {ad.payment_method_names?.map((method, index) => (
                               <div key={index} className="flex items-center">
-                                {method && (<div
-                                  className={`h-2 w-2 rounded-full mr-2 ${
-                                    method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"
-                                  }`}
-                                ></div>
-                                <span className="text-sm">{method}</span>)}
+                                {method && <div
+                                  className={`h-2 w-2 rounded-full mr-2 ${method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"
+                                    }`}
+                                ></div>}
+                                <span className="text-sm">{method}</span>
                               </div>
                             ))}
                           </div>
