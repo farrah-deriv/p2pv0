@@ -44,16 +44,7 @@ export default function OrdersPage() {
 
       // Ensure data is an array before filtering
       const ordersArray = Array.isArray(orders.data) ? orders.data : []
-
-      // If we're on the "past" tab, filter to only show completed and cancelled orders
-      const filteredData =
-        activeTab === "past"
-          ? ordersArray.filter(
-              (order) => order.status === "Completed" || order.status === "Cancelled" || order.status === "Disputed",
-            )
-          : ordersArray
-
-      setOrders(filteredData)
+      setOrders(ordersArray)
     } catch (err) {
       console.error("Error fetching orders:", err)
       setError("Failed to load orders. Please try again.")
@@ -171,6 +162,7 @@ export default function OrdersPage() {
             <TableHead className="py-4 px-4 text-slate-600 font-normal">Status</TableHead>
             <TableHead className="py-4 px-4 text-slate-600 font-normal">Send</TableHead>
             <TableHead className="py-4 px-4 text-slate-600 font-normal">Receive</TableHead>
+            {activeTab === "past" && <TableHead className="py-4 px-4 text-slate-600 font-normal">Rating</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -178,8 +170,8 @@ export default function OrdersPage() {
             <TableRow key={order.id} className="cursor-pointer" onClick={() => navigateToOrderDetails(order.id)}>
               <TableCell className="py-4 px-4">
                 <div className="flex items-center">
-                  <span className={order.advert.type === "Buy" ? "text-green-600 font-medium" : "font-medium"}>
-                    {order.type}
+                  <span className={order.type === "sell" ? "text-green-600 font-medium" : "font-medium"}>
+                    { order.type === "buy" ? "Sell" : "Buy"}
                   </span>
                   <span className="ml-1">{order.id}</span>
                 </div>
@@ -209,6 +201,14 @@ export default function OrdersPage() {
                     ? order.price.toFixed(2)
                     : Number(order.price).toFixed(2)}
               </TableCell>
+              {activeTab === "past" && <TableCell className="py-4 px-4">
+                {order.rating > 0 && <div className="flex">
+                  <Image src="/icons/star-icon.png" alt="Chat" width={20} height={20} className="mr-1" />
+                  {order.rating}
+                  </div>
+                }
+              </TableCell>
+              }
             </TableRow>
           ))}
         </TableBody>
