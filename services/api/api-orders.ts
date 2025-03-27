@@ -5,7 +5,7 @@ export interface Order {
   id: string
   type: "Buy" | "Sell"
   status: "Pending" | "Completed" | "Cancelled" | "Disputed"
-  amount: value
+  amount: Value
   rate: {
     value: string
     currency: string
@@ -16,13 +16,15 @@ export interface Order {
       nickname: string
     }
   }
-  price: value,
+  price: Value
   paymentMethod: string
   createdAt: string
   expiresAt: string
   completedAt?: string
   cancelledAt?: string
   payment_currency: string
+  is_reviewable: boolean
+  rating: number
 }
 
 export interface OrderFilters {
@@ -30,6 +32,16 @@ export interface OrderFilters {
   type?: "Buy" | "Sell"
   period?: "today" | "week" | "month" | "all"
   is_open?: boolean
+}
+
+export interface Value {
+  value: number
+  currency: string
+}
+
+export interface ReviewData {
+  rating: number
+  comment: string
 }
 
 // API Functions
@@ -487,6 +499,139 @@ export async function createOrder(advertId: number, amount: number): Promise<Ord
   }
 }
 
+/**
+ * Pay for an order
+ */
+export async function payOrder(orderId: string): Promise<{ success: boolean }> {
+  try {
+    const url = `${API.baseUrl}${API.endpoints.orders}/${orderId}/pay`
+    const headers = {
+      ...AUTH.getAuthHeader(),
+      "Content-Type": "application/json",
+    }
+
+    // Log request details
+    console.group("📤 POST Pay Order Request")
+    console.log("URL:", url)
+    console.log("Headers:", headers)
+    console.log("Order ID:", orderId)
+    console.groupEnd()
+
+    const startTime = performance.now()
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+    })
+    const endTime = performance.now()
+
+    // Log response details
+    console.group("📥 POST Pay Order Response")
+    console.log("Status:", response.status, response.statusText)
+    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
+    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
+
+    if (!response.ok) {
+      console.error("Error Response:", response.status, response.statusText)
+      console.groupEnd()
+      throw new Error(`Error paying for order: ${response.statusText}`)
+    }
+
+    const responseText = await response.text()
+    let data
+
+    try {
+      data = JSON.parse(responseText)
+      console.log("Response Body (parsed):", data)
+    } catch (e) {
+      console.warn("⚠️ Could not parse response as JSON:", e)
+      console.log("Response Body (raw):", responseText)
+      data = { success: true }
+    }
+
+    console.log("✅ Successfully paid for order")
+    console.groupEnd()
+
+    return data
+  } catch (error) {
+    console.group("💥 Pay Order Exception")
+    console.error("Error:", error)
+    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
+    console.groupEnd()
+    throw error
+  }
+}
+
+/**
+ * Review an order
+ */
+export async function reviewOrder(orderId: string, reviewData: ReviewData): Promise<{ success: boolean }> {
+  try {
+    const url = `${API.baseUrl}${API.endpoints.orders}/${orderId}/review`
+    const headers = {
+      ...AUTH.getAuthHeader(),
+      "Content-Type": "application/json",
+    }
+    const body = JSON.stringify({
+      data: {
+        rating: reviewData.rating,
+        recommend: reviewData.recommend,
+      }
+    })
+
+    // Log request details
+    console.group("📤 POST Review Order Request")
+    console.log("URL:", url)
+    console.log("Headers:", headers)
+    console.log("Order ID:", orderId)
+    console.log("Review Data:", reviewData)
+    console.log("Request Body:", body)
+    console.groupEnd()
+
+    const startTime = performance.now()
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body,
+    })
+    const endTime = performance.now()
+
+    // Log response details
+    console.group("📥 POST Review Order Response")
+    console.log("Status:", response.status, response.statusText)
+    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
+    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
+
+    if (!response.ok) {
+      console.error("Error Response:", response.status, response.statusText)
+      console.groupEnd()
+      throw new Error(`Error reviewing order: ${response.statusText}`)
+    }
+
+    const responseText = await response.text()
+    let data
+
+    try {
+      data = JSON.parse(responseText)
+      console.log("Response Body (parsed):", data)
+    } catch (e) {
+      console.warn("⚠️ Could not parse response as JSON:", e)
+      console.log("Response Body (raw):", responseText)
+      data = { success: true }
+    }
+
+    console.log("✅ Successfully reviewed order")
+    console.groupEnd()
+
+    return data
+  } catch (error) {
+    console.group("💥 Review Order Exception")
+    console.error("Error:", error)
+    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
+    console.groupEnd()
+    throw error
+  }
+}
+
 export const OrdersAPI = {
   // Keep existing methods...
   getOrders: getOrders,
@@ -496,6 +641,8 @@ export const OrdersAPI = {
   cancelOrder: cancelOrder,
   disputeOrder: disputeOrder,
   createOrder: createOrder,
+  payOrder: payOrder,
+  reviewOrder: reviewOrder,
 
   // Add this new method
   getOrderByIdMock: async (orderId: string): Promise<Order> => {
@@ -516,25 +663,20 @@ export const OrdersAPI = {
         value: "10.00",
         currency: "USD",
       },
-      counterparty: {
-        id: 123,
-        nickname: "Mariana_Rueda",
+      advert: {
+        user: {
+          id: 123,
+          nickname: "Mariana_Rueda",
+        },
+      },
+      price: {
+        value: "1450000",
+        currency: "IDR",
       },
       paymentMethod: "Bank Transfer",
       createdAt: new Date().toISOString(),
       expiresAt: new Date().toISOString(),
-      advert: {
-        id: "adv123",
-        type: "Sell",
-        payment_currency: "IDR",
-        account_currency: "USD",
-        user: {
-          id: "usr123",
-          nickname: "Mariana_Rueda",
-          is_favourite: false,
-          is_online: true,
-        },
-      },
+      payment_currency: "IDR",
     }
   },
 }

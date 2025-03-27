@@ -6,10 +6,10 @@
 
 // User information
 export const USER = {
-  id: 44,
+  id: 17,
   nickname: "ernest",
   token:
-    "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwiemlwIjoiREVGIn0.z6oVRfqY4z3dnr78avC1mMnJCCSPxa6EdUqWMLK1ejjptbKi4Ax-m5ceatnOLTdT3CACjGAXyeRZKk1Sa-ObPP-vsltPifx4.-XX5i1-7VKhLIfSlT9joTg.8NJUj93HGOHlc5o2V9BRmX0i60lRqAYf6pTMZvJjbP3d7LxVsZK_kdUWNy7mUmAQ7fJgw05IQA0kKaKWcaHW6EEd4UfxwVSWRSN8F7mwGJSRsMNIz0_6-Vh3axc5j_zzA15wOsWitnXKnnQUvYSn-A.5ooG4D1mUNgoPgVcf0GvTLd09nepqFCrSgR3cHZkuEk",
+    "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwiemlwIjoiREVGIn0.sA6RdDxU57pFvGALqAr3REvApSle5uio7k8-m2lyPwXv8BIfEIh6ZGfFXDeb3nIui_5rO1qpXSdWbWbL-ybUQ1_9zABVg4Yy.nYUhfy7YkjPWeEFZT_kLpQ.TINaR1SXwVObILMoLprTblYLfIpc4NRKuEOvSWkd_pihmSkq-4jmVgZhAGIH963F3hApUoiGBwwBqOA-K_qCZE-WBbu4kUqgTqn3HxZhlftsT6lfCgV4SikrStE0ucy4kqZU50K-ZZDrRtqxzJaEVA.7mu9tuaoJrSeQOVx1lDN2audx-FqNpRjezhDHV3RewY",
 }
 
 // API endpoints
@@ -23,6 +23,8 @@ export const API = {
     paymentMethods: "/payment-methods",
     advertisers: "/users",
     transactions: "/transactions",
+    userFavourites: "/user-favourites",
+    userBlocks: "/user-blocks",
   },
 }
 
@@ -39,7 +41,7 @@ export const AUTH = {
   getAuthHeader: () => ({
     Authorization: `Bearer ${USER.token}`,
     // Add any other required headers
-    "X-Data-Source": "test",
+    "X-Data-Source": "live",
   }),
   isAuthenticated: () => !!USER.token,
 }

@@ -9,10 +9,11 @@ import BalanceInfoPopup from "@/components/balance-info-popup"
 
 interface NavigationProps {
   isVisible?: boolean
+  redirectUrl?: string
   title?: string
 }
 
-export default function Navigation({ isVisible = true, title = "P2P Wallet" }: NavigationProps) {
+export default function Navigation({ isVisible = true, redirectUrl = "/", title = "P2P Wallet" }: NavigationProps) {
   const pathname = usePathname()
   const [isBalanceInfoOpen, setIsBalanceInfoOpen] = useState(false)
 
@@ -26,7 +27,7 @@ export default function Navigation({ isVisible = true, title = "P2P Wallet" }: N
   return (
     <div className="mb-4 md:pt-16">
       <div className="flex items-center justify-between md:my-3 p-4 -mx-4 md:-mx-0 md:px-0 border-b md:border-none">
-        <Link href="/" className="flex items-center text-slate-1400">
+        <Link href={redirectUrl} className="flex items-center text-slate-1400">
           <ArrowLeft className="h-5 w-5 mr-2" />
           <h1 className="text-xl font-bold">{title}</h1>
         </Link>
@@ -58,3 +59,4 @@ export default function Navigation({ isVisible = true, title = "P2P Wallet" }: N
     </div>
   )
 }
+
