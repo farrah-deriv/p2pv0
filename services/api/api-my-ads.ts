@@ -113,7 +113,7 @@ export async function getUserAdverts(): Promise<MyAd[]> {
     const url = `${API.baseUrl}${API.endpoints.ads}?${queryParams.toString()}`
     const headers = {
       ...AUTH.getAuthHeader(),
-      "X-Data-Source": "test",
+      "X-Data-Source": "live",
     }
 
     // Log request details
