@@ -9,7 +9,7 @@ export const USER = {
   id: 17,
   nickname: "Ameerul",
   token:
-    "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwiemlwIjoiREVGIn0.Fjjin13lsFqTspPVh11OO0AWvO7w7rs5fOs4sgm7UBiXw4dsR_1eZdEcN2SfZx9oNqAnCaVRYsxDxvxZovPMWLNHo6AiQI9M.6bjBuJeph3_dumB5zer7Mw.rkFhWZ6wAVKApiw-0pqm6LzJ1qO0H6B5kFvb2lYeKnxNguuCqN8oeHRx2t_IURa0pdGcUnVIvEYJEJhizAjPfzIC3RmdQvBTT8OWgxn8cC07Fl7-DKZoZvZOPF-ZV1iT-xoHCegaw_ISkdxOmcdFYA.d69ZAu665_iznpX-e5qngm26RgaC171NZvH3c974l_g",
+    "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwiemlwIjoiREVGIn0.sA6RdDxU57pFvGALqAr3REvApSle5uio7k8-m2lyPwXv8BIfEIh6ZGfFXDeb3nIui_5rO1qpXSdWbWbL-ybUQ1_9zABVg4Yy.nYUhfy7YkjPWeEFZT_kLpQ.TINaR1SXwVObILMoLprTblYLfIpc4NRKuEOvSWkd_pihmSkq-4jmVgZhAGIH963F3hApUoiGBwwBqOA-K_qCZE-WBbu4kUqgTqn3HxZhlftsT6lfCgV4SikrStE0ucy4kqZU50K-ZZDrRtqxzJaEVA.7mu9tuaoJrSeQOVx1lDN2audx-FqNpRjezhDHV3RewY",
 }
 
 // API endpoints
