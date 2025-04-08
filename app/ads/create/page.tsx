@@ -527,7 +527,9 @@ export default function CreateAdPage() {
   }
 `}</style>
       {/* Header with back and close buttons */}
-      <div className={`flex ${currentStep === 0 ? "justify-end" : "justify-between"} mb-9 md:mt-8 relative z-10`}>
+      <div
+        className={`flex ${currentStep === 0 ? "justify-end" : "justify-between"} mb-9 md:mt-8 sticky top-0 z-10 bg-white py-2`}
+      >
         {currentStep === 1 && (
           <button onClick={() => setCurrentStep(0)} className="text-gray-700 hover:text-gray-900 p-2">
             <ArrowLeft className="h-6 w-6" />
@@ -670,4 +672,5 @@ export default function CreateAdPage() {
     </div>
   )
 }
+
 
