@@ -45,4 +45,3 @@ export default function TradeLimits({ buyLimit, sellLimit }: TradeLimitsProps) {
     </div>
   )
 }
-

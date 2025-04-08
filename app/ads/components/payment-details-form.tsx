@@ -2,13 +2,13 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { Textarea } from "@/components/ui/textarea"
-import { Check, X, ArrowLeft } from "lucide-react"
 import type { AdFormData } from "../types"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { InfoIcon } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Check, ChevronDown, ChevronUp } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea" // Import the core Textarea component
+import PaymentMethodBottomSheet from "./payment-method-bottom-sheet"
 
 interface PaymentDetailsFormProps {
   onBack: () => void
@@ -17,6 +17,7 @@ interface PaymentDetailsFormProps {
   initialData: Partial<AdFormData>
   isSubmitting?: boolean
   isEditMode?: boolean
+  onBottomSheetOpenChange?: (isOpen: boolean) => void
 }
 
 export default function PaymentDetailsForm({
@@ -26,22 +27,53 @@ export default function PaymentDetailsForm({
   initialData,
   isSubmitting = false,
   isEditMode = false,
+  onBottomSheetOpenChange,
 }: PaymentDetailsFormProps) {
   const isMobile = useIsMobile()
   const [paymentMethods, setPaymentMethods] = useState<string[]>(initialData.paymentMethods || [])
-  const [instructions, setInstructions] = useState(initialData.instructions || "")
+  const [instructions, setInstructions] = useState(() => {
+    console.log("Initializing instructions with:", initialData.instructions)
+    return initialData.instructions || ""
+  })
   const [touched, setTouched] = useState(false)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [bottomSheetOpen, setBottomSheetOpen] = useState(false)
+
+  // Available payment methods
+  const availablePaymentMethods = ["Bank Transfer", "PayPal", "Wise", "Neteller", "Skrill", "Alipay", "WeChat Pay"]
+
+  // Maximum number of payment methods allowed
+  const MAX_PAYMENT_METHODS = 3
+
+  // Notify parent component when bottom sheet state changes
+  useEffect(() => {
+    if (onBottomSheetOpenChange) {
+      onBottomSheetOpenChange(bottomSheetOpen)
+    }
+  }, [bottomSheetOpen, onBottomSheetOpenChange])
+
+  // Add logging to debug instructions initialization
+  console.log("PaymentDetailsForm initialData:", initialData)
+  console.log("Initial instructions value:", initialData.instructions)
 
   // Update state when initialData changes (important for edit mode)
   useEffect(() => {
     if (initialData) {
-      if (initialData.paymentMethods) setPaymentMethods(initialData.paymentMethods)
-      if (initialData.instructions !== undefined) setInstructions(initialData.instructions)
+      console.log("initialData changed in PaymentDetailsForm:", initialData)
+
+      if (initialData.paymentMethods) {
+        console.log("Setting payment methods:", initialData.paymentMethods)
+        setPaymentMethods(initialData.paymentMethods)
+      }
+
+      if (initialData.instructions !== undefined) {
+        console.log("Updating instructions to:", initialData.instructions)
+        setInstructions(initialData.instructions)
+      } else {
+        console.log("initialData.instructions is undefined")
+      }
     }
   }, [initialData])
-
-  // Update the component to conditionally render the payment methods section based on ad type
-  // and adjust validation logic accordingly
 
   // First, modify the isFormValid function to not require payment methods for "sell" ads
   const isFormValid = () => {
@@ -66,6 +98,8 @@ export default function PaymentDetailsForm({
       instructions,
     }
 
+    console.log("Submitting form data:", formData)
+
     // If form is valid, submit; otherwise, pass errors
     if (formValid) {
       onSubmit(formData)
@@ -74,18 +108,48 @@ export default function PaymentDetailsForm({
     }
   }
 
-  const availablePaymentMethods = ["Bank Transfer", "PayPal", "Wise", "Neteller", "Skrill"]
-
   const togglePaymentMethod = (method: string) => {
     setTouched(true)
+
     if (paymentMethods.includes(method)) {
+      // Remove the method if it's already selected
       setPaymentMethods(paymentMethods.filter((m) => m !== method))
-    } else {
+    } else if (paymentMethods.length < MAX_PAYMENT_METHODS) {
+      // Add the method if we haven't reached the maximum
       setPaymentMethods([...paymentMethods, method])
     }
   }
 
-  // Then, update the useEffect for validation to account for the ad type
+  // Handle payment methods selection from bottom sheet
+  const handleSelectPaymentMethods = (methods: string[]) => {
+    setTouched(true)
+    setPaymentMethods(methods)
+  }
+
+  // Handle bottom sheet open/close
+  const handleOpenBottomSheet = () => {
+    setBottomSheetOpen(true)
+    // Notify parent component about the state change
+    if (onBottomSheetOpenChange) {
+      onBottomSheetOpenChange(true)
+    }
+  }
+
+  const handleCloseBottomSheet = () => {
+    setBottomSheetOpen(false)
+    // Notify parent component about the state change
+    if (onBottomSheetOpenChange) {
+      onBottomSheetOpenChange(false)
+    }
+  }
+
+  // Check if a method is selected
+  const isMethodSelected = (method: string) => paymentMethods.includes(method)
+
+  // Check if we've reached the maximum number of selections
+  const isMaxReached = paymentMethods.length >= MAX_PAYMENT_METHODS
+
+  // Update the useEffect for validation to account for the ad type
   useEffect(() => {
     const isValid = initialData.type === "sell" ? true : paymentMethods.length > 0
     // Use a custom event to communicate the form state to the parent
@@ -104,76 +168,122 @@ export default function PaymentDetailsForm({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-6 border-b relative">
-        <button onClick={onBack} className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <h2 className="text-xl font-semibold text-center">
-          {isEditMode ? "Edit payment details" : "Set payment details"}
-        </h2>
-        <button
-          onClick={onClose}
-          className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-        >
-          <X className="h-5 w-5" />
-        </button>
-      </div>
-
-      <form id="payment-details-form" onSubmit={handleSubmit} className="flex-1 p-6">
-        <div className="max-w-[800px] mx-auto h-full flex flex-col justify-between">
-          <div className="space-y-12">
-            <Alert variant="info" className="bg-blue-50 border-blue-200 text-blue-900">
-              <InfoIcon className="h-4 w-4 text-blue-900" />
-              <AlertDescription className="flex items-center gap-2 text-sm">
-                <span>
-                  You're {isEditMode ? "editing" : "creating"} an ad to {initialData.type} USD{" "}
-                  {initialData.totalAmount?.toFixed(2)}
-                </span>
-                <span>for IDR {((initialData.totalAmount || 0) * (initialData.fixedRate || 0)).toFixed(2)}</span>
-              </AlertDescription>
-            </Alert>
-
-            {initialData.type === "buy" ? (
+      <form id="payment-details-form" onSubmit={handleSubmit} className="flex-1 py-6">
+        <div className="max-w-[800px] mx-auto h-full flex flex-col">
+          <div className="space-y-8">
+            {initialData.type === "buy" && (
               <div>
-                <h3 className="text-base font-medium mb-6">Select payment methods</h3>
-                <div className="space-y-2">
-                  {availablePaymentMethods.map((method) => (
-                    <Card
-                      key={method}
-                      className={`cursor-pointer hover:border-gray-300 ${
-                        paymentMethods.includes(method) ? "border-primary bg-primary/5" : ""
-                      }`}
-                      onClick={() => togglePaymentMethod(method)}
-                    >
-                      <CardContent className="p-3 flex items-center justify-between">
-                        <span className="text-sm">{method}</span>
-                        {paymentMethods.includes(method) && <Check className="h-4 w-4 text-primary" />}
-                      </CardContent>
-                    </Card>
-                  ))}
-                  {touched && paymentMethods.length === 0 && (
-                    <p className="text-destructive text-xs mt-1">At least one payment method is required</p>
+                <h3 className="text-base font-bold leading-6 tracking-normal mb-4">Select payment method</h3>
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Payment methods</label>
+
+                  {isMobile ? (
+                    <>
+                      <Button
+                        variant="outline"
+                        className="w-full h-[48px] rounded-[4px] border border-gray-300 justify-between text-left"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          handleOpenBottomSheet()
+                        }}
+                      >
+                        {paymentMethods.length > 0 ? `Selected (${paymentMethods.length})` : "Select"}
+                        <ChevronDown className="h-4 w-4 opacity-70" />
+                      </Button>
+
+                      <PaymentMethodBottomSheet
+                        isOpen={bottomSheetOpen}
+                        onClose={() => {
+                          // Just close the bottom sheet without triggering any other actions
+                          handleCloseBottomSheet()
+                        }}
+                        onSelect={(methods) => {
+                          // Update the selected methods and close the bottom sheet
+                          handleSelectPaymentMethods(methods)
+                          handleCloseBottomSheet()
+                        }}
+                        selectedMethods={paymentMethods}
+                        availableMethods={availablePaymentMethods}
+                        maxSelections={MAX_PAYMENT_METHODS}
+                      />
+                    </>
+                  ) : (
+                    <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full md:w-[360px] h-[48px] rounded-[4px] border border-gray-300 justify-between text-left"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            setDropdownOpen(!dropdownOpen)
+                          }}
+                        >
+                          {paymentMethods.length > 0 ? `Selected (${paymentMethods.length})` : "Select"}
+                          {dropdownOpen ? (
+                            <ChevronUp className="h-4 w-4 opacity-70" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4 opacity-70" />
+                          )}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-[360px] min-w-[360px]">
+                        {availablePaymentMethods.map((method) => (
+                          <DropdownMenuItem
+                            key={method}
+                            onSelect={(e) => {
+                              e.preventDefault()
+                              togglePaymentMethod(method)
+                            }}
+                            disabled={!isMethodSelected(method) && isMaxReached}
+                            className={`flex items-center gap-2 px-3 py-2 cursor-pointer ${
+                              !isMethodSelected(method) && isMaxReached ? "opacity-50" : ""
+                            }`}
+                          >
+                            <div
+                              className={`w-5 h-5 flex items-center justify-center rounded border ${
+                                isMethodSelected(method) ? "bg-[#00D2FF] border-[#00D2FF]" : "border-gray-300"
+                              }`}
+                            >
+                              {isMethodSelected(method) && <Check className="h-3 w-3 text-white" />}
+                            </div>
+                            <span>{method}</span>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+
+                  {touched && paymentMethods.length === 0 && initialData.type === "buy" && (
+                    <p className="text-destructive text-xs mt-1">Payment method is required</p>
+                  )}
+
+                  {isMaxReached && (
+                    <p className="text-amber-600 text-xs mt-1">
+                      Maximum of {MAX_PAYMENT_METHODS} payment methods reached
+                    </p>
                   )}
                 </div>
               </div>
-            ) : null}
+            )}
 
             <div>
-              <h3 className="text-base font-medium mb-6">Instructions (Optional)</h3>
-              <div>
-                <Textarea
-                  value={instructions}
-                  onChange={(e) => setInstructions(e.target.value)}
-                  placeholder="Enter your trade instructions"
-                  className="min-h-[120px] resize-none"
-                  maxLength={300}
-                />
-                <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
-                  <span>
-                    This information will be visible to everyone. Don't share your phone number or personal details.
-                  </span>
-                  <span>{instructions.length}/300</span>
-                </div>
+              <h3 className="text-base font-bold leading-6 tracking-normal mb-4">Instructions (Optional)</h3>
+              <Textarea
+                value={instructions}
+                onChange={(e) => {
+                  console.log("Textarea onChange, new value:", e.target.value)
+                  setInstructions(e.target.value)
+                }}
+                placeholder="Enter your trade instructions"
+                className="min-h-[120px] resize-none"
+                maxLength={300}
+              />
+              <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
+                <span>
+                  This information will be visible to everyone. Don't share your phone number or personal details.
+                </span>
+                <span>{instructions.length}/300</span>
               </div>
             </div>
           </div>
@@ -182,4 +292,3 @@ export default function PaymentDetailsForm({
     </div>
   )
 }
-

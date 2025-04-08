@@ -2,9 +2,15 @@
  * Local variables for the P2P Trading Platform
  * This file contains configuration values and user information
  * that can be accessed throughout the application.
+ *
+ * IMPORTANT: This file should be included in .gitignore for production environments
+ * as it contains sensitive information like authentication tokens.
+ * For production, these values should be loaded from environment variables.
  */
 
 // User information
+// Contains the current user's details and authentication token
+// In a production environment, this would be dynamically set after login
 export const USER = {
   id: 17,
   nickname: "Ameerul",
@@ -13,37 +19,44 @@ export const USER = {
 }
 
 // API endpoints
+// Contains the base URL for the API and all endpoint paths
+// The baseUrl points to the master branch of the API
+// All endpoints are relative paths that will be appended to the baseUrl
 export const API = {
   baseUrl: "https://x6pr-kqwm-lfqn.n7d.xano.io/api:iD2pm9AZ:master",
   endpoints: {
-    ads: "/adverts",
-    orders: "/orders",
-    profile: "/profile",
-    balance: "/balance",
-    paymentMethods: "/payment-methods",
-    advertisers: "/users",
-    transactions: "/transactions",
-    userFavourites: "/user-favourites",
-    userBlocks: "/user-blocks",
+    ads: "/adverts", // Endpoints for advertisement operations
+    orders: "/orders", // Endpoints for order management
+    profile: "/profile", // Endpoints for user profile operations
+    balance: "/balance", // Endpoints for balance and transaction operations
+    paymentMethods: "/payment-methods", // Endpoints for payment method management
+    advertisers: "/advertisers", // Endpoints for advertiser information
+    transactions: "/transactions", // Endpoints for transaction history
   },
 }
 
 // Application settings
+// Contains global configuration settings for the application
+// These settings control default values and supported options
 export const APP_SETTINGS = {
-  defaultCurrency: "USD",
-  supportedCurrencies: ["USD", "EUR", "GBP", "IDR"],
-  defaultLanguage: "EN",
-  supportedLanguages: ["EN", "ES", "FR", "ID"],
+  defaultCurrency: "USD", // Default currency used throughout the app
+  supportedCurrencies: ["USD", "EUR", "GBP", "IDR"], // List of all supported currencies
+  defaultLanguage: "EN", // Default language for the application
+  supportedLanguages: ["EN", "ES", "FR", "ID"], // List of all supported languages
 }
 
 // Auth helper functions
+// Contains utility functions for authentication and authorization
+// These functions are used throughout the application to manage auth state
 export const AUTH = {
+  // Returns the authorization headers needed for API requests
+  // Includes the Bearer token and data source configuration
   getAuthHeader: () => ({
     Authorization: `Bearer ${USER.token}`,
-    // Add any other required headers
-    "X-Data-Source": "live",
-    "X-Branch": "master"
+    "X-Data-Source": "live", // Specifies to use live data instead of test data
+    "X-Branch": "master", // Specifies to use the master branch of the API
   }),
+  // Utility function to check if the user is authenticated
   isAuthenticated: () => !!USER.token,
 }
 
@@ -54,4 +67,3 @@ export default {
   APP_SETTINGS,
   AUTH,
 }
-

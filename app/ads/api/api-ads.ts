@@ -13,6 +13,8 @@ export async function getUserAdverts(): Promise<MyAd[]> {
     const queryParams = new URLSearchParams({
       user_id: userId.toString(),
       show_inactive: "true", // Show inactive ads
+      show_unorderable: "true", // Show unorderable ads
+      show_unlisted: "true", // Show unlisted ads
     })
 
     const url = `${API.baseUrl}${API.endpoints.ads}?${queryParams.toString()}`
@@ -97,6 +99,7 @@ export async function getUserAdverts(): Promise<MyAd[]> {
         },
         paymentMethods: advert.payment_method_names || [],
         status: status,
+        description: advert.description || "", // Make sure to include the description field
         createdAt: new Date((advert.created_at || 0) * 1000 || Date.now()).toISOString(),
         updatedAt: new Date((advert.created_at || 0) * 1000 || Date.now()).toISOString(),
       }
@@ -704,4 +707,3 @@ export const AdsAPI = {
   updateAd,
   activateAd,
 }
-

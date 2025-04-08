@@ -69,14 +69,13 @@ const config: Config = {
         1200: "#181C25",
         1300: "#11141B",
         1400: "#000000",
-      }, 
+      },
       teal: {
         700: "#00CCCC",
-      }
+      },
     },
   },
   plugins: [],
 }
 
 export default config
-

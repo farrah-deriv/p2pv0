@@ -712,4 +712,3 @@ export const MyAdsAPI = {
   updateAd,
   activateAd, // Add the new function
 }
-

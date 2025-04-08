@@ -195,4 +195,3 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
     </div>
   )
 }
-

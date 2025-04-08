@@ -2,13 +2,13 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Pencil, Power, Trash2, Search, ChevronRight, Copy, Share2 } from "lucide-react"
+import { MoreVertical, Pencil, Power, Trash2, Search, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { deleteAd, updateAd } from "../api/api-ads"
 import type { MyAd } from "../types"
 import StatusModal from "@/components/ui/status-modal"
 import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
-import { Badge } from "@/components/ui/badge"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 interface MyAdsMobileViewProps {
   ads: MyAd[]
@@ -19,40 +19,22 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
   const router = useRouter()
   const [isDeleting, setIsDeleting] = useState(false)
   const [isTogglingStatus, setIsTogglingStatus] = useState(false)
-  const [selectedAd, setSelectedAd] = useState<string | null>(null)
-
-  // Add state for error modals
   const [errorModal, setErrorModal] = useState({
     show: false,
     title: "",
     message: "",
   })
-
-  // Add state for delete confirmation modal
   const [deleteConfirmModal, setDeleteConfirmModal] = useState({
     show: false,
     adId: "",
   })
 
-  // Update the getStatusBadge function to use default styles
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Active":
-        return <Badge variant="default">Active</Badge>
-      case "Inactive":
-        return <Badge variant="destructive">Inactive</Badge>
-      default:
-        return <Badge variant="destructive">Inactive</Badge>
-    }
-  }
-
   const handleEdit = (ad: MyAd) => {
-    // Store the ad data in localStorage for the edit flow
     localStorage.setItem(
       "editAdData",
       JSON.stringify({
         ...ad,
-        description: "",
+        description: ad.description || "",
       }),
     )
     router.push(`/ads/create?mode=edit&id=${ad.id}`)
@@ -61,11 +43,8 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
   const handleToggleStatus = async (ad: MyAd) => {
     try {
       setIsTogglingStatus(true)
-      console.log(
-        `Toggling status for ad ${ad.id} from ${ad.status} to ${ad.status === "Active" ? "Inactive" : "Active"}`,
-      )
 
-      // Extract rate value from string (e.g., "IDR 14500.0000" -> 14500.0000)
+      // Extract rate value
       let exchangeRate = 0
       if (ad.rate && ad.rate.value) {
         const rateMatch = ad.rate.value.match(/([A-Z]+)\s+(\d+(?:\.\d+)?)/)
@@ -74,47 +53,50 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
         }
       }
 
-      // Set the new isListed value (opposite of current status)
+      // Set the new status (opposite of current)
       const isListed = ad.status !== "Active"
 
-      // Update the ad with all current values but change isListed
+      // Get min/max amounts
+      let minAmount = 0
+      let maxAmount = 0
+
+      if (typeof ad.limits === "string") {
+        const limitsMatch = ad.limits.match(/([A-Z]+)\s+(\d+(?:\.\d+)?)\s+-\s+(\d+(?:\.\d+)?)/)
+        if (limitsMatch) {
+          minAmount = Number.parseFloat(limitsMatch[2])
+          maxAmount = Number.parseFloat(limitsMatch[3])
+        }
+      } else {
+        minAmount = ad.limits.min
+        maxAmount = ad.limits.max
+      }
+
+      // Update the ad
       const updateResult = await updateAd(ad.id, {
         is_active: isListed,
-        minimum_order_amount: ad.limits.min,
-        maximum_order_amount: ad.limits.max,
+        minimum_order_amount: minAmount,
+        maximum_order_amount: maxAmount,
         available_amount: ad.available.current,
         exchange_rate: exchangeRate,
         exchange_rate_type: "fixed",
         order_expiry_period: 15,
-        description: "",
-        payment_method_names: ad.type === "Buy" ? ad.paymentMethods : [],
+        description: ad.description || "",
+        payment_method_names: ad.paymentMethods,
       })
 
-      // Check for errors in the response
       if (updateResult.errors && updateResult.errors.length > 0) {
-        const errorMessage =
-          updateResult.errors[0].message ||
-          `Failed to ${ad.status === "Active" ? "deactivate" : "activate"} ad. Please try again.`
-        throw new Error(errorMessage)
+        throw new Error(updateResult.errors[0].message || "Failed to update ad status")
       }
 
-      console.log(`Ad ${isListed ? "activated" : "deactivated"} successfully:`, updateResult)
-
-      // Call the onAdDeleted callback to refresh the list
       if (onAdDeleted) {
         onAdDeleted()
       }
     } catch (error) {
       console.error("Failed to toggle status:", error)
-
-      // Show error modal instead of alert
       setErrorModal({
         show: true,
         title: `Failed to ${ad.status === "Active" ? "Deactivate" : "Activate"} Ad`,
-        message:
-          error instanceof Error
-            ? error.message
-            : `Failed to ${ad.status === "Active" ? "deactivate" : "activate"} ad. Please try again.`,
+        message: error instanceof Error ? error.message : "An error occurred",
       })
     } finally {
       setIsTogglingStatus(false)
@@ -122,67 +104,72 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
   }
 
   const handleDelete = (adId: string) => {
-    // Show confirmation modal instead of immediately deleting
     setDeleteConfirmModal({
       show: true,
       adId: adId,
     })
   }
 
-  // Add a new function to handle the actual deletion after confirmation
   const confirmDelete = async () => {
     try {
       setIsDeleting(true)
       const result = await deleteAd(deleteConfirmModal.adId)
 
-      // Check for errors in the response
       if (result.errors && result.errors.length > 0) {
-        const errorMessage = result.errors[0].message || "Failed to delete ad. Please try again."
-        throw new Error(errorMessage)
+        throw new Error(result.errors[0].message || "Failed to delete ad")
       }
 
-      // Call the onAdDeleted callback to refresh the list and show success message
       if (onAdDeleted) {
         onAdDeleted("deleted")
       }
 
-      // Close the confirmation modal
       setDeleteConfirmModal({ show: false, adId: "" })
     } catch (error) {
       console.error("Failed to delete ad:", error)
-
-      // Show error modal
       setErrorModal({
         show: true,
         title: "Failed to Delete Ad",
-        message: error instanceof Error ? error.message : "Failed to delete ad. Please try again.",
+        message: error instanceof Error ? error.message : "An error occurred",
       })
     } finally {
       setIsDeleting(false)
     }
   }
 
-  // Add a function to cancel deletion
   const cancelDelete = () => {
     setDeleteConfirmModal({ show: false, adId: "" })
   }
 
-  // Function to close error modal
   const handleCloseErrorModal = () => {
-    setErrorModal({
-      show: false,
-      title: "",
-      message: "",
-    })
+    setErrorModal({ show: false, title: "", message: "" })
   }
 
-  // Toggle ad details
-  const toggleAdDetails = (adId: string) => {
-    if (selectedAd === adId) {
-      setSelectedAd(null)
-    } else {
-      setSelectedAd(adId)
+  // Format rate with percentage
+  const formatRate = (rateValue: string): { rate: string; percentage: string } => {
+    if (!rateValue) return { rate: "USD 1.00 = IDR 0.00", percentage: "(+0.2%)" }
+
+    const match = rateValue.match(/([A-Z]+)\s+(\d+(?:\.\d+)?)/)
+    if (match && match[1] && match[2]) {
+      const currency = match[1]
+      const value = Number(match[2]).toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+      return {
+        rate: `USD 1.00 = ${currency} ${value}`,
+        percentage: "(+0.2%)",
+      }
     }
+
+    return { rate: rateValue, percentage: "(+0.2%)" }
+  }
+
+  // Format limits
+  const formatLimits = (limits: MyAd["limits"]): string => {
+    if (typeof limits === "string") {
+      return limits
+    }
+    return `USD ${limits.min.toFixed(2)} - ${limits.max.toFixed(2)}`
   }
 
   if (ads.length === 0) {
@@ -192,13 +179,14 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
           <Search className="h-12 w-12 text-gray-400" />
         </div>
         <h2 className="text-xl font-semibold mb-2">You have no ads</h2>
-        <p className="text-gray-600 mb-6 text-center">
+        <p className="text-gray-600 mb-6 text-center max-w-md">
           Looking to buy or sell USD? You can post your own ad for others to respond.
         </p>
         <Button
           onClick={() => router.push("/ads/create")}
-          className="bg-red-500 hover:bg-red-600 text-white rounded-full px-8"
+          className="bg-[#00D2FF] hover:bg-[#00BFEA] text-black rounded-full px-6 py-2 flex items-center gap-2"
         >
+          <Plus className="h-5 w-5" />
           Create ad
         </Button>
       </div>
@@ -208,111 +196,114 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
   return (
     <>
       <div className="space-y-4 pb-4">
-        {ads.map((ad) => (
-          <div
-            key={ad.id}
-            className={`border rounded-lg overflow-hidden ${ad.status === "Inactive" ? "opacity-70" : ""}`}
-          >
-            {/* Card header */}
-            <div
-              className="p-4 flex justify-between items-center cursor-pointer"
-              onClick={() => toggleAdDetails(ad.id)}
-            >
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className={`font-medium ${ad.type === "Buy" ? "text-green-600" : "text-amber-600"}`}>
-                    {ad.type}
-                  </span>
-                  <span className="text-gray-900 font-medium">{ad.id}</span>
-                  <div className="ml-2">{getStatusBadge(ad.status)}</div>
+        {ads.map((ad) => {
+          const { rate, percentage } = formatRate(ad.rate.value)
+          const isActive = ad.status === "Active"
+
+          return (
+            <div key={ad.id} className={`border border-gray-200 rounded-lg bg-white ${!isActive ? "opacity-60" : ""}`}>
+              {/* Header with status badge and menu */}
+              <div className="flex justify-between items-center p-4">
+                <div
+                  className={`px-4 py-1.5 rounded-full ${isActive ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}
+                >
+                  <span className="font-medium">{ad.status}</span>
                 </div>
-                <div className="mt-1 text-sm text-gray-500">{ad.rate.value}</div>
-              </div>
-              <ChevronRight
-                className={`h-5 w-5 text-gray-400 transition-transform ${selectedAd === ad.id ? "rotate-90" : ""}`}
-              />
-            </div>
 
-            {/* Expanded details */}
-            {selectedAd === ad.id && (
-              <div className="px-4 pb-4 border-t pt-3">
-                <div className="space-y-3">
-                  <div>
-                    <div className="text-sm text-gray-500">Limits</div>
-                    <div className="font-medium">
-                      {ad.limits.currency} {ad.limits.min.toFixed(2)} - {ad.limits.max.toFixed(2)}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-sm text-gray-500">Available amount</div>
-                    <div className="font-medium mb-1">
-                      {ad.available.currency} {ad.available.current.toFixed(2)} / {ad.available.total.toFixed(2)}
-                    </div>
-                    <div className="h-2 bg-gray-200 rounded-full w-full overflow-hidden">
-                      <div
-                        className="h-full bg-black rounded-full"
-                        style={{
-                          width: `${ad.available.total ? (ad.available.current / ad.available.total) * 100 : 0}%`,
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-sm text-gray-500">Payment methods</div>
-                    <div className="font-medium">{ad.paymentMethods.join(", ")}</div>
-                  </div>
-
-                  {/* Action buttons */}
-                  <div className="flex flex-wrap gap-2 mt-4 pt-2 border-t">
-                    <button
-                      onClick={() => handleEdit(ad)}
-                      className="flex items-center gap-1 px-3 py-2 bg-gray-100 rounded-md text-sm"
-                    >
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="p-1">
+                      <MoreVertical className="h-6 w-6 text-gray-500" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-[160px]">
+                    <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleEdit(ad)}>
                       <Pencil className="h-4 w-4" />
                       Edit
-                    </button>
-
-                    <button
-                      onClick={() => handleToggleStatus(ad)}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="flex items-center gap-2"
+                      onSelect={() => handleToggleStatus(ad)}
                       disabled={isTogglingStatus}
-                      className="flex items-center gap-1 px-3 py-2 bg-gray-100 rounded-md text-sm"
                     >
                       <Power className="h-4 w-4" />
-                      {isTogglingStatus ? "Updating..." : ad.status === "Active" ? "Deactivate" : "Activate"}
-                    </button>
-
-                    {/* Disabled buttons for Copy and Share */}
-                    <button
-                      className="flex items-center gap-1 px-3 py-2 bg-gray-100 rounded-md text-sm text-gray-400 cursor-not-allowed"
-                      disabled
-                    >
-                      <Copy className="h-4 w-4" />
-                      Copy
-                    </button>
-
-                    <button
-                      className="flex items-center gap-1 px-3 py-2 bg-gray-100 rounded-md text-sm text-gray-400 cursor-not-allowed"
-                      disabled
-                    >
-                      <Share2 className="h-4 w-4" />
-                      Share
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(ad.id)}
-                      className="flex items-center gap-1 px-3 py-2 bg-red-100 text-red-600 rounded-md text-sm"
+                      {isTogglingStatus ? "Updating..." : isActive ? "Deactivate" : "Activate"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="flex items-center gap-2 text-red-500 focus:text-red-500"
+                      onSelect={() => handleDelete(ad.id)}
                     >
                       <Trash2 className="h-4 w-4" />
                       Delete
-                    </button>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Content */}
+              <div className="px-4 pb-4">
+                {/* Title and ID */}
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-2xl font-bold">
+                    <span className={ad.type === "Buy" ? "text-green-600" : "text-red-600"}>{ad.type}</span>{" "}
+                    <span className="text-black">USD</span>
+                  </h3>
+                  <span className="text-gray-500 text-sm">
+                    {ad.type} {ad.id}
+                  </span>
+                </div>
+
+                {/* Available Amount */}
+                <div className="mb-4">
+                  <div className="text-base mb-1">
+                    USD {ad.available.current.toFixed(2)} / {ad.available.total.toFixed(2)}
+                  </div>
+                  <div className="h-2 bg-gray-200 rounded-full w-full overflow-hidden">
+                    <div
+                      className="h-full bg-black rounded-full"
+                      style={{
+                        width: `${ad.available.total ? (ad.available.current / ad.available.total) * 100 : 0}%`,
+                      }}
+                    ></div>
                   </div>
                 </div>
+
+                {/* Rate and Limits */}
+                <div className="space-y-2 mb-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-black font-medium">Rate:</span>
+                    <div className="text-right">
+                      {rate} <span className="text-green-600">{percentage}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-black font-medium">Limits:</span>
+                    <span>{formatLimits(ad.limits)}</span>
+                  </div>
+                </div>
+
+                {/* Payment Methods */}
+                <div className="flex flex-wrap gap-4">
+                  {ad.paymentMethods.map((method, index) => (
+                    <div key={index} className="flex items-center">
+                      <span
+                        className={`w-3 h-3 rounded-full mr-2 ${
+                          method.toLowerCase() === "bank transfer"
+                            ? "bg-green-600"
+                            : method.toLowerCase() === "skrill"
+                              ? "bg-blue-500"
+                              : "bg-blue-400"
+                        }`}
+                      ></span>
+                      <span>{method}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            )}
-          </div>
-        ))}
+            </div>
+          )
+        })}
       </div>
 
       {/* Delete Confirmation Modal */}
@@ -337,4 +328,3 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
     </>
   )
 }
-

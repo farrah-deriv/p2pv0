@@ -3,13 +3,13 @@
 import { useEffect } from "react"
 import { Check, X } from "lucide-react"
 
-interface NotificationBannerProps {
+interface CustomNotificationBannerProps {
   message: string
   onClose: () => void
   duration?: number
 }
 
-export default function NotificationBanner({ message, onClose, duration = 5000 }: NotificationBannerProps) {
+export default function CustomNotificationBanner({ message, onClose, duration = 5000 }: CustomNotificationBannerProps) {
   // Auto-close the notification after the specified duration
   useEffect(() => {
     const timer = setTimeout(() => {

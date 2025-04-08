@@ -2,12 +2,11 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { Input } from "@/components/ui/input"
-import { X } from "lucide-react"
 import type { AdFormData } from "../types"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
+import { CurrencyInput } from "./ui/currency-input"
+import { RateInput } from "./ui/rate-input"
+import { TradeTypeSelector } from "./ui/trade-type-selector"
 
 interface AdDetailsFormProps {
   onNext: (data: Partial<AdFormData>, errors?: ValidationErrors) => void
@@ -63,7 +62,10 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
     }
   }, [initialData])
 
-  // Validate form when values change
+  // Update the useEffect validation to ensure it works in edit mode
+  // by removing the touched.totalAmount condition for limit validations
+
+  // Replace the existing validation useEffect with this updated version:
   useEffect(() => {
     const errors: ValidationErrors = {}
     const total = Number(totalAmount)
@@ -71,17 +73,26 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
     const max = Number(maxAmount)
     const rate = Number(fixedRate)
 
-    // Only validate fields that have been touched
+    // Validate total amount
     if (touched.totalAmount) {
       if (!totalAmount) {
         errors.totalAmount = "Total amount is required"
       } else if (total <= 0) {
         errors.totalAmount = "Total amount must be greater than 0"
-      } else if (touched.minAmount && min > total) {
-        errors.totalAmount = "Total amount must be equal or more than minimum"
       }
     }
 
+    // Always validate limits against total amount, regardless of whether total amount was touched
+    // This ensures validation works in edit mode where the amount field is disabled
+    if (min > total) {
+      errors.minAmount = "Minimum amount must be less than total amount"
+    }
+
+    if (max > total) {
+      errors.maxAmount = "Maximum amount must be less than total amount"
+    }
+
+    // Validate fixed rate
     if (touched.fixedRate) {
       if (!fixedRate) {
         errors.fixedRate = "Rate is required"
@@ -90,29 +101,36 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
       }
     }
 
+    // Validate minimum amount
     if (touched.minAmount) {
       if (!minAmount) {
         errors.minAmount = "Minimum amount is required"
       } else if (min <= 0) {
         errors.minAmount = "Minimum amount must be greater than 0"
-      } else if (touched.totalAmount && min > total) {
-        errors.minAmount = "Must be equal or less than total amount"
       }
+      // Moved the total amount check outside of touched condition
     }
 
+    // Check min against max regardless of which was touched
+    if (touched.minAmount && touched.maxAmount && min > max) {
+      errors.minAmount = "Minimum amount must be less than maximum amount"
+      errors.maxAmount = "Maximum amount must be greater than minimum amount"
+    }
+
+    // Validate maximum amount
     if (touched.maxAmount) {
       if (!maxAmount) {
         errors.maxAmount = "Maximum amount is required"
       } else if (max <= 0) {
         errors.maxAmount = "Maximum amount must be greater than 0"
-      } else if (touched.minAmount && max < min) {
-        errors.maxAmount = "Must be equal or more than minimum"
       }
+      // Moved the total amount check outside of touched condition
     }
 
     setFormErrors(errors)
   }, [totalAmount, fixedRate, minAmount, maxAmount, touched])
 
+  // Update the handleSubmit function to ensure validation works in edit mode
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -124,9 +142,39 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
       maxAmount: true,
     })
 
+    // Perform comprehensive validation
+    const total = Number(totalAmount)
+    const min = Number(minAmount)
+    const max = Number(maxAmount)
+
+    const additionalErrors: ValidationErrors = {}
+
+    // Always check limits against total amount, regardless of mode
+    if (min > total) {
+      additionalErrors.minAmount = "Minimum amount must be less than total amount"
+    }
+
+    if (max > total) {
+      additionalErrors.maxAmount = "Maximum amount must be less than total amount"
+    }
+
+    // Check min against max
+    if (min > max) {
+      additionalErrors.minAmount = "Minimum amount must be less than maximum amount"
+      additionalErrors.maxAmount = "Maximum amount must be greater than minimum amount"
+    }
+
+    // Combine with existing errors
+    const combinedErrors = { ...formErrors, ...additionalErrors }
+
+    // Update form errors state
+    if (Object.keys(additionalErrors).length > 0) {
+      setFormErrors(combinedErrors)
+    }
+
     // Check for validation errors
-    if (!isFormValid()) {
-      console.error("Form has validation errors:", formErrors)
+    if (!isFormValid() || Object.keys(additionalErrors).length > 0) {
+      console.error("Form has validation errors:", combinedErrors)
 
       // Pass the data along with the errors to the parent
       const formData = {
@@ -137,7 +185,7 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
         maxAmount: Number.parseFloat(maxAmount) || 0,
       }
 
-      onNext(formData, formErrors)
+      onNext(formData, combinedErrors)
       return
     }
 
@@ -174,127 +222,88 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
   }, [totalAmount, fixedRate, minAmount, maxAmount, formErrors])
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="p-6 border-b relative">
-        <h2 className="text-xl font-semibold text-center">{isEditMode ? "Edit ad details" : "Enter ad details"}</h2>
-        <button
-          onClick={onClose}
-          className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-        >
-          <X className="h-5 w-5" />
-        </button>
-      </div>
+    <div className="max-w-[800px] mx-auto">
+      <form id="ad-details-form" onSubmit={handleSubmit} className="space-y-12">
+        {/* Select trade type */}
+        <div>
+          <h3 className="text-base font-bold leading-6 tracking-normal mb-6">Select trade type</h3>
+          <TradeTypeSelector value={type} onChange={setType} isEditMode={isEditMode} />
+        </div>
 
-      <form id="ad-details-form" onSubmit={handleSubmit} className="flex-1 p-6">
-        <div className="max-w-[800px] mx-auto h-full flex flex-col justify-between">
-          <div className="space-y-12">
+        {/* Set amount and rate */}
+        <div>
+          <h3 className="text-base font-bold leading-6 tracking-normal mb-6">Set amount and rate</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <h3 className="text-base font-medium mb-6">Select trade type</h3>
-              <RadioGroup
-                value={type}
-                onValueChange={(value) => setType(value as "buy" | "sell")}
-                className="flex gap-12"
-                defaultValue="buy"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="buy" id="buy" aria-label="Buy USD" />
-                  <Label htmlFor="buy" className="text-lg cursor-pointer">
-                    Buy USD
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="sell" id="sell" aria-label="Sell USD" />
-                  <Label htmlFor="sell" className="text-lg cursor-pointer">
-                    Sell USD
-                  </Label>
-                </div>
-              </RadioGroup>
+              <CurrencyInput
+                label="Total amount"
+                value={totalAmount}
+                onValueChange={(value) => {
+                  setTotalAmount(value)
+                  setTouched((prev) => ({ ...prev, totalAmount: true }))
+                }}
+                onBlur={() => setTouched((prev) => ({ ...prev, totalAmount: true }))}
+                placeholder="0.00"
+                isEditMode={isEditMode}
+                error={touched.totalAmount && !!formErrors.totalAmount}
+              />
+              {touched.totalAmount && formErrors.totalAmount && (
+                <p className="text-destructive text-xs mt-1">{formErrors.totalAmount}</p>
+              )}
             </div>
 
             <div>
-              <h3 className="text-base font-medium mb-6">Set amount and rate</h3>
-              <div className={`${isMobile ? "space-y-4" : "grid grid-cols-2 gap-4"}`}>
-                <div>
-                  <label className="text-sm text-gray-500 mb-2 block">Total amount</label>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      value={totalAmount}
-                      onChange={(e) => setTotalAmount(e.target.value)}
-                      onBlur={() => setTouched((prev) => ({ ...prev, totalAmount: true }))}
-                      placeholder="0.00"
-                      required
-                      min="0.01"
-                      step="0.01"
-                      className="pr-12"
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">USD</span>
-                  </div>
-                  {touched.totalAmount && formErrors.totalAmount && (
-                    <p className="text-xs mt-1">{formErrors.totalAmount}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="text-sm text-gray-500 mb-2 block">Fixed rate</label>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      value={fixedRate}
-                      onChange={(e) => setFixedRate(e.target.value)}
-                      onBlur={() => setTouched((prev) => ({ ...prev, fixedRate: true }))}
-                      placeholder="0.00"
-                      required
-                      min="0.01"
-                      step="0.01"
-                      className="pr-12"
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">IDR</span>
-                  </div>
-                  {touched.fixedRate && formErrors.fixedRate && <p className="text-xs mt-1">{formErrors.fixedRate}</p>}
-                </div>
-              </div>
+              <RateInput
+                value={fixedRate}
+                onChange={(value) => {
+                  setFixedRate(value)
+                  setTouched((prev) => ({ ...prev, fixedRate: true }))
+                }}
+                onBlur={() => setTouched((prev) => ({ ...prev, fixedRate: true }))}
+                error={touched.fixedRate && !!formErrors.fixedRate}
+              />
+              {touched.fixedRate && formErrors.fixedRate && (
+                <p className="text-destructive text-xs mt-1">{formErrors.fixedRate}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-base font-bold leading-6 tracking-normal mb-6">Order amount limit</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <CurrencyInput
+                label="Minimum order amount"
+                value={minAmount}
+                onValueChange={(value) => {
+                  setMinAmount(value)
+                  setTouched((prev) => ({ ...prev, minAmount: true }))
+                }}
+                onBlur={() => setTouched((prev) => ({ ...prev, minAmount: true }))}
+                placeholder="0.00"
+                error={touched.minAmount && !!formErrors.minAmount}
+              />
+              {touched.minAmount && formErrors.minAmount && (
+                <p className="text-destructive text-xs mt-1">{formErrors.minAmount}</p>
+              )}
             </div>
 
             <div>
-              <h3 className="text-base font-medium mb-6">Order amount limit</h3>
-              <div className={`${isMobile ? "space-y-4" : "grid grid-cols-2 gap-4"}`}>
-                <div>
-                  <label className="text-sm text-gray-500 mb-2 block">Minimum order amount</label>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      value={minAmount}
-                      onChange={(e) => setMinAmount(e.target.value)}
-                      onBlur={() => setTouched((prev) => ({ ...prev, minAmount: true }))}
-                      placeholder="0.00"
-                      required
-                      min="0.01"
-                      step="0.01"
-                      className="pr-12"
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">USD</span>
-                  </div>
-                  {touched.minAmount && formErrors.minAmount && <p className="text-xs mt-1">{formErrors.minAmount}</p>}
-                </div>
-                <div>
-                  <label className="text-sm text-gray-500 mb-2 block">Maximum order amount</label>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      value={maxAmount}
-                      onChange={(e) => setMaxAmount(e.target.value)}
-                      onBlur={() => setTouched((prev) => ({ ...prev, maxAmount: true }))}
-                      placeholder="0.00"
-                      required
-                      min="0.01"
-                      step="0.01"
-                      className="pr-12"
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">USD</span>
-                  </div>
-                  {touched.maxAmount && formErrors.maxAmount && <p className="text-xs mt-1">{formErrors.maxAmount}</p>}
-                </div>
-              </div>
+              <CurrencyInput
+                label="Maximum order amount"
+                value={maxAmount}
+                onValueChange={(value) => {
+                  setMaxAmount(value)
+                  setTouched((prev) => ({ ...prev, maxAmount: true }))
+                }}
+                onBlur={() => setTouched((prev) => ({ ...prev, maxAmount: true }))}
+                placeholder="0.00"
+                error={touched.maxAmount && !!formErrors.maxAmount}
+              />
+              {touched.maxAmount && formErrors.maxAmount && (
+                <p className="text-destructive text-xs mt-1">{formErrors.maxAmount}</p>
+              )}
             </div>
           </div>
         </div>
@@ -302,4 +311,3 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
     </div>
   )
 }
-

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 
-interface DeleteConfirmationDialogProps {
+interface CustomDeleteConfirmationDialogProps {
   open: boolean
   title: string
   description: string
@@ -21,14 +21,14 @@ interface DeleteConfirmationDialogProps {
   onCancel: () => void
 }
 
-export function DeleteConfirmationDialog({
+export function CustomDeleteConfirmationDialog({
   open,
   title,
   description,
   isDeleting = false,
   onConfirm,
   onCancel,
-}: DeleteConfirmationDialogProps) {
+}: CustomDeleteConfirmationDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
       <AlertDialogContent>

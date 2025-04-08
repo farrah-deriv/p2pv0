@@ -62,4 +62,3 @@ export default function StatsGrid({ stats }: StatsGridProps) {
     </div>
   )
 }
-
