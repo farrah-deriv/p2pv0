@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge" // Import the core Badge component
 import { deleteAd, updateAd } from "../api/api-ads"
 import type { Ad } from "../types"
+import { cn } from "@/lib/utils"
 // Update imports to use new component locations
 import StatusModal from "./ui/status-modal"
 import { DeleteConfirmationDialog } from "./ui/delete-confirmation-dialog"
@@ -22,19 +23,31 @@ const getStatusBadge = (status: string) => {
   switch (status) {
     case "Active":
       return (
-        <Badge className="bg-success-light text-success hover:bg-success-light border-transparent rounded-[4px] h-[24px] min-h-[24px] max-h-[24px] relative -top-1">
+        <Badge
+          className={cn(
+            "bg-success-light text-success hover:bg-success-light border-transparent rounded-[4px] h-[24px] min-h-[24px] max-h-[24px] relative -top-1",
+          )}
+        >
           Active
         </Badge>
       )
     case "Inactive":
       return (
-        <Badge className="bg-error-light text-error hover:bg-error-light border-transparent rounded-[4px] h-[24px] min-h-[24px] max-h-[24px] relative -top-1">
+        <Badge
+          className={cn(
+            "bg-error-light text-error hover:bg-error-light border-transparent rounded-[4px] h-[24px] min-h-[24px] max-h-[24px] relative -top-1",
+          )}
+        >
           Inactive
         </Badge>
       )
     default:
       return (
-        <Badge className="bg-error-light text-error hover:bg-error-light border-transparent rounded-[4px] h-[24px] min-h-[24px] max-h-[24px] relative -top-1">
+        <Badge
+          className={cn(
+            "bg-error-light text-error hover:bg-error-light border-transparent rounded-[4px] h-[24px] min-h-[24px] max-h-[24px] relative -top-1",
+          )}
+        >
           Inactive
         </Badge>
       )
@@ -201,7 +214,7 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
   }
 
   // Add a function to cancel deletion
-  const cancelDelete = () => {
+  const cancelDeletePaymentMethod = () => {
     setDeleteConfirmModal({ show: false, adId: "" })
   }
 
@@ -237,9 +250,11 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
         {ads.map((ad, index) => (
           <div
             key={index}
-            className={`w-full h-[216px] border rounded p-4 flex flex-col gap-2 ${
-              ad.status === "Inactive" ? "opacity-50" : ""
-            } ${index < ads.length - 1 ? "mb-4" : ""}`}
+            className={cn(
+              "w-full h-[216px] border rounded p-4 flex flex-col gap-2",
+              ad.status === "Inactive" ? "opacity-50" : "",
+              index < ads.length - 1 ? "mb-4" : "",
+            )}
           >
             {/* Header Row - Badge and options */}
             <div className="flex justify-between items-center">
@@ -331,13 +346,14 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
               {/* Payment Methods Row */}
               <div className="flex flex-wrap gap-2 text-black text-xs font-normal leading-5 text-left">
                 {ad.paymentMethods.map((method, i) => (
-                  <div key={i} className="flex items-center gap-1 mr-1">
+                  <div key={i} className="flex items-center gap-2 mr-2 mb-1">
                     <div
-                      className={`w-2 h-2 rounded-full relative top-[-1px] ${
-                        method.toLowerCase().includes("bank") ? "bg-success-icon" : "bg-blue-500"
-                      }`}
+                      className={cn(
+                        "w-2 h-2 rounded-full flex-shrink-0 self-center", // Added self-center for alignment
+                        method.toLowerCase().includes("bank") ? "bg-green-600" : "bg-blue-500",
+                      )}
                     ></div>
-                    <span>{method}</span>
+                    <span className="inline-block align-middle mt-0.5">{method}</span>
                   </div>
                 ))}
               </div>
@@ -353,7 +369,7 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
         description="You will not be able to restore it."
         isDeleting={isDeleting}
         onConfirm={confirmDelete}
-        onCancel={cancelDelete}
+        onCancel={cancelDeletePaymentMethod}
       />
 
       {/* Error Modal */}

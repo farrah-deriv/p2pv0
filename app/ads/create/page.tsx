@@ -527,13 +527,13 @@ export default function CreateAdPage() {
   }
 `}</style>
       {/* Header with back and close buttons */}
-      <div className={`flex ${currentStep === 0 ? "justify-end" : "justify-between"} mb-9`}>
+      <div className={`flex ${currentStep === 0 ? "justify-end" : "justify-between"} mb-9 md:mt-8 relative z-10`}>
         {currentStep === 1 && (
-          <button onClick={() => setCurrentStep(0)} className="text-gray-400 hover:text-gray-600">
+          <button onClick={() => setCurrentStep(0)} className="text-gray-700 hover:text-gray-900 p-2">
             <ArrowLeft className="h-6 w-6" />
           </button>
         )}
-        <button onClick={handleClose} className="text-gray-400 hover:text-gray-600">
+        <button onClick={handleClose} className="text-gray-700 hover:text-gray-900 p-2">
           <X className="h-6 w-6" />
         </button>
       </div>
@@ -580,14 +580,13 @@ export default function CreateAdPage() {
               }
               variant="default"
               size="lg"
-              className={`w-full h-[40px] min-w-[96px] min-h-[40px] max-h-[40px] rounded-[24px] flex items-center justify-center gap-2 font-extrabold text-base leading-4 tracking-[0%] text-center ${
-                isSubmitting ||
+              className={`w-full h-[40px] min-w-[96px] min-h-[40px] max-h-[40px] rounded-[24px] flex items-center justify-center gap-2 font-extrabold text-base leading-4 tracking-[0%] text-center ${isSubmitting ||
                 (currentStep === 0 && !adFormValid) ||
                 (currentStep === 1 && !paymentFormValid) ||
                 isBottomSheetOpen
-                  ? "bg-gray-100 text-gray-900 hover:bg-gray-200"
-                  : "bg-primary hover:bg-cyan-hover text-black"
-              }`}
+                ? "bg-gray-100 text-gray-900 hover:bg-gray-200"
+                : "bg-primary hover:bg-cyan-hover text-black"
+                }`}
             >
               {isSubmitting ? (
                 <div className="flex items-center gap-2">
@@ -616,14 +615,13 @@ export default function CreateAdPage() {
             }
             variant="default"
             size="lg"
-            className={`w-[120px] h-auto min-w-[120px] min-h-[40px] py-2 rounded-[24px] flex items-center justify-center gap-2 font-extrabold text-sm leading-tight text-center whitespace-normal ${
-              isSubmitting ||
+            className={`w-[120px] h-auto min-w-[120px] min-h-[40px] py-2 rounded-[24px] flex items-center justify-center gap-2 font-extrabold text-sm leading-tight text-center whitespace-normal ${isSubmitting ||
               (currentStep === 0 && !adFormValid) ||
               (currentStep === 1 && !paymentFormValid) ||
               isBottomSheetOpen
-                ? "bg-gray-100 text-gray-900 hover:bg-gray-200"
-                : "bg-primary hover:bg-cyan-hover text-black"
-            }`}
+              ? "bg-gray-100 text-gray-900 hover:bg-gray-200"
+              : "bg-primary hover:bg-cyan-hover text-black"
+              }`}
           >
             {isSubmitting ? (
               <div className="flex flex-col items-center gap-1">
@@ -672,3 +670,4 @@ export default function CreateAdPage() {
     </div>
   )
 }
+
