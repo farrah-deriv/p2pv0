@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { AlertTriangle } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface RateInputProps {
   value: string
@@ -21,9 +22,10 @@ export function RateInput({ value, onChange, onBlur, step, min, error = false }:
   return (
     <div className="flex flex-col">
       <div
-        className={`flex rounded-lg overflow-hidden border transition-colors duration-200 ${
-          error ? "border-red-500" : "border-gray-200"
-        }`}
+        className={cn(
+          "flex rounded-lg overflow-hidden border transition-colors duration-200",
+          error ? "border-red-500" : "border-gray-200",
+        )}
         style={{ borderWidth: "1px" }}
       >
         <div className="flex-1 flex items-center">

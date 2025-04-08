@@ -1,6 +1,7 @@
 "use client"
 import { AlertDialog, AlertDialogContent } from "@/components/ui/alert-dialog"
 import { CheckCircle, AlertCircle, X } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 interface StatusModalProps {
   type: "success" | "error" | "warning"
@@ -45,13 +46,10 @@ export default function StatusModal({ type, title, message, subMessage, onClose 
             {subMessage && <p className="text-gray-500 mt-4">{subMessage}</p>}
           </div>
 
-          {/* Button at the bottom */}
-          <button
-            onClick={onClose}
-            className="w-full h-10 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-          >
+          {/* Button at the bottom - Updated to use Button with cyan variant */}
+          <Button onClick={onClose} variant="cyan" size="default" className="w-full">
             OK
-          </button>
+          </Button>
         </div>
       </AlertDialogContent>
     </AlertDialog>

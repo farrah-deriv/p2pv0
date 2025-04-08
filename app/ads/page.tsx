@@ -7,11 +7,12 @@ import MyAdsTable from "./components/my-ads-table"
 import MyAdsHeader from "./components/my-ads-header"
 import { getUserAdverts } from "./api/api-ads"
 import { USER } from "@/lib/local-variables"
-import { Check, Plus } from "lucide-react"
+import { Plus } from "lucide-react"
 import type { MyAd, SuccessData } from "./types"
 import MobileMyAdsList from "./components/mobile-my-ads-list"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
+import { StatusBanner } from "@/components/ui/status-banner"
 
 // Update imports to use the new component locations
 import StatusModal from "./components/ui/status-modal"
@@ -125,27 +126,13 @@ export default function AdsPage() {
         <Navigation />
       </div>
 
-      {/* Fixed success banners - Updated with container class and rounded corners */}
+      {/* Fixed success banners - Updated to use StatusBanner component */}
       {showDeletedBanner && (
-        <div className="fixed top-4 left-0 right-0 z-50 flex justify-center">
-          <div className="container mx-auto px-4">
-            <div className="bg-success text-white py-3 px-4 rounded-lg flex items-center justify-center max-w-[600px] mx-auto">
-              <Check className="h-5 w-5 mr-2" />
-              <span>Ad deleted</span>
-            </div>
-          </div>
-        </div>
+        <StatusBanner variant="success" message="Ad deleted" onClose={() => setShowDeletedBanner(false)} />
       )}
 
       {showUpdatedBanner && (
-        <div className="fixed top-4 left-0 right-0 z-50 flex justify-center">
-          <div className="container mx-auto px-4">
-            <div className="bg-success text-white py-3 px-4 rounded-lg flex items-center justify-center max-w-[600px] mx-auto">
-              <Check className="h-5 w-5 mr-2" />
-              <span>Ad updated successfully</span>
-            </div>
-          </div>
-        </div>
+        <StatusBanner variant="success" message="Ad updated successfully" onClose={() => setShowUpdatedBanner(false)} />
       )}
 
       {/* Fixed controls section */}
@@ -155,7 +142,9 @@ export default function AdsPage() {
         {ads.length > 0 && !isMobile && (
           <Button
             onClick={() => router.push("/ads/create")}
-            className="bg-primary hover:bg-cyan-hover text-black w-[155px] h-[48px] min-w-[96px] min-h-[48px] max-h-[48px] rounded-[24px] flex items-center justify-center gap-2 font-extrabold text-base leading-4 tracking-[0%] text-center mb-6"
+            variant="cyan"
+            size="pill"
+            className="font-extrabold text-base leading-4 tracking-[0%] text-center mb-6"
           >
             <Plus className="h-5 w-5" />
             Create ad
@@ -168,7 +157,9 @@ export default function AdsPage() {
         <div className="fixed bottom-20 right-4 z-10">
           <Button
             onClick={() => router.push("/ads/create")}
-            className="bg-primary hover:bg-cyan-hover text-black w-[155px] h-[48px] min-w-[96px] min-h-[48px] max-h-[48px] rounded-[24px] flex items-center justify-center gap-2 font-extrabold text-base leading-4 tracking-[0%] text-center shadow-lg"
+            variant="cyan"
+            size="pill"
+            className="font-extrabold text-base leading-4 tracking-[0%] text-center shadow-lg"
           >
             <Plus className="h-5 w-5" />
             Create ad

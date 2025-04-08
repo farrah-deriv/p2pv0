@@ -565,7 +565,7 @@ export default function CreateAdPage() {
         )}
       </div>
 
-      {/* Fixed positioned button at bottom right */}
+      {/* Fixed positioned button at bottom right - Updated to use Button variants */}
       {isMobile ? (
         <div
           className="fixed bottom-0 left-0 w-full bg-white mt-4 py-4 mb-16 md:mb-0"
@@ -580,15 +580,16 @@ export default function CreateAdPage() {
                 (currentStep === 1 && !paymentFormValid) ||
                 isBottomSheetOpen
               }
-              variant="default"
-              size="lg"
-              className={`w-full h-[40px] min-w-[96px] min-h-[40px] max-h-[40px] rounded-[24px] flex items-center justify-center gap-2 font-extrabold text-base leading-4 tracking-[0%] text-center ${isSubmitting ||
+              variant={
+                isSubmitting ||
                 (currentStep === 0 && !adFormValid) ||
                 (currentStep === 1 && !paymentFormValid) ||
                 isBottomSheetOpen
-                ? "bg-gray-100 text-gray-900 hover:bg-gray-200"
-                : "bg-primary hover:bg-cyan-hover text-black"
-                }`}
+                  ? "outline"
+                  : "cyan"
+              }
+              size="pill"
+              className="w-full font-extrabold text-base leading-4 tracking-[0%] text-center"
             >
               {isSubmitting ? (
                 <div className="flex items-center gap-2">
@@ -615,15 +616,16 @@ export default function CreateAdPage() {
               (currentStep === 1 && !paymentFormValid) ||
               isBottomSheetOpen
             }
-            variant="default"
-            size="lg"
-            className={`w-[120px] h-auto min-w-[120px] min-h-[40px] py-2 rounded-[24px] flex items-center justify-center gap-2 font-extrabold text-sm leading-tight text-center whitespace-normal ${isSubmitting ||
+            variant={
+              isSubmitting ||
               (currentStep === 0 && !adFormValid) ||
               (currentStep === 1 && !paymentFormValid) ||
               isBottomSheetOpen
-              ? "bg-gray-100 text-gray-900 hover:bg-gray-200"
-              : "bg-primary hover:bg-cyan-hover text-black"
-              }`}
+                ? "outline"
+                : "cyan"
+            }
+            size="pill"
+            className="w-full font-extrabold text-sm leading-tight text-center whitespace-normal"
           >
             {isSubmitting ? (
               <div className="flex flex-col items-center gap-1">
@@ -672,5 +674,3 @@ export default function CreateAdPage() {
     </div>
   )
 }
-
-

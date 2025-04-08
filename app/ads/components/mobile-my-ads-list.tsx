@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation"
 import { MoreVertical, Pencil, Copy, Share2, Power, Trash2, Search } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge" // Import the core Badge component
+import { Badge } from "@/components/ui/badge"
+import { StatusIndicator } from "@/components/ui/status-indicator"
 import { deleteAd, updateAd } from "../api/api-ads"
 import type { Ad } from "../types"
 import { cn } from "@/lib/utils"
-// Update imports to use new component locations
 import StatusModal from "./ui/status-modal"
 import { DeleteConfirmationDialog } from "./ui/delete-confirmation-dialog"
 
@@ -18,36 +18,24 @@ interface MobileMyAdsListProps {
   onAdDeleted?: (status?: string) => void
 }
 
-// Update the getStatusBadge function to use the core Badge with style overrides
+// Updated to use Badge with appropriate variants
 const getStatusBadge = (status: string) => {
   switch (status) {
     case "Active":
       return (
-        <Badge
-          className={cn(
-            "bg-success-light text-success hover:bg-success-light border-transparent rounded-[4px] h-[24px] min-h-[24px] max-h-[24px] relative -top-1",
-          )}
-        >
+        <Badge variant="success-light" className="rounded-[4px] h-[24px] min-h-[24px] max-h-[24px] relative -top-1">
           Active
         </Badge>
       )
     case "Inactive":
       return (
-        <Badge
-          className={cn(
-            "bg-error-light text-error hover:bg-error-light border-transparent rounded-[4px] h-[24px] min-h-[24px] max-h-[24px] relative -top-1",
-          )}
-        >
+        <Badge variant="error-light" className="rounded-[4px] h-[24px] min-h-[24px] max-h-[24px] relative -top-1">
           Inactive
         </Badge>
       )
     default:
       return (
-        <Badge
-          className={cn(
-            "bg-error-light text-error hover:bg-error-light border-transparent rounded-[4px] h-[24px] min-h-[24px] max-h-[24px] relative -top-1",
-          )}
-        >
+        <Badge variant="error-light" className="rounded-[4px] h-[24px] min-h-[24px] max-h-[24px] relative -top-1">
           Inactive
         </Badge>
       )
@@ -237,7 +225,8 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
         <p className="text-gray-600 mb-6 text-center">
           Looking to buy or sell USD? You can post your own ad for others to respond.
         </p>
-        <Button onClick={() => router.push("/ads/create")} size="sm">
+        {/* Updated to use Button with cyan variant and pill size */}
+        <Button onClick={() => router.push("/ads/create")} variant="cyan" size="pill-sm">
           Create ad
         </Button>
       </div>
@@ -297,8 +286,11 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
             {/* Buy/Sell with ID row */}
             <div className="flex items-center justify-between">
               <div className="text-base font-bold">
-                <span className={ad.type === "Buy" ? "text-buy" : "text-sell"}>{ad.type}</span>
-                <span className="text-black ml-1">USD</span>
+                {/* Updated to use StatusIndicator */}
+                <StatusIndicator variant={ad.type === "Buy" ? "buy" : "sell"}>
+                  {ad.type}
+                  <span className="text-black ml-1">USD</span>
+                </StatusIndicator>
               </div>
               <div className="text-neutral-7 text-xs font-normal">
                 {ad.type} {ad.id}
@@ -343,18 +335,18 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
                 </span>
               </div>
 
-              {/* Payment Methods Row */}
+              {/* Payment Methods Row - Updated to use StatusIndicator with dot */}
               <div className="flex flex-wrap gap-2 text-black text-xs font-normal leading-5 text-left">
                 {ad.paymentMethods.map((method, i) => (
-                  <div key={i} className="flex items-center gap-2 mr-2 mb-1">
-                    <div
-                      className={cn(
-                        "w-2 h-2 rounded-full flex-shrink-0 self-center", // Added self-center for alignment
-                        method.toLowerCase().includes("bank") ? "bg-green-600" : "bg-blue-500",
-                      )}
-                    ></div>
-                    <span className="inline-block align-middle mt-0.5">{method}</span>
-                  </div>
+                  <StatusIndicator
+                    key={i}
+                    variant={method.toLowerCase().includes("bank") ? "success" : "blue"}
+                    withDot
+                    size="sm"
+                    className="mr-2 mb-1"
+                  >
+                    {method}
+                  </StatusIndicator>
                 ))}
               </div>
             </div>

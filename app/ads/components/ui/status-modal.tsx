@@ -62,28 +62,77 @@ export default function StatusModal({
 
           {/* Content section - left aligned */}
           <div className="mb-12">
-            <h2 className="font-bold mb-6 text-[20px] leading-[100%] tracking-[0%]">{title}</h2>
+            <h2
+              className="font-bold mb-6"
+              style={{
+                fontSize: "20px",
+                lineHeight: "100%",
+                letterSpacing: "0%",
+                fontWeight: 700,
+              }}
+            >
+              {title}
+            </h2>
 
             {type === "success" && (
               <>
-                <p className="text-gray-900 mb-6 text-base leading-6">
+                <p
+                  className="text-gray-900 mb-6"
+                  style={{
+                    fontSize: "16px",
+                    lineHeight: "24px",
+                    letterSpacing: "0%",
+                    fontWeight: 400,
+                  }}
+                >
                   You've successfully created Ad{adType && adId ? ` (${adType} ${adId})` : "."}
                 </p>
 
-                <p className="text-gray-900 text-base leading-6">{message}</p>
+                <p
+                  className="text-gray-900"
+                  style={{
+                    fontSize: "16px",
+                    lineHeight: "24px",
+                    letterSpacing: "0%",
+                    fontWeight: 400,
+                  }}
+                >
+                  {message}
+                </p>
               </>
             )}
 
-            {type !== "success" && <p className="text-gray-900 text-base leading-6">{message}</p>}
+            {type !== "success" && (
+              <p
+                className="text-gray-900"
+                style={{
+                  fontSize: "16px",
+                  lineHeight: "24px",
+                  letterSpacing: "0%",
+                  fontWeight: 400,
+                }}
+              >
+                {message}
+              </p>
+            )}
 
-            {subMessage && <p className="text-gray-900 mt-6 text-base leading-6">{subMessage}</p>}
+            {subMessage && (
+              <p
+                className="text-gray-900 mt-6"
+                style={{
+                  fontSize: "16px",
+                  lineHeight: "24px",
+                  letterSpacing: "0%",
+                  fontWeight: 400,
+                }}
+              >
+                {subMessage}
+              </p>
+            )}
           </div>
 
           {/* Button at the bottom - using Button component with style override */}
-          <Button
-            onClick={onClose}
-            className="w-full h-14 bg-primary hover:bg-cyan-hover text-black rounded-full font-bold"
-          >
+          <Button onClick={onClose} variant="cyan" size="pill-lg" className="w-full font-bold">
             {actionButtonText}
           </Button>
         </div>

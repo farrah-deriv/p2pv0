@@ -22,67 +22,6 @@ body {
   .w-1\/7 {
     width: 14.285%;
   }
-
-  /* Custom color utilities */
-  .bg-success-light {
-    background-color: rgba(0, 136, 50, 0.08);
-  }
-
-  .bg-error-light {
-    background-color: rgba(230, 25, 14, 0.08);
-  }
-
-  .text-success {
-    color: #267d36;
-  }
-
-  .text-error {
-    color: #c40000;
-  }
-
-  .text-buy {
-    color: #29823b;
-  }
-
-  .text-sell {
-    color: #dc2020;
-  }
-
-  .bg-success-bg {
-    background-color: #edfaf3;
-  }
-
-  .bg-warning-bg {
-    background-color: #fff8e7;
-  }
-
-  .text-success-icon {
-    color: #008832;
-  }
-
-  .text-warning-icon {
-    color: #f59e0b;
-  }
-
-  .bg-cyan-hover {
-    background-color: #00bfea;
-  }
-
-  .text-neutral-7 {
-    color: #6a7178;
-  }
-
-  .text-neutral-10 {
-    color: #101213;
-  }
-
-  .bg-blue-light {
-    background-color: rgba(55, 124, 252, 0.1);
-  }
-
-  .text-blue {
-    color: #377cfc;
-  }
 }
 
 @layer base {
@@ -121,7 +60,6 @@ body {
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
-
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -156,11 +94,12 @@ body {
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+}
 
+@layer base {
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
   }
@@ -168,12 +107,4 @@ body {
 
 .filter-to-primary {
   filter: invert(67%) sepia(87%) saturate(1231%) hue-rotate(152deg) brightness(103%) contrast(103%);
-}
-
-/* Add custom label styles */
-.label-rate {
-  font-weight: 700;
-  font-size: 12px;
-  line-height: 20px;
-  letter-spacing: 0%;
 }

@@ -229,7 +229,7 @@ export default function StatsTabs({ children, stats: initialStats }: StatsTabsPr
           </TabsList>
 
           {activeTab === "payment" && (
-            <Button size="sm" onClick={() => setShowAddPaymentMethodPanel(true)}>
+            <Button variant="primary" size="sm" onClick={() => setShowAddPaymentMethodPanel(true)}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Add payment method
             </Button>

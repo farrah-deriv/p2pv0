@@ -1,5 +1,7 @@
 "use client"
 
+import { Button } from "@/components/ui/button"
+
 import { useState, useEffect, useCallback } from "react"
 import { MoreVertical, Edit, Trash } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -13,6 +15,7 @@ import EditPaymentMethodPanel from "./edit-payment-method-panel"
 import BankTransferEditPanel from "./bank-transfer-edit-panel"
 import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
 import { Card, CardContent } from "@/components/ui/card"
+import { StatusIndicator } from "@/components/ui/status-indicator"
 
 interface PaymentMethod {
   id: string
@@ -458,12 +461,13 @@ export default function PaymentMethodsTab() {
     return (
       <div className="flex flex-col items-center justify-center py-8">
         <p className="text-red-500 mb-4">{error}</p>
-        <button
+        <Button
           onClick={fetchPaymentMethods}
+          variant="primary"
           className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded"
         >
           Try again
-        </button>
+        </Button>
       </div>
     )
   }
@@ -483,14 +487,16 @@ export default function PaymentMethodsTab() {
         {bankTransfers.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {bankTransfers.map((method) => (
-              <Card key={method.id} className="overflow-hidden">
+              <Card key={method.id} variant="default" className="overflow-hidden">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div className="flex items-start gap-3">
                       {getBankIcon()}
                       <div>
                         <div className="font-medium text-lg">Bank Transfer</div>
-                        <div className="text-gray-500">ID: {method.id}</div>
+                        <StatusIndicator variant="neutral" size="sm">
+                          ID: {method.id}
+                        </StatusIndicator>
                       </div>
                     </div>
                     <DropdownMenu>
@@ -532,14 +538,16 @@ export default function PaymentMethodsTab() {
         {eWallets.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {eWallets.map((method) => (
-              <Card key={method.id} className="overflow-hidden">
+              <Card key={method.id} variant="default" className="overflow-hidden">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div className="flex items-start gap-3">
                       {getEWalletIcon()}
                       <div>
                         <div className="font-medium text-lg">{method.name}</div>
-                        <div className="text-gray-500">ID: {method.id}</div>
+                        <StatusIndicator variant="neutral" size="sm">
+                          ID: {method.id}
+                        </StatusIndicator>
                       </div>
                     </div>
                     <DropdownMenu>

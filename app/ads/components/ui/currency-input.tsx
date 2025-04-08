@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { AlertTriangle } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface CurrencyInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   currency?: string
@@ -38,9 +39,10 @@ export function CurrencyInput({
   return (
     <div className="flex flex-col">
       <div
-        className={`flex rounded-lg overflow-hidden border transition-colors duration-200 ${
-          error ? "border-red-500" : isDisabled ? "border-gray-100 bg-gray-50" : "border-gray-200"
-        }`}
+        className={cn(
+          "flex rounded-lg overflow-hidden border transition-colors duration-200",
+          error ? "border-red-500" : isDisabled ? "border-gray-100 bg-gray-50" : "border-gray-200",
+        )}
         style={{ borderWidth: "1px" }}
       >
         <div className="flex-1 flex items-center">
@@ -49,7 +51,10 @@ export function CurrencyInput({
             value={value}
             onChange={handleChange}
             placeholder={placeholder}
-            className={`flex-1 p-4 border-0 focus:ring-0 focus:outline-none ${isDisabled ? "bg-gray-50 text-gray-500 cursor-not-allowed" : "text-gray-900"} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+            className={cn(
+              "flex-1 p-4 border-0 focus:ring-0 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
+              isDisabled ? "bg-gray-50 text-gray-500 cursor-not-allowed" : "text-gray-900",
+            )}
             disabled={isDisabled}
             readOnly={isEditMode}
             aria-readonly={isEditMode}

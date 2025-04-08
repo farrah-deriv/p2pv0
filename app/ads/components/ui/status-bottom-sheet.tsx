@@ -127,12 +127,9 @@ export default function StatusBottomSheet({
 
           {subMessage && <p className="mt-6 font-normal text-base leading-6">{subMessage}</p>}
 
-          {/* Button */}
+          {/* Button - Updated to use Button with cyan variant and pill-lg size */}
           <div className="mt-12">
-            <Button
-              onClick={onClose}
-              className="w-full h-14 bg-primary hover:bg-cyan-hover text-black rounded-full font-bold"
-            >
+            <Button onClick={onClose} variant="cyan" size="pill-lg" className="w-full font-bold">
               {actionButtonText}
             </Button>
           </div>

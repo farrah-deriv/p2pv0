@@ -2,13 +2,13 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { MoreVertical, Pencil, Copy, Share2, Power, Trash2, Search, Plus } from "lucide-react"
+import { MoreVertical, Pencil, Copy, Share2, Power, Trash2, Search } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge" // Import the core Badge component
+import { Badge } from "@/components/ui/badge"
 import { deleteAd, updateAd } from "../api/api-ads"
 import type { Ad } from "../types"
-// Update imports to use the new component locations
+import { cn } from "@/lib/utils"
 import { DeleteConfirmationDialog } from "./ui/delete-confirmation-dialog"
 import StatusModal from "./ui/status-modal"
 
@@ -49,19 +49,18 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     return methods.join(", ")
   }
 
-  // Find the getStatusBadge function and replace it with this implementation
+  // Updated to use the Badge component with appropriate variants
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Active":
-        return <Badge className="bg-success-light text-success hover:bg-success-light border-transparent">Active</Badge>
+        return <Badge variant="success-light">Active</Badge>
       case "Inactive":
-        return <Badge className="bg-error-light text-error hover:bg-error-light border-transparent">Inactive</Badge>
+        return <Badge variant="error-light">Inactive</Badge>
       default:
-        return <Badge className="bg-error-light text-error hover:bg-error-light border-transparent">Inactive</Badge>
+        return <Badge variant="error-light">Inactive</Badge>
     }
   }
 
-  // Find the handleEdit function and update it to ensure description is properly stored
   const handleEdit = (ad: Ad) => {
     // Store the ad data in localStorage for the edit flow
     console.log("Editing ad with description:", ad.description)
@@ -229,11 +228,8 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
         <p className="text-gray-600 mb-6 text-center max-w-md">
           Looking to buy or sell USD? You can post your own ad for others to respond.
         </p>
-        <Button
-          onClick={() => router.push("/ads/create")}
-          className="bg-primary hover:bg-cyan-hover text-black w-[155px] h-[48px] min-w-[96px] min-h-[48px] max-h-[48px] rounded-[24px] flex items-center justify-center gap-2 font-extrabold text-base leading-4 tracking-[0%] text-center"
-        >
-          <Plus className="h-5 w-5" />
+        {/* Updated to use Button with cyan variant and pill size */}
+        <Button onClick={() => router.push("/ads/create")} variant="cyan" size="pill">
           Create ad
         </Button>
       </div>
@@ -257,12 +253,11 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
           </thead>
           <tbody>
             {ads.map((ad, index) => (
-              <tr key={index} className={`border-b ${ad.status === "Inactive" ? "opacity-60" : ""}`}>
+              <tr key={index} className={cn("border-b", ad.status === "Inactive" ? "opacity-60" : "")}>
                 <td className="py-4">
                   <div>
-                    <span className={`font-medium ${ad.type === "Buy" ? "text-green-600" : "text-red-600"}`}>
-                      {ad.type}
-                    </span>
+                    {/* Updated to use StatusIndicator */}
+                    <span className={cn("font-medium", ad.type === "Buy" ? "text-buy" : "text-sell")}>{ad.type}</span>
                     <span className="text-gray-900"> {ad.id}</span>
                   </div>
                 </td>
