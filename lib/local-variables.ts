@@ -54,4 +54,3 @@ export default {
   APP_SETTINGS,
   AUTH,
 }
-

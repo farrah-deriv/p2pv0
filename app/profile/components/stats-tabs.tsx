@@ -7,17 +7,21 @@ import PaymentMethodsTab from "./payment-methods-tab"
 import { Button } from "@/components/ui/button"
 import AddPaymentMethodPanel from "./add-payment-method-panel"
 import { ProfileAPI } from "../api"
-import StatusModal from "@/components/ui/status-modal"
+import StatusModal from "./ui/status-modal"
 import NotificationBanner from "./notification-banner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PlusCircle } from "lucide-react"
+// Add USER import at the top with other imports
+import { USER, API, AUTH } from "@/lib/local-variables"
+import { useEffect } from "react"
 
+// Update the StatsTabsProps interface to make stats optional
 interface StatsTabsProps {
   children?: React.ReactNode
-  stats: any
+  stats?: any
 }
 
-export default function StatsTabs({ children, stats }: StatsTabsProps) {
+export default function StatsTabs({ children, stats: initialStats }: StatsTabsProps) {
   const [activeTab, setActiveTab] = useState("stats")
   const [showAddPaymentMethodPanel, setShowAddPaymentMethodPanel] = useState(false)
   const [isAddingPaymentMethod, setIsAddingPaymentMethod] = useState(false)
@@ -30,6 +34,22 @@ export default function StatsTabs({ children, stats }: StatsTabsProps) {
     message: "",
   })
   const [refreshKey, setRefreshKey] = useState(0)
+  // Modify userStats to include default values
+  const [userStats, setUserStats] = useState<any>(
+    initialStats || {
+      buyCompletion: { rate: "N/A", period: "(30d)" },
+      sellCompletion: { rate: "N/A", period: "(30d)" },
+      avgPayTime: { time: "N/A", period: "(30d)" },
+      avgReleaseTime: { time: "N/A", period: "(30d)" },
+      tradePartners: 0,
+      totalOrders30d: 0,
+      totalOrdersLifetime: 0,
+      tradeVolume30d: { amount: "0.00", currency: "USD", period: "(30d)" },
+      tradeVolumeLifetime: { amount: "0.00", currency: "USD" },
+    },
+  )
+
+  const [isLoadingStats, setIsLoadingStats] = useState(false)
 
   const tabs = [
     { id: "stats", label: "Stats" },
@@ -37,6 +57,108 @@ export default function StatsTabs({ children, stats }: StatsTabsProps) {
     { id: "ads", label: "Ad details" },
     { id: "counterparties", label: "My counterparties" },
   ]
+
+  // Add useEffect to fetch user stats
+  useEffect(() => {
+    const fetchUserStats = async () => {
+      try {
+        setIsLoadingStats(true)
+        const userId = USER.id
+        const url = `${API.baseUrl}/users/${userId}`
+
+        console.log(`Fetching user stats for user ID: ${userId}`)
+
+        const response = await fetch(url, {
+          headers: {
+            ...AUTH.getAuthHeader(),
+            accept: "application/json",
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch user stats: ${response.status} ${response.statusText}`)
+        }
+
+        const responseData = await response.json()
+        console.log("User stats API response:", responseData)
+
+        // If we have data, transform it to match the expected format and update the stats state
+        if (responseData && responseData.data) {
+          const data = responseData.data
+
+          // Format the time values (from seconds to minutes)
+          const formatTimeAverage = (minutes) => {
+            if (!minutes || minutes <= 0) return "N/A"
+
+            // Convert minutes to days (1 day = 24 hours = 1440 minutes)
+            const days = Math.floor(minutes / 1440)
+
+            // If less than 1 day, show 0 days
+            return `${days} days`
+          }
+
+          // Calculate total orders and amounts for 30 days
+          const totalOrders30d = (data.buy_count_30day || 0) + (data.sell_count_30day || 0)
+          const totalAmount30d = (data.buy_amount_30day || 0) + (data.sell_amount_30day || 0)
+
+          // Format completion rates
+          const formatCompletionRate = (rate, count) => {
+            if (rate === null || rate === undefined) return "N/A"
+            return `${rate}% (${count || 0})`
+          }
+
+          // Transform the data to match the expected format
+          const transformedStats = {
+            buyCompletion: {
+              // For Buy completion, we should show the completion rate with buy count
+              rate: `${data.completion_average_30day || 0}%`,
+              period: "(30d)",
+            },
+            sellCompletion: {
+              // For Sell completion, we should show the completion rate with sell count
+              rate: `${data.completion_average_30day || 0}%`,
+              period: "(30d)",
+            },
+            avgPayTime: {
+              // For Avg. pay time, use buy_time_average_30day
+              time: formatTimeAverage(data.buy_time_average_30day),
+              period: "(30d)",
+            },
+            avgReleaseTime: {
+              // For Avg. release time, use release_time_average_30day
+              time: formatTimeAverage(data.release_time_average_30day),
+              period: "(30d)",
+            },
+            tradePartners: data.trade_partners || 0,
+            // Total orders (30d) is buy_count_30day + sell_count_30day
+            totalOrders30d: (data.buy_count_30day || 0) + (data.sell_count_30day || 0),
+            // Total orders lifetime is order_count_lifetime
+            totalOrdersLifetime: data.order_count_lifetime || 0,
+            tradeVolume30d: {
+              // Trade volume 30d is buy_amount_30day + sell_amount_30day
+              amount: ((data.buy_amount_30day || 0) + (data.sell_amount_30day || 0)).toFixed(2),
+              currency: "USD",
+              period: "(30d)",
+            },
+            tradeVolumeLifetime: {
+              // Trade volume lifetime is order_amount_lifetime
+              amount: data.order_amount_lifetime ? data.order_amount_lifetime.toFixed(2) : "0.00",
+              currency: "USD",
+            },
+          }
+
+          console.log("Transformed stats:", transformedStats)
+          setUserStats(transformedStats)
+        }
+      } catch (error) {
+        console.error("Error fetching user stats:", error)
+      } finally {
+        setIsLoadingStats(false)
+      }
+    }
+
+    fetchUserStats()
+  }, [])
 
   const handleAddPaymentMethod = async (method: string, fields: Record<string, string>) => {
     try {
@@ -117,7 +239,7 @@ export default function StatsTabs({ children, stats }: StatsTabsProps) {
           </TabsList>
 
           {activeTab === "payment" && (
-            <Button size="sm" onClick={() => setShowAddPaymentMethodPanel(true)}>
+            <Button variant="primary" size="sm" onClick={() => setShowAddPaymentMethodPanel(true)}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Add payment method
             </Button>
@@ -125,7 +247,28 @@ export default function StatsTabs({ children, stats }: StatsTabsProps) {
         </div>
 
         <TabsContent value="stats">
-          <StatsGrid stats={stats} />
+          {isLoadingStats ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="border rounded-lg p-4">
+                    <div className="animate-pulse bg-gray-200 h-4 w-3/4 mb-2 rounded"></div>
+                    <div className="animate-pulse bg-gray-200 h-6 w-1/2 rounded"></div>
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="border rounded-lg p-4">
+                    <div className="animate-pulse bg-gray-200 h-4 w-3/4 mb-2 rounded"></div>
+                    <div className="animate-pulse bg-gray-200 h-6 w-1/2 rounded"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <StatsGrid stats={userStats} />
+          )}
         </TabsContent>
         <TabsContent value="payment">
           <PaymentMethodsTab key={refreshKey} />

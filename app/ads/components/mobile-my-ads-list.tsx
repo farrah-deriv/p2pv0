@@ -5,16 +5,41 @@ import { useRouter } from "next/navigation"
 import { MoreVertical, Pencil, Copy, Share2, Power, Trash2, Search } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { StatusIndicator } from "@/components/ui/status-indicator"
 import { deleteAd, updateAd } from "../api/api-ads"
 import type { Ad } from "../types"
-import StatusModal from "@/components/ui/status-modal"
-// Add Badge import at the top with other imports
-import { Badge } from "@/components/ui/badge"
-import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
+import { cn } from "@/lib/utils"
+import StatusModal from "./ui/status-modal"
+import { DeleteConfirmationDialog } from "./ui/delete-confirmation-dialog"
 
 interface MobileMyAdsListProps {
   ads: Ad[]
   onAdDeleted?: (status?: string) => void
+}
+
+// Updated to use Badge with appropriate variants
+const getStatusBadge = (status: string) => {
+  switch (status) {
+    case "Active":
+      return (
+        <Badge variant="success-light" className="rounded-[4px] h-[24px] min-h-[24px] max-h-[24px] relative -top-1">
+          Active
+        </Badge>
+      )
+    case "Inactive":
+      return (
+        <Badge variant="error-light" className="rounded-[4px] h-[24px] min-h-[24px] max-h-[24px] relative -top-1">
+          Inactive
+        </Badge>
+      )
+    default:
+      return (
+        <Badge variant="error-light" className="rounded-[4px] h-[24px] min-h-[24px] max-h-[24px] relative -top-1">
+          Inactive
+        </Badge>
+      )
+  }
 }
 
 export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListProps) {
@@ -34,18 +59,6 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
     show: false,
     adId: "",
   })
-
-  // Replace the getStatusBadge function with this implementation
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Active":
-        return <Badge variant="default">Active</Badge>
-      case "Inactive":
-        return <Badge variant="destructive">Inactive</Badge>
-      default:
-        return <Badge variant="destructive">Inactive</Badge>
-    }
-  }
 
   const handleEdit = (ad: Ad) => {
     // Store the ad data in localStorage for the edit flow
@@ -149,7 +162,6 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
   }
 
   const handleDelete = (adId: string) => {
-    // Show confirmation modal instead of immediately deleting
     setDeleteConfirmModal({
       show: true,
       adId: adId,
@@ -190,7 +202,7 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
   }
 
   // Add a function to cancel deletion
-  const cancelDelete = () => {
+  const cancelDeletePaymentMethod = () => {
     setDeleteConfirmModal({ show: false, adId: "" })
   }
 
@@ -213,7 +225,8 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
         <p className="text-gray-600 mb-6 text-center">
           Looking to buy or sell USD? You can post your own ad for others to respond.
         </p>
-        <Button onClick={() => router.push("/ads/create")} size="sm">
+        {/* Updated to use Button with cyan variant and pill size */}
+        <Button onClick={() => router.push("/ads/create")} variant="cyan" size="pill-sm">
           Create ad
         </Button>
       </div>
@@ -222,22 +235,22 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
 
   return (
     <>
-      <div className="flex flex-col space-y-4">
+      <div className="flex flex-col px-4">
         {ads.map((ad, index) => (
-          <div key={index} className={`border rounded-lg p-4 ${ad.status === "Inactive" ? "opacity-50" : ""}`}>
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className={`font-medium ${ad.type === "Buy" ? "text-primary" : "text-secondary"}`}>
-                    {ad.type}
-                  </span>
-                  <span className="text-gray-800 font-medium">{ad.id}</span>
-                </div>
-                <div className="mt-1">{getStatusBadge(ad.status)}</div>
-              </div>
+          <div
+            key={index}
+            className={cn(
+              "w-full h-[216px] border rounded p-4 flex flex-col gap-2",
+              ad.status === "Inactive" ? "opacity-50" : "",
+              index < ads.length - 1 ? "mb-4" : "",
+            )}
+          >
+            {/* Header Row - Badge and options */}
+            <div className="flex justify-between items-center">
+              <div>{getStatusBadge(ad.status)}</div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="p-1 hover:bg-gray-100 rounded-full">
+                  <button className="p-1 hover:bg-gray-100 rounded-full -mr-2">
                     <MoreVertical className="h-5 w-5 text-gray-500" />
                   </button>
                 </DropdownMenuTrigger>
@@ -254,15 +267,15 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
                     <Power className="h-4 w-4" />
                     {isTogglingStatus ? "Updating..." : ad.status === "Active" ? "Deactivate" : "Activate"}
                   </DropdownMenuItem>
-                  <DropdownMenuItem disabled>
+                  <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleCopy(ad.id)}>
                     <Copy className="h-4 w-4" />
                     Copy
                   </DropdownMenuItem>
-                  <DropdownMenuItem disabled>
+                  <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleShare(ad.id)}>
                     <Share2 className="h-4 w-4" />
                     Share
                   </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => handleDelete(ad.id)}>
+                  <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleDelete(ad.id)}>
                     <Trash2 className="h-4 w-4" />
                     Delete
                   </DropdownMenuItem>
@@ -270,44 +283,71 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
               </DropdownMenu>
             </div>
 
-            <div className="space-y-2 mt-4">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Rate (USD 1)</span>
-                <div className="text-right">
-                  <div className="font-medium">{ad.rate.value}</div>
-                  <div className="text-gray-500 text-sm">{ad.rate.percentage}</div>
+            {/* Buy/Sell with ID row */}
+            <div className="flex items-center justify-between">
+              <div className="text-base font-bold">
+                {/* Updated to use StatusIndicator */}
+                <StatusIndicator variant={ad.type === "Buy" ? "buy" : "sell"}>
+                  {ad.type}
+                  <span className="text-black ml-1">USD</span>
+                </StatusIndicator>
+              </div>
+              <div className="text-neutral-7 text-xs font-normal">
+                {ad.type} {ad.id}
+              </div>
+            </div>
+
+            {/* Content Rows */}
+            <div className="flex flex-col gap-2 flex-grow justify-between">
+              {/* Available Row */}
+              <div className="flex flex-col w-full mb-2">
+                <div className="text-neutral-10 text-xs font-normal leading-5 font-medium">
+                  <span className="text-neutral-10 text-xs font-normal leading-5">
+                    USD {(ad.available.current || 0).toFixed(2)}
+                  </span>{" "}
+                  / {(ad.available.total || 0).toFixed(2)}
+                </div>
+                <div className="h-2 bg-gray-200 rounded-full w-full overflow-hidden mt-1">
+                  <div
+                    className="h-full bg-black rounded-full"
+                    style={{
+                      width: `${ad.available.total ? ((ad.available.current || 0) / ad.available.total) * 100 : 0}%`,
+                    }}
+                  ></div>
                 </div>
               </div>
 
+              {/* Rate Row */}
               <div className="flex justify-between">
-                <span className="text-gray-500">Limits</span>
-                <span className="font-medium">
+                <span className="label-rate">Rate:</span>
+                <div className="text-right">
+                  <div className="text-neutral-10 text-xs font-normal leading-5">USD 1.00 = {ad.rate.value}</div>
+                </div>
+              </div>
+
+              {/* Limits Row */}
+              <div className="flex justify-between">
+                <span className="label-rate align-middle">Limits:</span>
+                <span className="text-neutral-10 text-xs font-normal leading-5">
                   {typeof ad.limits === "string"
                     ? ad.limits
                     : `${ad.limits.currency} ${ad.limits.min.toFixed(2)} - ${ad.limits.max.toFixed(2)}`}
                 </span>
               </div>
 
-              <div className="flex justify-between">
-                <span className="text-gray-500">Available</span>
-                <div className="text-right">
-                  <div className="font-medium">
-                    USD {(ad.available.current || 0).toFixed(2)} / {(ad.available.total || 0).toFixed(2)}
-                  </div>
-                  <div className="h-2 bg-gray-200 rounded-full w-32 overflow-hidden mt-1">
-                    <div
-                      className="h-full bg-black rounded-full"
-                      style={{
-                        width: `${ad.available.total ? ((ad.available.current || 0) / ad.available.total) * 100 : 0}%`,
-                      }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-gray-500">Payment methods</span>
-                <span className="font-medium text-right">{ad.paymentMethods.join(", ")}</span>
+              {/* Payment Methods Row - Updated to use StatusIndicator with dot */}
+              <div className="flex flex-wrap gap-2 text-black text-xs font-normal leading-5 text-left">
+                {ad.paymentMethods.map((method, i) => (
+                  <StatusIndicator
+                    key={i}
+                    variant={method.toLowerCase().includes("bank") ? "success" : "blue"}
+                    withDot
+                    size="sm"
+                    className="mr-2 mb-1"
+                  >
+                    {method}
+                  </StatusIndicator>
+                ))}
               </div>
             </div>
           </div>
@@ -315,14 +355,14 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
       </div>
 
       {/* Delete Confirmation Modal */}
-      {deleteConfirmModal.show && (
-        <DeleteConfirmationDialog
-          isOpen={deleteConfirmModal.show}
-          onConfirm={confirmDelete}
-          onCancel={cancelDelete}
-          isLoading={isDeleting}
-        />
-      )}
+      <DeleteConfirmationDialog
+        open={deleteConfirmModal.show}
+        title="Delete ad?"
+        description="You will not be able to restore it."
+        isDeleting={isDeleting}
+        onConfirm={confirmDelete}
+        onCancel={cancelDeletePaymentMethod}
+      />
 
       {/* Error Modal */}
       {errorModal.show && (
@@ -336,4 +376,3 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
     </>
   )
 }
-

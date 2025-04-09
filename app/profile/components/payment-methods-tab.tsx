@@ -1,18 +1,21 @@
 "use client"
 
+import { Button } from "@/components/ui/button"
+
 import { useState, useEffect, useCallback } from "react"
 import { MoreVertical, Edit, Trash } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { API, AUTH } from "@/lib/local-variables"
-import { Shimmer } from "./ui/shimmer"
+import { CustomShimmer } from "./ui/custom-shimmer"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
-import StatusModal from "@/components/ui/status-modal"
+import CustomStatusModal from "./ui/custom-status-modal"
 import { ProfileAPI } from "../api"
-import NotificationBanner from "./notification-banner"
+import CustomNotificationBanner from "./ui/custom-notification-banner"
 import EditPaymentMethodPanel from "./edit-payment-method-panel"
 import BankTransferEditPanel from "./bank-transfer-edit-panel"
 import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
 import { Card, CardContent } from "@/components/ui/card"
+import { StatusIndicator } from "@/components/ui/status-indicator"
 
 interface PaymentMethod {
   id: string
@@ -66,6 +69,7 @@ export default function PaymentMethodsTab() {
       const headers = {
         ...AUTH.getAuthHeader(),
         "Content-Type": "application/json",
+        "X-Data-Source": "live",
       }
 
       // Enhanced request logging
@@ -355,7 +359,7 @@ export default function PaymentMethodsTab() {
 
   // Get the appropriate icon for a payment method
   const getBankIcon = () => (
-    <div className="w-10 h-10 flex items-center justify-center text-green-600">
+    <div className="w-10 h-10 flex items-center justify-center text-success">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
           d="M2 10H22V18C22 18.5304 21.7893 19.0391 21.4142 19.4142C21.0391 19.7893 20.5304 20 20 20H4C3.46957 20 2.96086 19.7893 2.58579 19.4142C2.21071 19.0391 2 18.5304 2 18V10ZM12 3L22 8H2L12 3Z"
@@ -366,7 +370,7 @@ export default function PaymentMethodsTab() {
   )
 
   const getEWalletIcon = () => (
-    <div className="w-10 h-10 flex items-center justify-center text-blue-600">
+    <div className="w-10 h-10 flex items-center justify-center text-blue">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
           d="M19 6H5C3.89543 6 3 6.89543 3 8V16C3 17.1046 3.89543 18 5 18H19C20.1046 18 21 17.1046 21 16V8C21 6.89543 20.1046 6 19 6Z"
@@ -433,19 +437,19 @@ export default function PaymentMethodsTab() {
     return (
       <div className="space-y-6">
         <div className="space-y-2">
-          <Shimmer className="h-6 w-40" />
+          <CustomShimmer className="h-6 w-40" />
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <Shimmer className="h-24 w-full" />
-            <Shimmer className="h-24 w-full" />
+            <CustomShimmer className="h-24 w-full" />
+            <CustomShimmer className="h-24 w-full" />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Shimmer className="h-6 w-40" />
+          <CustomShimmer className="h-6 w-40" />
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <Shimmer className="h-24 w-full" />
-            <Shimmer className="h-24 w-full" />
-            <Shimmer className="h-24 w-full" />
+            <CustomShimmer className="h-24 w-full" />
+            <CustomShimmer className="h-24 w-full" />
+            <CustomShimmer className="h-24 w-full" />
           </div>
         </div>
       </div>
@@ -457,12 +461,13 @@ export default function PaymentMethodsTab() {
     return (
       <div className="flex flex-col items-center justify-center py-8">
         <p className="text-red-500 mb-4">{error}</p>
-        <button
+        <Button
           onClick={fetchPaymentMethods}
+          variant="primary"
           className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded"
         >
           Try again
-        </button>
+        </Button>
       </div>
     )
   }
@@ -470,7 +475,7 @@ export default function PaymentMethodsTab() {
   return (
     <div>
       {notification.show && (
-        <NotificationBanner
+        <CustomNotificationBanner
           message={notification.message}
           onClose={() => setNotification({ show: false, message: "" })}
         />
@@ -482,14 +487,16 @@ export default function PaymentMethodsTab() {
         {bankTransfers.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {bankTransfers.map((method) => (
-              <Card key={method.id} className="overflow-hidden">
+              <Card key={method.id} variant="default" className="overflow-hidden">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div className="flex items-start gap-3">
                       {getBankIcon()}
                       <div>
                         <div className="font-medium text-lg">Bank Transfer</div>
-                        <div className="text-gray-500">ID: {method.id}</div>
+                        <StatusIndicator variant="neutral" size="sm">
+                          ID: {method.id}
+                        </StatusIndicator>
                       </div>
                     </div>
                     <DropdownMenu>
@@ -531,14 +538,16 @@ export default function PaymentMethodsTab() {
         {eWallets.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {eWallets.map((method) => (
-              <Card key={method.id} className="overflow-hidden">
+              <Card key={method.id} variant="default" className="overflow-hidden">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div className="flex items-start gap-3">
                       {getEWalletIcon()}
                       <div>
                         <div className="font-medium text-lg">{method.name}</div>
-                        <div className="text-gray-500">ID: {method.id}</div>
+                        <StatusIndicator variant="neutral" size="sm">
+                          ID: {method.id}
+                        </StatusIndicator>
                       </div>
                     </div>
                     <DropdownMenu>
@@ -605,7 +614,7 @@ export default function PaymentMethodsTab() {
 
       {/* Error Modal - only show for errors, not for success */}
       {statusModal.show && (
-        <StatusModal
+        <CustomStatusModal
           type={statusModal.type}
           title={statusModal.title}
           message={statusModal.message}
@@ -615,4 +624,3 @@ export default function PaymentMethodsTab() {
     </div>
   )
 }
-

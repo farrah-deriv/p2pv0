@@ -22,4 +22,3 @@ export default function BusinessHours({ isOpen, availability }: BusinessHoursPro
     </div>
   )
 }
-

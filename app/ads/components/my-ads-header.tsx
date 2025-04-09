@@ -24,4 +24,3 @@ export default function MyAdsHeader({ hasAds, isMobile }: MyAdsHeaderProps) {
     </div>
   )
 }
-

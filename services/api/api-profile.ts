@@ -64,6 +64,7 @@ export async function getUserProfile(): Promise<UserProfile> {
       headers: {
         ...AUTH.getAuthHeader(),
         "Content-Type": "application/json",
+        "X-Data-Source": "live",
       },
     })
 
@@ -88,6 +89,7 @@ export async function updateBusinessHours(data: BusinessHours): Promise<{ succes
       headers: {
         ...AUTH.getAuthHeader(),
         "Content-Type": "application/json",
+        "X-Data-Source": "live",
       },
       body: JSON.stringify(data),
     })
@@ -112,6 +114,7 @@ export async function getUserBalance(): Promise<{ balance: number; currency: str
       headers: {
         ...AUTH.getAuthHeader(),
         "Content-Type": "application/json",
+        "X-Data-Source": "live",
       },
     })
 
@@ -135,6 +138,7 @@ export async function getUserPaymentMethods(): Promise<PaymentMethod[]> {
       headers: {
         ...AUTH.getAuthHeader(),
         "Content-Type": "application/json",
+        "X-Data-Source": "live",
       },
     })
 
@@ -162,6 +166,7 @@ export async function addPaymentMethod(name: string, instructions: string): Prom
       headers: {
         ...AUTH.getAuthHeader(),
         "Content-Type": "application/json",
+        "X-Data-Source": "live",
       },
       body: JSON.stringify(requestBody),
     })
@@ -193,6 +198,7 @@ export async function deletePaymentMethod(id: string): Promise<{ success: boolea
       headers: {
         ...AUTH.getAuthHeader(),
         "Content-Type": "application/json",
+        "X-Data-Source": "live",
       },
     })
 
@@ -217,6 +223,7 @@ export async function toggleRealNameVisibility(show: boolean): Promise<{ success
       headers: {
         ...AUTH.getAuthHeader(),
         "Content-Type": "application/json",
+        "X-Data-Source": "live",
       },
       body: JSON.stringify({ show }),
     })
@@ -231,4 +238,3 @@ export async function toggleRealNameVisibility(show: boolean): Promise<{ success
     throw error
   }
 }
-
