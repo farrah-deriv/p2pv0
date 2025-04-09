@@ -79,9 +79,9 @@ const config: Config = {
           DEFAULT: "100%",
         },
         slate: {
-          50: "#FFFFFF",
+          50: "#f8fafc",
           75: "#F6F7F8",
-          100: "#EBECEF",
+          100: "#f1f5f9",
           200: "#CED0D6",
           300: "#B1B4BC",
           400: "#9498A2",

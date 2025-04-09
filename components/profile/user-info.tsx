@@ -32,8 +32,16 @@ export default function UserInfo({
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    // Instead of making an API call that's failing, let's use the USER object from local variables
-    // This is a more reliable approach since we already have the user data locally
+    console.log("UserInfo props received:", {
+      username,
+      rating,
+      completionRate,
+      joinDate,
+      blockedCount,
+      realName,
+      isVerified,
+    })
+
     try {
       if (USER && USER.nickname) {
         console.log("Using nickname from local variables:", USER.nickname)
@@ -44,7 +52,20 @@ export default function UserInfo({
     } catch (error) {
       console.error("Error accessing user data:", error)
     }
-  }, [username])
+
+    // Log rendering values
+    if (rating) console.log("Rendering rating:", rating)
+    else console.log("Rating not available or is default")
+
+    if (completionRate) console.log("Rendering completion rate:", completionRate)
+    else console.log("Completion rate not available or is default")
+
+    if (joinDate) console.log("Rendering join date:", joinDate)
+    else console.log("Join date not available or is default")
+
+    if (blockedCount > 0) console.log("Rendering blocked count:", blockedCount)
+    else console.log("Blocked count not available or is zero")
+  }, [username, rating, completionRate, joinDate, blockedCount, realName, isVerified])
 
   return (
     <div className="mb-8">
@@ -55,17 +76,26 @@ export default function UserInfo({
         <div className="flex-1">
           <h2 className="text-xl font-bold">{nickname}</h2>
           <div className="flex items-center gap-4 mt-1 text-sm">
-            <div className="flex items-center">
-              <Star className="h-4 w-4 text-yellow-500 mr-1" />
-              <span className="text-gray-700">{rating}</span>
-            </div>
-            <div className="flex items-center text-gray-700">
-              <Check className="h-4 w-4 text-primary mr-1" />
-              <span>{completionRate}</span>
-              <Info className="h-4 w-4 ml-1 text-gray-400" />
-            </div>
-            <div className="text-gray-700">{joinDate}</div>
-            <div className="text-gray-700">Blocked by: {blockedCount}</div>
+            {rating && (
+              <div className="flex items-center">
+                <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                <span className="text-gray-700">{rating}</span>
+              </div>
+            )}
+
+            {completionRate && (
+              <div className="flex items-center text-gray-700">
+                <Check className="h-4 w-4 text-primary mr-1" />
+                <span>{completionRate}</span>
+                <Info className="h-4 w-4 ml-1 text-gray-400" />
+              </div>
+            )}
+
+            {joinDate && <div className="text-gray-700">{joinDate}</div>}
+
+            {blockedCount > 0 && (
+              <div className="text-gray-700">Blocked by: {blockedCount}</div>
+            )}
           </div>
           <div className="flex flex-wrap gap-2 mt-3">
             {isVerified.id && (
