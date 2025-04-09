@@ -5,17 +5,17 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default: "bg-secondary text-white hover:bg-[#00B380] rounded-full",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-        // Add new variants based on our custom colors
+        link: "underline-offset-4 underline",
+        // Keep our custom variants
         success: "bg-success text-white hover:bg-success/90",
         error: "bg-error text-white hover:bg-error/90",
         warning: "bg-warning-bg text-warning-icon hover:bg-warning-bg/90",
@@ -42,11 +42,11 @@ const buttonVariants = cva(
         "outline-disputed": "border border-disputed text-disputed bg-white hover:bg-disputed/10",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
+        default: "h-[32px] px-4 py-2",
+        sm: "h-[32px] rounded-[16px] px-4",
+        lg: "h-11 rounded-[16px] px-8",
         icon: "h-10 w-10",
-        // Add new sizes
+        // Keep our custom sizes
         xl: "h-12 rounded-md px-10 text-base",
         "2xl": "h-14 rounded-md px-12 text-lg",
         pill: "h-10 rounded-full px-6",
@@ -76,4 +76,3 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = "Button"
 
 export { Button, buttonVariants }
-
