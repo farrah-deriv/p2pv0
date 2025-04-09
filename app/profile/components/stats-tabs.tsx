@@ -87,51 +87,57 @@ export default function StatsTabs({ children, stats: initialStats }: StatsTabsPr
           const data = responseData.data
 
           // Format the time values (from seconds to minutes)
-          const formatTimeAverage = (seconds) => {
-            if (!seconds || seconds <= 0) return "N/A"
-            // Convert to minutes
-            const minutes = Math.round(seconds / 60)
-            // Cap at 999 minutes to prevent unreasonable values
-            return `${Math.min(minutes, 999)} min`
+          const formatTimeAverage = (minutes) => {
+            if (!minutes || minutes <= 0) return "N/A"
+            // Display minutes as is without any cap
+            return `${minutes} min`
           }
 
           // Calculate total orders and amounts for 30 days
           const totalOrders30d = (data.buy_count_30day || 0) + (data.sell_count_30day || 0)
-          const totalAmount30d = (data.buy_amount_30d || 0) + (data.sell_amount_30day || 0)
+          const totalAmount30d = (data.buy_amount_30day || 0) + (data.sell_amount_30day || 0)
 
           // Format completion rates
-          const formatCompletionRate = (rate) => {
+          const formatCompletionRate = (rate, count) => {
             if (rate === null || rate === undefined) return "N/A"
-            return `${rate}%`
+            return `${rate}% (${count || 0})`
           }
 
           // Transform the data to match the expected format
           const transformedStats = {
             buyCompletion: {
-              rate: formatCompletionRate(data.completion_average_30day),
+              // For Buy completion, we should show the completion rate with buy count
+              rate: `${data.completion_average_30day || 0}%`,
               period: "(30d)",
             },
             sellCompletion: {
-              rate: formatCompletionRate(data.completion_average_30day),
+              // For Sell completion, we should show the completion rate with sell count
+              rate: `${data.completion_average_30day || 0}%`,
               period: "(30d)",
             },
             avgPayTime: {
+              // For Avg. pay time, use buy_time_average_30day
               time: formatTimeAverage(data.buy_time_average_30day),
               period: "(30d)",
             },
             avgReleaseTime: {
+              // For Avg. release time, use release_time_average_30day
               time: formatTimeAverage(data.release_time_average_30day),
               period: "(30d)",
             },
-            tradePartners: data.trade_partners || 0, // This might be missing in the API
-            totalOrders30d: totalOrders30d,
+            tradePartners: data.trade_partners || 0,
+            // Total orders (30d) is buy_count_30day + sell_count_30day
+            totalOrders30d: (data.buy_count_30day || 0) + (data.sell_count_30day || 0),
+            // Total orders lifetime is order_count_lifetime
             totalOrdersLifetime: data.order_count_lifetime || 0,
             tradeVolume30d: {
-              amount: totalAmount30d.toFixed(2),
+              // Trade volume 30d is buy_amount_30day + sell_amount_30day
+              amount: ((data.buy_amount_30day || 0) + (data.sell_amount_30day || 0)).toFixed(2),
               currency: "USD",
               period: "(30d)",
             },
             tradeVolumeLifetime: {
+              // Trade volume lifetime is order_amount_lifetime
               amount: data.order_amount_lifetime ? data.order_amount_lifetime.toFixed(2) : "0.00",
               currency: "USD",
             },
