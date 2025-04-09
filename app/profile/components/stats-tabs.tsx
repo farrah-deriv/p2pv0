@@ -89,8 +89,12 @@ export default function StatsTabs({ children, stats: initialStats }: StatsTabsPr
           // Format the time values (from seconds to minutes)
           const formatTimeAverage = (minutes) => {
             if (!minutes || minutes <= 0) return "N/A"
-            // Display minutes as is without any cap
-            return `${minutes} min`
+
+            // Convert minutes to days (1 day = 24 hours = 1440 minutes)
+            const days = Math.floor(minutes / 1440)
+
+            // If less than 1 day, show 0 days
+            return `${days} days`
           }
 
           // Calculate total orders and amounts for 30 days
@@ -302,3 +306,4 @@ export default function StatsTabs({ children, stats: initialStats }: StatsTabsPr
     </div>
   )
 }
+
