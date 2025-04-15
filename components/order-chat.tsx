@@ -41,15 +41,10 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
 
         // Handle new message
         if (data.payload.data.message) {
-          const newMessage = data.payload.data.message
+          const newMessage = data.payload.data
           setMessages((prev) => [
             ...prev,
-            {
-              id: newMessage.id,
-              message: newMessage.message,
-              sender_is_self: newMessage.sender_is_self,
-              time: newMessage.time,
-            },
+            newMessage,
           ])
         }
       }
