@@ -13,6 +13,7 @@ import { toggleFavouriteAdvertiser, toggleBlockAdvertiser } from "@/services/api
 import { cn } from "@/lib/utils"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import OrderSidebar from "@/components/buy-sell/order-sidebar"
 
 interface AdvertiserProfile {
   id: string | number
@@ -24,12 +25,17 @@ interface AdvertiserProfile {
     count: number
   }
   completionRate: number
-  ordersCount: number
+  order_count_lifetime: number
   isVerified: {
     id: boolean
     address: boolean
     phone: boolean
   }
+  rating_average_lifetime: number
+  recommend_average_lifetime: number
+  buy_time_average_30day: number
+  order_amount_lifetime: number
+  release_time_average_30day: number
   stats: {
     buyCompletion: {
       rate: number
@@ -62,6 +68,9 @@ export default function AdvertiserProfilePage() {
   const [error, setError] = useState<string | null>(null)
   const [isFollowLoading, setIsFollowLoading] = useState(false)
   const [isBlockLoading, setIsBlockLoading] = useState(false)
+  const [isOrderSidebarOpen, setIsOrderSidebarOpen] = useState(false)
+  const [selectedAd, setSelectedAd] = useState<Advertisement | null>(null)
+  const [orderType, setOrderType] = useState<"buy" | "sell">("buy")
 
   const fetchAdvertiserData = async () => {
     setIsLoading(true)
@@ -111,12 +120,17 @@ export default function AdvertiserProfilePage() {
         count: data.rating?.count || data.rating_count || 0,
       },
       completionRate: data.completion_rate || 0,
-      ordersCount: data.orders_count || 0,
+      order_count_lifetime: data.order_count_lifetime || 0,
+      rating_average_lifetime: data.rating_average_lifetime || 0,
+      recommend_average_lifetime: data.recommend_average_lifetime || 0,
       isVerified: {
         id: data.is_verified?.id || false,
         address: data.is_verified?.address || false,
         phone: data.is_verified?.phone || false,
       },
+      buy_time_average_30day: data.buy_time_average_30day || 0,
+      order_amount_lifetime: data.order_amount_lifetime || 0,
+      release_time_average_30day: data.release_time_average_30day || 0,
       stats: {
         buyCompletion: {
           rate: data.stats?.buy_completion?.rate || 0,
@@ -128,9 +142,9 @@ export default function AdvertiserProfilePage() {
         },
         avgPayTime: data.stats?.avg_pay_time || "N/A",
         avgReleaseTime: data.stats?.avg_release_time || "N/A",
-        tradePartners: data.stats?.trade_partners || 0,
+        tradePartners: (data.buy_amount_30days  + data.sell_amount_30days) || 0,
         tradeVolume: {
-          amount: data.stats?.trade_volume?.amount || 0,
+          amount: (data.buy_amount_30days  + data.sell_amount_30days) || 0,
           currency: data.stats?.trade_volume?.currency || "USD",
         },
       },
@@ -294,6 +308,12 @@ export default function AdvertiserProfilePage() {
     }
   }
 
+  const handleOrderClick = (ad: Advertisement, type: "buy" | "sell") => {
+    setSelectedAd(ad)
+    setOrderType(type)
+    setIsOrderSidebarOpen(true)
+  }
+
   if (isLoading) {
     return (
       <div className="px-4">
@@ -321,6 +341,14 @@ export default function AdvertiserProfilePage() {
 
   const filteredAdverts = adverts.filter((ad) => (activeTab === "buy" ? ad.type === "buy" : ad.type === "sell"))
 
+  const getDuration = (duration) => {
+    if (duration == null || duration <= 0) return '-';
+    if (duration > 60) return (duration / 60 / 60).toFixed(2).toString() + ' min';
+    return '< 1 min';
+  }
+
+  const CURRENT_USER = USER
+
   return (
     <div className="px-4">
       <Navigation title="Back" isVisible={false} />
@@ -342,7 +370,7 @@ export default function AdvertiserProfilePage() {
                 <div>
                   <div className="flex">
                     <h2 className="text-lg font-bold">{profile?.nickname}</h2>
-                    <div className="flex items-center md:mt-0 ml-[16px]">
+                    {USER.id != profile?.id && <div className="flex items-center md:mt-0 ml-[16px]">
                       <Button
                         onClick={toggleFollow}
                         variant={isFollowing ? "default" : "outline"}
@@ -371,6 +399,7 @@ export default function AdvertiserProfilePage() {
                         {isBlocked ? "Unblock" : "Block"}
                       </Button>
                     </div>
+                    }
                   </div>
                   <div className="flex items-center text-xs text-slate-500 mt-2">
                     <span className="mr-3">{profile?.isOnline ? "Online" : "Offline"}</span>
@@ -413,19 +442,18 @@ export default function AdvertiserProfilePage() {
                 <div className="text-xs text-slate-500">Rating</div>
                 <div className="flex items-center mt-1">
                   <Image src="/icons/star-icon.png" alt="Star" width={20} height={20} className="mr-1" />
-                  <span className="font-bold text-sm">{profile?.rating.score}/5</span>
-                  <span className="text-slate-500 ml-2 text-sm">({profile?.rating.count} Ratings)</span>
+                  <span className="font-bold text-sm">{profile?.rating_average_lifetime}/5</span>
                 </div>
               </div>
               <div>
                 <div className="text-xs text-slate-500">Recommended</div>
                 <div className="flex items-center mt-1">
-                  <span className="font-bold text-lg">{profile?.completionRate}% (2)</span>
+                  <span className="font-bold text-lg">{profile?.recommend_average_lifetime}%</span>
                 </div>
               </div>
               <div>
                 <div className="text-xs text-slate-500">Total orders</div>
-                <div className="font-bold text-lg mt-1">{profile?.ordersCount}</div>
+                <div className="font-bold text-lg mt-1">{profile?.order_count_lifetime}</div>
               </div>
             </div>
           </div>
@@ -446,11 +474,11 @@ export default function AdvertiserProfilePage() {
         </div>
         <div>
           <div className="text-xs text-slate-500">Avg. pay time (30d)</div>
-          <div className="font-bold mt-1">{profile?.stats.avgPayTime}</div>
+          <div className="font-bold mt-1">{getDuration(profile?.buy_time_average_30day)}</div>
         </div>
         <div>
           <div className="text-xs text-slate-500">Avg. release time (30d)</div>
-          <div className="font-bold mt-1">{profile?.stats.avgReleaseTime}</div>
+          <div className="font-bold mt-1">{getDuration(profile?.release_time_average_30day)}</div>
         </div>
         <div>
           <div className="flex items-center text-xs text-slate-500">Trade partners</div>
@@ -459,7 +487,7 @@ export default function AdvertiserProfilePage() {
         <div>
           <div className="flex items-center text-xs text-slate-500">Trade volume (30d)</div>
           <div className="font-bold mt-1">
-            {profile?.stats.tradeVolume.currency} {profile?.stats.tradeVolume.amount.toFixed(2)}
+            {`USD ${profile?.stats.tradeVolume.amount.toFixed(2)}`}
           </div>
         </div>
       </div>
@@ -531,8 +559,12 @@ export default function AdvertiserProfilePage() {
                       </div>
 
                       {USER.id !== ad.user.id && (
-                        <Button className="w-full bg-green-500 hover:bg-green-600 text-white rounded-full">
-                          {activeTab === "buy" ? "Buy" : "Sell"} USD
+                        <Button
+                          size="sm"
+                          onClick={() => handleOrderClick(ad, activeTab === "buy" ? "buy" : "sell")}
+                          className="rounded-full bg-[#00C390] hover:bg-[#00B380]"
+                        >
+                          {activeTab === "buy" ? "Buy" : "Sell"} {ad.account_currency}
                         </Button>
                       )}
                     </div>
@@ -587,9 +619,13 @@ export default function AdvertiserProfilePage() {
                             </div>
                           </TableCell>
                           <TableCell className="py-4 px-4 text-right">
-                            {USER.id !== ad.user.id && (
-                              <Button variant={ad.type === "buy" ? "default" : "destructive"} className="rounded-full">
-                                {activeTab === "buy" ? "Buy" : "Sell"} USD
+                            {CURRENT_USER.id != ad.user.id && (
+                              <Button
+                                variant={ad.type === "buy" ? "default" : "destructive"}
+                                size="sm"
+                                onClick={() => handleOrderClick(ad, ad.type === "buy" ? "buy" : "sell")}
+                              >
+                                {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
                               </Button>
                             )}
                           </TableCell>
@@ -600,7 +636,7 @@ export default function AdvertiserProfilePage() {
                 </div>
               </>
             ) : (
-              <div className="text-center">
+              <div className="flex flex-col items-center justify-center h-[300px]">
                 <div className="w-16 h-16 rounded-full bg-slate-200 flex items-center justify-center mb-4">
                   <AlertCircle className="h-8 w-8 text-slate-400" />
                 </div>
@@ -610,7 +646,12 @@ export default function AdvertiserProfilePage() {
           </div>
         </>
       )}
+      <OrderSidebar
+        isOpen={isOrderSidebarOpen}
+        onClose={() => setIsOrderSidebarOpen(false)}
+        ad={selectedAd}
+        orderType={orderType}
+      />
     </div>
   )
 }
-
