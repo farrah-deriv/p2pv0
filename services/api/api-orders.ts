@@ -1,4 +1,4 @@
-import { API, AUTH } from "@/lib/local-variables"
+import { API, AUTH, USER } from "@/lib/local-variables"
 
 // Type definitions
 export interface Order {
@@ -41,7 +41,18 @@ export interface Value {
 
 export interface ReviewData {
   rating: number
-  comment: string
+  recommend: boolean | null
+  comment?: string
+}
+
+// Add this new interface for chat messages
+export interface ChatMessage {
+  id: string
+  orderId: string
+  senderId: number
+  content: string
+  timestamp: string
+  isRead: boolean
 }
 
 // API Functions
@@ -66,26 +77,9 @@ export async function getOrders(filters?: OrderFilters): Promise<Order[]> {
       "Content-Type": "application/json",
     }
 
-    // Log request details
-    console.group("📤 GET Orders Request")
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("Filters:", filters)
-    console.groupEnd()
-
-    const startTime = performance.now()
     const response = await fetch(url, { headers })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group("📥 GET Orders Response")
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     if (!response.ok) {
-      console.error("Error Response:", response.status, response.statusText)
-      console.groupEnd()
       throw new Error(`Error fetching orders: ${response.statusText}`)
     }
 
@@ -94,22 +88,12 @@ export async function getOrders(filters?: OrderFilters): Promise<Order[]> {
 
     try {
       data = JSON.parse(responseText)
-      console.log("Response Body (parsed):", data)
     } catch (e) {
-      console.warn("⚠️ Could not parse response as JSON:", e)
-      console.log("Response Body (raw):", responseText)
       data = []
     }
 
-    console.log("✅ Successfully fetched orders")
-    console.groupEnd()
-
     return data
   } catch (error) {
-    console.group("💥 Get Orders Exception")
-    console.error("Error:", error)
-    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-    console.groupEnd()
     throw error
   }
 }
@@ -125,26 +109,9 @@ export async function getOrderById(id: string): Promise<Order> {
       "Content-Type": "application/json",
     }
 
-    // Log request details
-    console.group("📤 GET Order By ID Request")
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("Order ID:", id)
-    console.groupEnd()
-
-    const startTime = performance.now()
     const response = await fetch(url, { headers })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group("📥 GET Order By ID Response")
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     if (!response.ok) {
-      console.error("Error Response:", response.status, response.statusText)
-      console.groupEnd()
       throw new Error(`Error fetching order: ${response.statusText}`)
     }
 
@@ -153,22 +120,12 @@ export async function getOrderById(id: string): Promise<Order> {
 
     try {
       data = JSON.parse(responseText)
-      console.log("Response Body (parsed):", data)
     } catch (e) {
-      console.warn("⚠️ Could not parse response as JSON:", e)
-      console.log("Response Body (raw):", responseText)
       data = {}
     }
 
-    console.log("✅ Successfully fetched order details")
-    console.groupEnd()
-
     return data
   } catch (error) {
-    console.group("💥 Get Order By ID Exception")
-    console.error("Error:", error)
-    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-    console.groupEnd()
     throw error
   }
 }
@@ -184,29 +141,12 @@ export async function markPaymentAsSent(orderId: string): Promise<{ success: boo
       "Content-Type": "application/json",
     }
 
-    // Log request details
-    console.group("📤 POST Mark Payment As Sent Request")
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("Order ID:", orderId)
-    console.groupEnd()
-
-    const startTime = performance.now()
     const response = await fetch(url, {
       method: "POST",
       headers,
     })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group("📥 POST Mark Payment As Sent Response")
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     if (!response.ok) {
-      console.error("Error Response:", response.status, response.statusText)
-      console.groupEnd()
       throw new Error(`Error marking payment as sent: ${response.statusText}`)
     }
 
@@ -215,22 +155,12 @@ export async function markPaymentAsSent(orderId: string): Promise<{ success: boo
 
     try {
       data = JSON.parse(responseText)
-      console.log("Response Body (parsed):", data)
     } catch (e) {
-      console.warn("⚠️ Could not parse response as JSON:", e)
-      console.log("Response Body (raw):", responseText)
       data = { success: true }
     }
 
-    console.log("✅ Successfully marked payment as sent")
-    console.groupEnd()
-
     return data
   } catch (error) {
-    console.group("💥 Mark Payment As Sent Exception")
-    console.error("Error:", error)
-    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-    console.groupEnd()
     throw error
   }
 }
@@ -246,29 +176,12 @@ export async function releasePayment(orderId: string): Promise<{ success: boolea
       "Content-Type": "application/json",
     }
 
-    // Log request details
-    console.group("📤 POST Release Payment Request")
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("Order ID:", orderId)
-    console.groupEnd()
-
-    const startTime = performance.now()
     const response = await fetch(url, {
       method: "POST",
       headers,
     })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group("📥 POST Release Payment Response")
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     if (!response.ok) {
-      console.error("Error Response:", response.status, response.statusText)
-      console.groupEnd()
       throw new Error(`Error releasing payment: ${response.statusText}`)
     }
 
@@ -277,22 +190,12 @@ export async function releasePayment(orderId: string): Promise<{ success: boolea
 
     try {
       data = JSON.parse(responseText)
-      console.log("Response Body (parsed):", data)
     } catch (e) {
-      console.warn("⚠️ Could not parse response as JSON:", e)
-      console.log("Response Body (raw):", responseText)
       data = { success: true }
     }
 
-    console.log("✅ Successfully released payment")
-    console.groupEnd()
-
     return data
   } catch (error) {
-    console.group("💥 Release Payment Exception")
-    console.error("Error:", error)
-    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-    console.groupEnd()
     throw error
   }
 }
@@ -309,32 +212,13 @@ export async function cancelOrder(orderId: string, reason: string): Promise<{ su
     }
     const body = JSON.stringify({ reason })
 
-    // Log request details
-    console.group("📤 POST Cancel Order Request")
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("Order ID:", orderId)
-    console.log("Reason:", reason)
-    console.log("Request Body:", body)
-    console.groupEnd()
-
-    const startTime = performance.now()
     const response = await fetch(url, {
       method: "POST",
       headers,
       body,
     })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group("📥 POST Cancel Order Response")
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     if (!response.ok) {
-      console.error("Error Response:", response.status, response.statusText)
-      console.groupEnd()
       throw new Error(`Error cancelling order: ${response.statusText}`)
     }
 
@@ -343,22 +227,12 @@ export async function cancelOrder(orderId: string, reason: string): Promise<{ su
 
     try {
       data = JSON.parse(responseText)
-      console.log("Response Body (parsed):", data)
     } catch (e) {
-      console.warn("⚠️ Could not parse response as JSON:", e)
-      console.log("Response Body (raw):", responseText)
       data = { success: true }
     }
 
-    console.log("✅ Successfully cancelled order")
-    console.groupEnd()
-
     return data
   } catch (error) {
-    console.group("💥 Cancel Order Exception")
-    console.error("Error:", error)
-    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-    console.groupEnd()
     throw error
   }
 }
@@ -375,32 +249,13 @@ export async function disputeOrder(orderId: string, reason: string): Promise<{ s
     }
     const body = JSON.stringify({ reason })
 
-    // Log request details
-    console.group("📤 POST Dispute Order Request")
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("Order ID:", orderId)
-    console.log("Reason:", reason)
-    console.log("Request Body:", body)
-    console.groupEnd()
-
-    const startTime = performance.now()
     const response = await fetch(url, {
       method: "POST",
       headers,
       body,
     })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group("📥 POST Dispute Order Response")
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     if (!response.ok) {
-      console.error("Error Response:", response.status, response.statusText)
-      console.groupEnd()
       throw new Error(`Error disputing order: ${response.statusText}`)
     }
 
@@ -409,22 +264,12 @@ export async function disputeOrder(orderId: string, reason: string): Promise<{ s
 
     try {
       data = JSON.parse(responseText)
-      console.log("Response Body (parsed):", data)
     } catch (e) {
-      console.warn("⚠️ Could not parse response as JSON:", e)
-      console.log("Response Body (raw):", responseText)
       data = { success: true }
     }
 
-    console.log("✅ Successfully disputed order")
-    console.groupEnd()
-
     return data
   } catch (error) {
-    console.group("💥 Dispute Order Exception")
-    console.error("Error:", error)
-    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-    console.groupEnd()
     throw error
   }
 }
@@ -447,30 +292,13 @@ export async function createOrder(advertId: number, amount: number): Promise<Ord
       },
     })
 
-    // Log request details
-    console.group("📤 POST Create Order Request")
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("Request Body:", body)
-    console.groupEnd()
-
-    const startTime = performance.now()
     const response = await fetch(url, {
       method: "POST",
       headers,
       body,
     })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group("📥 POST Create Order Response")
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     if (!response.ok) {
-      console.error("Error Response:", response.status, response.statusText)
-      console.groupEnd()
       throw new Error(`Error creating order: ${response.statusText}`)
     }
 
@@ -479,22 +307,12 @@ export async function createOrder(advertId: number, amount: number): Promise<Ord
 
     try {
       data = JSON.parse(responseText)
-      console.log("Response Body (parsed):", data)
     } catch (e) {
-      console.warn("⚠️ Could not parse response as JSON:", e)
-      console.log("Response Body (raw):", responseText)
       throw new Error("Invalid response format")
     }
 
-    console.log("✅ Successfully created order")
-    console.groupEnd()
-
     return data
   } catch (error) {
-    console.group("💥 Create Order Exception")
-    console.error("Error:", error)
-    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-    console.groupEnd()
     throw error
   }
 }
@@ -510,29 +328,12 @@ export async function payOrder(orderId: string): Promise<{ success: boolean }> {
       "Content-Type": "application/json",
     }
 
-    // Log request details
-    console.group("📤 POST Pay Order Request")
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("Order ID:", orderId)
-    console.groupEnd()
-
-    const startTime = performance.now()
     const response = await fetch(url, {
       method: "POST",
       headers,
     })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group("📥 POST Pay Order Response")
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     if (!response.ok) {
-      console.error("Error Response:", response.status, response.statusText)
-      console.groupEnd()
       throw new Error(`Error paying for order: ${response.statusText}`)
     }
 
@@ -541,22 +342,12 @@ export async function payOrder(orderId: string): Promise<{ success: boolean }> {
 
     try {
       data = JSON.parse(responseText)
-      console.log("Response Body (parsed):", data)
     } catch (e) {
-      console.warn("⚠️ Could not parse response as JSON:", e)
-      console.log("Response Body (raw):", responseText)
       data = { success: true }
     }
 
-    console.log("✅ Successfully paid for order")
-    console.groupEnd()
-
     return data
   } catch (error) {
-    console.group("💥 Pay Order Exception")
-    console.error("Error:", error)
-    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-    console.groupEnd()
     throw error
   }
 }
@@ -564,7 +355,10 @@ export async function payOrder(orderId: string): Promise<{ success: boolean }> {
 /**
  * Review an order
  */
-export async function reviewOrder(orderId: string, reviewData: ReviewData): Promise<{ success: boolean }> {
+export async function reviewOrder(
+  orderId: string,
+  reviewData: ReviewData,
+): Promise<{ success: boolean; errors: any[] }> {
   try {
     const url = `${API.baseUrl}${API.endpoints.orders}/${orderId}/review`
     const headers = {
@@ -575,35 +369,16 @@ export async function reviewOrder(orderId: string, reviewData: ReviewData): Prom
       data: {
         rating: reviewData.rating,
         recommend: reviewData.recommend,
-      }
+      },
     })
 
-    // Log request details
-    console.group("📤 POST Review Order Request")
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("Order ID:", orderId)
-    console.log("Review Data:", reviewData)
-    console.log("Request Body:", body)
-    console.groupEnd()
-
-    const startTime = performance.now()
     const response = await fetch(url, {
       method: "POST",
       headers,
       body,
     })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group("📥 POST Review Order Response")
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     if (!response.ok) {
-      console.error("Error Response:", response.status, response.statusText)
-      console.groupEnd()
       throw new Error(`Error reviewing order: ${response.statusText}`)
     }
 
@@ -612,22 +387,71 @@ export async function reviewOrder(orderId: string, reviewData: ReviewData): Prom
 
     try {
       data = JSON.parse(responseText)
-      console.log("Response Body (parsed):", data)
     } catch (e) {
-      console.warn("⚠️ Could not parse response as JSON:", e)
-      console.log("Response Body (raw):", responseText)
-      data = { success: true }
+      data = { success: true, errors: [] }
     }
-
-    console.log("✅ Successfully reviewed order")
-    console.groupEnd()
 
     return data
   } catch (error) {
-    console.group("💥 Review Order Exception")
-    console.error("Error:", error)
-    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-    console.groupEnd()
+    throw error
+  }
+}
+
+/**
+ * Send a message to the order chat
+ * @param orderId - The ID of the order
+ * @param message - The message content to send
+ * @returns Promise with the result of the operation
+ */
+export async function sendChatMessage(
+  orderId: string,
+  message: string,
+): Promise<{ success: boolean; message: ChatMessage }> {
+  try {
+    const url = `${API.baseUrl}${API.endpoints.orders}/${orderId}/chat`
+    const headers = {
+      ...AUTH.getAuthHeader(),
+      "Content-Type": "application/json",
+    }
+    const body = JSON.stringify({
+      data: {
+        attachment: "",
+        message,
+      },
+    })
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body,
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error sending message: ${response.statusText}`)
+    }
+
+    const responseText = await response.text()
+    let data
+
+    try {
+      data = JSON.parse(responseText)
+    } catch (e) {
+      data = { success: true, message: { content: message, timestamp: new Date().toISOString() } }
+    }
+
+    return {
+      success: true,
+      message: data.data ||
+        data.message || {
+        id: Date.now().toString(),
+        orderId,
+        senderId: 0, // Will be replaced by the actual sender ID from the server
+        content: message,
+        timestamp: new Date().toISOString(),
+        isRead: false,
+      },
+    }
+  } catch (error) {
     throw error
   }
 }
@@ -643,8 +467,9 @@ export const OrdersAPI = {
   createOrder: createOrder,
   payOrder: payOrder,
   reviewOrder: reviewOrder,
+  sendChatMessage,
 
-  // Add this new method
+
   getOrderByIdMock: async (orderId: string): Promise<Order> => {
     // In a real app, this would be an API call
     // For now, we'll simulate a delay and return mock data
@@ -677,7 +502,8 @@ export const OrdersAPI = {
       createdAt: new Date().toISOString(),
       expiresAt: new Date().toISOString(),
       payment_currency: "IDR",
+      is_reviewable: true,
+      rating: 0,
     }
   },
 }
-
