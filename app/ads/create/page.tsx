@@ -528,13 +528,17 @@ export default function CreateAdPage() {
 `}</style>
       {/* Header with back and close buttons */}
       <div
-        className={`flex ${currentStep === 0 ? "justify-end" : "justify-between"} mb-9 md:mt-8 sticky top-0 z-10 bg-white py-2`}
+        className={`flex ${currentStep === 0 ? "justify-end" : "justify-between"} mb-7 md:mt-8 sticky top-0 z-10 bg-white py-1 relative items-center border-b md:border-b-0 -mx-4 px-4 md:mx-0 md:px-0`}
+        style={{ borderBottomColor: "var(--Neutral-Neutral-3, #E9ECEF)" }}
       >
         {currentStep === 1 && (
           <button onClick={() => setCurrentStep(0)} className="text-gray-700 hover:text-gray-900 p-2">
             <ArrowLeft className="h-6 w-6" />
           </button>
         )}
+        <div className="absolute left-1/2 transform -translate-x-1/2 font-bold text-[18px] leading-[28px] tracking-[0%]">
+          Create new ad
+        </div>
         <button onClick={handleClose} className="text-gray-700 hover:text-gray-900 p-2">
           <X className="h-6 w-6" />
         </button>
@@ -582,9 +586,9 @@ export default function CreateAdPage() {
               }
               variant={
                 isSubmitting ||
-                (currentStep === 0 && !adFormValid) ||
-                (currentStep === 1 && !paymentFormValid) ||
-                isBottomSheetOpen
+                  (currentStep === 0 && !adFormValid) ||
+                  (currentStep === 1 && !paymentFormValid) ||
+                  isBottomSheetOpen
                   ? "outline"
                   : "cyan"
               }
@@ -618,9 +622,9 @@ export default function CreateAdPage() {
             }
             variant={
               isSubmitting ||
-              (currentStep === 0 && !adFormValid) ||
-              (currentStep === 1 && !paymentFormValid) ||
-              isBottomSheetOpen
+                (currentStep === 0 && !adFormValid) ||
+                (currentStep === 1 && !paymentFormValid) ||
+                isBottomSheetOpen
                 ? "outline"
                 : "cyan"
             }
