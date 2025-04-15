@@ -8,13 +8,13 @@
 export const USER = {
   id: 17,
   nickname: "Ameerul",
-  token:
-    "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwiemlwIjoiREVGIn0.sA6RdDxU57pFvGALqAr3REvApSle5uio7k8-m2lyPwXv8BIfEIh6ZGfFXDeb3nIui_5rO1qpXSdWbWbL-ybUQ1_9zABVg4Yy.nYUhfy7YkjPWeEFZT_kLpQ.TINaR1SXwVObILMoLprTblYLfIpc4NRKuEOvSWkd_pihmSkq-4jmVgZhAGIH963F3hApUoiGBwwBqOA-K_qCZE-WBbu4kUqgTqn3HxZhlftsT6lfCgV4SikrStE0ucy4kqZU50K-ZZDrRtqxzJaEVA.7mu9tuaoJrSeQOVx1lDN2audx-FqNpRjezhDHV3RewY",
+  token: "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwiemlwIjoiREVGIn0.sA6RdDxU57pFvGALqAr3REvApSle5uio7k8-m2lyPwXv8BIfEIh6ZGfFXDeb3nIui_5rO1qpXSdWbWbL-ybUQ1_9zABVg4Yy.nYUhfy7YkjPWeEFZT_kLpQ.TINaR1SXwVObILMoLprTblYLfIpc4NRKuEOvSWkd_pihmSkq-4jmVgZhAGIH963F3hApUoiGBwwBqOA-K_qCZE-WBbu4kUqgTqn3HxZhlftsT6lfCgV4SikrStE0ucy4kqZU50K-ZZDrRtqxzJaEVA.7mu9tuaoJrSeQOVx1lDN2audx-FqNpRjezhDHV3RewY",
 }
 
 // API endpoints
 export const API = {
   baseUrl: "https://x6pr-kqwm-lfqn.n7d.xano.io/api:iD2pm9AZ:master",
+  socketUrl: 'wss://x6pr-kqwm-lfqn.n7d.xano.io/rt/ccWySiNyCnMicnCOLd4QLYNfiKw',
   endpoints: {
     ads: "/adverts",
     orders: "/orders",

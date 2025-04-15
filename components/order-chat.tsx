@@ -1,15 +1,16 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useRef, useEffect } from "react"
 import { Paperclip, Send, AlertCircle } from "lucide-react"
+import { OrdersAPI } from "@/services/api"
+import { useWebSocket } from "@/hooks/use-websocket"
 
 type Message = {
   id: string
-  text: string
-  sender: "user" | "counterparty"
-  timestamp: Date
+  message: string
+  sender_is_self: boolean
+  time: number
 }
 
 type OrderChatProps = {
@@ -22,34 +23,77 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
   const [message, setMessage] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
   const [lastSeen, setLastSeen] = useState<Date>(new Date())
+  const [isSending, setIsSending] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const maxLength = 300
 
-  // Simulate fetching messages
-  useEffect(() => {
-    // This would be replaced with an actual API call
-    const mockMessages: Message[] = []
-    setMessages(mockMessages)
-    setLastSeen(new Date(Date.now() - 60 * 60 * 1000)) // 1 hour ago
-  }, [orderId])
+  // Use our custom WebSocket hook
+  const { isConnected, joinChannel, getChatHistory, sendMessage } = useWebSocket({
+    onMessage: (data) => {
+      // Handle incoming messages
+      if (data && data.payload && data.payload.data) {
+        // Handle chat history
+        if (data.payload.data.chat_history && Array.isArray(data.payload.data.chat_history)) {
+          setMessages(data.payload.data.chat_history)
+          setIsLoading(false)
+        }
+
+        // Handle new message
+        if (data.payload.data.message) {
+          const newMessage = data.payload.data.message
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: newMessage.id,
+              message: newMessage.message,
+              sender_is_self: newMessage.sender_is_self,
+              time: newMessage.time,
+            },
+          ])
+        }
+      }
+    },
+    onOpen: () => {
+      // Join the orders channel when connection is established
+      joinChannel("orders")
+
+      // Get chat history after joining the channel
+      setTimeout(() => {
+        getChatHistory("orders", orderId)
+      }, 1000)
+    },
+  })
 
   // Auto scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  const handleSendMessage = () => {
-    if (message.trim() === "") return
+  const handleSendMessage = async () => {
+    if (message.trim() === "" || isSending) return
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      text: message,
-      sender: "user",
-      timestamp: new Date(),
+    setIsSending(true)
+
+    try {
+      // Clear the input
+      const messageToSend = message
+      setMessage("")
+
+      // Send the message to the API
+      const result = await OrdersAPI.sendChatMessage(orderId, messageToSend)
+
+      if (result.success) {
+        // Request updated chat history
+        if (isConnected) {
+          getChatHistory("orders", orderId)
+        }
+      }
+    } catch (error) {
+      // Silent error handling
+    } finally {
+      setIsSending(false)
     }
-
-    setMessages([...messages, newMessage])
-    setMessage("")
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -92,16 +136,24 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[80%] rounded-lg p-3 ${msg.sender === "user" ? "" : "bg-slate-100"}`}>
-              <div>{msg.text}</div>
-              <div className={`text-xs mt-1 ${msg.sender === "user" ? "" : "text-slate-500"}`}>
-                {formatMessageTime(msg.timestamp)}
+        {isLoading ? (
+          <div className="flex justify-center items-center h-full">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="flex justify-center items-center h-full text-gray-500">No messages yet</div>
+        ) : (
+          messages.map((msg) => (
+            <div key={msg.id} className={`flex ${msg.sender_is_self ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[80%] rounded-lg p-3 ${msg.sender_is_self ? "bg-blue-50" : "bg-slate-100"}`}>
+                <div>{msg.message}</div>
+                <div className={`text-xs mt-1 ${msg.sender_is_self ? "text-blue-500" : "text-slate-500"}`}>
+                  {formatMessageTime(msg.time)}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
         <div ref={messagesEndRef} />
       </div>
 
@@ -119,13 +171,14 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
               placeholder="Enter message"
               className="w-full border rounded-lg p-2 pr-10 resize-none focus:outline-none focus:ring-1"
               rows={1}
+              disabled={isSending}
             />
             <button
               onClick={handleSendMessage}
-              disabled={message.trim() === ""}
+              disabled={message.trim() === "" || isSending}
               className="absolute right-2 top-1/2 transform -translate-y-1/2 text-slate-400 disabled:text-slate-300"
             >
-              <Send className="h-5 w-5" />
+              <Send className={`h-5 w-5 ${isSending ? "animate-pulse" : ""}`} />
             </button>
           </div>
         </div>
@@ -153,7 +206,7 @@ function formatLastSeen(date: Date): string {
   return date.toLocaleDateString()
 }
 
-function formatMessageTime(date: Date): string {
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+function formatMessageTime(time: number): string {
+  const date = new Date(time)
+  return date.toLocaleString()
 }
-

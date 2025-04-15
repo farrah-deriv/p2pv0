@@ -20,7 +20,7 @@ export default function OrderDetailsPage() {
   const [order, setOrder] = useState<Order | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [timeLeft, setTimeLeft] = useState("59:59")
+  const [timeLeft, setTimeLeft] = useState<string>("--:--")
   const [message, setMessage] = useState("")
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
   const [isPaymentLoading, setIsPaymentLoading] = useState(false)
@@ -114,6 +114,53 @@ export default function OrderDetailsPage() {
     }
   }
 
+  useEffect(() => {
+    if (!order || !order.expires_at) return
+
+    const calculateTimeLeft = () => {
+      const now = new Date()
+      const expiryTime = new Date(order.expires_at)
+
+      // Calculate time difference in milliseconds
+      const diff = expiryTime.getTime() - now.getTime()
+
+      if (diff <= 0) {
+        // Time has expired
+        setTimeLeft("00:00")
+        return false
+      }
+
+      // Convert to minutes and seconds
+      const minutes = Math.floor(diff / 60000)
+      const seconds = Math.floor((diff % 60000) / 1000)
+
+      // Format as MM:SS
+      setTimeLeft(`${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`)
+      return true
+    }
+
+    // Calculate immediately
+    const hasTimeLeft = calculateTimeLeft()
+
+    // Set up interval to update every second if time hasn't expired
+    let intervalId: NodeJS.Timeout | null = null
+    if (hasTimeLeft) {
+      intervalId = setInterval(() => {
+        const stillHasTime = calculateTimeLeft()
+        if (!stillHasTime && intervalId) {
+          clearInterval(intervalId)
+          // Optionally refresh order details when timer expires
+          fetchOrderDetails()
+        }
+      }, 1000)
+    }
+
+    // Clean up interval on unmount
+    return () => {
+      if (intervalId) clearInterval(intervalId)
+    }
+  }, [order])
+
   if (isLoading) {
     return (
       <div className="px-4">
@@ -153,7 +200,7 @@ export default function OrderDetailsPage() {
 
   return (
     <div className="px-4 relative">
-      <Navigation isVisible={false} title={`${orderType} order`} redirectUrl={"/orders"}/>
+      <Navigation isVisible={false} title={`${orderType} order`} redirectUrl={"/orders"} />
       <div className="container mx-auto px-4">
         <div className="flex flex-col">
           {/* Left panel - Order details */}
@@ -386,11 +433,7 @@ export default function OrderDetailsPage() {
 
             {/* Footer */}
             <div className="p-4 border-t">
-              <Button
-                onClick={handleSubmitReview}
-                disabled={isSubmittingReview || rating === 0}
-                className="w-full"
-              >
+              <Button onClick={handleSubmitReview} disabled={isSubmittingReview || rating === 0} className="w-full">
                 {isSubmittingReview ? (
                   <>
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent mr-2"></div>
@@ -407,4 +450,3 @@ export default function OrderDetailsPage() {
     </div>
   )
 }
-
