@@ -223,16 +223,16 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
 
   return (
     <div className="max-w-[800px] mx-auto">
-      <form id="ad-details-form" onSubmit={handleSubmit} className="space-y-12">
+      <form id="ad-details-form" onSubmit={handleSubmit} className="space-y-10">
         {/* Select trade type */}
         <div>
-          <h3 className="text-base font-bold leading-6 tracking-normal mb-6">Select trade type</h3>
+          <h3 className="text-base font-bold leading-6 tracking-normal mb-5">Select trade type</h3>
           <TradeTypeSelector value={type} onChange={setType} isEditMode={isEditMode} />
         </div>
 
         {/* Set amount and rate */}
         <div>
-          <h3 className="text-base font-bold leading-6 tracking-normal mb-6">Set amount and rate</h3>
+          <h3 className="text-base font-bold leading-6 tracking-normal mb-5">Set amount and rate</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <CurrencyInput
@@ -270,7 +270,7 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
         </div>
 
         <div>
-          <h3 className="text-base font-bold leading-6 tracking-normal mb-6">Order amount limit</h3>
+          <h3 className="text-base font-bold leading-6 tracking-normal mb-5">Order amount limit</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <CurrencyInput
@@ -311,3 +311,4 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
     </div>
   )
 }
+
