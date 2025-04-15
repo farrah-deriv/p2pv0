@@ -117,7 +117,7 @@ export default function ProfilePage() {
 
   return (
     <div className="px-4 md:px-4">
-      <Navigation />
+      <Navigation title="P2P Wallet" />
 
       <UserInfo
         username={userData.username}

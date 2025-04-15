@@ -1,4 +1,4 @@
-import { API, AUTH, USER } from "@/lib/local-variables"
+import { API, AUTH } from "@/lib/local-variables"
 
 // Type definitions
 export interface Order {
@@ -51,7 +51,7 @@ export interface ChatMessage {
   orderId: string
   senderId: number
   content: string
-  timestamp: string
+  time: string
   isRead: boolean
 }
 
@@ -401,11 +401,13 @@ export async function reviewOrder(
  * Send a message to the order chat
  * @param orderId - The ID of the order
  * @param message - The message content to send
+ * @param attachment - Optional attachment
  * @returns Promise with the result of the operation
  */
 export async function sendChatMessage(
   orderId: string,
   message: string,
+  attachment?: string | null,
 ): Promise<{ success: boolean; message: ChatMessage }> {
   try {
     const url = `${API.baseUrl}${API.endpoints.orders}/${orderId}/chat`
@@ -413,12 +415,19 @@ export async function sendChatMessage(
       ...AUTH.getAuthHeader(),
       "Content-Type": "application/json",
     }
-    const body = JSON.stringify({
-      data: {
-        attachment: "",
-        message,
-      },
-    })
+
+    let body = "";
+    if (attachment) {
+      body = JSON.stringify({
+        attachment
+      })
+    } else {
+      body = JSON.stringify({
+        data: {
+          message,
+        },
+      })
+    }
 
     const response = await fetch(url, {
       method: "POST",
@@ -436,8 +445,10 @@ export async function sendChatMessage(
     try {
       data = JSON.parse(responseText)
     } catch (e) {
-      data = { success: true, message: { content: message, timestamp: new Date().toISOString() } }
+      data = { success: true, message: { content: message, time: new Date().toISOString() } }
     }
+
+    const time = new Date().toISOString()
 
     return {
       success: true,
@@ -447,7 +458,7 @@ export async function sendChatMessage(
         orderId,
         senderId: 0, // Will be replaced by the actual sender ID from the server
         content: message,
-        timestamp: new Date().toISOString(),
+        time,
         isRead: false,
       },
     }
@@ -468,7 +479,6 @@ export const OrdersAPI = {
   payOrder: payOrder,
   reviewOrder: reviewOrder,
   sendChatMessage,
-
 
   getOrderByIdMock: async (orderId: string): Promise<Order> => {
     // In a real app, this would be an API call
