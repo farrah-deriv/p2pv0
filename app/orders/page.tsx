@@ -171,7 +171,7 @@ export default function OrdersPage() {
               <TableCell className="py-4 px-4">
                 <div className="flex items-center">
                   <span className={order.type === "sell" ? "text-green-600 font-medium" : "font-medium"}>
-                    { order.type === "buy" ? "Sell" : "Buy"}
+                    {order.type === "buy" ? "Sell" : "Buy"}
                   </span>
                   <span className="ml-1">{order.id}</span>
                 </div>
@@ -201,14 +201,16 @@ export default function OrdersPage() {
                     ? order.price.toFixed(2)
                     : Number(order.price).toFixed(2)}
               </TableCell>
-              {activeTab === "past" && <TableCell className="py-4 px-4">
-                {order.rating > 0 && <div className="flex">
-                  <Image src="/icons/star-icon.png" alt="Chat" width={20} height={20} className="mr-1" />
-                  {order.rating}
-                  </div>
-                }
-              </TableCell>
-              }
+              {activeTab === "past" && (
+                <TableCell className="py-4 px-4">
+                  {order.rating > 0 && (
+                    <div className="flex">
+                      <Image src="/icons/star-icon.png" alt="Chat" width={20} height={20} className="mr-1" />
+                      {order.rating}
+                    </div>
+                  )}
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>
@@ -219,7 +221,7 @@ export default function OrdersPage() {
   return (
     <div className="flex flex-col h-full px-4">
       <div className="flex-shrink-0">
-        <Navigation />
+        <Navigation title="P2P Wallet" />
 
         {/* Tabs */}
         <div className="mb-6">
@@ -274,4 +276,3 @@ export default function OrdersPage() {
     </div>
   )
 }
-

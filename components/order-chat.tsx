@@ -7,6 +7,10 @@ import { OrdersAPI } from "@/services/api"
 import { useWebSocket } from "@/hooks/use-websocket"
 
 type Message = {
+  attachment: {
+    name: string,
+    url: string,
+  },
   id: string
   message: string
   sender_is_self: boolean
@@ -26,6 +30,8 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
   const [isSending, setIsSending] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const maxLength = 300
 
   // Use our custom WebSocket hook
@@ -42,10 +48,7 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
         // Handle new message
         if (data.payload.data.message) {
           const newMessage = data.payload.data
-          setMessages((prev) => [
-            ...prev,
-            newMessage,
-          ])
+          setMessages((prev) => [...prev, newMessage])
         }
       }
     },
@@ -76,7 +79,7 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
       setMessage("")
 
       // Send the message to the API
-      const result = await OrdersAPI.sendChatMessage(orderId, messageToSend)
+      const result = await OrdersAPI.sendChatMessage(orderId, messageToSend, null)
 
       if (result.success) {
         // Request updated chat history
@@ -96,6 +99,50 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
       e.preventDefault()
       handleSendMessage()
     }
+  }
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files && files.length > 0) {
+      const file = files[0]
+      setSelectedFile(file)
+
+      // Show a loading state
+      setIsSending(true)
+
+      try {
+        // Convert file to base64 for sending
+        const base64 = await fileToBase64(file)
+
+        // Send the file as an attachment
+        const result = await OrdersAPI.sendChatMessage(orderId, "", base64)
+
+        if (result.success) {
+          // Request updated chat history
+          if (isConnected) {
+            getChatHistory("orders", orderId)
+          }
+        }
+      } catch (error) {
+        console.error("Error sending file:", error)
+      } finally {
+        setIsSending(false)
+        // Reset the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ""
+        }
+      }
+    }
+  }
+
+  // Helper function to convert file to base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = (error) => reject(error)
+    })
   }
 
   return (
@@ -141,6 +188,7 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
           messages.map((msg) => (
             <div key={msg.id} className={`flex ${msg.sender_is_self ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[80%] rounded-lg p-3 ${msg.sender_is_self ? "bg-blue-50" : "bg-slate-100"}`}>
+                {msg.attachment && <img src={msg.attachment.url} />}
                 <div>{msg.message}</div>
                 <div className={`text-xs mt-1 ${msg.sender_is_self ? "text-blue-500" : "text-slate-500"}`}>
                   {formatMessageTime(msg.time)}
@@ -155,9 +203,14 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
       {/* Message input */}
       <div className="p-4 border-t">
         <div className="flex items-center">
-          <button className="p-2 text-slate-500 hover:text-slate-700">
+          <button
+            className="p-2 text-slate-500 hover:text-slate-700"
+            onClick={() => fileInputRef.current?.click()}
+            type="button"
+          >
             <Paperclip className="h-5 w-5" />
           </button>
+          <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept="image/*" />
           <div className="flex-1 relative">
             <textarea
               value={message}

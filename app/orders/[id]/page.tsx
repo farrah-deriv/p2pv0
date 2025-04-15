@@ -164,7 +164,7 @@ export default function OrderDetailsPage() {
   if (isLoading) {
     return (
       <div className="px-4">
-        <Navigation />
+        <Navigation title="P2P Wallet" isBackBtnVisible={false} />
         <div className="text-center py-12">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid  border-r-transparent"></div>
           <p className="mt-2 text-slate-600">Loading order details...</p>
@@ -176,7 +176,7 @@ export default function OrderDetailsPage() {
   if (error || !order) {
     return (
       <div className="px-4">
-        <Navigation />
+        <Navigation title="P2P Wallet" />
         <div className="text-center py-12">
           <p>{error || "Order not found"}</p>
           <Button onClick={fetchOrderDetails} className="mt-4 text-white">
@@ -200,7 +200,7 @@ export default function OrderDetailsPage() {
 
   return (
     <div className="px-4 relative">
-      <Navigation isVisible={false} title={`${orderType} order`} redirectUrl={"/orders"} />
+      <Navigation isBackBtnVisible={false} isVisible={false} title={`${orderType} order`} redirectUrl={"/orders"} />
       <div className="container mx-auto px-4">
         <div className="flex flex-col">
           {/* Left panel - Order details */}
