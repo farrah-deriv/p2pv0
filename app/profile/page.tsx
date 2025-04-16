@@ -119,23 +119,31 @@ export default function ProfilePage() {
     <div className="px-4 md:px-4">
       <Navigation title="P2P Wallet" />
 
-      <UserInfo
-        username={userData.username}
-        rating={userData.rating}
-        completionRate={userData.completionRate}
-        joinDate={userData.joinDate}
-        blockedCount={userData.blockedCount}
-        realName={userData.realName}
-        isVerified={userData.isVerified}
-      />
+      <div className="flex flex-col md:flex-row gap-6 h-full">
+        {/* Main content area with user info and stats tabs */}
+        <div className="flex-1 order-1">
+          <UserInfo
+            username={userData.username}
+            rating={userData.rating}
+            completionRate={userData.completionRate}
+            joinDate={userData.joinDate}
+            blockedCount={userData.blockedCount}
+            realName={userData.realName}
+            isVerified={userData.isVerified}
+          />
+          <StatsTabs stats={userData.stats} />
+        </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <BusinessHours isOpen={userData.businessHours.isOpen} availability={userData.businessHours.availability} />
-
-        <TradeLimits buyLimit={userData.tradeLimits.buy} sellLimit={userData.tradeLimits.sell} />
+        {/* Right sidebar with business hours and trade limits - updated to span full height */}
+        <div className="md:w-[40%] h-full flex flex-col gap-6 order-2">
+          <TradeLimits
+            buyLimit={userData.tradeLimits.buy}
+            sellLimit={userData.tradeLimits.sell}
+            balance={userData.balance}
+          />
+          <BusinessHours isOpen={userData.businessHours.isOpen} availability={userData.businessHours.availability} />
+        </div>
       </div>
-
-      <StatsTabs stats={userData.stats} />
     </div>
   )
 }

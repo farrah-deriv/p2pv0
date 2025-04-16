@@ -18,9 +18,8 @@ export default function CustomStatusModal({ type, title, message, subMessage, on
           {/* Top section with icon and close button */}
           <div className="flex justify-center mb-12">
             <div
-              className={`${
-                type === "success" ? "bg-green-100" : "bg-yellow-100"
-              } rounded-full p-2 flex items-center justify-center`}
+              className={`${type === "success" ? "bg-green-100" : "bg-yellow-100"
+                } rounded-full p-2 flex items-center justify-center`}
             >
               {type === "success" ? (
                 <CheckCircle className="h-8 w-8 text-green-600" />

@@ -99,6 +99,10 @@ const config: Config = {
         teal: {
           700: "#00CCCC",
         },
+        // Add the custom gray color
+        "custom-gray": {
+          DEFAULT: "#F5F5F5",
+        },
         // Additional colors for status indicators
         info: {
           light: "rgba(55, 124, 252, 0.1)",

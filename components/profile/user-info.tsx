@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { Star, Check, Info } from "lucide-react"
-import { Switch } from "@/components/ui/switch"
 import { USER } from "@/lib/local-variables"
 
 interface UserInfoProps {
@@ -16,6 +15,7 @@ interface UserInfoProps {
     id: boolean
     address: boolean
     phone: boolean
+    email?: boolean
   }
 }
 
@@ -68,20 +68,22 @@ export default function UserInfo({
   }, [username, rating, completionRate, joinDate, blockedCount, realName, isVerified])
 
   return (
-    <div className="mb-8">
+    <div className="mb-8 w-fit max-w-3xl">
       <div className="flex items-start gap-4">
         <div className="h-16 w-16 rounded-full bg-gray-900 flex items-center justify-center text-white font-bold text-xl">
           {nickname.charAt(0).toUpperCase()}
         </div>
         <div className="flex-1">
           <h2 className="text-xl font-bold">{nickname}</h2>
-          <div className="flex items-center gap-4 mt-1 text-sm">
+          <div className="flex items-center mt-1 text-sm">
             {rating && (
               <div className="flex items-center">
                 <Star className="h-4 w-4 text-yellow-500 mr-1" />
                 <span className="text-gray-700">{rating}</span>
               </div>
             )}
+
+            {rating && completionRate && <div className="mx-4 h-4 w-px bg-gray-300"></div>}
 
             {completionRate && (
               <div className="flex items-center text-gray-700">
@@ -91,41 +93,43 @@ export default function UserInfo({
               </div>
             )}
 
+            {completionRate && joinDate && <div className="mx-4 h-4 w-px bg-gray-300"></div>}
+
             {joinDate && <div className="text-gray-700">{joinDate}</div>}
 
-            {blockedCount > 0 && (
-              <div className="text-gray-700">Blocked by: {blockedCount}</div>
-            )}
+            {joinDate && blockedCount > 0 && <div className="mx-4 h-4 w-px bg-gray-300"></div>}
+
+            {blockedCount > 0 && <div className="text-gray-700">Blocked by: {blockedCount}</div>}
           </div>
           <div className="flex flex-wrap gap-2 mt-3">
             {isVerified.id && (
-              <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs flex items-center">
-                <Check className="h-3 w-3 mr-1" />
+              <div className="bg-[#EAF3EB] text-[#29823B] px-3 h-[24px] rounded-[4px] text-xs flex items-center">
+                <Check className="h-3 w-3 mr-1 text-[#29823B]" />
                 ID
               </div>
             )}
             {isVerified.address && (
-              <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs flex items-center">
-                <Check className="h-3 w-3 mr-1" />
+              <div className="bg-[#EAF3EB] text-[#29823B] px-3 h-[24px] rounded-[4px] text-xs flex items-center">
+                <Check className="h-3 w-3 mr-1 text-[#29823B]" />
                 Address
               </div>
             )}
             {isVerified.phone && (
-              <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs flex items-center">
-                <Check className="h-3 w-3 mr-1" />
+              <div className="bg-[#EAF3EB] text-[#29823B] px-3 h-[24px] rounded-[4px] text-xs flex items-center">
+                <Check className="h-3 w-3 mr-1 text-[#29823B]" />
                 Phone number
               </div>
             )}
+            <div className="bg-[#EAF3EB] text-[#29823B] px-3 h-[24px] rounded-[4px] text-xs flex items-center">
+              <Check className="h-3 w-3 mr-1 text-[#29823B]" />
+              Email
+            </div>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="text-right">
-            <div className="text-sm text-gray-700">Show my real name</div>
-            <div className="text-xs text-gray-500">{realName}</div>
-          </div>
-          <Switch />
         </div>
       </div>
     </div>
   )
 }
+
+
+

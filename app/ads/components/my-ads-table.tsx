@@ -242,13 +242,19 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b">
-              <th className="text-left py-4 font-bold text-black text-sm">Ad ID</th>
-              <th className="text-left py-4 font-bold text-black text-sm">Rate (USD 1)</th>
-              <th className="text-left py-4 font-bold text-black text-sm">Limits</th>
-              <th className="text-left py-4 font-bold text-black text-sm">Available amount</th>
-              <th className="text-left py-4 font-bold text-black text-sm">Payment methods</th>
-              <th className="text-left py-4 font-bold text-black text-sm">Status</th>
-              <th className="text-left py-4 font-bold text-black text-sm"></th>
+              <th className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">Ad ID</th>
+              <th className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
+                Rate (USD 1)
+              </th>
+              <th className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">Limits</th>
+              <th className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
+                Available amount
+              </th>
+              <th className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
+                Payment methods
+              </th>
+              <th className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">Status</th>
+              <th className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal"></th>
             </tr>
           </thead>
           <tbody>
