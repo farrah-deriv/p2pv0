@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import Navigation from "@/components/navigation"
 import UserInfo from "@/components/profile/user-info"
-import BusinessHours from "@/components/profile/business-hours"
 import TradeLimits from "@/components/profile/trade-limits"
 import StatsTabs from "./components/stats-tabs"
 import { USER, API, AUTH } from "@/lib/local-variables"
@@ -136,10 +135,9 @@ export default function ProfilePage() {
             sellLimit={userData.tradeLimits.sell}
             balance={userData.balance}
           />
-          <BusinessHours isOpen={userData.businessHours.isOpen} availability={userData.businessHours.availability} />
+
         </div>
       </div>
     </div>
   )
 }
-
