@@ -375,7 +375,7 @@ export default function BuySellPage() {
                             height={16}
                             className="mr-1"
                           />
-                          <span className="text-[#FFAD3A]">{ad.user_rating_average}</span>
+                          <span className="text-[#FFAD3A]">{ad.user_rating_average.toFixed(2)}</span>
                         </span>
                       )}
                       {ad.user.completed_orders_count > 0 && (
@@ -494,7 +494,7 @@ export default function BuySellPage() {
                                       height={16}
                                       className="mr-1"
                                     />
-                                    <span className="text-[#FFAD3A]">{ad.user_rating_average}</span>
+                                    <span className="text-[#FFAD3A]">{ad.user_rating_average.toFixed(2)}</span>
                                   </span>
                                 )}
                               </div>
