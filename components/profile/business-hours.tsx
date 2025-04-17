@@ -1,4 +1,6 @@
 import { Info, PenLine } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
 
 interface BusinessHoursProps {
   isOpen: boolean
@@ -30,10 +32,12 @@ export default function BusinessHours({ isOpen, availability }: BusinessHoursPro
           <h3 className="text-sm font-normal leading-5 tracking-normal">Show my real name</h3>
           <p className="text-slate-500 text-xs font-normal leading-5 tracking-normal">Jonathan Nick Does</p>
         </div>
-        <label className="relative inline-flex items-center cursor-pointer">
-          <input type="checkbox" value="" className="sr-only peer" defaultChecked />
-          <div className="bg-slate-200 peer-focus:outline-none peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary w-[52px] h-[32px] rounded-[45px]"></div>
-        </label>
+        <div className="flex items-center space-x-2">
+          <Checkbox id="show-real-name" defaultChecked />
+          <Label htmlFor="show-real-name" className="sr-only">
+            Show my real name
+          </Label>
+        </div>
       </div>
     </div>
   )

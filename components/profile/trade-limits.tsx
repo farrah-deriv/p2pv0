@@ -65,7 +65,7 @@ export default function TradeLimits({
               </span>
             </div>
             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div className="h-full bg-black rounded-full" style={{ width: `${buyPercentage}%` }}></div>
+              <div className={`h-full bg-black rounded-full w-[${buyPercentage}%]`}></div>
             </div>
           </div>
 
@@ -77,7 +77,7 @@ export default function TradeLimits({
               </span>
             </div>
             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div className="h-full bg-black rounded-full" style={{ width: `${sellPercentage}%` }}></div>
+              <div className={`h-full bg-black rounded-full w-[${sellPercentage}%]`}></div>
             </div>
           </div>
         </div>
@@ -85,3 +85,4 @@ export default function TradeLimits({
     </div>
   )
 }
+
