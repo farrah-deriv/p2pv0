@@ -6,6 +6,7 @@ import { MoreVertical, Pencil, Copy, Share2, Power, Trash2, Search } from "lucid
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { deleteAd, updateAd } from "../api/api-ads"
 import type { Ad } from "../types"
 import { cn } from "@/lib/utils"
@@ -21,21 +22,16 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
   const router = useRouter()
   const [isDeleting, setIsDeleting] = useState(false)
   const [isTogglingStatus, setIsTogglingStatus] = useState(false)
-
-  // Add state for error modals
   const [errorModal, setErrorModal] = useState({
     show: false,
     title: "",
     message: "",
   })
-
-  // Add state for delete confirmation modal
   const [deleteConfirmModal, setDeleteConfirmModal] = useState({
     show: false,
     adId: "",
   })
 
-  // Format limits to display as a string
   const formatLimits = (limits: Ad["limits"]) => {
     if (typeof limits === "string") {
       return limits
@@ -43,13 +39,11 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     return `${limits.currency} ${limits.min.toFixed(2)} - ${limits.max.toFixed(2)}`
   }
 
-  // Format payment methods to display as a string
   const formatPaymentMethods = (methods: string[]) => {
     if (!methods || methods.length === 0) return "None"
     return methods.join(", ")
   }
 
-  // Updated to use the Badge component with appropriate variants
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Active":
@@ -62,8 +56,6 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
   }
 
   const handleEdit = (ad: Ad) => {
-    // Store the ad data in localStorage for the edit flow
-    console.log("Editing ad with description:", ad.description)
     localStorage.setItem(
       "editAdData",
       JSON.stringify({
@@ -76,22 +68,16 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
 
   const handleCopy = (adId: string) => {
     console.log("Copy ad:", adId)
-    // Add copy functionality
   }
 
   const handleShare = (adId: string) => {
     console.log("Share ad:", adId)
-    // Add share functionality
   }
 
   const handleToggleStatus = async (ad: Ad) => {
     try {
       setIsTogglingStatus(true)
-      console.log(
-        `Toggling status for ad ${ad.id} from ${ad.status} to ${ad.status === "Active" ? "Inactive" : "Active"}`,
-      )
 
-      // Parse the limits if it's a string
       let minAmount = 0
       let maxAmount = 0
       let currency = "USD"
@@ -107,7 +93,6 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
         currency = ad.limits.currency
       }
 
-      // Extract rate value from string (e.g., "IDR 14500.0000" -> 14500.0000)
       let rateValue = 0
       if (ad.rate && ad.rate.value) {
         const rateMatch = ad.rate.value.match(/([A-Z]+)\s+(\d+(?:\.\d+)?)/)
@@ -116,10 +101,8 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
         }
       }
 
-      // Set the new isListed value (opposite of current status)
       const isListed = ad.status !== "Active"
 
-      // Update the ad with all current values but change isListed
       const updateResult = await updateAd(ad.id, {
         is_active: isListed,
         minimum_order_amount: minAmount,
@@ -132,7 +115,6 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
         payment_method_names: ad.type === "Buy" ? ad.paymentMethods : [],
       })
 
-      // Check for errors in the response
       if (updateResult.errors && updateResult.errors.length > 0) {
         const errorMessage =
           updateResult.errors[0].message ||
@@ -140,16 +122,12 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
         throw new Error(errorMessage)
       }
 
-      console.log(`Ad ${isListed ? "activated" : "deactivated"} successfully:`, updateResult)
-
-      // Call the onAdDeleted callback to refresh the list
       if (onAdDeleted) {
         onAdDeleted()
       }
     } catch (error) {
       console.error("Failed to toggle status:", error)
 
-      // Show error modal instead of alert
       setErrorModal({
         show: true,
         title: `Failed to ${ad.status === "Active" ? "Deactivate" : "Activate"} Ad`,
@@ -164,36 +142,30 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
   }
 
   const handleDelete = (adId: string) => {
-    // Show confirmation modal instead of immediately deleting
     setDeleteConfirmModal({
       show: true,
       adId: adId,
     })
   }
 
-  // Add a new function to handle the actual deletion after confirmation
   const confirmDelete = async () => {
     try {
       setIsDeleting(true)
       const result = await deleteAd(deleteConfirmModal.adId)
 
-      // Check for errors in the response
       if (result.errors && result.errors.length > 0) {
         const errorMessage = result.errors[0].message || "Failed to delete ad. Please try again."
         throw new Error(errorMessage)
       }
 
-      // Call the onAdDeleted callback to refresh the list and show success message
       if (onAdDeleted) {
         onAdDeleted("deleted")
       }
 
-      // Close the confirmation modal
       setDeleteConfirmModal({ show: false, adId: "" })
     } catch (error) {
       console.error("Failed to delete ad:", error)
 
-      // Show error modal
       setErrorModal({
         show: true,
         title: "Failed to Delete Ad",
@@ -204,12 +176,10 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     }
   }
 
-  // Add a function to cancel deletion
   const cancelDelete = () => {
     setDeleteConfirmModal({ show: false, adId: "" })
   }
 
-  // Function to close error modal
   const handleCloseErrorModal = () => {
     setErrorModal({
       show: false,
@@ -228,7 +198,6 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
         <p className="text-gray-600 mb-6 text-center max-w-md">
           Looking to buy or sell USD? You can post your own ad for others to respond.
         </p>
-        {/* Updated to use Button with cyan variant and pill size */}
         <Button onClick={() => router.push("/ads/create")} variant="cyan" size="pill">
           Create ad
         </Button>
@@ -239,49 +208,57 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
   return (
     <>
       <div className="w-full">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="border-b">
-              <th className="text-left py-4 font-bold text-black text-sm">Ad ID</th>
-              <th className="text-left py-4 font-bold text-black text-sm">Rate (USD 1)</th>
-              <th className="text-left py-4 font-bold text-black text-sm">Limits</th>
-              <th className="text-left py-4 font-bold text-black text-sm">Available amount</th>
-              <th className="text-left py-4 font-bold text-black text-sm">Payment methods</th>
-              <th className="text-left py-4 font-bold text-black text-sm">Status</th>
-              <th className="text-left py-4 font-bold text-black text-sm"></th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow className="border-b">
+              <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
+                Ad ID
+              </TableHead>
+              <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
+                Rate (USD 1)
+              </TableHead>
+              <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
+                Limits
+              </TableHead>
+              <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
+                Available amount
+              </TableHead>
+              <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
+                Payment methods
+              </TableHead>
+              <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
+                Status
+              </TableHead>
+              <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {ads.map((ad, index) => (
-              <tr key={index} className={cn("border-b", ad.status === "Inactive" ? "opacity-60" : "")}>
-                <td className="py-4">
+              <TableRow key={index} className={cn("border-b", ad.status === "Inactive" ? "opacity-60" : "")}>
+                <TableCell className="py-4">
                   <div>
-                    {/* Updated to use StatusIndicator */}
                     <span className={cn("font-medium", ad.type === "Buy" ? "text-buy" : "text-sell")}>{ad.type}</span>
                     <span className="text-gray-900"> {ad.id}</span>
                   </div>
-                </td>
-                <td className="py-4">
+                </TableCell>
+                <TableCell className="py-4">
                   <div className="font-medium">{ad.rate.value}</div>
-                </td>
-                <td className="py-4">{formatLimits(ad.limits)}</td>
-                <td className="py-4">
+                </TableCell>
+                <TableCell className="py-4">{formatLimits(ad.limits)}</TableCell>
+                <TableCell className="py-4">
                   <div className="mb-1">
                     {ad.available.currency} {(ad.available.current || 0).toFixed(2)} /{" "}
                     {(ad.available.total || 0).toFixed(2)}
                   </div>
                   <div className="h-2 bg-gray-200 rounded-full w-full max-w-[180px] overflow-hidden">
                     <div
-                      className="h-full bg-black rounded-full"
-                      style={{
-                        width: `${ad.available.total > 0 ? Math.min(((ad.available.current || 0) / ad.available.total) * 100, 100) : 0}%`,
-                      }}
+                      className={`h-full bg-black rounded-full w-[${ad.available.total > 0 ? Math.min(((ad.available.current || 0) / ad.available.total) * 100, 100) : 0}%]`}
                     ></div>
                   </div>
-                </td>
-                <td className="py-4">{formatPaymentMethods(ad.paymentMethods)}</td>
-                <td className="py-4">{getStatusBadge(ad.status)}</td>
-                <td className="py-4 text-right">
+                </TableCell>
+                <TableCell className="py-4">{formatPaymentMethods(ad.paymentMethods)}</TableCell>
+                <TableCell className="py-4">{getStatusBadge(ad.status)}</TableCell>
+                <TableCell className="py-4 text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="p-1 hover:bg-gray-100 rounded-full">
@@ -315,11 +292,11 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       <DeleteConfirmationDialog
@@ -331,7 +308,6 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
         onCancel={cancelDelete}
       />
 
-      {/* Error Modal */}
       {errorModal.show && (
         <StatusModal
           type="error"

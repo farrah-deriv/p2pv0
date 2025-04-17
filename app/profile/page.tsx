@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import Navigation from "@/components/navigation"
 import UserInfo from "@/components/profile/user-info"
-import BusinessHours from "@/components/profile/business-hours"
 import TradeLimits from "@/components/profile/trade-limits"
 import StatsTabs from "./components/stats-tabs"
 import { USER, API, AUTH } from "@/lib/local-variables"
@@ -67,12 +66,10 @@ export default function ProfilePage() {
         }
 
         const responseData = await response.json()
-        console.log("User data API response:", responseData)
 
         if (responseData && responseData.data) {
           const data = responseData.data
 
-          // Convert timestamp to date string
           const joinDate = new Date(data.created_at)
           const now = new Date()
           const diff = now.getTime() - joinDate.getTime()
@@ -87,7 +84,6 @@ export default function ProfilePage() {
             joinDateString = `Joined ${days} days ago`
           }
 
-          // Update user data with the retrieved information
           setUserData((prevData) => ({
             ...prevData,
             username: data.nickname || prevData.username,
@@ -119,23 +115,29 @@ export default function ProfilePage() {
     <div className="px-4 md:px-4">
       <Navigation title="P2P Wallet" />
 
-      <UserInfo
-        username={userData.username}
-        rating={userData.rating}
-        completionRate={userData.completionRate}
-        joinDate={userData.joinDate}
-        blockedCount={userData.blockedCount}
-        realName={userData.realName}
-        isVerified={userData.isVerified}
-      />
+      <div className="flex flex-col md:flex-row gap-6 h-full">
+        <div className="flex-1 order-1">
+          <UserInfo
+            username={userData.username}
+            rating={userData.rating}
+            completionRate={userData.completionRate}
+            joinDate={userData.joinDate}
+            blockedCount={userData.blockedCount}
+            realName={userData.realName}
+            isVerified={userData.isVerified}
+          />
+          <StatsTabs stats={userData.stats} />
+        </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <BusinessHours isOpen={userData.businessHours.isOpen} availability={userData.businessHours.availability} />
+        <div className="md:w-[40%] h-full flex flex-col gap-6 order-2">
+          <TradeLimits
+            buyLimit={userData.tradeLimits.buy}
+            sellLimit={userData.tradeLimits.sell}
+            balance={userData.balance}
+          />
 
-        <TradeLimits buyLimit={userData.tradeLimits.buy} sellLimit={userData.tradeLimits.sell} />
+        </div>
       </div>
-
-      <StatsTabs stats={userData.stats} />
     </div>
   )
 }
