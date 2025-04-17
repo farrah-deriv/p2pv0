@@ -252,10 +252,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
                   </div>
                   <div className="h-2 bg-gray-200 rounded-full w-full max-w-[180px] overflow-hidden">
                     <div
-                      className="h-full bg-black rounded-full"
-                      style={{
-                        width: `${ad.available.total > 0 ? Math.min(((ad.available.current || 0) / ad.available.total) * 100, 100) : 0}%`,
-                      }}
+                      className={`h-full bg-black rounded-full w-[${ad.available.total > 0 ? Math.min(((ad.available.current || 0) / ad.available.total) * 100, 100) : 0}%]`}
                     ></div>
                   </div>
                 </TableCell>
