@@ -366,7 +366,7 @@ export default function BuySellPage() {
                     </div>
 
                     <div className="flex items-center text-xs text-slate-500 mb-2">
-                      {ad.user.rating_average && (
+                      {ad.user_rating_average && (
                         <span className="flex items-center">
                           <Image
                             src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-6OumZ18zNMtAEyxgeIh25pHnlCud1B.png"
@@ -375,7 +375,7 @@ export default function BuySellPage() {
                             height={16}
                             className="mr-1"
                           />
-                          <span className="text-[#FFAD3A]">{ad.user.rating_average.toFixed(1)}</span>
+                          <span className="text-[#FFAD3A]">{ad.user_rating_average.toFixed(1)}</span>
                         </span>
                       )}
                       {ad.user.completed_orders_count > 0 && (
@@ -485,7 +485,7 @@ export default function BuySellPage() {
                                 )}
                               </div>
                               <div className="flex items-center text-xs sm:text-sm text-slate-500">
-                                {ad.user.rating_average && (
+                                {ad.user_rating_average && (
                                   <span className="flex items-center">
                                     <Image
                                       src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-6OumZ18zNMtAEyxgeIh25pHnlCud1B.png"
@@ -494,7 +494,7 @@ export default function BuySellPage() {
                                       height={16}
                                       className="mr-1"
                                     />
-                                    <span className="text-[#FFAD3A]">{ad.user.rating_average.toFixed(1)}</span>
+                                    <span className="text-[#FFAD3A]">{ad.user_rating_average.toFixed(1)}</span>
                                   </span>
                                 )}
                               </div>
