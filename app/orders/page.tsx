@@ -141,7 +141,23 @@ export default function OrdersPage() {
 
               <div className="flex justify-between items-center">
                 <div className="text-xs text-slate-500">ID: {order.id}</div>
-                <Image src="/icons/chat-icon.png" alt="Chat" width={20} height={20} className="text-slate-500" />
+                <div className="flex items-center space-x-2">
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      navigateToOrderDetails(order.id)
+                    }}
+                    className="text-slate-500 hover:text-slate-700"
+                    variant="ghost"
+                  >
+                    <Image
+                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-9Nwf9GLJPQ6HUQ8qsdDIBqeJZRacom.png"
+                      alt="Chat"
+                      width={20}
+                      height={20}
+                    />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -163,6 +179,7 @@ export default function OrdersPage() {
             <TableHead className="py-4 px-4 text-slate-600 font-normal">Send</TableHead>
             <TableHead className="py-4 px-4 text-slate-600 font-normal">Receive</TableHead>
             {activeTab === "past" && <TableHead className="py-4 px-4 text-slate-600 font-normal">Rating</TableHead>}
+            <TableHead className="py-4 px-4 text-slate-600 font-normal"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -211,6 +228,23 @@ export default function OrdersPage() {
                   )}
                 </TableCell>
               )}
+              <TableCell className="py-4 px-4">
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    navigateToOrderDetails(order.id)
+                  }}
+                  className="text-slate-500 hover:text-slate-700"
+                  variant="ghost"
+                >
+                  <Image
+                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-9Nwf9GLJPQ6HUQ8qsdDIBqeJZRacom.png"
+                    alt="Chat"
+                    width={20}
+                    height={20}
+                  />
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
