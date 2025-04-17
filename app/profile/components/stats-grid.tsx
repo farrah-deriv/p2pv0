@@ -62,7 +62,6 @@ export default function StatsGrid({ stats }: StatsGridProps) {
 
   return (
     <div className="bg-[#F5F5F5] rounded-lg px-4">
-      {/* First row */}
       <div className="grid grid-cols-1 md:grid-cols-3 border-b border-slate-200">
         <StatCard
           title={`Buy completion ${displayStats.buyCompletion.period}`}
@@ -75,7 +74,7 @@ export default function StatsGrid({ stats }: StatsGridProps) {
         <StatCard title="Trade partners" value={displayStats.tradePartners} hasInfo={true} />
       </div>
 
-      {/* Second row */}
+
       <div className="grid grid-cols-1 md:grid-cols-3 border-b border-slate-200">
         <StatCard
           title={`Trade volume ${displayStats.tradeVolume30d.period}`}
@@ -90,7 +89,7 @@ export default function StatsGrid({ stats }: StatsGridProps) {
         <StatCard title={`Avg. pay time ${displayStats.avgPayTime.period}`} value={displayStats.avgPayTime.time} />
       </div>
 
-      {/* Third row */}
+
       <div className="grid grid-cols-1 md:grid-cols-3">
         <StatCard title={`Total orders ${displayStats.buyCompletion.period}`} value={displayStats.totalOrders30d} />
         <StatCard title="Total orders (Lifetime)" value={displayStats.totalOrdersLifetime} />

@@ -11,7 +11,7 @@ interface TradeLimitsProps {
     max: number
   }
   balance?: number
-  isLoading?: boolean // Add isLoading prop
+  isLoading?: boolean
 }
 
 // Update the function signature to include the isLoading parameter
