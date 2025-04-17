@@ -24,6 +24,7 @@ export interface Advertisement {
   payment_currency: string
   payment_method_names: string[]
   type: string
+  user_rating_average?: number
 }
 
 // Define the SearchParams interface
