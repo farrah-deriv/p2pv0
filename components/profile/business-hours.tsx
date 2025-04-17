@@ -1,11 +1,14 @@
-import { Info, PenLine } from "lucide-react"
-
 interface BusinessHoursProps {
   isOpen: boolean
   availability: string
 }
 
+// Replace the entire component with this version that returns null
 export default function BusinessHours({ isOpen, availability }: BusinessHoursProps) {
+  // Temporarily hide this component until it's fully working
+  return null
+
+  /* Original code preserved for when it's ready to be enabled:
   return (
     <div className="border rounded-lg p-4">
       <div className="flex items-center justify-between mb-2">
@@ -37,5 +40,7 @@ export default function BusinessHours({ isOpen, availability }: BusinessHoursPro
       </div>
     </div>
   )
+  */
 }
+
 
