@@ -67,12 +67,10 @@ export default function ProfilePage() {
         }
 
         const responseData = await response.json()
-        console.log("User data API response:", responseData)
 
         if (responseData && responseData.data) {
           const data = responseData.data
 
-          // Convert timestamp to date string
           const joinDate = new Date(data.created_at)
           const now = new Date()
           const diff = now.getTime() - joinDate.getTime()
@@ -87,7 +85,6 @@ export default function ProfilePage() {
             joinDateString = `Joined ${days} days ago`
           }
 
-          // Update user data with the retrieved information
           setUserData((prevData) => ({
             ...prevData,
             username: data.nickname || prevData.username,
@@ -120,7 +117,6 @@ export default function ProfilePage() {
       <Navigation title="P2P Wallet" />
 
       <div className="flex flex-col md:flex-row gap-6 h-full">
-        {/* Main content area with user info and stats tabs */}
         <div className="flex-1 order-1">
           <UserInfo
             username={userData.username}
@@ -134,7 +130,6 @@ export default function ProfilePage() {
           <StatsTabs stats={userData.stats} />
         </div>
 
-        {/* Right sidebar with business hours and trade limits - updated to span full height */}
         <div className="md:w-[40%] h-full flex flex-col gap-6 order-2">
           <TradeLimits
             buyLimit={userData.tradeLimits.buy}
@@ -147,3 +142,4 @@ export default function ProfilePage() {
     </div>
   )
 }
+

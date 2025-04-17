@@ -56,7 +56,6 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
   }
 
   const handleEdit = (ad: Ad) => {
-    console.log("Editing ad with description:", ad.description)
     localStorage.setItem(
       "editAdData",
       JSON.stringify({
@@ -78,9 +77,6 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
   const handleToggleStatus = async (ad: Ad) => {
     try {
       setIsTogglingStatus(true)
-      console.log(
-        `Toggling status for ad ${ad.id} from ${ad.status} to ${ad.status === "Active" ? "Inactive" : "Active"}`,
-      )
 
       let minAmount = 0
       let maxAmount = 0
@@ -125,8 +121,6 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
           `Failed to ${ad.status === "Active" ? "deactivate" : "activate"} ad. Please try again.`
         throw new Error(errorMessage)
       }
-
-      console.log(`Ad ${isListed ? "activated" : "deactivated"} successfully:`, updateResult)
 
       if (onAdDeleted) {
         onAdDeleted()
@@ -328,4 +322,3 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     </>
   )
 }
-
