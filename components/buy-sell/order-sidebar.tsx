@@ -106,12 +106,6 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
   const youBuyText = isBuy ? "You buy" : "You sell"
   const youSendText = isBuy ? "You send" : "You receive"
 
-  // Format the P2P balance
-  const formattedBalance = new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(1234.56)
-
   // Calculate order limits
   const minLimit = ad?.minimum_order_amount?.toFixed(2) || "0.00"
   const maxLimit = ad?.actual_maximum_order_amount?.toFixed(2) || "0.00"
@@ -141,41 +135,30 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
           {ad && (
             <>
               <div className="flex-1 p-4 space-y-6">
-                {/* P2P Balance */}
-                <div className="flex items-center justify-between py-4 rounded-lg">
-                  <div className="flex items-center">
-                    <span className="font-medium">P2P balance</span>
-                  </div>
-                  <span className="font-bold">USD {formattedBalance}</span>
-                </div>
-
-                {/* Advertiser Info */}
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Advertiser info</h3>
+                  <h3 className="text-md font-semibold mb-4">Advertiser info</h3>
                   <div className="space-y-3">
-                    <div className="flex justify-between">
+                    <div className="text-sm flex justify-between">
                       <span>Seller</span>
                       <span className="font-medium">{ad.user?.nickname || "Unknown"}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="text-sm flex justify-between">
                       <span>Exchange rate (USD 1)</span>
                       <span className="font-medium">
                         {ad.payment_currency} {ad.exchange_rate?.toFixed(2) || "N/A"}
                       </span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="text-sm flex justify-between">
                       <span>Order completion time</span>
                       <span className="font-medium">{ad.order_expiry_period} min</span>
                     </div>
                   </div>
                 </div>
-
-                {/* Payment Methods */}
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Payment method(s)</h3>
+                  <h3 className="text-md font-semibold mb-4">Payment method(s)</h3>
                   <div className="space-y-2">
                     {ad.payment_method_names?.map((method, index) => (
-                      <div key={index} className="flex items-center">
+                      <div key={index} className="text-sm flex items-center">
                         {method.toLowerCase().includes("bank") ? (
                           <Building className="h-5 w-5 mr-2 text-green-600" />
                         ) : (
@@ -186,20 +169,16 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                     ))}
                   </div>
                 </div>
-
-                {/* Seller Instructions */}
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">Seller's instructions</h3>
+                  <h3 className="text-md font-semibold mb-2">Seller's instructions</h3>
                   <p className="text-sm">
                     Kindly transfer the payment to the account details provided after placing the order. Ensure the
                     exact amount is transferred.
                   </p>
                 </div>
-
-                {/* Order Amount */}
                 <div>
                   <div className="mb-4">
-                    <p className="mb-2">{youBuyText}</p>
+                    <p className="text-sm mb-2">{youBuyText}</p>
                     <div className="flex">
                       <Input
                         type="number"
@@ -222,7 +201,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
               {/* Footer */}
               <div className="border-t p-4">
                 <div className="mb-4 flex justify-between">
-                  <p className="mb-2">{youSendText}</p>
+                  <p className="text-sm mb-2">{youSendText}</p>
                   <span className="font-medium">
                     {ad.payment_currency}{" "}
                     {Number.parseFloat(totalAmount).toLocaleString(undefined, {
@@ -266,4 +245,3 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
     </div>
   )
 }
-

@@ -347,10 +347,25 @@ export default function OrderDetailsPage() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => {
-                  // Add actual cancel logic here
+                onClick={async () => {
                   setShowCancelConfirmation(false)
-                  // You would typically call a function like cancelOrder(orderId) here
+                  try {
+                    const result = await OrdersAPI.cancelOrder(orderId)
+                    if (result.success) {
+                      toast({
+                        title: "Order cancelled",
+                        description: "Your order has been successfully cancelled.",
+                        variant: "default",
+                      })
+                    }
+                  } catch (error) {
+                    console.error("Failed to cancel order:", error)
+                    toast({
+                      title: "Cancellation failed",
+                      description: "Could not cancel your order. Please try again.",
+                      variant: "destructive",
+                    })
+                  }
                 }}
                 className="w-full"
               >
