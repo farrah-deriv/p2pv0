@@ -3,14 +3,17 @@
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { Paperclip, Send, AlertCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { OrdersAPI } from "@/services/api"
 import { useWebSocket } from "@/hooks/use-websocket"
 
 type Message = {
   attachment: {
-    name: string,
-    url: string,
-  },
+    name: string
+    url: string
+  }
   id: string
   message: string
   sender_is_self: boolean
@@ -188,8 +191,8 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
           messages.map((msg) => (
             <div key={msg.id} className={`flex ${msg.sender_is_self ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[80%] rounded-lg p-3 ${msg.sender_is_self ? "bg-blue-50" : "bg-slate-100"}`}>
-                {msg.attachment && <img src={msg.attachment.url} />}
-                <div>{msg.message}</div>
+                {msg.attachment && <img src={msg.attachment.url || "/placeholder.svg"} />}
+                <div className="break-words">{msg.message}</div>
                 <div className={`text-xs mt-1 ${msg.sender_is_self ? "text-blue-500" : "text-slate-500"}`}>
                   {formatMessageTime(msg.time)}
                 </div>
@@ -203,31 +206,31 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
       {/* Message input */}
       <div className="p-4 border-t">
         <div className="flex items-center">
-          <button
+          <Button
             className="p-2 text-slate-500 hover:text-slate-700"
             onClick={() => fileInputRef.current?.click()}
-            type="button"
+            variant="ghost"
           >
             <Paperclip className="h-5 w-5" />
-          </button>
-          <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept="image/*" />
+          </Button>
+          <Input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept="image/*" />
           <div className="flex-1 relative">
-            <textarea
+            <Textarea
               value={message}
               onChange={(e) => setMessage(e.target.value.slice(0, maxLength))}
               onKeyDown={handleKeyDown}
               placeholder="Enter message"
-              className="w-full border rounded-lg p-2 pr-10 resize-none focus:outline-none focus:ring-1"
               rows={1}
               disabled={isSending}
             />
-            <button
+            <Button
               onClick={handleSendMessage}
               disabled={message.trim() === "" || isSending}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-slate-400 disabled:text-slate-300"
+              variant="ghost"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2"
             >
               <Send className={`h-5 w-5 ${isSending ? "animate-pulse" : ""}`} />
-            </button>
+            </Button>
           </div>
         </div>
         <div className="text-right text-xs text-slate-500 mt-1">

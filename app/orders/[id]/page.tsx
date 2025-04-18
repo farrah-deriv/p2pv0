@@ -11,6 +11,7 @@ import type { Order } from "@/services/api/api-orders"
 import OrderChat from "@/components/order-chat"
 import { toast } from "@/components/ui/use-toast"
 import { cn } from "@/lib/utils"
+import OrderDetailsSidebar from "@/components/order-details-sidebar"
 
 export default function OrderDetailsPage() {
   const router = useRouter()
@@ -24,6 +25,7 @@ export default function OrderDetailsPage() {
   const [message, setMessage] = useState("")
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
   const [isPaymentLoading, setIsPaymentLoading] = useState(false)
+  const [showDetailsSidebar, setShowDetailsSidebar] = useState(false)
 
   // Rating states
   const [showRatingSidebar, setShowRatingSidebar] = useState(false)
@@ -230,12 +232,7 @@ export default function OrderDetailsPage() {
                       })}
                     </p>
                   </div>
-                  <button
-                    className="flex items-center text-sm"
-                    onClick={() => {
-                      /* View details logic */
-                    }}
-                  >
+                  <button className="flex items-center text-sm" onClick={() => setShowDetailsSidebar(true)}>
                     View order details
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </button>
@@ -462,6 +459,7 @@ export default function OrderDetailsPage() {
           </div>
         </div>
       )}
+      <OrderDetailsSidebar isOpen={showDetailsSidebar} onClose={() => setShowDetailsSidebar(false)} order={order} />
     </div>
   )
 }
