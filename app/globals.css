@@ -22,6 +22,15 @@ body {
   .w-1\/7 {
     width: 14.285%;
   }
+
+  .btn-disabled {
+    opacity: 0.24;
+  }
+
+  .btn-enabled {
+    opacity: 1;
+    z-index: 0;
+  }
 }
 
 @layer base {
@@ -60,6 +69,7 @@ body {
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -100,6 +110,7 @@ body {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -109,3 +120,6 @@ body {
   filter: invert(67%) sepia(87%) saturate(1231%) hue-rotate(152deg) brightness(103%) contrast(103%);
 }
 
+.shadow-dropdown {
+  box-shadow: 0px 16px 24px 4px rgba(0, 0, 0, 0.02), 0px 16px 24px 4px rgba(0, 0, 0, 0.04);
+}
