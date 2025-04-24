@@ -102,7 +102,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
   }
 
   const isBuy = orderType === "buy"
-  const title = isBuy ? "Buy order" : "Sell order"
+  const title = isBuy ? "Sell order" : "Buy order"
   const actionText = isBuy ? "Sell" : "Buy"
   const youBuyText = isBuy ? "You sell" : "You buy"
   const youSendText = isBuy ? "You receive" : "You send"
@@ -114,13 +114,15 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div
-        className={`fixed inset-0 bg-black/30 transition-opacity duration-300 ${isOpen && isAnimating ? "opacity-100" : "opacity-0"
-          }`}
+        className={`fixed inset-0 bg-black/30 transition-opacity duration-300 ${
+          isOpen && isAnimating ? "opacity-100" : "opacity-0"
+        }`}
         onClick={handleClose}
       />
       <div
-        className={`relative w-full max-w-md bg-white h-full overflow-y-auto transform transition-transform duration-300 ease-in-out ${isOpen && isAnimating ? "translate-x-0" : "translate-x-full"
-          }`}
+        className={`relative w-full max-w-md bg-white h-full overflow-y-auto transform transition-transform duration-300 ease-in-out ${
+          isOpen && isAnimating ? "translate-x-0" : "translate-x-full"
+        }`}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
