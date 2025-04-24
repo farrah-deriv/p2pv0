@@ -18,10 +18,10 @@ export interface Order {
   }
   price: Value
   paymentMethod: string
-  createdAt: string
-  expiresAt: string
-  completedAt?: string
-  cancelledAt?: string
+  created_at: string
+  expires_at: string
+  completed_at?: string
+  cancelled_at?: string
   payment_currency: string
   is_reviewable: boolean
   rating: number
@@ -45,7 +45,6 @@ export interface ReviewData {
   comment?: string
 }
 
-// Add this new interface for chat messages
 export interface ChatMessage {
   id: string
   orderId: string
@@ -55,10 +54,6 @@ export interface ChatMessage {
   isRead: boolean
 }
 
-// API Functions
-/**
- * Get all orders with optional filters
- */
 export async function getOrders(filters?: OrderFilters): Promise<Order[]> {
   try {
     const queryParams = new URLSearchParams()
@@ -98,9 +93,6 @@ export async function getOrders(filters?: OrderFilters): Promise<Order[]> {
   }
 }
 
-/**
- * Get order details by ID
- */
 export async function getOrderById(id: string): Promise<Order> {
   try {
     const url = `${API.baseUrl}${API.endpoints.orders}/${id}`
@@ -130,9 +122,6 @@ export async function getOrderById(id: string): Promise<Order> {
   }
 }
 
-/**
- * Mark payment as sent (for buy orders)
- */
 export async function markPaymentAsSent(orderId: string): Promise<{ success: boolean }> {
   try {
     const url = `${API.baseUrl}${API.endpoints.orders}/${orderId}/payment-sent`
@@ -165,9 +154,6 @@ export async function markPaymentAsSent(orderId: string): Promise<{ success: boo
   }
 }
 
-/**
- * Confirm payment received and release funds (for sell orders)
- */
 export async function releasePayment(orderId: string): Promise<{ success: boolean }> {
   try {
     const url = `${API.baseUrl}${API.endpoints.orders}/${orderId}/release`
@@ -200,22 +186,17 @@ export async function releasePayment(orderId: string): Promise<{ success: boolea
   }
 }
 
-/**
- * Cancel an order
- */
-export async function cancelOrder(orderId: string, reason: string): Promise<{ success: boolean }> {
+export async function cancelOrder(orderId: string): Promise<{ success: boolean }> {
   try {
     const url = `${API.baseUrl}${API.endpoints.orders}/${orderId}/cancel`
     const headers = {
       ...AUTH.getAuthHeader(),
       "Content-Type": "application/json",
     }
-    const body = JSON.stringify({ reason })
 
     const response = await fetch(url, {
       method: "POST",
       headers,
-      body,
     })
 
     if (!response.ok) {
@@ -231,15 +212,12 @@ export async function cancelOrder(orderId: string, reason: string): Promise<{ su
       data = { success: true }
     }
 
-    return data
+    return { success: true }
   } catch (error) {
     throw error
   }
 }
 
-/**
- * Dispute an order
- */
 export async function disputeOrder(orderId: string, reason: string): Promise<{ success: boolean }> {
   try {
     const url = `${API.baseUrl}${API.endpoints.orders}/${orderId}/dispute`
@@ -274,9 +252,6 @@ export async function disputeOrder(orderId: string, reason: string): Promise<{ s
   }
 }
 
-/**
- * Create a new order
- */
 export async function createOrder(advertId: number, amount: number): Promise<Order> {
   try {
     const url = `${API.baseUrl}${API.endpoints.orders}`
@@ -317,9 +292,6 @@ export async function createOrder(advertId: number, amount: number): Promise<Ord
   }
 }
 
-/**
- * Pay for an order
- */
 export async function payOrder(orderId: string): Promise<{ success: boolean }> {
   try {
     const url = `${API.baseUrl}${API.endpoints.orders}/${orderId}/pay`
@@ -352,9 +324,6 @@ export async function payOrder(orderId: string): Promise<{ success: boolean }> {
   }
 }
 
-/**
- * Review an order
- */
 export async function reviewOrder(
   orderId: string,
   reviewData: ReviewData,
@@ -397,13 +366,38 @@ export async function reviewOrder(
   }
 }
 
-/**
- * Send a message to the order chat
- * @param orderId - The ID of the order
- * @param message - The message content to send
- * @param attachment - Optional attachment
- * @returns Promise with the result of the operation
- */
+export async function completeOrder(orderId: string): Promise<{ success: boolean }> {
+  try {
+    const url = `${API.baseUrl}${API.endpoints.orders}/${orderId}/complete`
+    const headers = {
+      ...AUTH.getAuthHeader(),
+      "Content-Type": "application/json",
+    }
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error completing order: ${response.statusText}`)
+    }
+
+    const responseText = await response.text()
+    let data
+
+    try {
+      data = JSON.parse(responseText)
+    } catch (e) {
+      data = { success: true }
+    }
+
+    return data
+  } catch (error) {
+    throw error
+  }
+}
+
 export async function sendChatMessage(
   orderId: string,
   message: string,
@@ -416,10 +410,10 @@ export async function sendChatMessage(
       "Content-Type": "application/json",
     }
 
-    let body = "";
+    let body = ""
     if (attachment) {
       body = JSON.stringify({
-        attachment
+        attachment,
       })
     } else {
       body = JSON.stringify({
@@ -454,13 +448,13 @@ export async function sendChatMessage(
       success: true,
       message: data.data ||
         data.message || {
-        id: Date.now().toString(),
-        orderId,
-        senderId: 0, // Will be replaced by the actual sender ID from the server
-        content: message,
-        time,
-        isRead: false,
-      },
+          id: Date.now().toString(),
+          orderId,
+          senderId: 0,
+          content: message,
+          time,
+          isRead: false,
+        },
     }
   } catch (error) {
     throw error
@@ -468,24 +462,21 @@ export async function sendChatMessage(
 }
 
 export const OrdersAPI = {
-  // Keep existing methods...
-  getOrders: getOrders,
-  getOrderById: getOrderById,
-  markPaymentAsSent: markPaymentAsSent,
-  releasePayment: releasePayment,
-  cancelOrder: cancelOrder,
-  disputeOrder: disputeOrder,
-  createOrder: createOrder,
-  payOrder: payOrder,
-  reviewOrder: reviewOrder,
+  getOrders,
+  getOrderById,
+  markPaymentAsSent,
+  releasePayment,
+  cancelOrder,
+  disputeOrder,
+  createOrder,
+  payOrder,
+  reviewOrder,
   sendChatMessage,
+  completeOrder,
 
   getOrderByIdMock: async (orderId: string): Promise<Order> => {
-    // In a real app, this would be an API call
-    // For now, we'll simulate a delay and return mock data
     await new Promise((resolve) => setTimeout(resolve, 500))
 
-    // This is mock data - in a real app, you'd fetch from an API
     return {
       id: orderId,
       type: "Buy",

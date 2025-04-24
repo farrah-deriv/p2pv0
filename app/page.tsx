@@ -20,7 +20,7 @@ import Image from "next/image"
 
 export default function BuySellPage() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<"buy" | "sell">("buy")
+  const [activeTab, setActiveTab] = useState<"buy" | "sell">("sell")
   const [currency, setCurrency] = useState("IDR")
   const [paymentMethod, setPaymentMethod] = useState("All")
   const [searchQuery, setSearchQuery] = useState("")
@@ -134,10 +134,10 @@ export default function BuySellPage() {
                 className="w-full"
               >
                 <TabsList className="w-full md:min-w-3xs">
-                  <TabsTrigger className="w-full md:w-auto" value="buy">
+                  <TabsTrigger className="w-full md:w-auto" value="sell">
                     Buy
                   </TabsTrigger>
-                  <TabsTrigger className="w-full md:w-auto" value="sell">
+                  <TabsTrigger className="w-full md:w-auto" value="buy">
                     Sell
                   </TabsTrigger>
                 </TabsList>
@@ -542,11 +542,11 @@ export default function BuySellPage() {
                         <TableCell className="py-4 px-4 text-right">
                           {USER.id != ad.user.id && (
                             <Button
-                              variant={ad.type === "buy" ? "default" : "destructive"}
+                              variant={ad.type === "buy" ? "destructive" : "default"}
                               size="sm"
                               onClick={() => handleOrderClick(ad)}
                             >
-                              {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
+                              {ad.type === "buy" ? "Sell" : "Buy"} {ad.account_currency}
                             </Button>
                           )}
                         </TableCell>
@@ -571,4 +571,3 @@ export default function BuySellPage() {
     </div>
   )
 }
-

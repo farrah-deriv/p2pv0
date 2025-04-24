@@ -12,6 +12,7 @@ import OrderChat from "@/components/order-chat"
 import { toast } from "@/components/ui/use-toast"
 import { cn } from "@/lib/utils"
 import OrderDetailsSidebar from "@/components/order-details-sidebar"
+import { USER } from "@/lib/local-variables"
 
 export default function OrderDetailsPage() {
   const router = useRouter()
@@ -25,6 +26,7 @@ export default function OrderDetailsPage() {
   const [message, setMessage] = useState("")
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
   const [isPaymentLoading, setIsPaymentLoading] = useState(false)
+  const [isConfirmLoading, setIsConfirmLoading] = useState(false)
   const [showDetailsSidebar, setShowDetailsSidebar] = useState(false)
 
   // Rating states
@@ -57,13 +59,13 @@ export default function OrderDetailsPage() {
     setIsPaymentLoading(true)
     try {
       const result = await OrdersAPI.payOrder(orderId)
-      if (result.success) {
+      if (result.errors.length == 0) {
         toast({
           title: "Payment marked as sent",
           description: "The seller has been notified of your payment.",
           variant: "default",
         })
-        fetchOrderDetails() // Refresh order details
+        fetchOrderDetails()
       }
     } catch (err) {
       console.error("Error marking payment as sent:", err)
@@ -74,6 +76,31 @@ export default function OrderDetailsPage() {
       })
     } finally {
       setIsPaymentLoading(false)
+    }
+  }
+
+  const handleConfirmOrder = async () => {
+    setIsConfirmLoading(true)
+    try {
+      const result = await OrdersAPI.completeOrder(orderId)
+      if (result.errors.length == 0) {
+        toast({
+          title: "Order completed",
+          description: "The order has been successfully completed.",
+          variant: "default",
+        })
+        // Refresh order details to show updated status
+        fetchOrderDetails()
+      }
+    } catch (err) {
+      console.error("Error completing order:", err)
+      toast({
+        title: "Completion failed",
+        description: "Could not complete the order. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsConfirmLoading(false)
     }
   }
 
@@ -190,15 +217,18 @@ export default function OrderDetailsPage() {
   }
 
   // Safely access properties with fallbacks
-  const orderType = order.type === "buy" ? "Sell" : "Buy"
+  const orderType = order.type === "buy" ? "Buy" : "Sell"
   const orderStatus = order.status || "Pending"
-  const advertPaymentCurrency = order.payment_currency
   const advertAccountCurrency = order.advert?.account_currency
+  const advertPaymentCurrency = order.advert?.payment_currency
 
   // Safely access user properties
-  const counterpartyNickname = order.advert?.user?.nickname
+  const counterpartyNickname = order.advert.user.id == USER.id ? order?.user?.nickname : order?.advert?.user?.nickname
+  const counterpartyLabel = order.type === "buy" ? (order.user.id == USER.id ? "Seller" : "Buyer") : (order.user.id == USER.id ? "Buyer" : "Seller")
+  const pendingReleaseLabel = order.type === "buy" ? (order.user.id == USER.id ? "Waiting seller's confirmation" : "Confirm payment") : (order.user.id == USER.id ? "Confirm payment" : "Waiting seller's confirmation")
+  const youPayReceiveLabel = order.type === "buy" ? (order.user.id == USER.id ? "You receive" : "You pay") : (order.user.id == USER.id ? "You pay" : "You receive")
 
-  const orderAmount = order.amount ? Number(order.amount).toFixed(2) : "0.00"
+  const orderAmount = Number(order.amount).toFixed(2)
 
   return (
     <div className="px-4 relative">
@@ -211,7 +241,22 @@ export default function OrderDetailsPage() {
               {order.status === "pending_payment" && (
                 <div className="bg-blue-50 p-4 flex justify-between items-center border border-blue-50 rounded-lg">
                   <div className="flex items-center">
-                    <span className="text-blue-600 font-medium">Complete payment</span>
+                    <span className="text-blue-600 font-medium">
+                      {order.user.id == USER.id ? "Awaiting payment" : "Complete payment"}
+                    </span>
+                  </div>
+                  <div className="flex items-center text-blue-600">
+                    <Clock className="h-4 w-4 mr-1" />
+                    <span>Time left: {timeLeft}</span>
+                  </div>
+                </div>
+              )}
+              {order.status === "pending_release" && (
+                <div className="bg-blue-50 p-4 flex justify-between items-center border border-blue-50 rounded-lg">
+                  <div className="flex items-center">
+                    <span className="text-blue-600 font-medium">
+                      {pendingReleaseLabel}
+                    </span>
                   </div>
                   <div className="flex items-center text-blue-600">
                     <Clock className="h-4 w-4 mr-1" />
@@ -223,9 +268,9 @@ export default function OrderDetailsPage() {
               <div className="p-4 border rounded-lg mt-3">
                 <div className="flex justify-between items-center mb-4">
                   <div>
-                    <p className="text-slate-500 text-sm">You pay</p>
+                    <p className="text-slate-500 text-sm">{youPayReceiveLabel}</p>
                     <p className="text-lg font-bold">
-                      {advertPaymentCurrency}{" "}
+                      {advertAccountCurrency}{" "}
                       {Number(orderAmount).toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
@@ -239,7 +284,7 @@ export default function OrderDetailsPage() {
                 </div>
 
                 <div>
-                  <p className="text-slate-500 text-sm">Seller</p>
+                  <p className="text-slate-500 text-sm">{counterpartyLabel}</p>
                   <p className="font-medium">{counterpartyNickname}</p>
                 </div>
               </div>
@@ -250,7 +295,7 @@ export default function OrderDetailsPage() {
                     value="payment"
                     className="py-3 px-4 data-[state=active]:border-b-2 data-[state=active]:shadow-none rounded-none"
                   >
-                    Seller's payment details
+                    Payment details
                   </TabsTrigger>
                   <TabsTrigger
                     value="contact"
@@ -283,7 +328,7 @@ export default function OrderDetailsPage() {
                 </TabsContent>
               </Tabs>
 
-              {order.type === "sell" && order.status === "pending_payment" && (
+              {((order.type === "buy" && order.status === "pending_payment" && order.user.id == USER.id) || (order.type === "sell" && order.status === "pending_payment" && order.advert.user.id == USER.id)) && (
                 <div className="p-4 flex gap-4">
                   <Button
                     variant="outline"
@@ -301,6 +346,20 @@ export default function OrderDetailsPage() {
                       </>
                     ) : (
                       "I've paid"
+                    )}
+                  </Button>
+                </div>
+              )}
+              {((order.type === "buy" && order.status === "pending_release" && order.advert.user.id == USER.id) || (order.type === "sell" && order.status === "pending_release" && order.user.id == USER.id)) && (
+                <div className="p-4 flex gap-4">
+                  <Button className="flex-1" size="sm" onClick={handleConfirmOrder} disabled={isConfirmLoading}>
+                    {isConfirmLoading ? (
+                      <>
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent mr-2"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      "Confirm"
                     )}
                   </Button>
                 </div>
