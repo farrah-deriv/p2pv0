@@ -41,18 +41,6 @@ export default function OrderDetailsSidebar({ isOpen, onClose, order }: OrderDet
               <h3 className="text-sm text-slate-500 mb-1">{order.type === "buy" ? "You buy" : "You sell"}</h3>
               <p className="font-medium">
                 {order.advert?.account_currency}{" "}
-                {typeof order.price === "object" && order.price.value
-                  ? Number(order.price.value).toFixed(2)
-                  : typeof order.price === "number"
-                    ? order.price.toFixed(2)
-                    : Number(order.price).toFixed(2)}
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-sm text-slate-500 mb-1">{order.type === "buy" ? "You pay" : "You receive"}</h3>
-              <p className="font-medium">
-                {order.advert?.payment_currency}{" "}
                 {typeof order.amount === "object" && order.amount.value
                   ? Number(order.amount.value).toFixed(2)
                   : typeof order.amount === "number"
@@ -62,7 +50,21 @@ export default function OrderDetailsSidebar({ isOpen, onClose, order }: OrderDet
             </div>
 
             <div>
-              <h3 className="text-sm text-slate-500 mb-1">Seller</h3>
+              <h3 className="text-sm text-slate-500 mb-1">{order.type === "buy" ? "You pay" : "You receive"}</h3>
+              <p className="font-medium">
+                {order.advert?.payment_currency}{" "}
+                {typeof order.price === "object" && order.price.value
+                  ? Number(order.price.value).toFixed(2)
+                  : typeof order.price === "number"
+                    ? order.price.toFixed(2)
+                    : Number(order.price).toFixed(2)}
+              </p>
+            </div>
+
+            <div>
+              {order.type === "buy" ?
+                <h3 className="text-sm text-slate-500 mb-1">Seller</h3> :
+                <h3 className="text-sm text-slate-500 mb-1">Buyer</h3>}
               <p className="font-medium">{order.advert?.user?.nickname}</p>
             </div>
 

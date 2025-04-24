@@ -29,7 +29,6 @@ export default function OrdersPage() {
     try {
       // Determine filters based on active tab
       const filters: {
-        status?: "Pending" | "Completed" | "Cancelled" | "Disputed"
         is_open?: boolean
       } = {}
 
@@ -188,13 +187,13 @@ export default function OrdersPage() {
               <TableCell className="py-4 px-4">
                 <div className="flex items-center">
                   <span className={order.type === "sell" ? "text-green-600 font-medium" : "font-medium"}>
-                    {order.type === "buy" ? "Sell" : "Buy"}
+                    {order.type === "buy" ? "Buy" : "Sell"}
                   </span>
                   <span className="ml-1">{order.id}</span>
                 </div>
               </TableCell>
               {activeTab === "past" && (
-                <TableCell className="py-4 px-4">{order.createdAt ? formatDate(order.createdAt) : "N/A"}</TableCell>
+                <TableCell className="py-4 px-4">{order.created_at ? formatDate(order.created_at) : ""}</TableCell>
               )}
               <TableCell className="py-4 px-4">{order.advert.user.nickname}</TableCell>
               <TableCell className="py-4 px-4">
