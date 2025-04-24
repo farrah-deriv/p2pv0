@@ -439,6 +439,9 @@ export default function CreateAdPage() {
     )
   }
 
+  const isButtonDisabled =
+    isSubmitting || (currentStep === 0 && !adFormValid) || (currentStep === 1 && !paymentFormValid) || isBottomSheetOpen
+
   return (
     <div className="max-w-[600px] mx-auto py-6 mt-8 progress-steps-container overflow-auto h-full pb-24 px-4 md:px-0">
       <style jsx global>{`
@@ -514,25 +517,8 @@ export default function CreateAdPage() {
           className="fixed bottom-0 left-0 w-full bg-white mt-4 py-4 mb-16 md:mb-0"
           style={{ borderTop: "1px solid var(--Neutral-Neutral-3, #E9ECEF)" }}
         >
-          <div className={`mx-6`}>
-            <Button
-              onClick={handleButtonClick}
-              disabled={
-                isSubmitting ||
-                (currentStep === 0 && !adFormValid) ||
-                (currentStep === 1 && !paymentFormValid) ||
-                isBottomSheetOpen
-              }
-              variant="cyan"
-              size="pill"
-              className={`w-full font-extrabold text-base leading-4 tracking-[0%] text-center ${isSubmitting ||
-                (currentStep === 0 && !adFormValid) ||
-                (currentStep === 1 && !paymentFormValid) ||
-                isBottomSheetOpen
-                ? "btn-disabled"
-                : ""
-                }`}
-            >
+          <div className="mx-6">
+            <Button onClick={handleButtonClick} disabled={isButtonDisabled} className="w-full">
               {isSubmitting ? (
                 <div className="flex items-center gap-2">
                   <span>{isEditMode ? "Saving..." : "Creating..."}</span>
@@ -553,24 +539,7 @@ export default function CreateAdPage() {
       )}
 
       <div className="hidden md:flex justify-end mt-8">
-        <Button
-          onClick={handleButtonClick}
-          disabled={
-            isSubmitting ||
-            (currentStep === 0 && !adFormValid) ||
-            (currentStep === 1 && !paymentFormValid) ||
-            isBottomSheetOpen
-          }
-          variant="cyan"
-          size="pill"
-          className={`font-extrabold text-sm leading-tight text-center whitespace-normal w-24 h-12 flex ${isSubmitting ||
-            (currentStep === 0 && !adFormValid) ||
-            (currentStep === 1 && !paymentFormValid) ||
-            isBottomSheetOpen
-            ? "btn-disabled"
-            : "btn-enabled"
-            }`}
-        >
+        <Button onClick={handleButtonClick} disabled={isButtonDisabled}>
           {isSubmitting ? (
             <div className="flex flex-col items-center gap-1">
               <span>{isEditMode ? "Saving..." : "Creating..."}</span>

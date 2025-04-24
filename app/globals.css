@@ -22,15 +22,6 @@ body {
   .w-1\/7 {
     width: 14.285%;
   }
-
-  .btn-disabled {
-    opacity: 0.24;
-  }
-
-  .btn-enabled {
-    opacity: 1;
-    z-index: 0;
-  }
 }
 
 @layer base {

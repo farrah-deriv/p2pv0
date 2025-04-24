@@ -6,7 +6,6 @@ import type { AdFormData } from "../types"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Check, ChevronDown, ChevronUp, Search } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import PaymentMethodBottomSheet from "./payment-method-bottom-sheet"
@@ -153,10 +152,10 @@ export default function PaymentDetailsForm({
 
                   {isMobile ? (
                     <>
-                      <Button
-                        variant="outline"
+                      <button
+                        type="button"
                         className={`w-full h-[48px] rounded-lg border ${bottomSheetOpen ? "border-black" : "border-gray-300"
-                          } justify-between text-left focus:outline-none focus-visible:outline-none focus:ring-0`}
+                          } justify-between text-left focus:outline-none focus-visible:outline-none focus:ring-0 flex items-center px-4`}
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
@@ -166,8 +165,8 @@ export default function PaymentDetailsForm({
                         <span className="font-normal text-base">
                           {paymentMethods.length > 0 ? `Selected (${paymentMethods.length})` : "Select payment method"}
                         </span>
-                        <ChevronDown className="h-4 w-4 opacity-70" />
-                      </Button>
+                        <ChevronDown className="h-4 w-4 opacity-70 ml-auto" />
+                      </button>
 
                       <PaymentMethodBottomSheet
                         isOpen={bottomSheetOpen}
@@ -186,10 +185,10 @@ export default function PaymentDetailsForm({
                   ) : (
                     <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
                       <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
+                        <button
+                          type="button"
                           className={`w-full md:w-[360px] h-[56px] rounded-lg border ${dropdownOpen ? "border-black" : "border-gray-300"
-                            } justify-between text-left focus:outline-none focus-visible:outline-none focus:ring-0 relative`}
+                            } justify-between text-left focus:outline-none focus-visible:outline-none focus:ring-0 relative flex items-center px-4`}
                           onClick={(e) => {
                             e.preventDefault()
                             setDropdownOpen(!dropdownOpen)
@@ -210,9 +209,9 @@ export default function PaymentDetailsForm({
                           {dropdownOpen ? (
                             <ChevronUp className="h-4 w-4 opacity-70 absolute top-4 right-4" />
                           ) : (
-                            <ChevronDown className="h-4 w-4 opacity-70" />
+                            <ChevronDown className="h-4 w-4 opacity-70 ml-auto" />
                           )}
-                        </Button>
+                        </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="w-[360px] min-w-[360px] shadow-dropdown">
                         <div onClick={(e) => e.stopPropagation()} className="relative p-1">
@@ -222,7 +221,7 @@ export default function PaymentDetailsForm({
                             placeholder="Search"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 text-sm border-black/10 focus:border-black/10 focus:outline-none focus:ring-0 placeholder:text-[#0000003D]"
+                            variant="secondary"
                             onClick={(e) => e.stopPropagation()}
                           />
                         </div>

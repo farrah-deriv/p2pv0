@@ -9,6 +9,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      opacity: {
+        24: "0.24",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
