@@ -66,34 +66,16 @@ export default function OrdersPage() {
   // Function to get status badge style
   const getStatusBadgeStyle = (status: string) => {
     switch (status) {
-      case "Completed":
+      case "completed":
         return "bg-green-100 text-green-800"
-      case "Cancelled":
+      case "cancelled":
         return "bg-slate-100 text-slate-800"
-      case "Disputed":
+      case "disputed":
         return "bg-yellow-100 text-yellow-800"
-      case "Expired":
+      case "timed_out":
         return "bg-slate-100 text-slate-800"
       default:
         return "bg-blue-100 text-blue-800"
-    }
-  }
-
-  // Function to get status badge text
-  const getStatusBadgeText = (status: string) => {
-    switch (status) {
-      case "Completed":
-        return "Completed"
-      case "Cancelled":
-        return "Cancelled"
-      case "Disputed":
-        return "Under dispute"
-      case "Expired":
-        return "Expired"
-      case "Pending":
-        return "Waiting seller's confirmation"
-      default:
-        return "Confirm payment"
     }
   }
 
@@ -107,8 +89,8 @@ export default function OrdersPage() {
     <div className="space-y-4">
       {orders.map((order) => {
         const orderType = order.type
-        const orderTypeColor = orderType === "Buy" ? "text-green-500" : "text-red-500"
-        const statusText = getStatusBadgeText(order.status)
+        const orderTypeColor = orderType === "buy" ? "text-green-500" : "text-red-500"
+        const statusText = order.status
         const statusStyle = getStatusBadgeStyle(order.status)
 
         return (
@@ -131,10 +113,19 @@ export default function OrdersPage() {
                 <span className="text-base font-medium"> {order.advert.payment_currency} </span>
                 <span className="text-base font-medium">
                   {typeof order.amount === "object" && order.amount.value
-                    ? Number(order.amount.value).toFixed(2)
+                    ? Number(order.amount.value).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })
                     : typeof order.amount === "number"
-                      ? order.amount.toFixed(2)
-                      : Number(order.amount).toFixed(2)}
+                      ? order.amount.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })
+                      : Number(order.amount).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                 </span>
               </div>
 
@@ -195,7 +186,9 @@ export default function OrdersPage() {
               {activeTab === "past" && (
                 <TableCell className="py-4 px-4">{order.created_at ? formatDate(order.created_at) : ""}</TableCell>
               )}
-              <TableCell className="py-4 px-4">{order.advert.user.nickname}</TableCell>
+              <TableCell className="py-4 px-4">
+                {order.type === "buy" ? order.advert.user.nickname : order.user.nickname}
+              </TableCell>
               <TableCell className="py-4 px-4">
                 <span className={`px-3 py-1 rounded-full text-xs ${getStatusBadgeStyle(order.status)}`}>
                   {order.status}
@@ -204,18 +197,36 @@ export default function OrdersPage() {
               <TableCell className="py-4 px-4">
                 {order.advert.payment_currency}{" "}
                 {typeof order.amount === "object" && order.amount.value
-                  ? Number(order.amount.value).toFixed(2)
+                  ? Number(order.amount.value).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })
                   : typeof order.amount === "number"
-                    ? order.amount.toFixed(2)
-                    : Number(order.amount).toFixed(2)}
+                    ? order.amount.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })
+                    : Number(order.amount).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
               </TableCell>
               <TableCell className="py-4 px-4">
                 {order.advert.account_currency}{" "}
                 {typeof order.price === "object" && order.price.value
-                  ? Number(order.price.value).toFixed(2)
+                  ? Number(order.price.value).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })
                   : typeof order.price === "number"
-                    ? order.price.toFixed(2)
-                    : Number(order.price).toFixed(2)}
+                    ? order.price.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })
+                    : Number(order.price).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
               </TableCell>
               {activeTab === "past" && (
                 <TableCell className="py-4 px-4">
