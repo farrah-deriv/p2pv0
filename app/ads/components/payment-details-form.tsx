@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuIte
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import PaymentMethodBottomSheet from "./payment-method-bottom-sheet"
+import { Button } from "@/components/ui/button"
 
 interface PaymentDetailsFormProps {
   onBack: () => void
@@ -152,10 +153,11 @@ export default function PaymentDetailsForm({
 
                   {isMobile ? (
                     <>
-                      <button
+                      <Button
                         type="button"
-                        className={`w-full h-[48px] rounded-lg border ${bottomSheetOpen ? "border-black" : "border-gray-300"
-                          } justify-between text-left focus:outline-none focus-visible:outline-none focus:ring-0 flex items-center px-4`}
+                        variant="outline"
+                        className={`w-full h-[56px] rounded-[8px] border border-[1px] gap-[8px] px-[16px] justify-between text-left ${bottomSheetOpen ? "border-black" : "border-gray-300"
+                          }`}
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
@@ -166,7 +168,7 @@ export default function PaymentDetailsForm({
                           {paymentMethods.length > 0 ? `Selected (${paymentMethods.length})` : "Select payment method"}
                         </span>
                         <ChevronDown className="h-4 w-4 opacity-70 ml-auto" />
-                      </button>
+                      </Button>
 
                       <PaymentMethodBottomSheet
                         isOpen={bottomSheetOpen}
@@ -184,34 +186,27 @@ export default function PaymentDetailsForm({
                     </>
                   ) : (
                     <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          type="button"
-                          className={`w-full md:w-[360px] h-[56px] rounded-lg border ${dropdownOpen ? "border-black" : "border-gray-300"
-                            } justify-between text-left focus:outline-none focus-visible:outline-none focus:ring-0 relative flex items-center px-4`}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            setDropdownOpen(!dropdownOpen)
-                          }}
-                        >
-                          {dropdownOpen ? (
-                            <div className="flex flex-col items-start">
-                              <span className="font-medium text-sm text-black">Select payment method</span>
-                              <span className="text-gray-400 text-sm">{`Selected (${paymentMethods.length})`}</span>
-                            </div>
-                          ) : (
-                            <span className="font-normal text-base">
-                              {paymentMethods.length > 0
-                                ? `Selected (${paymentMethods.length})`
-                                : "Select payment method"}
-                            </span>
-                          )}
-                          {dropdownOpen ? (
-                            <ChevronUp className="h-4 w-4 opacity-70 absolute top-4 right-4" />
-                          ) : (
-                            <ChevronDown className="h-4 w-4 opacity-70 ml-auto" />
-                          )}
-                        </button>
+                      <DropdownMenuTrigger
+                        className={`w-full md:w-[360px] h-[56px] rounded-lg border ${dropdownOpen ? "border-black" : "border-gray-300"
+                          } justify-between text-left focus:outline-none focus-visible:outline-none focus:ring-0 relative flex items-center px-4`}
+                      >
+                        {dropdownOpen ? (
+                          <div className="flex flex-col items-start">
+                            <span className="font-medium text-sm text-black">Select payment method</span>
+                            <span className="text-gray-400 text-sm">{`Selected (${paymentMethods.length})`}</span>
+                          </div>
+                        ) : (
+                          <span className="font-normal text-base">
+                            {paymentMethods.length > 0
+                              ? `Selected (${paymentMethods.length})`
+                              : "Select payment method"}
+                          </span>
+                        )}
+                        {dropdownOpen ? (
+                          <ChevronUp className="h-4 w-4 opacity-70 absolute top-4 right-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 opacity-70 ml-auto" />
+                        )}
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="w-[360px] min-w-[360px] shadow-dropdown">
                         <div onClick={(e) => e.stopPropagation()} className="relative p-1">
@@ -286,3 +281,4 @@ export default function PaymentDetailsForm({
     </div>
   )
 }
+

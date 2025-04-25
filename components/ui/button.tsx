@@ -12,6 +12,7 @@ const buttonVariants = cva(
         default: "bg-primary text-primary-foreground hover:bg-cyan-hover",
         hover: "bg-cyan-hover text-primary-foreground",
         disabled: "bg-primary opacity-24 pointer-events-none cursor-not-allowed",
+        outline: "border border-[#181C25] bg-transparent text-foreground hover:bg-slate-100 px-7",
       },
       size: {
         default: "h-[48px] min-h-[48px] max-h-[48px] px-7 gap-2 min-w-[96px]",
@@ -25,8 +26,8 @@ const buttonVariants = cva(
   },
 )
 
-const VALID_VARIANTS = ["default", "hover", "disabled"]
-const VALID_SIZES = ["default"]
+const VALID_VARIANTS = ["default", "hover", "disabled", "outline"]
+const VALID_SIZES = ["default", "sm"]
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
