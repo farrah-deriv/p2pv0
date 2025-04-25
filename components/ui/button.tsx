@@ -31,7 +31,7 @@ const buttonVariants = cva(
   },
 )
 
-const VALID_VARIANTS = ["default", "hover", "disabled", "outline"]
+const VALID_VARIANTS = ["default", "hover", "disabled", "outline", "destructive", "secondary", "ghost"]
 const VALID_SIZES = ["default", "sm"]
 
 export interface ButtonProps
