@@ -156,12 +156,12 @@ export default function PaymentMethodBottomSheet({
           {/* Search input */}
           <div className="relative mb-6">
             <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
+              <Search className="h-5 w-5 text-black" />
             </div>
             <Input
               type="text"
               placeholder="Search"
-              className="pl-10 bg-gray-100 border-0"
+              variant="tertiary"
               value={searchQuery}
               onChange={(e) => {
                 e.stopPropagation()
@@ -184,13 +184,12 @@ export default function PaymentMethodBottomSheet({
                   disabled={!isMethodSelected(method) && isMaxReached}
                 >
                   <div
-                    className={`w-10 h-10 flex items-center justify-center rounded-md border ${
-                      isMethodSelected(method)
-                        ? "bg-primary border-primary"
-                        : isMaxReached
-                          ? "border-gray-200 bg-gray-100"
-                          : "border-gray-200"
-                    }`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-md border ${isMethodSelected(method)
+                      ? "bg-primary border-primary"
+                      : isMaxReached
+                        ? "border-gray-200 bg-gray-100"
+                        : "border-gray-200"
+                      }`}
                   >
                     {isMethodSelected(method) && <Check className="h-6 w-6 text-white" />}
                   </div>
@@ -235,3 +234,4 @@ export default function PaymentMethodBottomSheet({
     </div>
   )
 }
+

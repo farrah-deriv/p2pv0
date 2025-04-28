@@ -9,9 +9,11 @@ const inputVariants = cva(
     variants: {
       variant: {
         default:
-          "border-input ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 placeholder:text-muted-foreground",
+          "border-input ring-offset-background placeholder:text-muted-foreground focus:border-[#000000] focus:outline-none focus:ring-0",
         secondary:
-          "border-input focus-visible:outline-none focus:border-black/10 focus:ring-0 placeholder:text-[#0000003D] pl-10 pr-4",
+          "h-[32px] bg-white border border-input rounded-lg px-2 flex flex-row items-center gap-2 focus-visible:outline-none focus:border-black focus:ring-0 placeholder:text-[#0000003D] pl-10 pr-4",
+        tertiary:
+          "h-[32px] bg-gray-100 border-transparent rounded-lg px-2 flex flex-row items-center gap-2 focus-visible:outline-none focus:border-black focus:ring-0 placeholder:text-[#0000003D] pl-10 pr-4",
       },
     },
     defaultVariants: {
@@ -20,17 +22,15 @@ const inputVariants = cva(
   },
 )
 
-
-const VALID_VARIANTS = ["default", "secondary"]
+const VALID_VARIANTS = ["default", "secondary", "tertiary"]
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>, VariantProps<typeof inputVariants> { }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, variant, type, ...props }, ref) => {
-
   const computedVariant = VALID_VARIANTS.includes(variant as string) ? variant : "default"
 
   return (
-    <input type={type} className={cn(inputVariants({ variant: computedVariant, className }))} ref={ref} {...props} />
+    <input type={type} className={cn(inputVariants({ variant: computedVariant }), className)} ref={ref} {...props} />
   )
 })
 Input.displayName = "Input"
