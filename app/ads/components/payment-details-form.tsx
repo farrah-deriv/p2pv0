@@ -209,15 +209,24 @@ export default function PaymentDetailsForm({
                         )}
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="w-[360px] min-w-[360px] shadow-dropdown">
-                        <div onClick={(e) => e.stopPropagation()} className="relative p-1">
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => e.stopPropagation()}
+                          className="relative p-1"
+                        >
                           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-black z-10" />
                           <Input
                             type="text"
                             placeholder="Search"
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={(e) => {
+                              e.stopPropagation()
+                              setSearchQuery(e.target.value)
+                            }}
+                            onKeyDown={(e) => e.stopPropagation()}
                             variant="secondary"
                             onClick={(e) => e.stopPropagation()}
+                            autoComplete="off"
                           />
                         </div>
                         {filteredPaymentMethods.map((method) => (
@@ -281,4 +290,3 @@ export default function PaymentDetailsForm({
     </div>
   )
 }
-
