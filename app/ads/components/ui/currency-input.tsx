@@ -45,14 +45,14 @@ export function CurrencyInput({
         )}
         style={{ borderWidth: "1px" }}
       >
-        <div className="flex-1 flex items-center">
+        <div className="flex-1 relative">
           <input
             type="number"
             value={value}
             onChange={handleChange}
             placeholder={placeholder}
             className={cn(
-              "flex-1 p-4 border-0 focus:ring-0 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
+              "w-full p-4 border-0 focus:ring-0 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
               isDisabled ? "bg-gray-50 text-gray-500 cursor-not-allowed" : "text-gray-900",
             )}
             disabled={isDisabled}
@@ -62,7 +62,7 @@ export function CurrencyInput({
             {...props}
           />
           {error && (
-            <div className="flex items-center justify-center pr-2">
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center justify-center">
               <AlertTriangle className="h-5 w-5 text-red-500" />
             </div>
           )}

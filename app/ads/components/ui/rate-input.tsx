@@ -28,7 +28,7 @@ export function RateInput({ value, onChange, onBlur, step, min, error = false }:
         )}
         style={{ borderWidth: "1px" }}
       >
-        <div className="flex-1 flex items-center">
+        <div className="flex-1 relative">
           <input
             type="number"
             value={value}
@@ -37,11 +37,11 @@ export function RateInput({ value, onChange, onBlur, step, min, error = false }:
             step={step}
             min={min}
             placeholder="0.00"
-            className="flex-1 p-4 border-0 focus:ring-0 focus:outline-none text-gray-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            className="w-full p-4 border-0 focus:ring-0 focus:outline-none text-gray-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             aria-invalid={error}
           />
           {error && (
-            <div className="flex items-center justify-center pr-2">
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
               <AlertTriangle className="h-5 w-5 text-red-500" />
             </div>
           )}
