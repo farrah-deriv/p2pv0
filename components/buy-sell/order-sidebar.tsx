@@ -112,25 +112,23 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div
-        className={`fixed inset-0 bg-black/30 transition-opacity duration-300 ${
-          isOpen && isAnimating ? "opacity-100" : "opacity-0"
-        }`}
+        className={`fixed inset-0 bg-black/30 transition-opacity duration-300 ${isOpen && isAnimating ? "opacity-100" : "opacity-0"
+          }`}
         onClick={handleClose}
       />
       <div
-        className={`relative w-full max-w-md bg-white h-full overflow-y-auto transform transition-transform duration-300 ease-in-out ${
-          isOpen && isAnimating ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`relative w-full max-w-md bg-white h-full overflow-y-auto transform transition-transform duration-300 ease-in-out ${isOpen && isAnimating ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         {ad && (
           <div className="flex flex-col h-full">
-           <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-2xl font-bold">{title}</h2>
               <Button onClick={handleClose} variant="ghost" className="p-1">
                 <X className="h-6 w-6" />
               </Button>
             </div>
-            <div className="p-4 bg-gray-50 m-4">
+            <div className="p-4 bg-gray-50 m-4 rounded-lg">
               <div className="mb-2">
                 <div className="flex items-center justify-between">
                   <Input
@@ -182,13 +180,12 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                 {ad.payment_method_names?.map((method, index) => (
                   <div key={index} className="flex items-center">
                     <div
-                      className={`h-4 w-4 rounded-full mr-2 ${
-                        method.toLowerCase().includes("bank")
-                          ? "bg-green-500"
-                          : method.toLowerCase().includes("wallet") || method.toLowerCase().includes("ewallet")
-                            ? "bg-blue-500"
-                            : "bg-yellow-500"
-                      }`}
+                      className={`h-4 w-4 rounded-full mr-2 ${method.toLowerCase().includes("bank")
+                        ? "bg-green-500"
+                        : method.toLowerCase().includes("wallet") || method.toLowerCase().includes("ewallet")
+                          ? "bg-blue-500"
+                          : "bg-yellow-500"
+                        }`}
                     />
                     <span className="font-medium">
                       {method.toLowerCase().includes("bank")
@@ -202,7 +199,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
               </div>
             </div>
             <div className="mx-4 mt-4 border-t py-2 text-sm">
-              <h3 className="text-gray-500">{isBuy ? "Buyer's instructions": "Seller's instructions"</h3>
+              <h3 className="text-gray-500">{isBuy ? "Buyer's instructions" : "Seller's instructions"}</h3>
               <p className="text-gray-800">
                 {ad.description ||
                   "Kindly transfer the payment to the provided account details after placing your order."}
