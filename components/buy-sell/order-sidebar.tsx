@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { X, Building, CreditCard, Check, AlertCircle } from "lucide-react"
+import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { Advertisement } from "@/services/api/api-buy-sell"
@@ -102,9 +102,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
   }
 
   const isBuy = orderType === "buy"
-  const title = isBuy ? "Sell order" : "Buy order"
-  const actionText = isBuy ? "Sell" : "Buy"
-  const youBuyText = isBuy ? "You sell" : "You buy"
+  const title = isBuy ? "Sell USD" : "Buy USD"
   const youSendText = isBuy ? "You receive" : "You send"
 
   // Calculate order limits
@@ -124,124 +122,115 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
           isOpen && isAnimating ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b p-4">
-            <h2 className="text-xl font-semibold">{title}</h2>
-            <button onClick={handleClose} className="p-1 rounded-full">
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-
-          {ad && (
-            <>
-              <div className="flex-1 p-4 space-y-6">
-                <div>
-                  <h3 className="text-md font-semibold mb-4">Advertiser info</h3>
-                  <div className="space-y-3">
-                    <div className="text-sm flex justify-between">
-                      <span>Seller</span>
-                      <span className="font-medium">{ad.user?.nickname || "Unknown"}</span>
-                    </div>
-                    <div className="text-sm flex justify-between">
-                      <span>Exchange rate (USD 1)</span>
-                      <span className="font-medium">
-                        {ad.payment_currency} {ad.exchange_rate?.toFixed(2) || "N/A"}
-                      </span>
-                    </div>
-                    <div className="text-sm flex justify-between">
-                      <span>Order completion time</span>
-                      <span className="font-medium">{ad.order_expiry_period} min</span>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-md font-semibold mb-4">Payment method(s)</h3>
-                  <div className="space-y-2">
-                    {ad.payment_method_names?.map((method, index) => (
-                      <div key={index} className="text-sm flex items-center">
-                        {method.toLowerCase().includes("bank") ? (
-                          <Building className="h-5 w-5 mr-2 text-green-600" />
-                        ) : (
-                          <CreditCard className="h-5 w-5 mr-2 text-blue-600" />
-                        )}
-                        <span>{method}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-md font-semibold mb-2">Seller's instructions</h3>
-                  <p className="text-sm">
-                    Kindly transfer the payment to the account details provided after placing the order. Ensure the
-                    exact amount is transferred.
-                  </p>
-                </div>
-                <div>
-                  <div className="mb-4">
-                    <p className="text-sm mb-2">{youBuyText}</p>
-                    <div className="flex">
-                      <Input
-                        type="number"
-                        value={amount}
-                        onChange={handleAmountChange}
-                        className={`rounded-r-none border-r-0 ${validationError}`}
-                      />
-                      <div className="flex items-center justify-center px-4 border border-l-0 rounded-r-md">
-                        {ad.account_currency}
-                      </div>
-                    </div>
-                    {validationError && <p className="text-xs mt-1">{validationError}</p>}
-                    <p className="text-xs mt-1">
-                      Order limit: {ad.account_currency} {minLimit} - {maxLimit}
-                    </p>
-                  </div>
+        {ad && (
+          <div className="flex flex-col h-full">
+           <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-2xl font-bold">{title}</h2>
+              <Button onClick={handleClose} variant="ghost" className="p-1">
+                <X className="h-6 w-6" />
+              </Button>
+            </div>
+            <div className="p-4 bg-gray-50 m-4">
+              <div className="mb-2">
+                <div className="flex items-center justify-between">
+                  <Input
+                    type="number"
+                    value={amount}
+                    onChange={handleAmountChange}
+                    placeholder="Enter amount"
+                  />
+                  <span className="text-gray-500 hidden">{ad.account_currency}</span>
                 </div>
               </div>
-
-              {/* Footer */}
-              <div className="border-t p-4">
-                <div className="mb-4 flex justify-between">
-                  <p className="text-sm mb-2">{youSendText}</p>
-                  <span className="font-medium">
-                    {ad.payment_currency}{" "}
-                    {Number.parseFloat(totalAmount).toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </span>
-                </div>
-
-                <Button
-                  onClick={handleSubmit}
-                  className="w-full text-white rounded-full"
-                  disabled={!!validationError || isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <span className="flex items-center justify-center">
-                      <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
-                      Creating Order...
+              {validationError && <p className="text-xs text-red-500 text-sm mb-2">{validationError}</p>}
+              <div className="flex items-center">
+                <span className="text-gray-500">{youSendText}:&nbsp;</span>
+                <span className="font-bold">
+                  {ad.payment_currency}{" "}
+                  {Number.parseFloat(totalAmount).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+            </div>
+            <div className="mx-4 mt-4 text-sm">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-gray-500">Rate ({ad.account_currency} 1)</span>
+                <span className="font-medium">
+                  {ad.payment_currency} {ad.exchange_rate?.toLocaleString()}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-gray-500">Order limit</span>
+                <span className="font-medium">
+                  {ad.account_currency} {minLimit} - {maxLimit}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-gray-500">Payment time</span>
+                <span className="font-medium">{ad.order_expiry_period} min</span>
+              </div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-gray-500">{isBuy ? "Buyer" : "Seller"}</span>
+                <span className="font-medium">{ad.user?.nickname}</span>
+              </div>
+            </div>
+            <div className="border-t m-4 py-2 text-sm">
+              <h3 className="text-gray-500">{isBuy ? "Buyer's payment method(s)" : "Seller's payment method(s)"}</h3>
+              <div className="flex flex-wrap gap-4">
+                {ad.payment_method_names?.map((method, index) => (
+                  <div key={index} className="flex items-center">
+                    <div
+                      className={`h-4 w-4 rounded-full mr-2 ${
+                        method.toLowerCase().includes("bank")
+                          ? "bg-green-500"
+                          : method.toLowerCase().includes("wallet") || method.toLowerCase().includes("ewallet")
+                            ? "bg-blue-500"
+                            : "bg-yellow-500"
+                      }`}
+                    />
+                    <span className="font-medium">
+                      {method.toLowerCase().includes("bank")
+                        ? "Bank transfer"
+                        : method.toLowerCase().includes("wallet") || method.toLowerCase().includes("ewallet")
+                          ? "eWallet"
+                          : method}
                     </span>
-                  ) : (
-                    `${actionText} ${ad.account_currency}`
-                  )}
-                </Button>
-                {orderStatus && (
-                  <div
-                    className={`mt-4 p-3 rounded-lg flex items-start ${orderStatus.success ? "bg-green-50 text-green-800" : ""}`}
-                  >
-                    {orderStatus.success ? (
-                      <Check className="h-5 w-5 mr-2 flex-shrink-0" />
-                    ) : (
-                      <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
-                    )}
-                    <span>{orderStatus.message}</span>
                   </div>
-                )}
+                ))}
               </div>
-            </>
-          )}
-        </div>
+            </div>
+            <div className="mx-4 mt-4 border-t py-2 text-sm">
+              <h3 className="text-gray-500">{isBuy ? "Buyer's instructions": "Seller's instructions"</h3>
+              <p className="text-gray-800">
+                {ad.description ||
+                  "Kindly transfer the payment to the provided account details after placing your order."}
+              </p>
+            </div>
+            <div className="mt-auto p-4 border-t">
+              <Button
+                className="w-full"
+                variant={isBuy ? "destructive" : "default"}
+                size="lg"
+                onClick={handleSubmit}
+                disabled={!!validationError || isSubmitting}
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center justify-center">
+                    <span className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                    Processing...
+                  </span>
+                ) : (
+                  "Place order"
+                )}
+              </Button>
+              {orderStatus && !orderStatus.success && (
+                <div className="mt-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">{orderStatus.message}</div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
