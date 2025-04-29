@@ -60,7 +60,7 @@ export default function AdvertiserProfilePage() {
   const { id } = useParams() as { id: string }
   const [profile, setProfile] = useState<AdvertiserProfile | null>(null)
   const [adverts, setAdverts] = useState<Advertisement[]>([])
-  const [activeTab, setActiveTab] = useState<"buy" | "sell">("buy")
+  const [activeTab, setActiveTab] = useState<"buy" | "sell">("sell")
   const [activeSection, setActiveSection] = useState<"ads">("ads")
   const [isFollowing, setIsFollowing] = useState(false)
   const [isBlocked, setIsBlocked] = useState(false)
@@ -142,9 +142,9 @@ export default function AdvertiserProfilePage() {
         },
         avgPayTime: data.stats?.avg_pay_time || "N/A",
         avgReleaseTime: data.stats?.avg_release_time || "N/A",
-        tradePartners: (data.buy_amount_30days  + data.sell_amount_30days) || 0,
+        tradePartners: data.buy_amount_30days + data.sell_amount_30days || 0,
         tradeVolume: {
-          amount: (data.buy_amount_30days  + data.sell_amount_30days) || 0,
+          amount: data.buy_amount_30days + data.sell_amount_30days || 0,
           currency: data.stats?.trade_volume?.currency || "USD",
         },
       },
@@ -342,9 +342,9 @@ export default function AdvertiserProfilePage() {
   const filteredAdverts = adverts.filter((ad) => (activeTab === "buy" ? ad.type === "buy" : ad.type === "sell"))
 
   const getDuration = (duration) => {
-    if (duration == null || duration <= 0) return '-';
-    if (duration > 60) return (duration / 60 / 60).toFixed(2).toString() + ' min';
-    return '< 1 min';
+    if (duration == null || duration <= 0) return "-"
+    if (duration > 60) return (duration / 60 / 60).toFixed(2).toString() + " min"
+    return "< 1 min"
   }
 
   const CURRENT_USER = USER
@@ -370,36 +370,37 @@ export default function AdvertiserProfilePage() {
                 <div>
                   <div className="flex">
                     <h2 className="text-lg font-bold">{profile?.nickname}</h2>
-                    {USER.id != profile?.id && <div className="flex items-center md:mt-0 ml-[16px]">
-                      <Button
-                        onClick={toggleFollow}
-                        variant={isFollowing ? "default" : "outline"}
-                        className={cn(
-                          "text-xs",
-                          isFollowing ? "bg-[#00D0FF] hover:bg-[#00D0FF] text-[#000]" : "border-slate-300",
-                        )}
-                        disabled={isFollowLoading}
-                      >
-                        {isFollowLoading ? (
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent mr-2"></div>
-                        ) : (
-                          <Image src="/icons/follow-icon.png" alt="Follow" width={16} height={16} className="mr-2" />
-                        )}
-                        {isFollowing ? "Following" : "Follow"}
-                      </Button>
-                      <Button
-                        variant="link"
-                        className={cn("text-xs", isBlocked && "text-red-500")}
-                        onClick={toggleBlock}
-                        disabled={isBlockLoading}
-                      >
-                        {isBlockLoading ? (
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent mr-2"></div>
-                        ) : null}
-                        {isBlocked ? "Unblock" : "Block"}
-                      </Button>
-                    </div>
-                    }
+                    {USER.id != profile?.id && (
+                      <div className="flex items-center md:mt-0 ml-[16px]">
+                        <Button
+                          onClick={toggleFollow}
+                          variant={isFollowing ? "default" : "outline"}
+                          className={cn(
+                            "text-xs",
+                            isFollowing ? "bg-[#00D0FF] hover:bg-[#00D0FF] text-[#000]" : "border-slate-300",
+                          )}
+                          disabled={isFollowLoading}
+                        >
+                          {isFollowLoading ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent mr-2"></div>
+                          ) : (
+                            <Image src="/icons/follow-icon.png" alt="Follow" width={16} height={16} className="mr-2" />
+                          )}
+                          {isFollowing ? "Following" : "Follow"}
+                        </Button>
+                        <Button
+                          variant="link"
+                          className={cn("text-xs", isBlocked && "text-red-500")}
+                          onClick={toggleBlock}
+                          disabled={isBlockLoading}
+                        >
+                          {isBlockLoading ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent mr-2"></div>
+                          ) : null}
+                          {isBlocked ? "Unblock" : "Block"}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center text-xs text-slate-500 mt-2">
                     <span className="mr-3">{profile?.isOnline ? "Online" : "Offline"}</span>
@@ -486,9 +487,7 @@ export default function AdvertiserProfilePage() {
         </div>
         <div>
           <div className="flex items-center text-xs text-slate-500">Trade volume (30d)</div>
-          <div className="font-bold mt-1">
-            {`USD ${profile?.stats.tradeVolume.amount.toFixed(2)}`}
-          </div>
+          <div className="font-bold mt-1">{`USD ${profile?.stats.tradeVolume.amount.toFixed(2)}`}</div>
         </div>
       </div>
 
@@ -512,8 +511,8 @@ export default function AdvertiserProfilePage() {
           <div className="container mx-auto pb-4">
             <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "buy" | "sell")}>
               <TabsList>
-                <TabsTrigger value="buy">Buy Ads</TabsTrigger>
-                <TabsTrigger value="sell">Sell Ads</TabsTrigger>
+                <TabsTrigger value="sell">Buy Ads</TabsTrigger>
+                <TabsTrigger value="buy">Sell Ads</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
@@ -564,7 +563,7 @@ export default function AdvertiserProfilePage() {
                           onClick={() => handleOrderClick(ad, activeTab === "buy" ? "buy" : "sell")}
                           className="rounded-full bg-[#00C390] hover:bg-[#00B380]"
                         >
-                          {activeTab === "buy" ? "Buy" : "Sell"} {ad.account_currency}
+                          {activeTab === "buy" ? "Sell" : "Buy"} {ad.account_currency}
                         </Button>
                       )}
                     </div>
@@ -621,11 +620,11 @@ export default function AdvertiserProfilePage() {
                           <TableCell className="py-4 px-4 text-right">
                             {CURRENT_USER.id != ad.user.id && (
                               <Button
-                                variant={ad.type === "buy" ? "default" : "destructive"}
+                                variant={ad.type === "buy" ? "destructive" : "default"}
                                 size="sm"
                                 onClick={() => handleOrderClick(ad, ad.type === "buy" ? "buy" : "sell")}
                               >
-                                {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
+                                {activeTab === "buy" ? "Sell" : "Buy"} {ad.account_currency}
                               </Button>
                             )}
                           </TableCell>
