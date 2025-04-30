@@ -542,7 +542,7 @@ export default function BuySellPage() {
                         <TableCell className="py-4 px-4 text-right">
                           {USER.id != ad.user.id && (
                             <Button
-                              variant={ad.type === "buy" ? "destructive" : "default"}
+                              variant={ad.type === "buy" ? "destructive" : "secondary"}
                               size="sm"
                               onClick={() => handleOrderClick(ad)}
                             >
