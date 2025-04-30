@@ -375,6 +375,7 @@ export default function AdvertiserProfilePage() {
                         <Button
                           onClick={toggleFollow}
                           variant={isFollowing ? "default" : "outline"}
+                          size="sm"
                           className={cn(
                             "text-xs",
                             isFollowing ? "bg-[#00D0FF] hover:bg-[#00D0FF] text-[#000]" : "border-slate-300",
@@ -389,7 +390,8 @@ export default function AdvertiserProfilePage() {
                           {isFollowing ? "Following" : "Follow"}
                         </Button>
                         <Button
-                          variant="link"
+                          variant="ghost"
+                          size="sm"
                           className={cn("text-xs", isBlocked && "text-red-500")}
                           onClick={toggleBlock}
                           disabled={isBlockLoading}
@@ -544,13 +546,12 @@ export default function AdvertiserProfilePage() {
                         {ad.payment_method_names?.map((method, index) => (
                           <div key={index} className="flex items-center">
                             <div
-                              className={`h-2 w-2 rounded-full mr-1 ${
-                                method.toLowerCase().includes("bank")
-                                  ? "bg-green-500"
-                                  : method.toLowerCase().includes("skrill")
-                                    ? "bg-blue-500"
-                                    : "bg-yellow-500"
-                              }`}
+                              className={`h-2 w-2 rounded-full mr-1 ${method.toLowerCase().includes("bank")
+                                ? "bg-green-500"
+                                : method.toLowerCase().includes("skrill")
+                                  ? "bg-blue-500"
+                                  : "bg-yellow-500"
+                                }`}
                             ></div>
                             <span className="text-sm">{method}</span>
                           </div>
@@ -604,13 +605,12 @@ export default function AdvertiserProfilePage() {
                               {ad.payment_method_names?.map((method, index) => (
                                 <div key={index} className="flex items-center">
                                   <div
-                                    className={`h-2 w-2 rounded-full mr-1 ${
-                                      method.toLowerCase().includes("bank")
-                                        ? "bg-green-500"
-                                        : method.toLowerCase().includes("skrill")
-                                          ? "bg-blue-500"
-                                          : "bg-yellow-500"
-                                    }`}
+                                    className={`h-2 w-2 rounded-full mr-1 ${method.toLowerCase().includes("bank")
+                                      ? "bg-green-500"
+                                      : method.toLowerCase().includes("skrill")
+                                        ? "bg-blue-500"
+                                        : "bg-yellow-500"
+                                      }`}
                                   ></div>
                                   <span className="text-sm">{method}</span>
                                 </div>
@@ -620,7 +620,7 @@ export default function AdvertiserProfilePage() {
                           <TableCell className="py-4 px-4 text-right">
                             {CURRENT_USER.id != ad.user.id && (
                               <Button
-                                variant={ad.type === "buy" ? "destructive" : "default"}
+                                variant={ad.type === "buy" ? "destructive" : "secondary"}
                                 size="sm"
                                 onClick={() => handleOrderClick(ad, ad.type === "buy" ? "buy" : "sell")}
                               >
