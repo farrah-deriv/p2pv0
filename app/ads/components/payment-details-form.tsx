@@ -4,11 +4,12 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import type { AdFormData } from "../types"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { Check, ChevronDown, ChevronUp } from "lucide-react"
+import { Check, ChevronDown, ChevronUp, Search } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea" // Import the core Textarea component
+import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 import PaymentMethodBottomSheet from "./payment-method-bottom-sheet"
+import { Button } from "@/components/ui/button"
 
 interface PaymentDetailsFormProps {
   onBack: () => void
@@ -32,56 +33,43 @@ export default function PaymentDetailsForm({
   const isMobile = useIsMobile()
   const [paymentMethods, setPaymentMethods] = useState<string[]>(initialData.paymentMethods || [])
   const [instructions, setInstructions] = useState(() => {
-    console.log("Initializing instructions with:", initialData.instructions)
     return initialData.instructions || ""
   })
   const [touched, setTouched] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
-  // Available payment methods
   const availablePaymentMethods = ["Bank Transfer", "PayPal", "Wise", "Neteller", "Skrill", "Alipay", "WeChat Pay"]
 
-  // Maximum number of payment methods allowed
+  const filteredPaymentMethods = availablePaymentMethods.filter((method) =>
+    method.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
+
   const MAX_PAYMENT_METHODS = 3
 
-  // Notify parent component when bottom sheet state changes
   useEffect(() => {
     if (onBottomSheetOpenChange) {
       onBottomSheetOpenChange(bottomSheetOpen)
     }
   }, [bottomSheetOpen, onBottomSheetOpenChange])
 
-  // Add logging to debug instructions initialization
-  console.log("PaymentDetailsForm initialData:", initialData)
-  console.log("Initial instructions value:", initialData.instructions)
-
-  // Update state when initialData changes (important for edit mode)
   useEffect(() => {
     if (initialData) {
-      console.log("initialData changed in PaymentDetailsForm:", initialData)
-
       if (initialData.paymentMethods) {
-        console.log("Setting payment methods:", initialData.paymentMethods)
         setPaymentMethods(initialData.paymentMethods)
       }
 
       if (initialData.instructions !== undefined) {
-        console.log("Updating instructions to:", initialData.instructions)
         setInstructions(initialData.instructions)
-      } else {
-        console.log("initialData.instructions is undefined")
       }
     }
   }, [initialData])
 
-  // First, modify the isFormValid function to not require payment methods for "sell" ads
   const isFormValid = () => {
-    // If it's a sell ad, we don't need payment methods
     if (initialData.type === "sell") {
       return true
     }
-    // For buy ads, we still require at least one payment method
     return paymentMethods.length > 0
   }
 
@@ -89,7 +77,6 @@ export default function PaymentDetailsForm({
     e.preventDefault()
     setTouched(true)
 
-    // Check if form is valid
     const formValid = isFormValid()
     const errors = !formValid ? { paymentMethods: "At least one payment method is required" } : undefined
 
@@ -98,9 +85,6 @@ export default function PaymentDetailsForm({
       instructions,
     }
 
-    console.log("Submitting form data:", formData)
-
-    // If form is valid, submit; otherwise, pass errors
     if (formValid) {
       onSubmit(formData)
     } else {
@@ -112,24 +96,19 @@ export default function PaymentDetailsForm({
     setTouched(true)
 
     if (paymentMethods.includes(method)) {
-      // Remove the method if it's already selected
       setPaymentMethods(paymentMethods.filter((m) => m !== method))
     } else if (paymentMethods.length < MAX_PAYMENT_METHODS) {
-      // Add the method if we haven't reached the maximum
       setPaymentMethods([...paymentMethods, method])
     }
   }
 
-  // Handle payment methods selection from bottom sheet
   const handleSelectPaymentMethods = (methods: string[]) => {
     setTouched(true)
     setPaymentMethods(methods)
   }
 
-  // Handle bottom sheet open/close
   const handleOpenBottomSheet = () => {
     setBottomSheetOpen(true)
-    // Notify parent component about the state change
     if (onBottomSheetOpenChange) {
       onBottomSheetOpenChange(true)
     }
@@ -137,22 +116,17 @@ export default function PaymentDetailsForm({
 
   const handleCloseBottomSheet = () => {
     setBottomSheetOpen(false)
-    // Notify parent component about the state change
     if (onBottomSheetOpenChange) {
       onBottomSheetOpenChange(false)
     }
   }
 
-  // Check if a method is selected
   const isMethodSelected = (method: string) => paymentMethods.includes(method)
 
-  // Check if we've reached the maximum number of selections
   const isMaxReached = paymentMethods.length >= MAX_PAYMENT_METHODS
 
-  // Update the useEffect for validation to account for the ad type
   useEffect(() => {
     const isValid = initialData.type === "sell" ? true : paymentMethods.length > 0
-    // Use a custom event to communicate the form state to the parent
     const event = new CustomEvent("paymentFormValidationChange", {
       bubbles: true,
       detail: {
@@ -180,26 +154,28 @@ export default function PaymentDetailsForm({
                   {isMobile ? (
                     <>
                       <Button
+                        type="button"
                         variant="outline"
-                        className="w-full h-[48px] rounded-[4px] border border-gray-300 justify-between text-left"
+                        className={`w-full h-[56px] rounded-[8px] border border-[1px] gap-[8px] px-[16px] justify-between text-left ${bottomSheetOpen ? "border-black" : "border-gray-300"
+                          }`}
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
                           handleOpenBottomSheet()
                         }}
                       >
-                        {paymentMethods.length > 0 ? `Selected (${paymentMethods.length})` : "Select"}
-                        <ChevronDown className="h-4 w-4 opacity-70" />
+                        <span className="font-normal text-base">
+                          {paymentMethods.length > 0 ? `Selected (${paymentMethods.length})` : "Select payment method"}
+                        </span>
+                        <ChevronDown className="h-4 w-4 opacity-70 ml-auto" />
                       </Button>
 
                       <PaymentMethodBottomSheet
                         isOpen={bottomSheetOpen}
                         onClose={() => {
-                          // Just close the bottom sheet without triggering any other actions
                           handleCloseBottomSheet()
                         }}
                         onSelect={(methods) => {
-                          // Update the selected methods and close the bottom sheet
                           handleSelectPaymentMethods(methods)
                           handleCloseBottomSheet()
                         }}
@@ -210,25 +186,50 @@ export default function PaymentDetailsForm({
                     </>
                   ) : (
                     <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full md:w-[360px] h-[48px] rounded-[4px] border border-gray-300 justify-between text-left"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            setDropdownOpen(!dropdownOpen)
-                          }}
-                        >
-                          {paymentMethods.length > 0 ? `Selected (${paymentMethods.length})` : "Select"}
-                          {dropdownOpen ? (
-                            <ChevronUp className="h-4 w-4 opacity-70" />
-                          ) : (
-                            <ChevronDown className="h-4 w-4 opacity-70" />
-                          )}
-                        </Button>
+                      <DropdownMenuTrigger
+                        className={`w-full md:w-[360px] h-[56px] rounded-lg border ${dropdownOpen ? "border-black" : "border-gray-300"
+                          } justify-between text-left focus:outline-none focus-visible:outline-none focus:ring-0 relative flex items-center px-4`}
+                      >
+                        {dropdownOpen ? (
+                          <div className="flex flex-col items-start">
+                            <span className="font-medium text-sm text-black">Select payment method</span>
+                            <span className="text-gray-400 text-sm">{`Selected (${paymentMethods.length})`}</span>
+                          </div>
+                        ) : (
+                          <span className="font-normal text-base">
+                            {paymentMethods.length > 0
+                              ? `Selected (${paymentMethods.length})`
+                              : "Select payment method"}
+                          </span>
+                        )}
+                        {dropdownOpen ? (
+                          <ChevronUp className="h-4 w-4 opacity-70 absolute top-4 right-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 opacity-70 ml-auto" />
+                        )}
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-[360px] min-w-[360px]">
-                        {availablePaymentMethods.map((method) => (
+                      <DropdownMenuContent className="w-[360px] min-w-[360px] shadow-dropdown">
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => e.stopPropagation()}
+                          className="relative p-1"
+                        >
+                          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-black z-10" />
+                          <Input
+                            type="text"
+                            placeholder="Search"
+                            value={searchQuery}
+                            onChange={(e) => {
+                              e.stopPropagation()
+                              setSearchQuery(e.target.value)
+                            }}
+                            onKeyDown={(e) => e.stopPropagation()}
+                            variant="secondary"
+                            onClick={(e) => e.stopPropagation()}
+                            autoComplete="off"
+                          />
+                        </div>
+                        {filteredPaymentMethods.map((method) => (
                           <DropdownMenuItem
                             key={method}
                             onSelect={(e) => {
@@ -236,14 +237,12 @@ export default function PaymentDetailsForm({
                               togglePaymentMethod(method)
                             }}
                             disabled={!isMethodSelected(method) && isMaxReached}
-                            className={`flex items-center gap-2 px-3 py-2 cursor-pointer ${
-                              !isMethodSelected(method) && isMaxReached ? "opacity-50" : ""
-                            }`}
+                            className={`flex items-center gap-2 px-3 py-2 cursor-pointer ${!isMethodSelected(method) && isMaxReached ? "opacity-50" : ""
+                              }`}
                           >
                             <div
-                              className={`w-5 h-5 flex items-center justify-center rounded border ${
-                                isMethodSelected(method) ? "bg-[#00D2FF] border-[#00D2FF]" : "border-gray-300"
-                              }`}
+                              className={`w-5 h-5 flex items-center justify-center rounded border ${isMethodSelected(method) ? "bg-[#00D2FF] border-[#00D2FF]" : "border-gray-300"
+                                }`}
                             >
                               {isMethodSelected(method) && <Check className="h-3 w-3 text-white" />}
                             </div>
@@ -272,7 +271,6 @@ export default function PaymentDetailsForm({
               <Textarea
                 value={instructions}
                 onChange={(e) => {
-                  console.log("Textarea onChange, new value:", e.target.value)
                   setInstructions(e.target.value)
                 }}
                 placeholder="Enter your trade instructions"

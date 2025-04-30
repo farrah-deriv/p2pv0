@@ -9,6 +9,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      opacity: {
+        24: "0.24",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -134,6 +137,7 @@ const config: Config = {
           icon: "#c40000",
           bg: "#fee2e2",
         },
+        "default-button-text": "#002A33",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -190,3 +194,4 @@ const config: Config = {
 }
 
 export default config
+
