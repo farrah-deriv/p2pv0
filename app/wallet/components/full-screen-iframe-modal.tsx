@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { WALLETS } from "@/lib/local-variables"
+import { Button } from "@/components/ui/button"
 
 interface IframeResponse {
   iframe_url: string
@@ -80,14 +81,16 @@ export default function FullScreenIframeModal({ isOpen, onClose }: FullScreenIfr
   return createPortal(
     <div className="fixed inset-0 z-[9999] bg-background flex flex-col">
       <div className="flex h-16 px-4 py-1 justify-between items-center border-b border-border bg-background z-10">
-        <h1 className="text-lg font-bold text-black leading-relaxed">Deposit to P2P</h1>
-        <button
+        <h1 className="text-lg font-bold text-black leading-7">Deposit to P2P</h1>
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={handleClose}
-          className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-accent"
+          className="flex w-8 h-8 items-center justify-center rounded-full aspect-square overflow-hidden flex-shrink-0 min-w-[2rem] min-h-[2rem] max-w-[2rem] max-h-[2rem] bg-[#EFF3F5] hover:bg-[#EFF3F5] p-0"
           aria-label="Close"
         >
-          <X className="h-6 w-6" />
-        </button>
+          <X className="h-4 w-4" />
+        </Button>
       </div>
 
       <div className="flex-1 w-full relative">
@@ -105,12 +108,13 @@ export default function FullScreenIframeModal({ isOpen, onClose }: FullScreenIfr
             <div className="text-destructive text-center p-4">
               <p className="text-lg font-semibold">Error loading deposit page</p>
               <p className="mt-2">{error}</p>
-              <button
+              <Button
+                variant="default"
                 onClick={() => window.location.reload()}
                 className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
               >
                 Try Again
-              </button>
+              </Button>
             </div>
           </div>
         )}

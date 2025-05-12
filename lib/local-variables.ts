@@ -21,10 +21,10 @@ export const API = {
 }
 
 export const WALLETS = {
-  cashierUrl: "https://deriv-app.xano.io/api:_y_PtoVK/cashier/url",
+  cashierUrl: process.env.NEXT_PUBLIC_CASHIER_URL,
   defaultParams: {
-    client_id: "e104c979-b10c-4727-b233-19064314c793",
-    wallet_id: "e104c979-b10c-4727-b233-19064314c793",
+    client_id: process.env.NEXT_PUBLIC_WALLETS_CLIENT_ID,
+    wallet_id: process.env.NEXT_PUBLIC_WALLETS_ID,
     brand: "uae",
     operation: "DEPOSIT",
     currency: "USD",
@@ -49,8 +49,8 @@ export const AUTH = {
 }
 
 export const NOTIFICATIONS = {
-  applicationId: "H8Lp22BoI5C_",
-  subscriberHashUrl: "https://deriv-app.xano.io/api:Z9LpLrma/notification/v1/subscribers",
+  applicationId: process.env.NEXT_PUBLIC_NOTIFICATION_APPLICATION_ID,
+  subscriberHashUrl: process.env.NEXT_PUBLIC_NOTIFICATION_URL,
 }
 
 export default {
@@ -61,3 +61,12 @@ export default {
   NOTIFICATIONS,
   WALLETS,
 }
+
+
+
+
+
+
+
+
+
