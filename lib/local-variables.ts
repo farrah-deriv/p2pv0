@@ -1,17 +1,9 @@
-/**
- * Local variables for the P2P Trading Platform
- * This file contains configuration values and user information
- * that can be accessed throughout the application.
- */
-
-// User information
 export const USER = {
   id: process.env.NEXT_PUBLIC_USER_ID,
   nickname: process.env.NEXT_PUBLIC_USER_NICKNAME,
   token: process.env.NEXT_PUBLIC_USER_TOKEN,
 }
 
-// API endpoints
 export const API = {
   baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
   socketUrl: process.env.NEXT_PUBLIC_API_SOCKET_URL,
@@ -28,7 +20,17 @@ export const API = {
   },
 }
 
-// Application settings
+export const WALLETS = {
+  cashierUrl: "https://deriv-app.xano.io/api:_y_PtoVK/cashier/url",
+  defaultParams: {
+    client_id: "e104c979-b10c-4727-b233-19064314c793",
+    wallet_id: "e104c979-b10c-4727-b233-19064314c793",
+    brand: "uae",
+    operation: "DEPOSIT",
+    currency: "USD",
+  },
+}
+
 export const APP_SETTINGS = {
   defaultCurrency: "USD",
   supportedCurrencies: ["USD", "EUR", "GBP", "IDR"],
@@ -36,7 +38,6 @@ export const APP_SETTINGS = {
   supportedLanguages: ["EN", "ES", "FR", "ID"],
 }
 
-// Auth helper functions
 export const AUTH = {
   getAuthHeader: () => ({
     Authorization: `Bearer ${USER.token}`,
@@ -47,10 +48,16 @@ export const AUTH = {
   isAuthenticated: () => !!USER.token,
 }
 
-// Export all variables as a single object for convenience
+export const NOTIFICATIONS = {
+  applicationId: "H8Lp22BoI5C_",
+  subscriberHashUrl: "https://deriv-app.xano.io/api:Z9LpLrma/notification/v1/subscribers",
+}
+
 export default {
   USER,
   API,
   APP_SETTINGS,
   AUTH,
+  NOTIFICATIONS,
+  WALLETS,
 }

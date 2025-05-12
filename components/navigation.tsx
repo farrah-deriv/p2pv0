@@ -27,6 +27,7 @@ export default function Navigation({
     { name: "Buy/Sell", href: "/" },
     { name: "Orders", href: "/orders" },
     { name: "My ads", href: "/ads" },
+    { name: "Wallet", href: "/wallet" },
     { name: "Profile", href: "/profile" },
   ]
 

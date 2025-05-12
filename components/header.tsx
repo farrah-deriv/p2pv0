@@ -5,6 +5,7 @@ import Image from "next/image"
 import { User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { usePathname } from "next/navigation"
+import { NovuNotifications } from "./novu-notifications"
 
 export default function Header() {
   const pathname = usePathname()
@@ -13,7 +14,7 @@ export default function Header() {
     { name: "Hub", href: "https://hub.deriv.com/tradershub/home" },
     { name: "CFDs", href: "https://hub.deriv.com/tradershub/cfds" },
     { name: "Options", href: "https://hub.deriv.com/tradershub/options" },
-    { name: "Wallets", href: "/" },
+    { name: "Wallets", href: "/wallet" },
   ]
 
   return (
@@ -51,6 +52,9 @@ export default function Header() {
             </nav>
           </div>
           <div className="flex items-center space-x-4">
+            <div className="text-slate-600 hover:text-slate-700">
+              <NovuNotifications />
+            </div>
             <Link href="/profile" className="text-slate-600 hover:text-slate-700">
               <User className="h-5 w-5" />
             </Link>
@@ -60,4 +64,3 @@ export default function Header() {
     </header>
   )
 }
-
