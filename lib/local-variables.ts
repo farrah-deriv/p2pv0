@@ -61,12 +61,3 @@ export default {
   NOTIFICATIONS,
   WALLETS,
 }
-
-
-
-
-
-
-
-
-
