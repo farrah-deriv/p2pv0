@@ -1,6 +1,7 @@
 "use client"
 import { X } from "lucide-react"
 import DepositOptions from "./deposit-options"
+import { Button } from "@/components/ui/button"
 
 interface DepositBottomSheetProps {
   isOpen: boolean
@@ -21,15 +22,15 @@ export default function DepositBottomSheet({ isOpen, onClose, onDirectDepositCli
         <div className="p-4 pb-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="overflow-hidden text-black truncate text-xl font-bold leading-[30px]">Deposit</h2>
-            <div
+            <Button
               onClick={onClose}
-              className="p-1 rounded-full hover:bg-accent cursor-pointer"
+              variant="ghost"
+              className="p-1 bg-white hover:bg-white text-black"
+              size="sm"
               aria-label="Close"
-              role="button"
-              tabIndex={0}
             >
-              <X className="w-6 h-6" />
-            </div>
+              <X className="h-4 w-4" />
+            </Button>
           </div>
 
           <div className="space-y-4">

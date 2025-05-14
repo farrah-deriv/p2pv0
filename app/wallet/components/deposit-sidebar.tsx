@@ -1,6 +1,7 @@
 "use client"
 import { X } from "lucide-react"
 import DepositOptions from "./deposit-options"
+import { Button } from "@/components/ui/button"
 
 interface DepositSidebarProps {
   isOpen: boolean
@@ -16,15 +17,15 @@ export default function DepositSidebar({ isOpen, onClose, onDirectDepositClick }
       <div className="bg-background h-full w-[400px] flex flex-col shadow-lg" onClick={(e) => e.stopPropagation()}>
         <div className="p-4 flex justify-between items-center border-b border-border">
           <h2 className="overflow-hidden text-black truncate text-xl font-bold leading-[30px]">Deposit</h2>
-          <div
+          <Button
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-accent cursor-pointer w-12 h-12 flex items-center justify-center"
+            variant="ghost"
+            className="p-1 bg-white hover:bg-white text-black"
+            size="sm"
             aria-label="Close"
-            role="button"
-            tabIndex={0}
           >
-            <X className="w-6 h-6" />
-          </div>
+            <X className="h-4 w-4" />
+          </Button>
         </div>
 
         <div className="p-4 flex flex-col gap-4 overflow-y-auto">
