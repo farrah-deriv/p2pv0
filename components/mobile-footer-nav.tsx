@@ -9,7 +9,7 @@ export default function MobileFooterNav() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t md:hidden z-40">
-      <div className="grid grid-cols-4 h-16">
+      <div className="grid grid-cols-5 h-16">
         <Link
           href="/"
           className={`flex flex-col items-center justify-center ${pathname === "/" || pathname.startsWith("/advertiser") ? "text-[#00D0FF] font-bold" : "text-slate-700"
@@ -33,7 +33,6 @@ export default function MobileFooterNav() {
           />
           <span className="text-xs mt-1">Buy/Sell</span>
         </Link>
-
         <Link
           href="/orders"
           className={`flex flex-col items-center justify-center ${pathname.startsWith("/orders") ? "text-[#00D0FF] font-bold" : "text-slate-700"
@@ -55,10 +54,9 @@ export default function MobileFooterNav() {
           />
           <span className="text-xs mt-1">Orders</span>
         </Link>
-
         <Link
-          href="/ads"
-          className={`flex flex-col items-center justify-center ${pathname.startsWith("/ads") ? "text-[#00D0FF] font-bold" : "text-slate-700"
+          href="/my-ads"
+          className={`flex flex-col items-center justify-center ${pathname.startsWith("/my-ads") ? "text-[#00D0FF] font-bold" : "text-slate-700"
             }`}
         >
           <Image
@@ -66,9 +64,9 @@ export default function MobileFooterNav() {
             alt="My ads"
             width={20}
             height={20}
-            className={pathname.startsWith("/ads") ? "filter-to-primary" : "brightness-50 opacity-70"}
+            className={pathname.startsWith("/my-ads") ? "filter-to-primary" : "brightness-50 opacity-70"}
             style={
-              pathname.startsWith("/ads")
+              pathname.startsWith("/my-ads")
                 ? {
                   filter: "invert(67%) sepia(87%) saturate(1231%) hue-rotate(152deg) brightness(103%) contrast(103%)",
                 }
@@ -77,7 +75,27 @@ export default function MobileFooterNav() {
           />
           <span className="text-xs mt-1">My ads</span>
         </Link>
-
+        <Link
+          href="/wallet"
+          className={`flex flex-col items-center justify-center ${pathname.startsWith("/wallet") ? "text-[#00D0FF] font-bold" : "text-slate-700"
+            }`}
+        >
+          <Image
+            src="/icons/wallet-icon.png"
+            alt="Wallet"
+            width={20}
+            height={20}
+            className={pathname.startsWith("/wallet") ? "filter-to-primary" : "brightness-50 opacity-70"}
+            style={
+              pathname.startsWith("/wallet")
+                ? {
+                  filter: "invert(67%) sepia(87%) saturate(1231%) hue-rotate(152deg) brightness(103%) contrast(103%)",
+                }
+                : {}
+            }
+          />
+          <span className="text-xs mt-1">Wallet</span>
+        </Link>
         <Link
           href="/profile"
           className={`flex flex-col items-center justify-center ${pathname.startsWith("/profile") ? "text-[#00D0FF] font-bold" : "text-slate-700"

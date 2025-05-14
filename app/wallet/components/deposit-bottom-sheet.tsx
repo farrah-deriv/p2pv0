@@ -21,9 +21,15 @@ export default function DepositBottomSheet({ isOpen, onClose, onDirectDepositCli
         <div className="p-4 pb-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="overflow-hidden text-black truncate text-xl font-bold leading-[30px]">Deposit</h2>
-            <button onClick={onClose} className="p-1 rounded-full hover:bg-accent" aria-label="Close">
+            <div
+              onClick={onClose}
+              className="p-1 rounded-full hover:bg-accent cursor-pointer"
+              aria-label="Close"
+              role="button"
+              tabIndex={0}
+            >
               <X className="w-6 h-6" />
-            </button>
+            </div>
           </div>
 
           <div className="space-y-4">
