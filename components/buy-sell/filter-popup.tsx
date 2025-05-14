@@ -24,7 +24,6 @@ export default function FilterPopup({ isOpen, onClose, onApply, initialFilters }
     onApply(filters)
   }
 
-  // Make sure the checkbox correctly toggles the fromFollowing state
   const handleReset = () => {
     setFilters({ fromFollowing: false })
     onApply({ fromFollowing: false })
