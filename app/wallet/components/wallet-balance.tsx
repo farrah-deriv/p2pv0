@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Plus, Minus, RefreshCw } from "lucide-react"
 import Image from "next/image"
 import DepositBottomSheet from "./deposit-bottom-sheet"
@@ -9,6 +9,7 @@ import FullScreenIframeModal from "./full-screen-iframe-modal"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { USER, API, AUTH } from "@/lib/local-variables"
 
 interface WalletBalanceProps {
   className?: string
@@ -18,7 +19,52 @@ export default function WalletBalance({ className }: WalletBalanceProps) {
   const [isDepositSheetOpen, setIsDepositSheetOpen] = useState(false)
   const [isDepositSidebarOpen, setIsDepositSidebarOpen] = useState(false)
   const [isIframeModalOpen, setIsIframeModalOpen] = useState(false)
+  const [balance, setBalance] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const isMobile = useIsMobile()
+
+  const fetchBalance = async () => {
+    try {
+      setIsRefreshing(true)
+
+      const userId = USER.id
+      const url = `${API.baseUrl}/users/${userId}`
+
+      const response = await fetch(url, {
+        headers: {
+          ...AUTH.getAuthHeader(),
+          accept: "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user data: ${response.status} ${response.statusText}`)
+      }
+
+      const responseData = await response.json()
+
+      if (responseData && responseData.data) {
+        const data = responseData.data
+        setBalance(data.balances?.USD || 0)
+      }
+
+      setIsLoading(false)
+    } catch (error) {
+      console.error("Error fetching user balance:", error)
+      setIsLoading(false)
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchBalance()
+  }, [])
+
+  const handleRefresh = () => {
+    fetchBalance()
+  }
 
   const handleDepositClick = () => {
     if (isMobile) {
@@ -46,7 +92,21 @@ export default function WalletBalance({ className }: WalletBalanceProps) {
         />
       </div>
 
-      <h1 className="text-[32px] font-black text-black text-center leading-normal">0.00 USD</h1>
+      <div className="relative w-full max-w-md px-4">
+        <h1 className="text-[32px] font-black text-black text-center leading-normal">
+          {isLoading ? "Loading..." : `${balance.toFixed(2)} USD`}
+        </h1>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 min-h-[32px] min-w-[32px] max-h-[32px] max-w-[32px] bg-white hover:bg-white border-0 shadow-none absolute right-12 top-1/2 -translate-y-1/2"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          aria-label="Refresh balance"
+        >
+          <RefreshCw className={cn("h-4 w-4 text-gray-400", isRefreshing && "animate-spin")} />
+        </Button>
+      </div>
       <p className="mt-1 text-sm font-normal text-muted-foreground text-center leading-[22px]">P2P Wallet</p>
 
       <div className="mt-[50px] md:mt-12 flex w-full max-w-md justify-center md:justify-between gap-[50px] md:gap-0 px-4">
