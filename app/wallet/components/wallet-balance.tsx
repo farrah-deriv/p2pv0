@@ -100,7 +100,6 @@ export default function WalletBalance({ className }: WalletBalanceProps) {
           variant="ghost"
           size="sm"
           onClick={handleRefresh}
-          // disabled={isRefreshing}
           aria-label="Refresh balance"
         >
           <RefreshCw className={cn("h-4 w-4 text-gray-400", isRefreshing && "animate-spin")} />
