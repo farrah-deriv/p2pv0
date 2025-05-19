@@ -92,16 +92,15 @@ export default function WalletBalance({ className }: WalletBalanceProps) {
         />
       </div>
 
-      <div className="relative w-full max-w-md px-4">
+      <div className="flex items-center justify-center gap-2">
         <h1 className="text-[32px] font-black text-black text-center leading-normal">
           {isLoading ? "Loading..." : `${balance.toFixed(2)} USD`}
         </h1>
         <Button
-          variant="outline"
-          size="icon"
-          className="h-8 w-8 min-h-[32px] min-w-[32px] max-h-[32px] max-w-[32px] bg-white hover:bg-white border-0 shadow-none absolute right-12 top-1/2 -translate-y-1/2"
+          variant="ghost"
+          size="sm"
           onClick={handleRefresh}
-          disabled={isRefreshing}
+          // disabled={isRefreshing}
           aria-label="Refresh balance"
         >
           <RefreshCw className={cn("h-4 w-4 text-gray-400", isRefreshing && "animate-spin")} />
