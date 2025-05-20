@@ -25,6 +25,7 @@ async function fetchSubscriberHash(subscriberId: string) {
         console.log("Subscriber hash data:", data);
         return data.subscriberHash
     } catch (error) {
+        console.log(error);
         return null
     }
 }

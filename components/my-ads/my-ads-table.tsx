@@ -18,12 +18,12 @@ interface Ad {
     percentage: string
   }
   limits:
-    | {
-        min: number
-        max: number
-        currency: string
-      }
-    | string
+  | {
+    min: number
+    max: number
+    currency: string
+  }
+  | string
   available: {
     current: number
     total: number
@@ -95,17 +95,14 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
       // Parse the limits if it's a string
       let minAmount = 0
       let maxAmount = 0
-      let currency = "USD"
 
       if (typeof ad.limits === "string") {
         const limitsMatch = ad.limits.match(/([A-Z]+) (\d+\.\d+) - (\d+\.\d+)/)
-        currency = limitsMatch ? limitsMatch[1] : "USD"
         minAmount = limitsMatch ? Number.parseFloat(limitsMatch[2]) : 0
         maxAmount = limitsMatch ? Number.parseFloat(limitsMatch[3]) : 0
       } else {
         minAmount = ad.limits.min
         maxAmount = ad.limits.max
-        currency = ad.limits.currency
       }
 
       // Extract rate value from string (e.g., "IDR 14500.0000" -> 14500.0000)

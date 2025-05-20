@@ -14,12 +14,10 @@ import { PlusCircle } from "lucide-react"
 import { USER, API, AUTH } from "@/lib/local-variables"
 
 interface StatsTabsProps {
-  children?: React.ReactNode
   stats?: any
 }
 
-export default function StatsTabs({ children, stats: initialStats }: StatsTabsProps) {
-  const [activeTab, setActiveTab] = useState("stats")
+export default function StatsTabs({ stats: initialStats }: StatsTabsProps) {
   const [showAddPaymentMethodPanel, setShowAddPaymentMethodPanel] = useState(false)
   const [isAddingPaymentMethod, setIsAddingPaymentMethod] = useState(false)
   const [notification, setNotification] = useState<{ show: boolean; message: string }>({
@@ -84,14 +82,6 @@ export default function StatsTabs({ children, stats: initialStats }: StatsTabsPr
             if (!minutes || minutes <= 0) return "N/A"
             const days = Math.floor(minutes / 1440)
             return `${days} days`
-          }
-
-          const totalOrders30d = (data.buy_count_30day || 0) + (data.sell_count_30day || 0)
-          const totalAmount30d = (data.buy_amount_30day || 0) + (data.sell_amount_30day || 0)
-
-          const formatCompletionRate = (rate, count) => {
-            if (rate === null || rate === undefined) return "N/A"
-            return `${rate}% (${count || 0})`
           }
 
           const transformedStats = {
@@ -195,7 +185,7 @@ export default function StatsTabs({ children, stats: initialStats }: StatsTabsPr
       )}
 
       <div className="mb-6">
-        <Tabs defaultValue="stats" onValueChange={setActiveTab}>
+        <Tabs defaultValue="stats">
           <TabsList className="bg-[#F5F5F5] rounded-2xl p-1 h-auto">
             {tabs.map((tab) => (
               <TabsTrigger

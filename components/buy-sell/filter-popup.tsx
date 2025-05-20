@@ -4,7 +4,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 interface FilterPopupProps {
   isOpen: boolean
-  onClose: () => void
   onApply: (filters: FilterOptions) => void
   initialFilters: FilterOptions
 }
@@ -14,20 +13,10 @@ export interface FilterOptions {
   fromFollowing: boolean // When true, this will pass favourites_only: 1 to the API
 }
 
-export default function FilterPopup({ isOpen, onClose, onApply, initialFilters }: FilterPopupProps) {
+export default function FilterPopup({ isOpen, onApply, initialFilters }: FilterPopupProps) {
   const [filters, setFilters] = useState<FilterOptions>(initialFilters)
 
   if (!isOpen) return null
-
-  // Update the handleApply function to ensure it correctly passes the filter state
-  const handleApply = () => {
-    onApply(filters)
-  }
-
-  const handleReset = () => {
-    setFilters({ fromFollowing: false })
-    onApply({ fromFollowing: false })
-  }
 
   return (
     <div className="absolute z-50 mt-1 right-0 top-full" onClick={(e) => e.stopPropagation()}>

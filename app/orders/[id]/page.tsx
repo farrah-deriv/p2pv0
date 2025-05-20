@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter, useParams } from "next/navigation"
+import { useParams } from "next/navigation"
 import { AlertCircle, X, ChevronRight, DollarSign, Clock, Star, ThumbsUp, ThumbsDown } from "lucide-react"
 import Navigation from "@/components/navigation"
 import { Button } from "@/components/ui/button"
@@ -15,7 +15,6 @@ import OrderDetailsSidebar from "@/components/order-details-sidebar"
 import { USER } from "@/lib/local-variables"
 
 export default function OrderDetailsPage() {
-  const router = useRouter()
   const params = useParams()
   const orderId = params.id as string
 
@@ -23,7 +22,6 @@ export default function OrderDetailsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState<string>("--:--")
-  const [message, setMessage] = useState("")
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
   const [isPaymentLoading, setIsPaymentLoading] = useState(false)
   const [isConfirmLoading, setIsConfirmLoading] = useState(false)
@@ -218,9 +216,7 @@ export default function OrderDetailsPage() {
 
   // Safely access properties with fallbacks
   const orderType = order.type === "buy" ? "Buy" : "Sell"
-  const orderStatus = order.status || "Pending"
   const advertAccountCurrency = order.advert?.account_currency
-  const advertPaymentCurrency = order.advert?.payment_currency
 
   // Safely access user properties
   const counterpartyNickname = order.advert.user.id == USER.id ? order?.user?.nickname : order?.advert?.user?.nickname

@@ -3,14 +3,12 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import type { AdFormData } from "../types"
-import { useIsMobile } from "@/hooks/use-mobile"
 import { CurrencyInput } from "./ui/currency-input"
 import { RateInput } from "./ui/rate-input"
 import { TradeTypeSelector } from "./ui/trade-type-selector"
 
 interface AdDetailsFormProps {
   onNext: (data: Partial<AdFormData>, errors?: ValidationErrors) => void
-  onClose: () => void
   initialData?: Partial<AdFormData>
   isEditMode?: boolean
 }
@@ -22,9 +20,7 @@ interface ValidationErrors {
   maxAmount?: string
 }
 
-export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode }: AdDetailsFormProps) {
-  const isMobile = useIsMobile()
-
+export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDetailsFormProps) {
   // Initialize state with initialData values or defaults
   const [type, setType] = useState<"buy" | "sell">(initialData?.type || "buy")
   const [totalAmount, setTotalAmount] = useState(initialData?.totalAmount?.toString() || "")

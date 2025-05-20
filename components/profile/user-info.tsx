@@ -29,7 +29,6 @@ export default function UserInfo({
   isVerified,
 }: UserInfoProps) {
   const [nickname, setNickname] = useState(username)
-  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     try {

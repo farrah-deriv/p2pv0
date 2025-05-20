@@ -12,22 +12,14 @@ import PaymentMethodBottomSheet from "./payment-method-bottom-sheet"
 import { Button } from "@/components/ui/button"
 
 interface PaymentDetailsFormProps {
-  onBack: () => void
   onSubmit: (data: Partial<AdFormData>, errors?: Record<string, string>) => void
-  onClose: () => void
   initialData: Partial<AdFormData>
-  isSubmitting?: boolean
-  isEditMode?: boolean
   onBottomSheetOpenChange?: (isOpen: boolean) => void
 }
 
 export default function PaymentDetailsForm({
-  onBack,
   onSubmit,
-  onClose,
   initialData,
-  isSubmitting = false,
-  isEditMode = false,
   onBottomSheetOpenChange,
 }: PaymentDetailsFormProps) {
   const isMobile = useIsMobile()
@@ -279,7 +271,7 @@ export default function PaymentDetailsForm({
               />
               <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
                 <span>
-                  This information will be visible to everyone. Don't share your phone number or personal details.
+                  This information will be visible to everyone. Don&rsquo;t share your phone number or personal details.
                 </span>
                 <span>{instructions.length}/300</span>
               </div>

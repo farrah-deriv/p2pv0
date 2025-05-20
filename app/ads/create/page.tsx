@@ -31,13 +31,10 @@ export default function CreateAdPage() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
   const [adFormValid, setAdFormValid] = useState(false)
   const [paymentFormValid, setPaymentFormValid] = useState(false)
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false)
-
-  const [showUpdatedBanner, setShowUpdatedBanner] = useState(false)
 
   const formDataRef = useRef<Partial<AdFormData>>({})
 
@@ -160,10 +157,6 @@ export default function CreateAdPage() {
 
         const updateDataStr = localStorage.getItem("adUpdateSuccess")
         if (updateDataStr) {
-          setShowUpdatedBanner(true)
-          setTimeout(() => {
-            setShowUpdatedBanner(false)
-          }, 3000)
           localStorage.removeItem("adUpdateSuccess")
         }
       } catch (err) {
@@ -178,8 +171,6 @@ export default function CreateAdPage() {
     const updatedData = { ...formData, ...data }
     setFormData(updatedData)
     formDataRef.current = updatedData
-
-    setFormErrors(errors || {})
 
     if (!errors || Object.keys(errors).length === 0) {
       setCurrentStep(1)
@@ -240,8 +231,6 @@ export default function CreateAdPage() {
   const handlePaymentDetailsSubmit = async (data: Partial<AdFormData>, errors?: Record<string, string>) => {
     const finalData = { ...formData, ...data }
     formDataRef.current = finalData
-
-    setFormErrors(errors || {})
 
     if (errors && Object.keys(errors).length > 0) {
       return

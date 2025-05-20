@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
+import Image from "next/image"
 import { Paperclip, Send, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,16 +30,14 @@ type OrderChatProps = {
 export default function OrderChat({ orderId, counterpartyName, counterpartyInitial }: OrderChatProps) {
   const [message, setMessage] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
-  const [lastSeen, setLastSeen] = useState<Date>(new Date())
   const [isSending, setIsSending] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const maxLength = 300
 
   // Use our custom WebSocket hook
-  const { isConnected, joinChannel, getChatHistory, sendMessage } = useWebSocket({
+  const { isConnected, joinChannel, getChatHistory } = useWebSocket({
     onMessage: (data) => {
       // Handle incoming messages
       if (data && data.payload && data.payload.data) {
@@ -92,6 +91,7 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
       }
     } catch (error) {
       // Silent error handling
+      console.log(error);
     } finally {
       setIsSending(false)
     }
@@ -108,7 +108,6 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
     const files = e.target.files
     if (files && files.length > 0) {
       const file = files[0]
-      setSelectedFile(file)
 
       // Show a loading state
       setIsSending(true)
@@ -157,7 +156,7 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
         </div>
         <div>
           <div className="font-medium">{counterpartyName}</div>
-          <div className="text-sm text-slate-500">Seen {formatLastSeen(lastSeen)}</div>
+          <div className="text-sm text-slate-500">Seen {formatLastSeen(new Date())}</div>
         </div>
       </div>
 
@@ -191,7 +190,7 @@ export default function OrderChat({ orderId, counterpartyName, counterpartyIniti
           messages.map((msg) => (
             <div key={msg.id} className={`flex ${msg.sender_is_self ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[80%] rounded-lg p-3 ${msg.sender_is_self ? "bg-blue-50" : "bg-slate-100"}`}>
-                {msg.attachment && <img src={msg.attachment.url || "/placeholder.svg"} />}
+                {msg.attachment && <Image alt={msg.attachment.name} src={msg.attachment.url || "/placeholder.svg"} />}
                 <div className="break-words">{msg.message}</div>
                 <div className={`text-xs mt-1 ${msg.sender_is_self ? "text-blue-500" : "text-slate-500"}`}>
                   {formatMessageTime(msg.time)}
