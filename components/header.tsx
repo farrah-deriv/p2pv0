@@ -4,12 +4,9 @@ import Link from "next/link"
 import Image from "next/image"
 import { User } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { usePathname } from "next/navigation"
 import { NovuNotifications } from "./novu-notifications"
 
 export default function Header() {
-  const pathname = usePathname()
-
   const navItems = [
     { name: "Hub", href: "https://hub.deriv.com/tradershub/home" },
     { name: "CFDs", href: "https://hub.deriv.com/tradershub/cfds" },

@@ -7,7 +7,6 @@ import { MoreVertical, Edit, Trash } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { API, AUTH } from "@/lib/local-variables"
 import { CustomShimmer } from "./ui/custom-shimmer"
-import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import CustomStatusModal from "./ui/custom-status-modal"
 import { ProfileAPI } from "../api"
 import CustomNotificationBanner from "./ui/custom-notification-banner"
@@ -32,7 +31,6 @@ export default function PaymentMethodsTab() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const isMobile = useIsMobile()
 
   // Add these new state variables for modals
   const [deleteConfirmModal, setDeleteConfirmModal] = useState({
@@ -355,7 +353,6 @@ export default function PaymentMethodsTab() {
   // Group payment methods by category
   const bankTransfers = paymentMethods.filter((method) => method.category === "bank_transfer")
   const eWallets = paymentMethods.filter((method) => method.category === "e_wallet")
-  const others = paymentMethods.filter((method) => method.category === "other")
 
   // Get the appropriate icon for a payment method
   const getBankIcon = () => (
@@ -386,51 +383,6 @@ export default function PaymentMethodsTab() {
       </svg>
     </div>
   )
-
-  const getOtherIcon = () => (
-    <div className="w-10 h-10 flex items-center justify-center text-gray-600">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M3 6H21V18H3V6Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M3 11H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </div>
-  )
-
-  // Format account details for display
-  const formatAccountDetails = (method: PaymentMethod) => {
-    if (!method || !method.details) {
-      return ""
-    }
-
-    // Extract account value from the nested structure
-    let accountValue = ""
-    if (method.details.account) {
-      if (typeof method.details.account === "object" && "value" in method.details.account) {
-        accountValue = method.details.account.value
-      } else if (typeof method.details.account === "string") {
-        accountValue = method.details.account
-      }
-    }
-
-    return accountValue ? `*${accountValue}` : "*1234"
-  }
-
-  // Add a new helper function to extract display values from nested objects
-  const getDisplayValue = (field: any): string => {
-    if (!field) return ""
-
-    if (typeof field === "object") {
-      if ("value" in field) {
-        return field.value
-      } else if (field.value && typeof field.value === "object" && "value" in field.value) {
-        return field.value.value
-      }
-    } else if (typeof field === "string") {
-      return field
-    }
-
-    return ""
-  }
 
   // Render loading state (shimmer)
   if (isLoading) {

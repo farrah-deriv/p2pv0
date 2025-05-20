@@ -8,7 +8,6 @@ interface CurrencyInputProps extends React.InputHTMLAttributes<HTMLInputElement>
   currency?: string
   onValueChange?: (value: string) => void
   placeholder?: string
-  label?: string
   isEditMode?: boolean
   error?: boolean
 }
@@ -19,7 +18,6 @@ export function CurrencyInput({
   placeholder = "0.00",
   value,
   onChange,
-  label,
   isEditMode = false,
   disabled,
   error = false,

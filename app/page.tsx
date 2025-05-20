@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { AlertCircle, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Navigation from "@/components/navigation"
@@ -22,7 +22,6 @@ export default function BuySellPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<"buy" | "sell">("sell")
   const [currency, setCurrency] = useState("IDR")
-  const [paymentMethod, setPaymentMethod] = useState("All")
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState("exchange_rate")
   const [adverts, setAdverts] = useState<Advertisement[]>([])
@@ -32,9 +31,7 @@ export default function BuySellPage() {
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     fromFollowing: false,
   })
-  const [isBalanceInfoOpen, setIsBalanceInfoOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const filterButtonRef = useRef<HTMLDivElement>(null)
 
   // Add state for order sidebar
   const [isOrderSidebarOpen, setIsOrderSidebarOpen] = useState(false)
@@ -42,7 +39,7 @@ export default function BuySellPage() {
 
   useEffect(() => {
     fetchAdverts()
-  }, [activeTab, currency, paymentMethod, sortBy, filterOptions])
+  }, [activeTab, currency, sortBy, filterOptions])
 
   // Update the fetchAdverts function to ensure adverts is always an array
   const fetchAdverts = async (query = null) => {
@@ -52,7 +49,7 @@ export default function BuySellPage() {
       const params: BuySellAPI.SearchParams = {
         type: activeTab,
         currency: currency,
-        paymentMethod: paymentMethod !== "All" ? paymentMethod : undefined,
+        paymentMethod: undefined,
         nickname: query !== null ? query : searchQuery,
         sortBy: sortBy,
       }
@@ -87,7 +84,7 @@ export default function BuySellPage() {
     debounce(() => {
       fetchAdverts()
     }, 300),
-    [activeTab, currency, paymentMethod, sortBy, filterOptions, searchQuery],
+    [activeTab, currency, sortBy, filterOptions, searchQuery],
   )
 
   const handleAdvertiserClick = (userId: number) => {

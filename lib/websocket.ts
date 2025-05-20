@@ -40,7 +40,7 @@ export class WebSocketClient {
         const url = API.socketUrl
         this.socket = new WebSocket(url, [USER.token])
 
-        this.socket.onopen = (event) => {
+        this.socket.onopen = () => {
           this.reconnectAttempts = 0
           if (this.options.onOpen) {
             this.options.onOpen(this.socket!)

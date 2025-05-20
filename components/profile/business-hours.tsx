@@ -4,10 +4,9 @@ import { Label } from "@/components/ui/label"
 
 interface BusinessHoursProps {
   isOpen: boolean
-  availability: string
 }
 
-export default function BusinessHours({ isOpen, availability }: BusinessHoursProps) {
+export default function BusinessHours({ isOpen }: BusinessHoursProps) {
   return (
     <div className="border rounded-lg p-4">
       <div className="flex items-center justify-between mb-2">

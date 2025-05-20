@@ -195,7 +195,7 @@ export async function updatePaymentMethod(id: string, fields: Record<string, any
 
     if (methodType === "bank_transfer") {
       // For bank transfer, format exactly according to the required structure
-      const { instructions, method_type, account, bank_name, bank_code, branch } = fields
+      const { instructions, account, bank_name, bank_code, branch } = fields
 
       // Format fields according to the exact required structure
       formattedFields = {
@@ -244,7 +244,7 @@ export async function updatePaymentMethod(id: string, fields: Record<string, any
       console.log("Formatted alipay fields:", formattedFields)
     } else {
       // For other methods, just pass the fields as is
-      const { method_type, ...restFields } = fields
+      const { ...restFields } = fields
       formattedFields = { ...restFields }
 
       console.log("Formatted other fields:", formattedFields)
@@ -338,18 +338,6 @@ export async function updatePaymentMethod(id: string, fields: Record<string, any
   }
 }
 
-// Helper function to get display name for field
-function getDisplayName(fieldName: string): string {
-  const displayNames: Record<string, string> = {
-    account: "Account Number",
-    bank_code: "SWIFT or IFSC code",
-    bank_name: "Bank Name",
-    branch: "Branch",
-  }
-
-  return displayNames[fieldName] || fieldName.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
-}
-
 // Helper function to get user-friendly error messages from error codes
 function getErrorMessageFromCode(code: string): string {
   const errorMessages: Record<string, string> = {
@@ -382,7 +370,8 @@ export async function deletePaymentMethod(id: string): Promise<PaymentMethodResp
       try {
         const errorData = JSON.parse(errorText)
         return { success: false, errors: errorData.errors }
-      } catch (e) {
+      } catch (error) {
+        console.log(error);
         return { success: false, errors: [{ code: "api_error", message: response.statusText }] }
       }
     }

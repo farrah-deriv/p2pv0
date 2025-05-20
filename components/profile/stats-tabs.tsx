@@ -14,12 +14,10 @@ import { PlusCircle } from "lucide-react"
 import { USER, API, AUTH } from "@/lib/local-variables"
 
 interface StatsTabsProps {
-  children?: React.ReactNode
   stats?: any
 }
 
-export default function StatsTabs({ children, stats: initialStats }: StatsTabsProps) {
-  const [activeTab, setActiveTab] = useState("stats")
+export default function StatsTabs({ stats: initialStats }: StatsTabsProps) {
   const [showAddPaymentMethodPanel, setShowAddPaymentMethodPanel] = useState(false)
   const [isAddingPaymentMethod, setIsAddingPaymentMethod] = useState(false)
   const [notification, setNotification] = useState<{ show: boolean; message: string }>({
@@ -172,7 +170,7 @@ export default function StatsTabs({ children, stats: initialStats }: StatsTabsPr
       )}
 
       <div className="mb-6">
-        <Tabs defaultValue="stats" onValueChange={setActiveTab}>
+        <Tabs defaultValue="stats">
           <TabsList className="bg-custom-gray rounded-2xl p-1 h-auto">
             {tabs.map((tab) => (
               <TabsTrigger

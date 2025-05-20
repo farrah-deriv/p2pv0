@@ -1,14 +1,10 @@
 "use client"
 
-import { useRouter } from "next/navigation"
-
 interface MyAdsHeaderProps {
   hasAds: boolean
-  isMobile?: boolean // Make isMobile optional
 }
 
-export default function MyAdsHeader({ hasAds, isMobile }: MyAdsHeaderProps) {
-  const router = useRouter()
+export default function MyAdsHeader({ hasAds }: MyAdsHeaderProps) {
 
   // Don't render anything if there are no ads
   // This component is now only for additional controls when ads exist

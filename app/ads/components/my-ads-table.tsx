@@ -80,17 +80,14 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
 
       let minAmount = 0
       let maxAmount = 0
-      let currency = "USD"
 
       if (typeof ad.limits === "string") {
         const limitsMatch = ad.limits.match(/([A-Z]+) (\d+\.\d+) - (\d+\.\d+)/)
-        currency = limitsMatch ? limitsMatch[1] : "USD"
         minAmount = limitsMatch ? Number.parseFloat(limitsMatch[2]) : 0
         maxAmount = limitsMatch ? Number.parseFloat(limitsMatch[3]) : 0
       } else {
         minAmount = ad.limits.min
         maxAmount = ad.limits.max
-        currency = ad.limits.currency
       }
 
       let rateValue = 0
