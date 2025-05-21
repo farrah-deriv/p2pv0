@@ -1,6 +1,6 @@
 "use client"
 
-import { NovuProvider, PopoverNotificationCenter, NotificationBell } from "@novu/notification-center"
+import { Inbox } from "@novu/nextjs"
 import { useEffect, useState } from "react"
 import { USER, NOTIFICATIONS } from "@/lib/local-variables"
 
@@ -17,29 +17,41 @@ async function fetchSubscriberHash(subscriberId: string) {
         })
 
         if (!response.ok) {
-            console.error("Failed to fetch subscriber hash:", response.statusText);
             throw new Error(`Failed to fetch subscriber hash: ${response.status}`)
         }
 
         const data = await response.json()
-        console.log("Subscriber hash data:", data);
         return data.subscriberHash
     } catch (error) {
-        console.log(error);
         return null
     }
 }
 
 export function NovuNotifications() {
-    // Use client-side rendering to avoid hydration issues
     const [mounted, setMounted] = useState(false)
     const [subscriberHash, setSubscriberHash] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
-    // Get the subscriber ID from the USER object in local-variables
     const subscriberId = USER.id || ""
     const applicationIdentifier = NOTIFICATIONS.applicationId
+
+    const appearance = {
+        variables: {
+            borderRadius: "8px",
+            fontSize: "14px",
+            colorShadow: "rgba(0, 0, 0, 0.1)",
+            colorNeutral: "#1A1523",
+            colorCounterForeground: "#ffffff",
+            colorCounter: "#00D0FF",
+            colorSecondaryForeground: "#1A1523",
+            colorSecondary: "#002A33",
+            colorPrimaryForeground: "#ffffff",
+            colorPrimary: "#00D0FF",
+            colorForeground: "#181C25",
+            colorBackground: "#ffffff",
+        },
+    }
 
     useEffect(() => {
         setMounted(true)
@@ -58,7 +70,10 @@ export function NovuNotifications() {
             try {
                 const hash = await fetchSubscriberHash(subscriberId)
                 setSubscriberHash(hash)
-            } catch (err) {
+                if (!hash) {
+                    setError("Failed to retrieve subscriber hash")
+                }
+            } catch (err: any) {
                 setError(err.message)
             } finally {
                 setIsLoading(false)
@@ -68,7 +83,6 @@ export function NovuNotifications() {
         getSubscriberHash()
     }, [subscriberId])
 
-    // Return a placeholder while loading or not mounted
     if (!mounted || isLoading) {
         return (
             <div className="relative inline-flex h-5 w-5 bg-yellow-100 rounded-full">
@@ -89,26 +103,30 @@ export function NovuNotifications() {
     }
 
     return (
-        <NovuProvider
-            subscriberId={subscriberId}
-            applicationIdentifier={applicationIdentifier}
-            subscriberHash={subscriberHash}
-        >
-            <PopoverNotificationCenter>
-                {({ unseenCount }) => (
-                    <NotificationBell
-                        unseenCount={unseenCount}
-                        colorScheme="light"
-                        className="text-black"
-                        bellButtonProps={{
-                            style: {
-                                background: "transparent",
-                                color: "black",
-                            },
-                        }}
-                    />
-                )}
-            </PopoverNotificationCenter>
-        </NovuProvider>
+        <div style={{ position: "static" }}>
+            <Inbox
+                applicationIdentifier={applicationIdentifier}
+                subscriber={subscriberId}
+                subscriberHash={subscriberHash}
+                colorScheme="light"
+                i18n={{
+                    poweredBy: "Notifications by",
+                }}
+                appearance={appearance}
+                styles={{
+                    bell: {
+                        root: {
+                            background: "transparent",
+                            color: "black",
+                        },
+                    },
+                    popover: {
+                        root: {
+                            zIndex: 100,
+                        },
+                    },
+                }}
+            />
+        </div>
     )
 }
