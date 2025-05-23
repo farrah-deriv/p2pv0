@@ -92,4 +92,3 @@ export const mockAdverts: Advert[] = [
     type: "buy",
   },
 ]
-

@@ -44,4 +44,3 @@ export default function BalanceInfoPopup({ isOpen, onClose }: BalanceInfoPopupPr
     </div>
   )
 }
-

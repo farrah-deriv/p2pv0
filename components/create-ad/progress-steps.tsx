@@ -34,4 +34,3 @@ export default function ProgressSteps({ currentStep, steps }: ProgressStepsProps
     </div>
   )
 }
-

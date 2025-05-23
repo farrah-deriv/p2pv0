@@ -53,4 +53,3 @@ export default function StatusModal({ type, title, message, subMessage, onClose 
     </AlertDialog>
   )
 }
-
