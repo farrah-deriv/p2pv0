@@ -69,27 +69,11 @@ export default function PaymentMethodsTab() {
         "Content-Type": "application/json",
         "X-Data-Source": "live",
       }
-
-      // Enhanced request logging
-      console.group("📤 Payment Methods API Request")
-      console.log("URL:", url)
-      console.log("Headers:", headers)
-      console.log("Auth Token:", AUTH.getAuthHeader().Authorization)
-      console.groupEnd()
-
-      const startTime = performance.now()
       const response = await fetch(url, {
         headers,
         // Add cache: 'no-store' to ensure we always get fresh data
         cache: "no-store",
       })
-      const endTime = performance.now()
-
-      // Enhanced response logging
-      console.group("📥 Payment Methods API Response")
-      console.log("Status:", response.status, response.statusText)
-      console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-      console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
       if (!response.ok) {
         console.error("Error Response:", response.status, response.statusText)

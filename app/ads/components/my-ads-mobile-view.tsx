@@ -169,7 +169,7 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
     if (typeof limits === "string") {
       return limits
     }
-    return `USD ${limits.min.toFixed(2)} - ${limits.max.toFixed(2)}`
+    return `USD ${limits.min} - ${limits.max}`
   }
 
   if (ads.length === 0) {
@@ -256,7 +256,7 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
                 {/* Available Amount */}
                 <div className="mb-4">
                   <div className="text-base mb-1">
-                    USD {ad.available.current.toFixed(2)} / {ad.available.total.toFixed(2)}
+                    USD {ad.available.current} / {ad.available.total}
                   </div>
                   <div className="h-2 bg-gray-200 rounded-full w-full overflow-hidden">
                     <div
@@ -288,13 +288,12 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
                   {ad.paymentMethods.map((method, index) => (
                     <div key={index} className="flex items-center">
                       <span
-                        className={`w-3 h-3 rounded-full mr-2 ${
-                          method.toLowerCase() === "bank transfer"
-                            ? "bg-green-600"
-                            : method.toLowerCase() === "skrill"
-                              ? "bg-blue-500"
-                              : "bg-blue-400"
-                        }`}
+                        className={`w-3 h-3 rounded-full mr-2 ${method.toLowerCase() === "bank transfer"
+                          ? "bg-green-600"
+                          : method.toLowerCase() === "skrill"
+                            ? "bg-blue-500"
+                            : "bg-blue-400"
+                          }`}
                       ></span>
                       <span>{method}</span>
                     </div>

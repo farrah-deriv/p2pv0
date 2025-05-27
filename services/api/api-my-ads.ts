@@ -116,23 +116,7 @@ export async function getUserAdverts(): Promise<MyAd[]> {
       "X-Data-Source": "live",
     }
 
-    // Log request details
-    console.group("📤 GET User Adverts Request")
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("User ID:", userId)
-    console.log("Show Inactive:", true)
-    console.groupEnd()
-
-    const startTime = performance.now()
     const response = await fetch(url, { headers })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group("📥 GET User Adverts Response")
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     if (!response.ok) {
       console.error("Error Response:", response.status, response.statusText)
@@ -283,21 +267,12 @@ export async function updateAd(id: string, adData: any): Promise<{ success: bool
       Array.isArray(adData.payment_method_names) ? "Array of strings ✅" : "Not an array ❌",
       adData.payment_method_names,
     )
-    console.groupEnd()
 
-    const startTime = performance.now()
     const response = await fetch(url, {
       method: "PATCH",
       headers,
       body,
     })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group(`📥 PATCH Update Ad Response`)
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     const responseText = await response.text()
     let responseData
@@ -405,18 +380,10 @@ export async function deleteAd(id: string): Promise<{ success: boolean }> {
     console.log("Ad ID:", id)
     console.groupEnd()
 
-    const startTime = performance.now()
     const response = await fetch(url, {
       method: "DELETE",
       headers,
     })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group("📥 DELETE Ad Response")
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     const responseText = await response.text()
     let responseData
@@ -465,26 +432,11 @@ export async function createAd(payload: CreateAdPayload): Promise<{ success: boo
     const requestBody = { data: payload }
     const body = JSON.stringify(requestBody)
 
-    // Log request details
-    console.group("📤 POST Create Ad Request")
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("Request Body:", body)
-    console.groupEnd()
-
-    const startTime = performance.now()
     const response = await fetch(url, {
       method: "POST",
       headers,
       body,
     })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group("📥 POST Create Ad Response")
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     const responseText = await response.text()
     let data
@@ -658,17 +610,11 @@ export async function activateAd(id: string): Promise<{ success: boolean }> {
     const body = JSON.stringify({ data: payload })
     console.log("Formatted Request Body:", body)
 
-    const startTime = performance.now()
     const response = await fetch(url, {
       method: "PATCH",
       headers,
       body,
     })
-    const endTime = performance.now()
-
-    // Log response details
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
 
     const responseText = await response.text()
     let responseData
