@@ -33,7 +33,7 @@ export default function OrderDetailsSidebar({ isOpen, onClose, order }: OrderDet
               <h3 className="text-sm text-slate-500 mb-1">Exchange rate</h3>
               <p className="font-medium">
                 {order.advert?.account_currency} 1.00 = {order.advert?.payment_currency}{" "}
-                {order.exchange_rate?.toFixed(2) || "N/A"}
+                {order.exchange_rate || "N/A"}
               </p>
             </div>
 
@@ -42,10 +42,10 @@ export default function OrderDetailsSidebar({ isOpen, onClose, order }: OrderDet
               <p className="font-medium">
                 {order.advert?.account_currency}{" "}
                 {typeof order.amount === "object" && order.amount.value
-                  ? Number(order.amount.value).toFixed(2)
+                  ? Number(order.amount.value)
                   : typeof order.amount === "number"
-                    ? order.amount.toFixed(2)
-                    : Number(order.amount).toFixed(2)}
+                    ? order.amount
+                    : Number(order.amount)}
               </p>
             </div>
 
@@ -54,10 +54,10 @@ export default function OrderDetailsSidebar({ isOpen, onClose, order }: OrderDet
               <p className="font-medium">
                 {order.advert?.payment_currency}{" "}
                 {typeof order.price === "object" && order.price.value
-                  ? Number(order.price.value).toFixed(2)
+                  ? Number(order.price.value)
                   : typeof order.price === "number"
-                    ? order.price.toFixed(2)
-                    : Number(order.price).toFixed(2)}
+                    ? order.price
+                    : Number(order.price)}
               </p>
             </div>
 

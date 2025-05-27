@@ -224,7 +224,7 @@ export default function OrderDetailsPage() {
   const pendingReleaseLabel = order.type === "buy" ? (order.user.id == USER.id ? "Waiting seller's confirmation" : "Confirm payment") : (order.user.id == USER.id ? "Confirm payment" : "Waiting seller's confirmation")
   const youPayReceiveLabel = order.type === "buy" ? (order.user.id == USER.id ? "You receive" : "You pay") : (order.user.id == USER.id ? "You pay" : "You receive")
 
-  const orderAmount = Number(order.amount).toFixed(2)
+  const orderAmount = order.amount
 
   return (
     <div className="px-4 relative">

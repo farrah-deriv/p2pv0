@@ -45,7 +45,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     if (typeof limits === "string") {
       return limits
     }
-    return `${limits.currency} ${limits.min.toFixed(2)} - ${limits.max.toFixed(2)}`
+    return `${limits.currency} ${limits.min} - ${limits.max}`
   }
 
   const getStatusBadge = (status: string) => {
@@ -255,7 +255,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
               <td className="py-4">{formatLimits(ad.limits)}</td>
               <td className="py-4">
                 <div className="mb-1">
-                  USD {(ad.available.current || 0).toFixed(2)} / {(ad.available.total || 0).toFixed(2)}
+                  USD {ad.available.current || 0} / {ad.available.total || 0}
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full w-32 overflow-hidden">
                   <div

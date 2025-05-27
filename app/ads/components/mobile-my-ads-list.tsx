@@ -300,9 +300,9 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
               <div className="flex flex-col w-full mb-2">
                 <div className="text-neutral-10 text-xs font-normal leading-5 font-medium">
                   <span className="text-neutral-10 text-xs font-normal leading-5">
-                    USD {(ad.available.current || 0).toFixed(2)}
+                    USD {ad.available.current || 0}
                   </span>{" "}
-                  / {(ad.available.total || 0).toFixed(2)}
+                  / {ad.available.total || 0}
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full w-full overflow-hidden mt-1">
                   <div
@@ -328,7 +328,7 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
                 <span className="text-neutral-10 text-xs font-normal leading-5">
                   {typeof ad.limits === "string"
                     ? ad.limits
-                    : `${ad.limits.currency} ${ad.limits.min.toFixed(2)} - ${ad.limits.max.toFixed(2)}`}
+                    : `${ad.limits.currency} ${ad.limits.min} - ${ad.limits.max}`}
                 </span>
               </div>
 

@@ -19,7 +19,7 @@ interface OrderSidebarProps {
 export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSidebarProps) {
   const router = useRouter()
   const [amount, setAmount] = useState("")
-  const [totalAmount, setTotalAmount] = useState("0")
+  const [totalAmount, setTotalAmount] = useState(0)
   const [validationError, setValidationError] = useState<string | null>(null)
   const [isAnimating, setIsAnimating] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -37,7 +37,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
 
   useEffect(() => {
     if (ad && ad.minimum_order_amount) {
-      setAmount(ad.minimum_order_amount.toFixed(2))
+      setAmount(ad.minimum_order_amount)
     }
   }, [ad])
 
@@ -45,17 +45,17 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
     if (ad && amount) {
       const numAmount = Number.parseFloat(amount)
       const exchangeRate = ad.exchange_rate || 0
-      const total = (numAmount * exchangeRate).toFixed(2)
+      const total = (numAmount * exchangeRate)
       setTotalAmount(total)
 
       // Validate amount against limits
-      const minLimit = ad.minimum_order_amount || 0
-      const maxLimit = ad.actual_maximum_order_amount || 0
+      const minLimit = parseFloat(ad.minimum_order_amount) || 0
+      const maxLimit = parseFloat(ad.actual_maximum_order_amount) || 0
 
       if (numAmount < minLimit) {
-        setValidationError(`Amount must be at least ${ad.account_currency} ${minLimit.toFixed(2)}`)
+        setValidationError(`Amount must be at least ${ad.account_currency} ${minLimit}`)
       } else if (numAmount > maxLimit) {
-        setValidationError(`Amount cannot exceed ${ad.account_currency} ${maxLimit.toFixed(2)}`)
+        setValidationError(`Amount cannot exceed ${ad.account_currency} ${maxLimit}`)
       } else {
         setValidationError(null)
       }
@@ -106,8 +106,8 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
   const youSendText = isBuy ? "You receive" : "You send"
 
   // Calculate order limits
-  const minLimit = ad?.minimum_order_amount?.toFixed(2) || "0.00"
-  const maxLimit = ad?.actual_maximum_order_amount?.toFixed(2) || "0.00"
+  const minLimit = ad?.minimum_order_amount || "0.00"
+  const maxLimit = ad?.actual_maximum_order_amount || "0.00"
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">

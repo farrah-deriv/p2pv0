@@ -489,7 +489,7 @@ export default function AdvertiserProfilePage() {
         </div>
         <div>
           <div className="flex items-center text-xs text-slate-500">Trade volume (30d)</div>
-          <div className="font-bold mt-1">{`USD ${profile?.stats.tradeVolume.amount.toFixed(2)}`}</div>
+          <div className="font-bold mt-1">{`USD ${profile?.stats.tradeVolume.amount}`}</div>
         </div>
       </div>
 
@@ -535,7 +535,7 @@ export default function AdvertiserProfilePage() {
                       </div>
 
                       <div className="mb-2">
-                        USD {ad.minimum_order_amount.toFixed(2)} - {ad.actual_maximum_order_amount.toFixed(2)}
+                        USD {ad.minimum_order_amount} - {ad.actual_maximum_order_amount}
                       </div>
                       <div className="flex items-center text-xs text-slate-500 mb-3">
                         <Clock className="h-4 w-4 mr-1" />
@@ -593,7 +593,7 @@ export default function AdvertiserProfilePage() {
                           </TableCell>
                           <TableCell className="py-4 px-4">
                             <div>
-                              USD {ad.minimum_order_amount.toFixed(2)} - {ad.actual_maximum_order_amount.toFixed(2)}
+                              USD {ad.minimum_order_amount} - {ad.actual_maximum_order_amount}
                             </div>
                             <div className="flex items-center text-xs text-slate-500 mt-1">
                               <Clock className="h-4 w-4 mr-1" />

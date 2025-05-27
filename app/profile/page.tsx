@@ -11,11 +11,11 @@ export default function ProfilePage() {
   const [userData, setUserData] = useState({
     username: "John_doe",
     rating: "Not rated yet",
-    completionRate: "100%",
+    completionRate: "",
     joinDate: "Joined today",
     blockedCount: 2,
-    realName: "Jonathan Nick Does",
-    balance: 1234.56,
+    realName: "",
+    balance: "",
     isVerified: {
       id: true,
       address: true,
@@ -27,24 +27,24 @@ export default function ProfilePage() {
     },
     tradeLimits: {
       buy: {
-        current: 400,
-        max: 500,
+        current: 0,
+        max: 0,
       },
       sell: {
-        current: 180,
-        max: 500,
+        current: 0,
+        max: 0,
       },
     },
     stats: {
-      buyCompletion: { rate: "100% (50)", period: "(30d)" },
-      sellCompletion: { rate: "100% (50)", period: "(30d)" },
-      avgPayTime: { time: "5 min", period: "(30d)" },
-      avgReleaseTime: { time: "5 min", period: "(30d)" },
-      tradePartners: 10,
-      totalOrders30d: 25,
-      totalOrdersLifetime: 50,
-      tradeVolume30d: { amount: "500.00", currency: "USD", period: "(30d)" },
-      tradeVolumeLifetime: { amount: "1,000.00", currency: "USD" },
+      buyCompletion: { rate: "", period: "" },
+      sellCompletion: { rate: "100% (50)", period: "" },
+      avgPayTime: { time: "", period: "" },
+      avgReleaseTime: { time: "", period: "" },
+      tradePartners: 0,
+      totalOrders30d: 0,
+      totalOrdersLifetime: 0,
+      tradeVolume30d: { amount: "", currency: "", period: "" },
+      tradeVolumeLifetime: { amount: "", currency: "" },
     },
   })
 

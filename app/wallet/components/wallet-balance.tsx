@@ -94,7 +94,7 @@ export default function WalletBalance({ className }: WalletBalanceProps) {
 
       <div className="flex items-center justify-center gap-2">
         <h1 className="text-[32px] font-black text-black text-center leading-normal">
-          {isLoading ? "Loading..." : `${balance.toFixed(2)} USD`}
+          {isLoading ? "Loading..." : `${Number(balance).toFixed(2)} USD`}
         </h1>
         <Button
           variant="ghost"
