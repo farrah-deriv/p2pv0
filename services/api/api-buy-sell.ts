@@ -11,15 +11,15 @@ export interface Advertisement {
     rating_average?: number
   }
   account_currency: string
-  actual_maximum_order_amount: number
+  actual_maximum_order_amount: string
   available_amount: number
   created_at: number
   description: string
   exchange_rate: number
   exchange_rate_type: string
   is_active: boolean
-  maximum_order_amount: number
-  minimum_order_amount: number
+  maximum_order_amount: string
+  minimum_order_amount: string
   order_expiry_period: number
   payment_currency: string
   payment_method_names: string[]
@@ -62,23 +62,7 @@ export async function getAdvertisements(params?: SearchParams): Promise<Advertis
       ...AUTH.getAuthHeader(),
       "Content-Type": "application/json",
     }
-
-    // Log request details
-    console.group("📤 GET Advertisements Request")
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("Search Params:", params)
-    console.groupEnd()
-
-    const startTime = performance.now()
     const response = await fetch(url, { headers })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group("📥 GET Advertisements Response")
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     if (!response.ok) {
       console.error("Error Response:", response.status, response.statusText)
@@ -134,23 +118,7 @@ export async function getAdvertiserById(id: string | number): Promise<any> {
       ...AUTH.getAuthHeader(),
       "Content-Type": "application/json",
     }
-
-    // Log request details
-    console.group("📤 GET Advertiser By ID Request")
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("Advertiser ID:", id)
-    console.groupEnd()
-
-    const startTime = performance.now()
     const response = await fetch(url, { headers })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group("📥 GET Advertiser By ID Response")
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     if (!response.ok) {
       console.warn(`Error Response: ${response.status} ${response.statusText}`)
@@ -280,22 +248,7 @@ export async function getAdvertiserAds(advertiserId: string | number): Promise<A
       "Content-Type": "application/json",
     }
 
-    // Log request details
-    console.group("📤 GET Advertiser Ads Request")
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("Advertiser ID:", advertiserId)
-    console.groupEnd()
-
-    const startTime = performance.now()
     const response = await fetch(url, { headers })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group("📥 GET Advertiser Ads Response")
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     if (!response.ok) {
       console.error("Error Response:", response.status, response.statusText)
@@ -353,28 +306,11 @@ export async function toggleFavouriteAdvertiser(
       },
     })
 
-    // Log request details
-    console.group(`📤 ${method} Favourite Advertiser Request`)
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("Body:", body)
-    console.log("Advertiser ID:", advertiserId)
-    console.log("Action:", isFavourite ? "Add to favourites" : "Remove from favourites")
-    console.groupEnd()
-
-    const startTime = performance.now()
     const response = await fetch(url, {
       method,
       headers,
       body,
     })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group(`📥 ${method} Favourite Advertiser Response`)
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     if (!response.ok) {
       console.error("Error Response:", response.status, response.statusText)
@@ -451,19 +387,11 @@ export async function toggleBlockAdvertiser(
     console.log("Action:", isBlocked ? "Block" : "Unblock")
     console.groupEnd()
 
-    const startTime = performance.now()
     const response = await fetch(url, {
       method,
       headers,
       body,
     })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group(`📥 ${method} Block Advertiser Response`)
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     if (!response.ok) {
       console.error("Error Response:", response.status, response.statusText)

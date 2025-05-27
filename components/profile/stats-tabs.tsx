@@ -102,12 +102,12 @@ export default function StatsTabs({ stats: initialStats }: StatsTabsProps) {
             totalOrders30d: (data.buy_count_30day || 0) + (data.sell_count_30day || 0),
             totalOrdersLifetime: data.order_count_lifetime || 0,
             tradeVolume30d: {
-              amount: ((data.buy_amount_30day || 0) + (data.sell_amount_30day || 0)).toFixed(2),
+              amount: ((data.buy_amount_30day || 0) + (data.sell_amount_30day || 0)),
               currency: "USD",
               period: "(30d)",
             },
             tradeVolumeLifetime: {
-              amount: data.order_amount_lifetime ? data.order_amount_lifetime.toFixed(2) : "0.00",
+              amount: data.order_amount_lifetime ? data.order_amount_lifetime : "0.00",
               currency: "USD",
             },
           }

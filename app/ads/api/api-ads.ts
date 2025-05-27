@@ -35,12 +35,6 @@ export async function getUserAdverts(): Promise<MyAd[]> {
     const response = await fetch(url, { headers })
     const endTime = performance.now()
 
-    // Log response details
-    console.group("📥 GET User Adverts Response")
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
-
     if (!response.ok) {
       console.error("Error Response:", response.status, response.statusText)
       console.groupEnd()
@@ -180,34 +174,11 @@ export async function updateAd(id: string, adData: any): Promise<{ success: bool
     const requestData = { data: adData }
     const body = JSON.stringify(requestData)
 
-    // Log request details
-    console.group(`📤 PATCH Update Ad Request`)
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("Ad ID:", id)
-    console.log("Request Data:", requestData) // Log the actual object before stringification
-    console.log("Request Body:", body)
-    // Add this line to specifically check the payment_method_names format
-    console.log(
-      "Payment Methods Format:",
-      Array.isArray(adData.payment_method_names) ? "Array of strings ✅" : "Not an array ❌",
-      adData.payment_method_names,
-    )
-    console.groupEnd()
-
-    const startTime = performance.now()
     const response = await fetch(url, {
       method: "PATCH",
       headers,
       body,
     })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group(`📥 PATCH Update Ad Response`)
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     const responseText = await response.text()
     let responseData
@@ -344,18 +315,10 @@ export async function deleteAd(id: string): Promise<{ success: boolean; errors?:
     console.log("Ad ID:", id)
     console.groupEnd()
 
-    const startTime = performance.now()
     const response = await fetch(url, {
       method: "DELETE",
       headers,
     })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group("📥 DELETE Ad Response")
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     const responseText = await response.text()
     let responseData
@@ -430,19 +393,11 @@ export async function createAd(
     console.log("Request Body:", body)
     console.groupEnd()
 
-    const startTime = performance.now()
     const response = await fetch(url, {
       method: "POST",
       headers,
       body,
     })
-    const endTime = performance.now()
-
-    // Log response details
-    console.group("📥 POST Create Ad Response")
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
-    console.log("Response Headers:", Object.fromEntries([...response.headers.entries()]))
 
     const responseText = await response.text()
     let responseData
@@ -634,19 +589,11 @@ export async function activateAd(id: string): Promise<{ success: boolean; errors
 
     // Wrap the payload in a "data" object as expected by the API
     const body = JSON.stringify({ data: payload })
-    console.log("Formatted Request Body:", body)
-
-    const startTime = performance.now()
     const response = await fetch(url, {
       method: "PATCH",
       headers,
       body,
     })
-    const endTime = performance.now()
-
-    // Log response details
-    console.log("Status:", response.status, response.statusText)
-    console.log("Time:", `${(endTime - startTime).toFixed(2)}ms`)
 
     const responseText = await response.text()
     let responseData

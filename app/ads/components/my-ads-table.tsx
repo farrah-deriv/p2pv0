@@ -36,7 +36,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     if (typeof limits === "string") {
       return limits
     }
-    return `${limits.currency} ${limits.min.toFixed(2)} - ${limits.max.toFixed(2)}`
+    return `${limits.currency} ${limits.min} - ${limits.max}`
   }
 
   const formatPaymentMethods = (methods: string[]) => {
@@ -244,8 +244,8 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
                 <TableCell className="py-4">{formatLimits(ad.limits)}</TableCell>
                 <TableCell className="py-4">
                   <div className="mb-1">
-                    {ad.available.currency} {(ad.available.current || 0).toFixed(2)} /{" "}
-                    {(ad.available.total || 0).toFixed(2)}
+                    {ad.available.currency} {ad.available.current || 0} /{" "}
+                    {ad.available.total || 0}
                   </div>
                   <div className="h-2 bg-gray-200 rounded-full w-full max-w-[180px] overflow-hidden">
                     <div
