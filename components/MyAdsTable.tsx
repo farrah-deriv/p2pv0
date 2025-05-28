@@ -314,4 +314,3 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     </div>
   )
 }
-

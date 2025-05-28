@@ -22,4 +22,3 @@ export interface Ad {
   status: "Active" | "Inactive"
   description: string
 }
-

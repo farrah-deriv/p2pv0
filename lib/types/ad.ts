@@ -10,4 +10,3 @@ export interface AdFormData {
   paymentMethods: string[]
   instructions: string
 }
-

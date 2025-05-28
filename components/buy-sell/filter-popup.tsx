@@ -49,4 +49,3 @@ export default function FilterPopup({ isOpen, onApply, initialFilters }: FilterP
     </div>
   )
 }
-

@@ -23,6 +23,7 @@ async function fetchSubscriberHash(subscriberId: string) {
         const data = await response.json()
         return data.subscriberHash
     } catch (error) {
+        console.log(error);
         return null
     }
 }
