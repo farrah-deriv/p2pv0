@@ -23,21 +23,10 @@ export async function getUserAdverts(): Promise<MyAd[]> {
       "X-Data-Source": "live",
     }
 
-    // Log request details
-    console.group("📤 GET User Adverts Request")
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("User ID:", userId)
-    console.log("Show Inactive:", true)
-    console.groupEnd()
-
-    const startTime = performance.now()
     const response = await fetch(url, { headers })
-    const endTime = performance.now()
 
     if (!response.ok) {
       console.error("Error Response:", response.status, response.statusText)
-      console.groupEnd()
       throw new Error("Failed to fetch user adverts")
     }
 
@@ -46,16 +35,13 @@ export async function getUserAdverts(): Promise<MyAd[]> {
 
     try {
       apiData = JSON.parse(responseText)
-      console.log("Response Body (parsed):", apiData)
     } catch (e) {
       console.warn("⚠️ Could not parse response as JSON:", e)
-      console.log("Response Body (raw):", responseText)
       apiData = { data: [] }
     }
     console.groupEnd()
 
     if (!apiData || !apiData.data || !Array.isArray(apiData.data)) {
-      console.warn("Invalid API response format for user adverts")
       return []
     }
 
@@ -99,10 +85,7 @@ export async function getUserAdverts(): Promise<MyAd[]> {
       }
     })
   } catch (error) {
-    console.group("💥 GET User Adverts Exception")
     console.error("Error:", error)
-    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-    console.groupEnd()
     return [] // Return empty array on error
   }
 }
@@ -113,11 +96,7 @@ export async function getUserAdverts(): Promise<MyAd[]> {
  */
 export async function getMyAds(filters?: AdFilters): Promise<MyAd[]> {
   try {
-    console.group("🔍 Filter My Ads")
-    console.log("Filters:", filters)
-
     const userAdverts = await getUserAdverts()
-    console.log("Total ads before filtering:", userAdverts.length)
 
     // Apply filters if provided
     if (filters) {
@@ -128,18 +107,12 @@ export async function getMyAds(filters?: AdFilters): Promise<MyAd[]> {
         return true
       })
 
-      console.log("Total ads after filtering:", filteredAds.length)
-      console.groupEnd()
       return filteredAds
     }
 
-    console.groupEnd()
     return userAdverts
   } catch (error) {
-    console.group("💥 Filter My Ads Exception")
     console.error("Error:", error)
-    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-    console.groupEnd()
     return []
   }
 }
