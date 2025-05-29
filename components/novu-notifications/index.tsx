@@ -40,7 +40,7 @@ export function NovuNotifications() {
     const appearance = {
         variables: {
             borderRadius: "8px",
-            fontSize: "14px",
+            fontSize: "16px",
             colorShadow: "rgba(0, 0, 0, 0.1)",
             colorNeutral: "#1A1523",
             colorCounterForeground: "#ffffff",
@@ -113,6 +113,7 @@ export function NovuNotifications() {
                 i18n={{
                     poweredBy: "Notifications by",
                 }}
+                localization={{ 'inbox.filters.labels.default': 'Notifications', }}
                 appearance={appearance}
                 styles={{
                     bell: {
