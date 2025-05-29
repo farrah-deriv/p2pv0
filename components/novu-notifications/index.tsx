@@ -110,6 +110,7 @@ export function NovuNotifications() {
                 subscriber={subscriberId}
                 subscriberHash={subscriberHash}
                 colorScheme="light"
+                placement="bottom-end"
                 i18n={{
                     poweredBy: "Notifications by",
                 }}
