@@ -10,6 +10,14 @@ import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import PaymentMethodBottomSheet from "./payment-method-bottom-sheet"
 import { Button } from "@/components/ui/button"
+import { AUTH, API } from "@/lib/local-variables"
+
+interface PaymentMethod {
+  display_name: string
+  method: string
+  type: string
+  fields: Record<string, any>
+}
 
 interface PaymentDetailsFormProps {
   onSubmit: (data: Partial<AdFormData>, errors?: Record<string, string>) => void
@@ -31,11 +39,34 @@ export default function PaymentDetailsForm({
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [availablePaymentMethods, setAvailablePaymentMethods] = useState<PaymentMethod[]>([])
 
-  const availablePaymentMethods = ["Bank Transfer", "PayPal", "Wise", "Neteller", "Skrill", "Alipay", "WeChat Pay"]
+  useEffect(() => {
+    const fetchPaymentMethods = async () => {
+      try {
+        const response = await fetch(`${API.baseUrl}${API.endpoints.availablePaymentMethods}`, {
+          headers: {
+            accept: "application/json",
+            ...AUTH.getAuthHeader(),
+          },
+        })
+        const responseData = await response.json()
+
+        if (responseData && responseData.data && Array.isArray(responseData.data)) {
+          setAvailablePaymentMethods(responseData.data)
+        } else {
+          setAvailablePaymentMethods([])
+        }
+      } catch {
+        setAvailablePaymentMethods([])
+      }
+    }
+
+    fetchPaymentMethods()
+  }, [])
 
   const filteredPaymentMethods = availablePaymentMethods.filter((method) =>
-    method.toLowerCase().includes(searchQuery.toLowerCase()),
+    method.display_name.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
   const MAX_PAYMENT_METHODS = 3
@@ -84,13 +115,13 @@ export default function PaymentDetailsForm({
     }
   }
 
-  const togglePaymentMethod = (method: string) => {
+  const togglePaymentMethod = (methodId: string) => {
     setTouched(true)
 
-    if (paymentMethods.includes(method)) {
-      setPaymentMethods(paymentMethods.filter((m) => m !== method))
+    if (paymentMethods.includes(methodId)) {
+      setPaymentMethods(paymentMethods.filter((m) => m !== methodId))
     } else if (paymentMethods.length < MAX_PAYMENT_METHODS) {
-      setPaymentMethods([...paymentMethods, method])
+      setPaymentMethods([...paymentMethods, methodId])
     }
   }
 
@@ -113,7 +144,7 @@ export default function PaymentDetailsForm({
     }
   }
 
-  const isMethodSelected = (method: string) => paymentMethods.includes(method)
+  const isMethodSelected = (methodId: string) => paymentMethods.includes(methodId)
 
   const isMaxReached = paymentMethods.length >= MAX_PAYMENT_METHODS
 
@@ -223,22 +254,22 @@ export default function PaymentDetailsForm({
                         </div>
                         {filteredPaymentMethods.map((method) => (
                           <DropdownMenuItem
-                            key={method}
+                            key={method.method}
                             onSelect={(e) => {
                               e.preventDefault()
-                              togglePaymentMethod(method)
+                              togglePaymentMethod(method.method)
                             }}
-                            disabled={!isMethodSelected(method) && isMaxReached}
-                            className={`flex items-center gap-2 px-3 py-2 cursor-pointer ${!isMethodSelected(method) && isMaxReached ? "opacity-50" : ""
+                            disabled={!isMethodSelected(method.method) && isMaxReached}
+                            className={`flex items-center gap-2 px-3 py-2 cursor-pointer ${!isMethodSelected(method.method) && isMaxReached ? "opacity-50" : ""
                               }`}
                           >
                             <div
-                              className={`w-5 h-5 flex items-center justify-center rounded border ${isMethodSelected(method) ? "bg-[#00D2FF] border-[#00D2FF]" : "border-gray-300"
+                              className={`w-5 h-5 flex items-center justify-center rounded border ${isMethodSelected(method.method) ? "bg-[#00D2FF] border-[#00D2FF]" : "border-gray-300"
                                 }`}
                             >
-                              {isMethodSelected(method) && <Check className="h-3 w-3 text-white" />}
+                              {isMethodSelected(method.method) && <Check className="h-3 w-3 text-white" />}
                             </div>
-                            <span>{method}</span>
+                            <span>{method.display_name}</span>
                           </DropdownMenuItem>
                         ))}
                       </DropdownMenuContent>

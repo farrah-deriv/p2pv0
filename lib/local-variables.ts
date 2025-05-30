@@ -13,6 +13,7 @@ export const API = {
     profile: "/profile",
     balance: "/balance",
     paymentMethods: "/payment-methods",
+    availablePaymentMethods: "/available-payment-methods",
     advertisers: "/users",
     transactions: "/transactions",
     userFavourites: "/user-favourites",
