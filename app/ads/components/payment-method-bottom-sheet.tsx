@@ -7,12 +7,19 @@ import { Check, Search, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
+interface PaymentMethod {
+  display_name: string
+  method: string
+  type: string
+  fields: Record<string, any>
+}
+
 interface PaymentMethodBottomSheetProps {
   isOpen: boolean
   onClose: () => void
   onSelect: (methods: string[]) => void
   selectedMethods: string[]
-  availableMethods: string[]
+  availableMethods: PaymentMethod[]
   maxSelections: number
 }
 
@@ -31,10 +38,29 @@ export default function PaymentMethodBottomSheet({
   const [isDragging, setIsDragging] = useState(false)
   const bottomSheetRef = useRef<HTMLDivElement>(null)
 
-  // Filter methods based on search query
-  const filteredMethods = availableMethods.filter((method) => method.toLowerCase().includes(searchQuery.toLowerCase()))
+  const convertToSnakeCase = (str: string): string => {
+    return str
+      .toLowerCase()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_]/g, "")
+  }
 
-  // Reset local state when props change
+
+  const isDisplayName = (value: string): boolean => {
+    return value.includes(" ") || /[A-Z]/.test(value)
+  }
+
+
+  const normalizeMethodName = (methodName: string): string => {
+    return isDisplayName(methodName) ? convertToSnakeCase(methodName) : methodName
+  }
+
+
+  const filteredMethods = availableMethods.filter((method) =>
+    method.display_name.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
+
+
   useEffect(() => {
     if (isOpen) {
       setLocalSelectedMethods(selectedMethods)
@@ -42,26 +68,31 @@ export default function PaymentMethodBottomSheet({
     }
   }, [isOpen, selectedMethods])
 
-  // Handle method selection
-  const toggleMethod = (method: string, e: React.MouseEvent) => {
-    // Stop event propagation to prevent it from reaching parent elements
+
+  const toggleMethod = (method: PaymentMethod, e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
 
-    if (localSelectedMethods.includes(method)) {
-      setLocalSelectedMethods(localSelectedMethods.filter((m) => m !== method))
+    const methodName = method.method
+    const normalizedSelected = localSelectedMethods.map(normalizeMethodName)
+
+    if (normalizedSelected.includes(methodName)) {
+      setLocalSelectedMethods(localSelectedMethods.filter((m) => normalizeMethodName(m) !== methodName))
     } else if (localSelectedMethods.length < maxSelections) {
-      setLocalSelectedMethods([...localSelectedMethods, method])
+      setLocalSelectedMethods([...localSelectedMethods, methodName])
     }
   }
 
-  // Check if a method is selected
-  const isMethodSelected = (method: string) => localSelectedMethods.includes(method)
 
-  // Check if we've reached the maximum number of selections
+  const isMethodSelected = (method: PaymentMethod) => {
+    const normalizedSelected = localSelectedMethods.map(normalizeMethodName)
+    return normalizedSelected.includes(method.method)
+  }
+
+
   const isMaxReached = localSelectedMethods.length >= maxSelections
 
-  // Handle save selection
+
   const handleSelect = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -69,16 +100,15 @@ export default function PaymentMethodBottomSheet({
     onClose()
   }
 
-  // Handle cancel
+
   const handleCancel = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     onClose()
   }
 
-  // Handle overlay click
+
   const handleOverlayClick = (e: React.MouseEvent) => {
-    // Only close if clicking the overlay, not the content
     if (e.target === e.currentTarget) {
       e.preventDefault()
       e.stopPropagation()
@@ -86,7 +116,7 @@ export default function PaymentMethodBottomSheet({
     }
   }
 
-  // Handle touch events for dragging
+
   const handleTouchStart = (e: React.TouchEvent) => {
     setStartY(e.touches[0].clientY)
     setIsDragging(true)
@@ -100,7 +130,7 @@ export default function PaymentMethodBottomSheet({
 
   const handleTouchEnd = () => {
     if (isDragging) {
-      // If dragged down more than 100px, close the sheet
+
       if (currentY - startY > 100) {
         onClose()
       }
@@ -108,7 +138,7 @@ export default function PaymentMethodBottomSheet({
     }
   }
 
-  // Calculate transform style based on drag position
+
   const getTransformStyle = () => {
     if (isDragging && currentY > startY) {
       return { transform: `translateY(${currentY - startY}px)` }
@@ -116,7 +146,7 @@ export default function PaymentMethodBottomSheet({
     return {}
   }
 
-  // Prevent form submission
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -176,7 +206,7 @@ export default function PaymentMethodBottomSheet({
             {filteredMethods.length > 0 ? (
               filteredMethods.map((method) => (
                 <button
-                  key={method}
+                  key={method.method}
                   type="button"
                   className="w-full flex items-center gap-3 py-3"
                   onClick={(e) => toggleMethod(method, e)}
@@ -194,7 +224,7 @@ export default function PaymentMethodBottomSheet({
                     {isMethodSelected(method) && <Check className="h-6 w-6 text-white" />}
                   </div>
                   <span className={isMaxReached && !isMethodSelected(method) ? "text-gray-400" : "text-gray-900"}>
-                    {method}
+                    {method.display_name}
                   </span>
                 </button>
               ))
