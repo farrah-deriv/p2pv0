@@ -40,12 +40,10 @@ export default function PaymentDetailsForm({
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [availablePaymentMethods, setAvailablePaymentMethods] = useState<PaymentMethod[]>([])
-  const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(true)
 
   useEffect(() => {
     const fetchPaymentMethods = async () => {
       try {
-        setIsLoadingPaymentMethods(true)
         const response = await fetch(`${API.baseUrl}${API.endpoints.availablePaymentMethods}`, {
           headers: {
             accept: "application/json",
@@ -54,17 +52,13 @@ export default function PaymentDetailsForm({
         })
         const responseData = await response.json()
 
-
-
         if (responseData && responseData.data && Array.isArray(responseData.data)) {
           setAvailablePaymentMethods(responseData.data)
         } else {
           setAvailablePaymentMethods([])
         }
-      } catch (error) {
+      } catch {
         setAvailablePaymentMethods([])
-      } finally {
-        setIsLoadingPaymentMethods(false)
       }
     }
 
