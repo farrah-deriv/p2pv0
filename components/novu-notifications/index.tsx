@@ -3,6 +3,7 @@
 import { Inbox } from "@novu/nextjs"
 import { useEffect, useState } from "react"
 import { USER, NOTIFICATIONS } from "@/lib/local-variables"
+import { useRouter } from "next/navigation"
 
 // Function to fetch the subscriber hash
 async function fetchSubscriberHash(subscriberId: string) {
@@ -23,12 +24,13 @@ async function fetchSubscriberHash(subscriberId: string) {
         const data = await response.json()
         return data.subscriberHash
     } catch (error) {
-        console.log(error);
+        console.log(error)
         return null
     }
 }
 
 export function NovuNotifications() {
+    const router = useRouter()
     const [mounted, setMounted] = useState(false)
     const [subscriberHash, setSubscriberHash] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -40,7 +42,7 @@ export function NovuNotifications() {
     const appearance = {
         variables: {
             borderRadius: "8px",
-            fontSize: "14px",
+            fontSize: "16px",
             colorShadow: "rgba(0, 0, 0, 0.1)",
             colorNeutral: "#1A1523",
             colorCounterForeground: "#ffffff",
@@ -113,6 +115,14 @@ export function NovuNotifications() {
                 i18n={{
                     poweredBy: "Notifications by",
                 }}
+                onNotificationClick={(notification) => {
+                    if (notification.data && notification.data["order_id"]) {
+                        const orderId = notification.data["order_id"]
+                        router.push(`/orders/${orderId}`)
+
+                    }
+                }}
+                placement="bottom-end"
                 appearance={appearance}
                 styles={{
                     bell: {
