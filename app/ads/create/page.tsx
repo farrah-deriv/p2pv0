@@ -245,6 +245,15 @@ export default function CreateAdPage() {
       console.log("Ad ID:", adId)
       console.groupEnd()
 
+
+      const mapPaymentMethodNames = (methods: string[]) => {
+        const mapping: Record<string, string> = {
+          "Bank Transfer": "bank_transfer",
+          Alipay: "alipay",
+        }
+        return methods.map((method) => mapping[method] || method.toLowerCase())
+      }
+
       if (isEditMode && adId) {
         const payload = {
           is_active: true,
@@ -255,7 +264,9 @@ export default function CreateAdPage() {
           exchange_rate_type: "fixed",
           order_expiry_period: 15,
           description: finalData.instructions || "",
-          ...(finalData.type !== "sell" && { payment_method_names: finalData.paymentMethods || [] }),
+          ...(finalData.type === "buy"
+            ? { payment_method_names: mapPaymentMethodNames(finalData.paymentMethods || []) }
+            : { payment_method_ids: finalData.paymentMethods || [] }),
         }
 
         console.log("Update payload:", payload)
@@ -284,9 +295,9 @@ export default function CreateAdPage() {
           description: finalData.instructions || "",
           is_active: 1,
           order_expiry_period: 15,
-          ...(finalData.type !== "sell"
-            ? { payment_method_names: finalData.paymentMethods || [] }
-            : { payment_method_names: [] }),
+          ...(finalData.type === "buy"
+            ? { payment_method_names: mapPaymentMethodNames(finalData.paymentMethods || []) }
+            : { payment_method_ids: finalData.paymentMethods || [] }),
         }
 
         const result = await createAd(payload)
@@ -458,7 +469,6 @@ export default function CreateAdPage() {
   :global(.container) {
     overflow-y: auto !important;
     height: auto !important;
-    min-height: 100vh !important;
   }
 `}</style>
       <div

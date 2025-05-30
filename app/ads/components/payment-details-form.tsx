@@ -32,7 +32,7 @@ export default function PaymentDetailsForm({
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
 
-  const availablePaymentMethods = ["Bank Transfer", "PayPal", "Wise", "Neteller", "Skrill", "Alipay", "WeChat Pay"]
+  const availablePaymentMethods = ["Bank Transfer", "Alipay",]
 
   const filteredPaymentMethods = availablePaymentMethods.filter((method) =>
     method.toLowerCase().includes(searchQuery.toLowerCase()),
