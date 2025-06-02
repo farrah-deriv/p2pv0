@@ -4,7 +4,7 @@ import { useState } from "react"
 import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import * as AuthAPI from "@/services/api/api-auth"
 
 export default function LoginPage() {
@@ -16,8 +16,6 @@ export default function LoginPage() {
   const [error, setError] = useState("")
 
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const redirectPath = searchParams.get("redirect") || "/"
 
   const handleLogin = async () => {
     try {
@@ -69,7 +67,7 @@ export default function LoginPage() {
           localStorage.setItem("user_data", JSON.stringify(response.user))
         }
 
-        router.push(redirectPath)
+        router.push("/")
       } else {
         setError(response.message || "Verification failed. Please try again.")
       }
