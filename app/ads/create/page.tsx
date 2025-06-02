@@ -49,6 +49,13 @@ export default function CreateAdPage() {
     id?: string
   }
 
+  const convertToSnakeCase = (str: string): string => {
+    return str
+      .toLowerCase()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_]/g, "")
+  }
+
   useEffect(() => {
     const loadEditData = async () => {
       if (isEditMode) {
@@ -57,8 +64,6 @@ export default function CreateAdPage() {
           const editData = localStorage.getItem("editAdData")
           if (editData) {
             const parsedData = JSON.parse(editData)
-            console.log("Loaded edit data:", parsedData)
-            console.log("Description from edit data:", parsedData.description)
 
             let rateValue = 0
             if (parsedData.rate && parsedData.rate.value) {
@@ -82,23 +87,32 @@ export default function CreateAdPage() {
               maxAmount = parsedData.limits.max || 0
             }
 
+            let paymentMethodNames: string[] = []
+            if (parsedData.paymentMethods && Array.isArray(parsedData.paymentMethods)) {
+              paymentMethodNames = parsedData.paymentMethods.map((methodName: string) => {
+                if (methodName.includes("_") || methodName === methodName.toLowerCase()) {
+                  return methodName
+                }
+                return convertToSnakeCase(methodName)
+              })
+            } else {
+              paymentMethodNames = []
+            }
+
             const formattedData: Partial<AdFormData> = {
               type: parsedData.type?.toLowerCase() === "sell" ? "sell" : "buy",
               totalAmount: parsedData.available?.current || 0,
               fixedRate: rateValue,
               minAmount: minAmount,
               maxAmount: maxAmount,
-              paymentMethods: parsedData.paymentMethods || [],
+              paymentMethods: paymentMethodNames,
               instructions: parsedData.description || "",
             }
 
-            console.log("Formatted form data:", formattedData)
-            console.log("Instructions set to:", formattedData.instructions)
             setFormData(formattedData)
             formDataRef.current = formattedData
           }
-        } catch (error) {
-          console.error("Error loading edit data:", error)
+        } catch {
         } finally {
           setIsLoading(false)
         }
@@ -159,8 +173,7 @@ export default function CreateAdPage() {
         if (updateDataStr) {
           localStorage.removeItem("adUpdateSuccess")
         }
-      } catch (err) {
-        console.error("Error checking for success data:", err)
+      } catch {
       }
     }
 
@@ -175,11 +188,6 @@ export default function CreateAdPage() {
     if (!errors || Object.keys(errors).length === 0) {
       setCurrentStep(1)
     }
-
-    console.group("📝 Updated Form Data (Ad Details)")
-    console.log("Form Data:", updatedData)
-    console.log("Form Errors:", errors)
-    console.groupEnd()
   }
 
   const formatErrorMessage = (errors: any[]): string => {
@@ -239,12 +247,6 @@ export default function CreateAdPage() {
     setIsSubmitting(true)
 
     try {
-      console.group("📝 Final Form Data")
-      console.log("Final Form Data:", finalData)
-      console.log("Is Edit Mode:", isEditMode)
-      console.log("Ad ID:", adId)
-      console.groupEnd()
-
       if (isEditMode && adId) {
         const payload = {
           is_active: true,
@@ -255,10 +257,11 @@ export default function CreateAdPage() {
           exchange_rate_type: "fixed",
           order_expiry_period: 15,
           description: finalData.instructions || "",
-          ...(finalData.type !== "sell" && { payment_method_names: finalData.paymentMethods || [] }),
+          ...(finalData.type === "buy"
+            ? { payment_method_names: finalData.paymentMethods || [] }
+            : { payment_method_ids: finalData.paymentMethods || [] }),
         }
 
-        console.log("Update payload:", payload)
         const updateResult = await updateAd(adId, payload)
 
         if (updateResult.errors && updateResult.errors.length > 0) {
@@ -267,9 +270,7 @@ export default function CreateAdPage() {
         }
 
         localStorage.removeItem("editAdData")
-
         localStorage.setItem("adUpdateSuccess", JSON.stringify({ success: true }))
-
         router.push("/ads")
       } else {
         const payload = {
@@ -284,9 +285,9 @@ export default function CreateAdPage() {
           description: finalData.instructions || "",
           is_active: 1,
           order_expiry_period: 15,
-          ...(finalData.type !== "sell"
+          ...(finalData.type === "buy"
             ? { payment_method_names: finalData.paymentMethods || [] }
-            : { payment_method_names: [] }),
+            : { payment_method_ids: finalData.paymentMethods || [] }),
         }
 
         const result = await createAd(payload)
@@ -307,8 +308,6 @@ export default function CreateAdPage() {
         router.push("/ads")
       }
     } catch (error) {
-      console.error("Error creating/updating ad:", error)
-
       let errorInfo = {
         title: isEditMode ? "Failed to update ad" : "Failed to create ad",
         message: "Please try again.",
@@ -458,7 +457,6 @@ export default function CreateAdPage() {
   :global(.container) {
     overflow-y: auto !important;
     height: auto !important;
-    min-height: 100vh !important;
   }
 `}</style>
       <div
