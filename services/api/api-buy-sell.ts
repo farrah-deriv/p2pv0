@@ -39,6 +39,13 @@ export interface SearchParams {
   favourites_only?: number // Add this parameter for filtering by favourites
 }
 
+// Define the PaymentMethod interface
+export interface PaymentMethod {
+  display_name: string
+  type: string
+  method: string
+}
+
 /**
  * Get all available advertisements
  */
@@ -251,8 +258,6 @@ export async function getAdvertiserAds(advertiserId: string | number): Promise<A
     const response = await fetch(url, { headers })
 
     if (!response.ok) {
-      console.error("Error Response:", response.status, response.statusText)
-      console.groupEnd()
       throw new Error(`Error fetching advertiser ads: ${response.statusText}`)
     }
 
@@ -261,22 +266,12 @@ export async function getAdvertiserAds(advertiserId: string | number): Promise<A
 
     try {
       data = JSON.parse(responseText)
-      console.log("Response Body (parsed):", data)
     } catch (e) {
-      console.warn("⚠️ Could not parse response as JSON:", e)
-      console.log("Response Body (raw):", responseText)
       data = { data: [] }
     }
 
-    console.log("✅ Successfully fetched advertiser ads")
-    console.groupEnd()
-
     return data.data || []
   } catch (error) {
-    console.group("💥 Get Advertiser Ads Exception")
-    console.error("Error:", error)
-    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-    console.groupEnd()
     return []
   }
 }
@@ -313,8 +308,6 @@ export async function toggleFavouriteAdvertiser(
     })
 
     if (!response.ok) {
-      console.error("Error Response:", response.status, response.statusText)
-      console.groupEnd()
       return {
         success: false,
         message: `Failed to ${isFavourite ? "follow" : "unfollow"} advertiser: ${response.statusText}`,
@@ -326,26 +319,15 @@ export async function toggleFavouriteAdvertiser(
 
     try {
       data = responseText ? JSON.parse(responseText) : {}
-      console.log("Response Body (parsed):", data)
     } catch (e) {
-      console.warn("⚠️ Could not parse response as JSON:", e)
-      console.log("Response Body (raw):", responseText)
       data = {}
     }
-
-    console.log(`✅ Successfully ${isFavourite ? "followed" : "unfollowed"} advertiser`)
-    console.groupEnd()
 
     return {
       success: true,
       message: `Successfully ${isFavourite ? "followed" : "unfollowed"} advertiser`,
     }
   } catch (error) {
-    console.group("💥 Toggle Favourite Advertiser Exception")
-    console.error("Error:", error)
-    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-    console.groupEnd()
-
     return {
       success: false,
       message: `Error: ${error instanceof Error ? error.message : "Unknown error occurred"}`,
@@ -378,15 +360,6 @@ export async function toggleBlockAdvertiser(
       },
     })
 
-    // Log request details
-    console.group(`📤 ${method} Block Advertiser Request`)
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-    console.log("Body:", body)
-    console.log("Advertiser ID:", advertiserId)
-    console.log("Action:", isBlocked ? "Block" : "Unblock")
-    console.groupEnd()
-
     const response = await fetch(url, {
       method,
       headers,
@@ -407,29 +380,58 @@ export async function toggleBlockAdvertiser(
 
     try {
       data = responseText ? JSON.parse(responseText) : {}
-      console.log("Response Body (parsed):", data)
     } catch (e) {
-      console.warn("⚠️ Could not parse response as JSON:", e)
-      console.log("Response Body (raw):", responseText)
       data = {}
     }
-
-    console.log(`✅ Successfully ${isBlocked ? "blocked" : "unblocked"} advertiser`)
-    console.groupEnd()
 
     return {
       success: true,
       message: `Successfully ${isBlocked ? "blocked" : "unblocked"} advertiser`,
     }
   } catch (error) {
-    console.group("💥 Toggle Block Advertiser Exception")
-    console.error("Error:", error)
-    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-    console.groupEnd()
-
     return {
       success: false,
       message: `Error: ${error instanceof Error ? error.message : "Unknown error occurred"}`,
     }
+  }
+}
+
+/**
+ * Get all available payment methods
+ */
+export async function getPaymentMethods(): Promise<PaymentMethod[]> {
+  try {
+    const url = `${API.baseUrl}${API.endpoints.availablePaymentMethods}`
+    const headers = {
+      ...AUTH.getAuthHeader(),
+      "Content-Type": "application/json",
+    }
+
+    const response = await fetch(url, { headers })
+
+    if (!response.ok) {
+      console.error("Error Response:", response.status, response.statusText)
+      throw new Error(`Error fetching payment methods: ${response.statusText}`)
+    }
+
+    const responseText = await response.text()
+    let data
+
+    try {
+      data = JSON.parse(responseText)
+    } catch (e) {
+      data = { data: [] }
+    }
+
+    if (data && data.data && Array.isArray(data.data)) {
+      return data.data
+    } else if (Array.isArray(data)) {
+      return data
+    } else
+      return []
+  }
+  catch (error) {
+    // Return empty array on error to prevent map errors
+    return []
   }
 }
