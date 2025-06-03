@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import PaymentMethodBottomSheet from "./payment-method-bottom-sheet"
 import { Button } from "@/components/ui/button"
 import { AUTH, API } from "@/lib/local-variables"
+import AdPaymentMethods from "./ad-payment-methods"
 
 interface PaymentMethod {
   display_name: string
@@ -32,9 +33,7 @@ export default function PaymentDetailsForm({
 }: PaymentDetailsFormProps) {
   const isMobile = useIsMobile()
   const [paymentMethods, setPaymentMethods] = useState<string[]>(initialData.paymentMethods || [])
-  const [instructions, setInstructions] = useState(() => {
-    return initialData.instructions || ""
-  })
+  const [instructions, setInstructions] = useState(initialData.instructions || "")
   const [touched, setTouched] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false)
@@ -71,24 +70,6 @@ export default function PaymentDetailsForm({
 
   const MAX_PAYMENT_METHODS = 3
 
-  useEffect(() => {
-    if (onBottomSheetOpenChange) {
-      onBottomSheetOpenChange(bottomSheetOpen)
-    }
-  }, [bottomSheetOpen, onBottomSheetOpenChange])
-
-  useEffect(() => {
-    if (initialData) {
-      if (initialData.paymentMethods) {
-        setPaymentMethods(initialData.paymentMethods)
-      }
-
-      if (initialData.instructions !== undefined) {
-        setInstructions(initialData.instructions)
-      }
-    }
-  }, [initialData])
-
   const isFormValid = () => {
     if (initialData.type === "sell") {
       return true
@@ -103,8 +84,11 @@ export default function PaymentDetailsForm({
     const formValid = isFormValid()
     const errors = !formValid ? { paymentMethods: "At least one payment method is required" } : undefined
 
+    const selectedPaymentMethodIds = initialData.type === "sell" ? (window as any).adPaymentMethodIds || [] : []
+
     const formData = {
       paymentMethods,
+      payment_method_ids: selectedPaymentMethodIds,
       instructions,
     }
 
@@ -145,23 +129,21 @@ export default function PaymentDetailsForm({
   }
 
   const isMethodSelected = (methodId: string) => paymentMethods.includes(methodId)
-
   const isMaxReached = paymentMethods.length >= MAX_PAYMENT_METHODS
 
   useEffect(() => {
-    const isValid = initialData.type === "sell" ? true : paymentMethods.length > 0
     const event = new CustomEvent("paymentFormValidationChange", {
-      bubbles: true,
       detail: {
-        isValid,
+        isValid: isFormValid(),
         formData: {
-          paymentMethods: initialData.type === "sell" ? [] : paymentMethods,
+          paymentMethods,
           instructions,
         },
       },
+      bubbles: true,
     })
     document.dispatchEvent(event)
-  }, [paymentMethods, instructions, initialData.type])
+  }, [paymentMethods, instructions])
 
   return (
     <div className="h-full flex flex-col">
@@ -195,9 +177,7 @@ export default function PaymentDetailsForm({
 
                       <PaymentMethodBottomSheet
                         isOpen={bottomSheetOpen}
-                        onClose={() => {
-                          handleCloseBottomSheet()
-                        }}
+                        onClose={handleCloseBottomSheet}
                         onSelect={(methods) => {
                           handleSelectPaymentMethods(methods)
                           handleCloseBottomSheet()
@@ -289,13 +269,13 @@ export default function PaymentDetailsForm({
               </div>
             )}
 
+            {initialData.type === "sell" && <AdPaymentMethods />}
+
             <div>
               <h3 className="text-base font-bold leading-6 tracking-normal mb-4">Instructions (Optional)</h3>
               <Textarea
                 value={instructions}
-                onChange={(e) => {
-                  setInstructions(e.target.value)
-                }}
+                onChange={(e) => setInstructions(e.target.value)}
                 placeholder="Enter your trade instructions"
                 className="min-h-[120px] resize-none"
                 maxLength={300}
