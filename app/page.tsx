@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { USER } from "@/lib/local-variables"
-import type { Advertisement } from "@/services/api/api-buy-sell"
+import type { Advertisement, PaymentMethod } from "@/services/api/api-buy-sell"
 import { BuySellAPI } from "@/services/api"
 import { debounce } from "lodash"
 import FilterPopup, { type FilterOptions } from "@/components/buy-sell/filter-popup"
@@ -32,14 +32,33 @@ export default function BuySellPage() {
     fromFollowing: false,
   })
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("all") // Updated default value
+  const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(false)
 
-  // Add state for order sidebar
+
   const [isOrderSidebarOpen, setIsOrderSidebarOpen] = useState(false)
   const [selectedAd, setSelectedAd] = useState<Advertisement | null>(null)
 
   useEffect(() => {
     fetchAdverts()
-  }, [activeTab, currency, sortBy, filterOptions])
+  }, [activeTab, currency, sortBy, filterOptions, selectedPaymentMethod])
+
+  useEffect(() => {
+    const fetchPaymentMethods = async () => {
+      setIsLoadingPaymentMethods(true)
+      try {
+        const methods = await BuySellAPI.getPaymentMethods()
+        setPaymentMethods(methods)
+      } catch (error) {
+        console.error("Error fetching payment methods:", error)
+      } finally {
+        setIsLoadingPaymentMethods(false)
+      }
+    }
+
+    fetchPaymentMethods()
+  }, [])
 
   // Update the fetchAdverts function to ensure adverts is always an array
   const fetchAdverts = async (query = null) => {
@@ -49,7 +68,7 @@ export default function BuySellPage() {
       const params: BuySellAPI.SearchParams = {
         type: activeTab,
         currency: currency,
-        paymentMethod: undefined,
+        paymentMethod: selectedPaymentMethod || undefined,
         nickname: query !== null ? query : searchQuery,
         sortBy: sortBy,
       }
@@ -84,7 +103,7 @@ export default function BuySellPage() {
     debounce(() => {
       fetchAdverts()
     }, 300),
-    [activeTab, currency, sortBy, filterOptions, searchQuery],
+    [activeTab, currency, sortBy, filterOptions, searchQuery, selectedPaymentMethod],
   )
 
   const handleAdvertiserClick = (userId: number) => {
@@ -187,7 +206,25 @@ export default function BuySellPage() {
                 }}
               />
             </div>
-
+            <div className="hidden md:block">
+              <Select
+                value={selectedPaymentMethod}
+                onValueChange={setSelectedPaymentMethod}
+                disabled={isLoadingPaymentMethods}
+              >
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectValue placeholder={isLoadingPaymentMethods ? "Loading..." : "Payment method"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All payment methods</SelectItem>
+                  {paymentMethods.map((method) => (
+                    <SelectItem key={method.method} value={method.method}>
+                      {method.display_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             {!isSearchOpen && (
               <button
                 className="md:hidden border rounded-md p-1 flex-shrink-0"
@@ -527,10 +564,12 @@ export default function BuySellPage() {
                           <div className="flex flex-wrap gap-2">
                             {ad.payment_method_names?.map((method, index) => (
                               <div key={index} className="flex items-center">
-                                {method && <div
-                                  className={`h-2 w-2 rounded-full mr-2 ${method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"
-                                    }`}
-                                ></div>}
+                                {method && (
+                                  <div
+                                    className={`h-2 w-2 rounded-full mr-2 ${method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"
+                                      }`}
+                                  ></div>
+                                )}
                                 <span className="text-sm">{method}</span>
                               </div>
                             ))}
