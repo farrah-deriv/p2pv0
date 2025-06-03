@@ -542,7 +542,7 @@ export default function CreateAdPage() {
       {isMobile ? (
         <div className="fixed bottom-0 left-0 w-full bg-white mt-4 py-4 mb-16 md:mb-0 border-t border-gray-200">
           <div className="mx-6">
-            <Button onClick={handleButtonClick} disabled={isButtonDisabled} className="w-full" id="create-ad-button">
+            <Button onClick={handleButtonClick} disabled={isButtonDisabled} className="w-full">
               {isSubmitting ? (
                 <div className="flex items-center gap-2">
                   <span>{isEditMode ? "Saving..." : "Creating..."}</span>
@@ -563,7 +563,7 @@ export default function CreateAdPage() {
       )}
 
       <div className="hidden md:flex justify-end mt-8">
-        <Button onClick={handleButtonClick} disabled={isButtonDisabled} id="create-ad-button-desktop">
+        <Button onClick={handleButtonClick} disabled={isButtonDisabled}>
           {isSubmitting ? (
             <div className="flex flex-col items-center gap-1">
               <span>{isEditMode ? "Saving..." : "Creating..."}</span>

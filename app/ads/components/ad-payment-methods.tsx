@@ -20,85 +20,38 @@ const AdPaymentMethods = () => {
     const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
     const [selectedMethods, setSelectedMethods] = useState<number[]>([])
     const [isLoading, setIsLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
-        let isMounted = true
-
         const fetchPaymentMethods = async () => {
             try {
-                if (!isMounted) return
-
-                setIsLoading(true)
-                setError(null)
-
                 const url = `${API.baseUrl}${API.endpoints.userPaymentMethods}`
                 const headers = {
                     ...AUTH.getAuthHeader(),
                     "Content-Type": "application/json",
                 }
+
                 const response = await fetch(url, {
                     headers,
                     cache: "no-store",
                 })
 
-                if (!response.ok) {
-                    throw new Error(`Error fetching payment methods: ${response.statusText}`)
-                }
-
-                const responseText = await response.text()
-
-                let data
-                try {
-                    data = JSON.parse(responseText)
-                    console.log("Payment Methods API Response:", data)
-                } catch (e) {
-                    data = { data: [] }
-                }
-
-                const methodsData = data.data || []
-                console.log("Payment Methods Data:", methodsData)
-
-                if (isMounted) {
-                    setPaymentMethods(methodsData)
+                if (response.ok) {
+                    const data = await response.json()
+                    setPaymentMethods(data.data || [])
                 }
             } catch (error) {
-                if (isMounted) {
-                    setError(error instanceof Error ? error.message : "Failed to load payment methods")
-                }
+                // Silently fail - just show empty state
             } finally {
-                if (isMounted) {
-                    setIsLoading(false)
-                }
+                setIsLoading(false)
             }
         }
 
         fetchPaymentMethods()
-
-        return () => {
-            isMounted = false
-        }
     }, [])
 
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            ; (window as any).adPaymentMethodIds = selectedMethods
-        }
+        ; (window as any).adPaymentMethodIds = selectedMethods
     }, [selectedMethods])
-
-    useEffect(() => {
-        if (typeof window !== "undefined" && paymentMethods.length > 0) {
-            const preSelectedIds = (window as any).adPaymentMethodIds
-            if (
-                preSelectedIds &&
-                Array.isArray(preSelectedIds) &&
-                preSelectedIds.length > 0 &&
-                selectedMethods.length === 0
-            ) {
-                setSelectedMethods(preSelectedIds)
-            }
-        }
-    }, [paymentMethods, selectedMethods.length])
 
     const handleCheckboxChange = (methodId: number, checked: boolean) => {
         if (checked && selectedMethods.length >= 3) {
@@ -161,14 +114,6 @@ const AdPaymentMethods = () => {
                     <CustomShimmer className="h-24 w-full" />
                     <CustomShimmer className="h-24 w-full" />
                 </div>
-            </div>
-        )
-    }
-
-    if (error) {
-        return (
-            <div className="flex flex-col items-center justify-center py-4">
-                <p className="text-red-500 mb-2">{error}</p>
             </div>
         )
     }
