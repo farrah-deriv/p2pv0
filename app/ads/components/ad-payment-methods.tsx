@@ -8,12 +8,12 @@ import { CustomShimmer } from "@/app/profile/components/ui/custom-shimmer"
 
 interface PaymentMethod {
     id: number
-    name: string
+    method: string
     type: string
-    category: "bank_transfer" | "e_wallet" | "other"
-    details: Record<string, any>
-    instructions?: string
-    isDefault?: boolean
+    display_name: string
+    fields: Record<string, any>
+    created_at?: number
+    is_default?: boolean
 }
 
 const AdPaymentMethods = () => {
@@ -51,50 +51,16 @@ const AdPaymentMethods = () => {
                 let data
                 try {
                     data = JSON.parse(responseText)
+                    console.log("Payment Methods API Response:", data)
                 } catch (e) {
                     data = { data: [] }
                 }
 
                 const methodsData = data.data || []
-
-                const transformedMethods = methodsData.map((method: any) => {
-                    const methodType = method.method || ""
-                    let category: "bank_transfer" | "e_wallet" | "other" = "other"
-
-                    if (["bank_transfer", "bank"].includes(methodType.toLowerCase())) {
-                        category = "bank_transfer"
-                    } else if (
-                        ["alipay", "google_pay", "nequi", "paypal", "skrill", "wechat_pay"].includes(methodType.toLowerCase())
-                    ) {
-                        category = "e_wallet"
-                    }
-
-                    let instructions = ""
-                    if (method.fields?.instructions) {
-                        if (typeof method.fields.instructions === "object") {
-                            if ("value" in method.fields.instructions) {
-                                instructions = method.fields.instructions.value
-                            }
-                        } else if (typeof method.fields.instructions === "string") {
-                            instructions = method.fields.instructions
-                        }
-                    }
-
-                    const name = method.display_name || methodType.charAt(0).toUpperCase() + methodType.slice(1)
-
-                    return {
-                        id: Number(method.id || 0),
-                        name: name,
-                        type: methodType,
-                        category: category,
-                        details: method.fields || {},
-                        instructions: instructions,
-                        isDefault: false,
-                    }
-                })
+                console.log("Payment Methods Data:", methodsData)
 
                 if (isMounted) {
-                    setPaymentMethods(transformedMethods)
+                    setPaymentMethods(methodsData)
                 }
             } catch (error) {
                 if (isMounted) {
@@ -144,9 +110,9 @@ const AdPaymentMethods = () => {
     }
 
     const getMethodDisplayDetails = (method: PaymentMethod) => {
-        if (method.category === "bank_transfer") {
-            const account = method.details.account?.value || method.details.account || ""
-            const bankName = method.details.bank_name?.value || method.details.bank_name || "Bank Transfer"
+        if (method.type === "bank") {
+            const account = method.fields.account?.value || ""
+            const bankName = method.fields.bank_name?.value || "Bank Transfer"
             const maskedAccount = account ? account.slice(0, 6) + "****" + account.slice(-4) : "****"
 
             return {
@@ -154,21 +120,32 @@ const AdPaymentMethods = () => {
                 secondary: bankName,
             }
         } else {
-            const account = method.details.account?.value || method.details.account || ""
-            const displayValue = account || method.name
+            const account = method.fields.account?.value || ""
+            const displayValue = account || method.display_name
 
             return {
                 primary: displayValue,
-                secondary: method.name,
+                secondary: method.display_name,
             }
         }
     }
 
     const getMethodIcon = (method: PaymentMethod) => {
-        if (method.category === "bank_transfer") {
+        if (method.type === "bank") {
             return <div className="w-3 h-3 rounded-full bg-green-500"></div>
         } else {
             return <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+        }
+    }
+
+    const getCategoryDisplayName = (type: string) => {
+        switch (type) {
+            case "bank":
+                return "Bank transfer"
+            case "ewallet":
+                return "eWallet"
+            default:
+                return "Other"
         }
     }
 
@@ -216,9 +193,7 @@ const AdPaymentMethods = () => {
                                     <div className="flex items-start justify-between mb-3">
                                         <div className="flex items-center gap-2">
                                             {getMethodIcon(method)}
-                                            <span className="font-medium text-gray-700">
-                                                {method.category === "bank_transfer" ? "Bank transfer" : "eWallet"}
-                                            </span>
+                                            <span className="font-medium text-gray-700">{getCategoryDisplayName(method.type)}</span>
                                         </div>
                                         <Checkbox
                                             checked={isSelected}
