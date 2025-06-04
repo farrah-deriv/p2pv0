@@ -1,11 +1,8 @@
-import type React from "react"
-import "./globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
-import MobileFooterNav from "@/components/mobile-footer-nav"
-import Header from "@/components/header"
-import { AuthAPI } from "@/services/api"
+import Main from "./main";
+import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,17 +21,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <div className="container mx-auto flex flex-col h-screen overflow-hidden">
-            {AuthAPI.isAuthenticated() && <Header className="flex-shrink-0" />}
-            <main className="flex-1 overflow-hidden">{children}</main>
-            <MobileFooterNav className="flex-shrink-0 md:hidden" />
-          </div>
+          <Main children={children} />
         </ThemeProvider>
       </body>
     </html>
   )
 }
-
-
-
-import './globals.css'
