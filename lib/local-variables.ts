@@ -2,7 +2,7 @@ let USER_DATA = null;
 let USER_TOKEN = null;
 if (typeof window !== "undefined") {
   USER_DATA = JSON.parse(localStorage.getItem("user_data") ?? "{}")
-  USER_TOKEN = JSON.parse(localStorage.getItem("auth_token") ?? "{}")
+  USER_TOKEN = localStorage.getItem("auth_token") ?? "";
 }
 
 export const USER = {

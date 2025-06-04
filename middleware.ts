@@ -6,7 +6,7 @@ const authPaths = ["/login", "/signup", "/forgot-password"]
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  let isAuthorized = false
+  let isAuthorized = true
 
   if (
     pathname.startsWith("/_next") ||
@@ -18,23 +18,14 @@ export function middleware(request: NextRequest) {
 
 
   if (typeof window !== 'undefined') {
-    isAuthorized = JSON.parse(localStorage.getItem("auth_token") ?? "");
+    isAuthorized = localStorage.getItem("auth_token") ? true : false;
   }
 
-  const authToken =
-    request.cookies.get("auth_token")?.value ||
-    request.headers.get("authorization")?.split(" ")[1] ||
-    isAuthorized
-
-
-
-  const isAuthenticated = !!authToken
-
-  if (isAuthenticated && authPaths.some((path) => pathname.startsWith(path))) {
+  if (isAuthorized && authPaths.some((path) => pathname.startsWith(path))) {
     return NextResponse.redirect(new URL("/", request.url))
   }
 
-  if (!isAuthenticated && !publicPaths.some((path) => pathname.startsWith(path))) {
+  if (!isAuthorized && !publicPaths.some((path) => pathname.startsWith(path))) {
     const redirectUrl = new URL("/login", request.url)
     redirectUrl.searchParams.set("redirect", pathname)
     return NextResponse.redirect(redirectUrl)
