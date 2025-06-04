@@ -24,7 +24,7 @@ export default function Navigation({
   const [isBalanceInfoOpen, setIsBalanceInfoOpen] = useState(false)
 
   const navItems = [
-    { name: "Buy/Sell", href: "/" },
+    { name: "Buy/Sell", href: "/buy-sell" },
     { name: "Orders", href: "/orders" },
     { name: "My ads", href: "/ads" },
     { name: "Wallet", href: "/wallet" },
