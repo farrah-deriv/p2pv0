@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [step, setStep] = useState<"login" | "verification">("login")
   const [email, setEmail] = useState("")
   const [verificationCode, setVerificationCode] = useState("")
+  const [verificationMessage, setVerificationMessage] = useState("")
   const [resendTimer, setResendTimer] = useState(59)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -24,7 +25,8 @@ export default function LoginPage() {
 
       const response = await AuthAPI.login({ email })
 
-      if (response.success) {
+      if (response.code === "Success") {
+        setVerificationMessage(response.message);
         setStep("verification")
 
         const timer = setInterval(() => {
@@ -117,7 +119,7 @@ export default function LoginPage() {
           <h1 className="text-3xl font-bold text-black mb-6">Verification</h1>
 
           <p className="text-gray-600 mb-8">
-            Enter the verification code sent to <span className="font-medium text-black">{email}</span>.
+            {verificationMessage}
           </p>
           <div className="mb-8">
             <Input
