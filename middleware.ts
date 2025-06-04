@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const publicPaths = ["/login", "/signup", "/forgot-password"]
-
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   let isAuthorized = false
@@ -21,9 +19,7 @@ export function middleware(request: NextRequest) {
 
     if (isAuthorized) {
       return NextResponse.redirect(new URL("/", request.url))
-    }
-
-    if (!isAuthorized && !publicPaths.some((path) => pathname.startsWith(path))) {
+    } else {
       const redirectUrl = new URL("/login", request.url)
       redirectUrl.searchParams.set("redirect", pathname)
       return NextResponse.redirect(redirectUrl)
