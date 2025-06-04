@@ -1,11 +1,19 @@
+let USER_DATA = null;
+let USER_TOKEN = null;
+if (typeof window !== "undefined") {
+  USER_DATA = JSON.parse(localStorage.getItem("user_data") ?? "{}")
+  USER_TOKEN = JSON.parse(localStorage.getItem("auth_token") ?? "{}")
+}
+
 export const USER = {
-  id: process.env.NEXT_PUBLIC_USER_ID,
-  nickname: process.env.NEXT_PUBLIC_USER_NICKNAME,
-  token: process.env.NEXT_PUBLIC_USER,
+  id: USER_DATA?.id,
+  nickname: USER_DATA?.nickname,
+  token: USER_TOKEN,
 }
 
 export const API = {
   baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
+  coreUrl: process.env.NEXT_PUBLIC_CORE_URL,
   socketUrl: process.env.NEXT_PUBLIC_SOCKET_URL,
   endpoints: {
     ads: "/adverts",
