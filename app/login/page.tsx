@@ -62,7 +62,7 @@ export default function LoginPage() {
 
       const response = await AuthAPI.verifyCode(verificationData);
 
-      if (response.success && response.access_token) {
+      if (response.access_token) {
         localStorage.setItem("auth_token", response.access_token)
 
         if (response.user) {
@@ -71,7 +71,7 @@ export default function LoginPage() {
 
         router.push("/")
       } else {
-        setError(response.message || "Verification failed. Please try again.")
+        setError("Verification failed. Please try again.")
       }
     } catch (error: any) {
       console.error("Verification failed:", error)
