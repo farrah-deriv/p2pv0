@@ -18,16 +18,16 @@ export function middleware(request: NextRequest) {
 
   if (typeof window !== 'undefined') {
     isAuthorized = localStorage.getItem("auth_token") ? true : false;
-  }
 
-  if (isAuthorized) {
-    return NextResponse.redirect(new URL("/", request.url))
-  }
+    if (isAuthorized) {
+      return NextResponse.redirect(new URL("/", request.url))
+    }
 
-  if (!isAuthorized && !publicPaths.some((path) => pathname.startsWith(path))) {
-    const redirectUrl = new URL("/login", request.url)
-    redirectUrl.searchParams.set("redirect", pathname)
-    return NextResponse.redirect(redirectUrl)
+    if (!isAuthorized && !publicPaths.some((path) => pathname.startsWith(path))) {
+      const redirectUrl = new URL("/login", request.url)
+      redirectUrl.searchParams.set("redirect", pathname)
+      return NextResponse.redirect(redirectUrl)
+    }
   }
 
   return NextResponse.next()
