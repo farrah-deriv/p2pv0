@@ -2,11 +2,10 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 const publicPaths = ["/login", "/signup", "/forgot-password"]
-const authPaths = ["/login", "/signup", "/forgot-password"]
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  let isAuthorized = true
+  let isAuthorized = false
 
   if (
     pathname.startsWith("/_next") ||
@@ -21,7 +20,7 @@ export function middleware(request: NextRequest) {
     isAuthorized = localStorage.getItem("auth_token") ? true : false;
   }
 
-  if (isAuthorized && authPaths.some((path) => pathname.startsWith(path))) {
+  if (isAuthorized) {
     return NextResponse.redirect(new URL("/", request.url))
   }
 
