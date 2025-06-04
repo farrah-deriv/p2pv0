@@ -27,7 +27,7 @@ export default function Main({
 
         if (token) {
             setIsHeaderVisible(true);
-            router.push('/');
+            router.push(pathname);
         }
     }, [pathname]);
 
