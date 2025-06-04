@@ -40,7 +40,7 @@ export async function login(email: LoginRequest): Promise<LoginResponse> {
     }
 
     const result = await response.json()
-    return result
+    return result.data
   } catch (error) {
     console.error("Login error:", error)
     throw new Error("Failed to login. Please try again.")
@@ -63,7 +63,7 @@ export async function verifyCode(data: VerificationRequest): Promise<Verificatio
 
     const result = await response.json()
 
-    return result
+    return result.data
   } catch (error) {
     console.error("Verification error:", error)
     throw new Error("Failed to verify code. Please try again.")
