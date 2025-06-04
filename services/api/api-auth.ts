@@ -16,8 +16,6 @@ export interface VerificationRequest {
 }
 
 export interface VerificationResponse {
-  success: boolean
-  message: string
   access_token?: string
   user?: {
     id: string
@@ -52,11 +50,11 @@ export async function login(email: LoginRequest): Promise<LoginResponse> {
 /**
  * Verify the code sent to email
  */
-export async function verifyCode(data: VerificationRequest): Promise<VerificationResponse> {
+export async function verifyCode(verificationData: VerificationRequest): Promise<VerificationResponse> {
   try {
     const response = await fetch(`${API.coreUrl}/verify`, {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify(verificationData),
     })
 
     if (!response.ok) {
@@ -64,8 +62,9 @@ export async function verifyCode(data: VerificationRequest): Promise<Verificatio
     }
 
     const result = await response.json()
+    const { data } = result
 
-    return result.data
+    return data[0]
   } catch (error) {
     console.error("Verification error:", error)
     throw new Error("Failed to verify code. Please try again.")
