@@ -69,7 +69,7 @@ export default function LoginPage() {
           localStorage.setItem("user_data", JSON.stringify(response.user))
         }
 
-        router.push("/")
+        router.push("/buy-sell")
       } else {
         setError("Verification failed. Please try again.")
       }
@@ -113,6 +113,7 @@ export default function LoginPage() {
         <div className="flex items-center mb-8">
           <Button variant="ghost" onClick={() => setStep("login")} className="p-2 -ml-2">
             <ArrowLeft className="h-6 w-6" />
+            Back
           </Button>
         </div>
         <div className="max-w-md mx-auto">
