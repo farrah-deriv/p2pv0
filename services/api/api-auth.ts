@@ -5,7 +5,7 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  success: boolean
+  code: string
   message: string
 }
 
@@ -40,7 +40,9 @@ export async function login(email: LoginRequest): Promise<LoginResponse> {
     }
 
     const result = await response.json()
-    return result.data
+    const { data } = result
+
+    return data[0];
   } catch (error) {
     console.error("Login error:", error)
     throw new Error("Failed to login. Please try again.")
