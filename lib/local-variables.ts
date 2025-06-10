@@ -22,6 +22,7 @@ export const API = {
     balance: "/balance",
     paymentMethods: "/payment-methods",
     availablePaymentMethods: "/available-payment-methods",
+    userPaymentMethods: "/user-payment-methods",
     advertisers: "/users",
     transactions: "/transactions",
     userFavourites: "/user-favourites",
