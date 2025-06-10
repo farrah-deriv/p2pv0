@@ -69,7 +69,7 @@ export default function LoginPage() {
           localStorage.setItem("user_data", JSON.stringify(response.user))
         }
 
-        router.push("/")
+        window.location.href = "/"
       } else {
         setError("Verification failed. Please try again.")
       }
