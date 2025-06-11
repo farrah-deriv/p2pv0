@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useRouter } from "next/navigation"
 import * as AuthAPI from "@/services/api/api-auth"
-import { API } from "@/lib/local-variables"
 
 export default function LoginPage() {
   const [step, setStep] = useState<"login" | "verification">("login")
