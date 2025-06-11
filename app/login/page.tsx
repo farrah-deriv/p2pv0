@@ -68,6 +68,7 @@ export default function LoginPage() {
         if (response.user) {
           localStorage.setItem("user_data", JSON.stringify(response.user))
         }
+        await AuthAPI.fetchUserIdAndStore()
 
         window.location.href = "/"
       } else {

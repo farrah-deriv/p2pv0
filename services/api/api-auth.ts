@@ -121,3 +121,35 @@ export function validateEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return emailRegex.test(email)
 }
+
+/**
+ * Fetch user data and store user_id in localStorage
+ */
+export async function fetchUserIdAndStore(): Promise<void> {
+  try {
+    const token = getAuthToken()
+    if (!token) throw new Error("No auth token found")
+
+    const response = await fetch(`${API.baseUrl}/auth/me`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "X-Branch": "development",
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch user data: ${response.statusText}`)
+    }
+
+    const result = await response.json()
+    const userId = result?.data?.id
+
+    if (userId) {
+      localStorage.setItem("user_id", userId.toString())
+    }
+  } catch (error) {
+    console.error("Error fetching user ID:", error)
+  }
+}
