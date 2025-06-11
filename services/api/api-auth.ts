@@ -1,4 +1,4 @@
-import { API } from "@/lib/local-variables"
+import { API, AUTH } from "@/lib/local-variables"
 
 export interface LoginRequest {
   email: string
@@ -151,5 +151,36 @@ export async function fetchUserIdAndStore(): Promise<void> {
     }
   } catch (error) {
     console.error("Error fetching user ID:", error)
+  }
+}
+
+/**
+ * Get websocket token
+ */
+export async function getSocketToken(): Promise<void> {
+  try {
+    const token = getAuthToken()
+    if (!token) throw new Error("No auth token found")
+
+    const response = await fetch(`${API.baseUrl}/user-websocket-token`, {
+      method: "GET",
+      headers: {
+        ...AUTH.getAuthHeader(),
+        "Content-Type": "application/json",
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch token: ${response.statusText}`)
+    }
+
+    const result = await response.json()
+    const socketToken = result?.data?.id
+
+    if (socketToken) {
+      localStorage.setItem("socket_token", socketToken.toString())
+    }
+  } catch (error) {
+    console.error("Error fetching token:", error)
   }
 }
