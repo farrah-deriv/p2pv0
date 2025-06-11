@@ -92,22 +92,11 @@ export function getAuthToken(): string | null {
  */
 export async function logout(): Promise<void> {
   try {
-    const token = getAuthToken()
-    if (token) {
-      await fetch(`${API.coreUrl}/logout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }).catch((e) => {
-        console.log(e);
-      })
-    }
-
     if (typeof window !== "undefined") {
       localStorage.removeItem("auth_token")
       localStorage.removeItem("user_data")
+      localStorage.removeItem("user_id")
+      localStorage.removeItem("socket_token")
     }
   } catch (error) {
     console.error("Logout error:", error)
@@ -175,7 +164,7 @@ export async function getSocketToken(): Promise<void> {
     }
 
     const result = await response.json()
-    const socketToken = result?.data?.id
+    const socketToken = result?.data
 
     if (socketToken) {
       localStorage.setItem("socket_token", socketToken.toString())
