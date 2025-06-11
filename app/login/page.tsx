@@ -69,18 +69,7 @@ export default function LoginPage() {
         if (response.user) {
           localStorage.setItem("user_data", JSON.stringify(response.user))
         }
-        const UserResponse = await fetch(`${API.baseUrl}/auth/me`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${response.access_token}`,
-            "Content-Type": "application/json",
-            "X-Branch": "development",
-          },
-        });
-        const userData = await UserResponse.json();
-        if (userData?.data?.id) {
-          localStorage.setItem("user_id", userData.data.id.toString());
-        }
+        await AuthAPI.fetchUserIdAndStore()
 
         window.location.href = "/"
       } else {
