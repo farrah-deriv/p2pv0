@@ -3,10 +3,14 @@
 import Link from "next/link"
 import Image from "next/image"
 import { User } from "lucide-react"
+import { USER } from "@/lib/local-variables"
 import { cn } from "@/lib/utils"
 import { NovuNotifications } from "./novu-notifications"
+import { Button } from "@/components/ui/button"
+import * as AuthAPI from "@/services/api/api-auth"
 
 export default function Header() {
+  const isAuthenticated = !!USER.token;
   const navItems = [
     { name: "Hub", href: "https://hub.deriv.com/tradershub/home" },
     { name: "CFDs", href: "https://hub.deriv.com/tradershub/cfds" },
@@ -55,6 +59,11 @@ export default function Header() {
             <Link href="/profile" className="text-slate-600 hover:text-slate-700">
               <User className="h-5 w-5" />
             </Link>
+            {isAuthenticated && <Button
+              size="sm"
+              onClick={() => AuthAPI.logout()}>
+              Logout
+            </Button>}
           </div>
         </div>
       </div>
