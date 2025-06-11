@@ -2,17 +2,26 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { User } from "lucide-react"
+import { User, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { NovuNotifications } from "./novu-notifications"
+import { Button } from "@/components/ui/button"
+import { logout } from "@/services/api/api-auth"
+import { useRouter } from "next/navigation"
 
 export default function Header() {
+  const router = useRouter()
   const navItems = [
     { name: "Hub", href: "https://hub.deriv.com/tradershub/home" },
     { name: "CFDs", href: "https://hub.deriv.com/tradershub/cfds" },
     { name: "Options", href: "https://hub.deriv.com/tradershub/options" },
     { name: "Wallets", href: "/wallet" },
   ]
+
+  const handleSignOut = async () => {
+    await logout()
+    router.push("/login")
+  }
 
   return (
     <header className="hidden md:block fixed top-0 left-0 right-0 bg-white border-b border-slate-200 z-10 h-16">
@@ -55,6 +64,10 @@ export default function Header() {
             <Link href="/profile" className="text-slate-600 hover:text-slate-700">
               <User className="h-5 w-5" />
             </Link>
+            <Button variant="outline" size="sm" onClick={handleSignOut} className="flex items-center gap-2">
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </Button>
           </div>
         </div>
       </div>
