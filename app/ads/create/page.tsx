@@ -35,6 +35,7 @@ export default function CreateAdPage() {
   const [adFormValid, setAdFormValid] = useState(false)
   const [paymentFormValid, setPaymentFormValid] = useState(false)
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false)
+  const [hasSelectedPaymentMethods, setHasSelectedPaymentMethods] = useState(false)
 
   const formDataRef = useRef<Partial<AdFormData>>({})
 
@@ -88,15 +89,25 @@ export default function CreateAdPage() {
             }
 
             let paymentMethodNames: string[] = []
+            let paymentMethodIds: number[] = []
+
             if (parsedData.paymentMethods && Array.isArray(parsedData.paymentMethods)) {
-              paymentMethodNames = parsedData.paymentMethods.map((methodName: string) => {
-                if (methodName.includes("_") || methodName === methodName.toLowerCase()) {
-                  return methodName
+              if (parsedData.type?.toLowerCase() === "buy") {
+                paymentMethodNames = parsedData.paymentMethods.map((methodName: string) => {
+                  if (methodName.includes("_") || methodName === methodName.toLowerCase()) {
+                    return methodName
+                  }
+                  return convertToSnakeCase(methodName)
+                })
+              } else {
+                paymentMethodIds = parsedData.paymentMethods
+                  .map((id: any) => Number(id))
+                  .filter((id: number) => !isNaN(id))
+
+                if (typeof window !== "undefined") {
+                  ; (window as any).adPaymentMethodIds = paymentMethodIds
                 }
-                return convertToSnakeCase(methodName)
-              })
-            } else {
-              paymentMethodNames = []
+              }
             }
 
             const formattedData: Partial<AdFormData> = {
@@ -106,13 +117,14 @@ export default function CreateAdPage() {
               minAmount: minAmount,
               maxAmount: maxAmount,
               paymentMethods: paymentMethodNames,
+              payment_method_ids: paymentMethodIds,
               instructions: parsedData.description || "",
             }
 
             setFormData(formattedData)
             formDataRef.current = formattedData
           }
-        } catch {
+        } catch (error) {
         } finally {
           setIsLoading(false)
         }
@@ -123,6 +135,20 @@ export default function CreateAdPage() {
 
     loadEditData()
   }, [isEditMode])
+
+  useEffect(() => {
+    const checkSelectedPaymentMethods = () => {
+      if (formData.type === "sell" && typeof window !== "undefined") {
+        const selectedIds = (window as any).adPaymentMethodIds || []
+        setHasSelectedPaymentMethods(selectedIds.length > 0)
+      }
+    }
+
+    checkSelectedPaymentMethods()
+    const interval = setInterval(checkSelectedPaymentMethods, 100)
+
+    return () => clearInterval(interval)
+  }, [formData.type])
 
   useEffect(() => {
     const handleAdFormValidation = (e: any) => {
@@ -173,8 +199,7 @@ export default function CreateAdPage() {
         if (updateDataStr) {
           localStorage.removeItem("adUpdateSuccess")
         }
-      } catch {
-      }
+      } catch { }
     }
 
     checkForSuccessData()
@@ -247,6 +272,8 @@ export default function CreateAdPage() {
     setIsSubmitting(true)
 
     try {
+      const selectedPaymentMethodIds = finalData.type === "sell" ? (window as any).adPaymentMethodIds || [] : []
+
       if (isEditMode && adId) {
         const payload = {
           is_active: true,
@@ -259,7 +286,7 @@ export default function CreateAdPage() {
           description: finalData.instructions || "",
           ...(finalData.type === "buy"
             ? { payment_method_names: finalData.paymentMethods || [] }
-            : { payment_method_ids: finalData.paymentMethods || [] }),
+            : { payment_method_ids: selectedPaymentMethodIds }),
         }
 
         const updateResult = await updateAd(adId, payload)
@@ -287,7 +314,7 @@ export default function CreateAdPage() {
           order_expiry_period: 15,
           ...(finalData.type === "buy"
             ? { payment_method_names: finalData.paymentMethods || [] }
-            : { payment_method_ids: finalData.paymentMethods || [] }),
+            : { payment_method_ids: selectedPaymentMethodIds }),
         }
 
         const result = await createAd(payload)
@@ -391,8 +418,18 @@ export default function CreateAdPage() {
       return
     }
 
-    if (currentStep === 1 && (!paymentFormValid || isSubmitting)) {
-      return
+    if (currentStep === 1) {
+      if (formData.type === "buy" && !paymentFormValid) {
+        return
+      }
+
+      if (formData.type === "sell" && !hasSelectedPaymentMethods) {
+        return
+      }
+
+      if (isSubmitting) {
+        return
+      }
     }
 
     if (currentStep === 0) {
@@ -428,7 +465,11 @@ export default function CreateAdPage() {
   }
 
   const isButtonDisabled =
-    isSubmitting || (currentStep === 0 && !adFormValid) || (currentStep === 1 && !paymentFormValid) || isBottomSheetOpen
+    isSubmitting ||
+    (currentStep === 0 && !adFormValid) ||
+    (currentStep === 1 && formData.type === "buy" && !paymentFormValid) ||
+    (currentStep === 1 && formData.type === "sell" && !hasSelectedPaymentMethods) ||
+    isBottomSheetOpen
 
   return (
     <div className="max-w-[600px] mx-auto py-6 mt-8 progress-steps-container overflow-auto h-full pb-24 px-4 md:px-0">
@@ -460,8 +501,7 @@ export default function CreateAdPage() {
   }
 `}</style>
       <div
-        className={`flex ${currentStep === 0 ? "justify-end" : "justify-between"} mb-7 md:mt-8 sticky top-0 z-10 bg-white py-1 relative items-center border-b md:border-b-0 -mx-4 px-4 md:mx-0 md:px-0`}
-        style={{ borderBottomColor: "var(--Neutral-Neutral-3, #E9ECEF)" }}
+        className={`flex ${currentStep === 0 ? "justify-end" : "justify-between"} mb-7 md:mt-8 sticky top-0 z-10 bg-white py-1 relative items-center border-b md:border-b-0 -mx-4 px-4 md:mx-0 md:px-0 border-gray-200`}
       >
         {currentStep === 1 && (
           <button onClick={() => setCurrentStep(0)} className="text-gray-700 hover:text-gray-900 p-2">
@@ -500,10 +540,7 @@ export default function CreateAdPage() {
       </div>
 
       {isMobile ? (
-        <div
-          className="fixed bottom-0 left-0 w-full bg-white mt-4 py-4 mb-16 md:mb-0"
-          style={{ borderTop: "1px solid var(--Neutral-Neutral-3, #E9ECEF)" }}
-        >
+        <div className="fixed bottom-0 left-0 w-full bg-white mt-4 py-4 mb-16 md:mb-0 border-t border-gray-200">
           <div className="mx-6">
             <Button onClick={handleButtonClick} disabled={isButtonDisabled} className="w-full">
               {isSubmitting ? (

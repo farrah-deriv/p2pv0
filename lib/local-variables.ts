@@ -1,11 +1,24 @@
+let USER_DATA = null;
+let USER_TOKEN = null;
+let USER_ID = null;
+let SOCKET_TOKEN = null;
+if (typeof window !== "undefined") {
+  USER_DATA = JSON.parse(localStorage.getItem("user_data") ?? "{}")
+  USER_TOKEN = localStorage.getItem("auth_token") ?? "";
+  USER_ID = localStorage.getItem("user_id") ?? "";
+  SOCKET_TOKEN = localStorage.getItem("socket_token") ?? "";
+}
+
 export const USER = {
-  id: process.env.NEXT_PUBLIC_USER_ID,
-  nickname: process.env.NEXT_PUBLIC_USER_NICKNAME,
-  token: process.env.NEXT_PUBLIC_USER,
+  id: USER_ID,
+  nickname: USER_DATA?.nickname,
+  socketToken: SOCKET_TOKEN,
+  token: USER_TOKEN,
 }
 
 export const API = {
   baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
+  coreUrl: process.env.NEXT_PUBLIC_CORE_URL,
   socketUrl: process.env.NEXT_PUBLIC_SOCKET_URL,
   endpoints: {
     ads: "/adverts",
@@ -14,6 +27,7 @@ export const API = {
     balance: "/balance",
     paymentMethods: "/payment-methods",
     availablePaymentMethods: "/available-payment-methods",
+    userPaymentMethods: "/user-payment-methods",
     advertisers: "/users",
     transactions: "/transactions",
     userFavourites: "/user-favourites",
