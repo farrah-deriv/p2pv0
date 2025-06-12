@@ -6,14 +6,19 @@ import { USER, NOTIFICATIONS } from "@/lib/local-variables"
 import { useRouter } from "next/navigation"
 
 // Function to fetch the subscriber hash
-async function fetchSubscriberHash(subscriberId: string) {
+async function fetchSubscriberHash() {
     try {
-        const url = `${NOTIFICATIONS.subscriberHashUrl}/${subscriberId}/hash`
+        const url = `${NOTIFICATIONS.subscriberHashUrl}/hash`
+
+        if (!USER.token) {
+            throw new Error("No authentication token available")
+        }
 
         const response = await fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${USER.token}`,
             },
         })
 
@@ -22,7 +27,7 @@ async function fetchSubscriberHash(subscriberId: string) {
         }
 
         const data = await response.json()
-        return data.subscriberHash
+        return data.subscriber.subscriberHash
     } catch (error) {
         console.log(error)
         return null
@@ -71,7 +76,7 @@ export function NovuNotifications() {
             setIsLoading(true)
             setError(null)
             try {
-                const hash = await fetchSubscriberHash(subscriberId)
+                const hash = await fetchSubscriberHash()
                 setSubscriberHash(hash)
                 if (!hash) {
                     setError("Failed to retrieve subscriber hash")
@@ -119,7 +124,6 @@ export function NovuNotifications() {
                     if (notification.data && notification.data["order_id"]) {
                         const orderId = notification.data["order_id"]
                         router.push(`/orders/${orderId}`)
-
                     }
                 }}
                 placement="bottom-end"
