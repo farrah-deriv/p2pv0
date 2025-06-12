@@ -97,6 +97,8 @@ export async function logout(): Promise<void> {
       localStorage.removeItem("user_data")
       localStorage.removeItem("user_id")
       localStorage.removeItem("socket_token")
+
+      window.location.href = "/"
     }
   } catch (error) {
     console.error("Logout error:", error)
