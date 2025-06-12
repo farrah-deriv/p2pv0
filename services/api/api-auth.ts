@@ -148,15 +148,15 @@ export async function fetchUserIdAndStore(): Promise<void> {
 /**
  * Get websocket token
  */
-export async function getSocketToken(): Promise<void> {
+export async function getSocketToken(token: string): Promise<void> {
   try {
-    const token = getAuthToken()
-    if (!token) throw new Error("No auth token found")
 
     const response = await fetch(`${API.baseUrl}/user-websocket-token`, {
       method: "GET",
       headers: {
-        ...AUTH.getAuthHeader(),
+        Authorization: `Bearer ${token}`,
+        "X-Data-Source": process.env.NEXT_PUBLIC_DATA_SOURCE,
+        "X-Branch": process.env.NEXT_PUBLIC_BRANCH,
         "Content-Type": "application/json",
       },
     })
