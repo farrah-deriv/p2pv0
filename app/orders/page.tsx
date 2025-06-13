@@ -265,7 +265,7 @@ export default function OrdersPage() {
   return (
     <div className="flex flex-col h-full px-4">
       <div className="flex-shrink-0">
-        <Navigation title="P2P Wallet" />
+        <Navigation title="" />
 
         {/* Tabs */}
         <div className="mb-6">
