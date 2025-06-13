@@ -32,8 +32,9 @@ export default function BuySellPage() {
   })
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("all")
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("all") // Updated default value
   const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(false)
+
 
   const [isOrderSidebarOpen, setIsOrderSidebarOpen] = useState(false)
   const [selectedAd, setSelectedAd] = useState<Advertisement | null>(null)
@@ -58,6 +59,7 @@ export default function BuySellPage() {
     fetchPaymentMethods()
   }, [])
 
+  // Update the fetchAdverts function to ensure adverts is always an array
   const fetchAdverts = async (query = null) => {
     setIsLoading(true)
     setError(null)
@@ -70,12 +72,16 @@ export default function BuySellPage() {
         sortBy: sortBy,
       }
 
+      // Apply additional filters
       if (filterOptions.fromFollowing) {
+        // Use favourites_only: 1 parameter for the API
         params.favourites_only = 1
       }
+      // Note: withinLimits would typically be handled by the backend
 
       const data = await BuySellAPI.getAdvertisements(params)
 
+      // Ensure data is an array before setting it
       if (Array.isArray(data)) {
         setAdverts(data)
       } else {
@@ -103,6 +109,7 @@ export default function BuySellPage() {
     router.push(`/advertiser/${userId}`)
   }
 
+  // Handle opening the order sidebar
   const handleOrderClick = (ad: Advertisement) => {
     setSelectedAd(ad)
     setIsOrderSidebarOpen(true)
@@ -126,39 +133,43 @@ export default function BuySellPage() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden px-4">
-      <div className="md:hidden flex-shrink-0">
+         <div className="flex-shrink-0">
         <div className="mb-4 md:mb-6 md:flex justify-between items-center">
-          <div className="flex flex-row justify-between items-center gap-4">
-            <Tabs
-              defaultValue={activeTab}
-              onValueChange={(value) => setActiveTab(value as "buy" | "sell")}
-              className="w-full"
-            >
-              <TabsList className="w-full md:min-w-3xs">
-                <TabsTrigger className="w-full md:w-auto" value="sell">
-                  Buy
-                </TabsTrigger>
-                <TabsTrigger className="w-full md:w-auto" value="buy">
-                  Sell
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
+          {!isSearchOpen && (
+            <div className="flex flex-row justify-between items-center gap-4">
+              {/* Buy/Sell Toggle */}
+              <Tabs
+                defaultValue={activeTab}
+                onValueChange={(value) => setActiveTab(value as "buy" | "sell")}
+                className="w-full"
+              >
+                <TabsList className="w-full md:min-w-3xs">
+                  <TabsTrigger className="w-full md:w-auto" value="sell">
+                    Buy
+                  </TabsTrigger>
+                  <TabsTrigger className="w-full md:w-auto" value="buy">
+                    Sell
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          )}
 
+          {/* Responsive Filters Row */}
           <div className="flex flex-wrap gap-2 md:gap-3 md:px-0 mt-4 md:mt-0">
-            <Select value={currency} onValueChange={setCurrency}>
-              <SelectTrigger className="flex-1 md:flex-none w-auto">
-                <SelectValue placeholder="Currency" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="IDR">IDR</SelectItem>
-                <SelectItem value="USD">USD</SelectItem>
-                <SelectItem value="EUR">EUR</SelectItem>
-                <SelectItem value="GBP">GBP</SelectItem>
-              </SelectContent>
-            </Select>
-
-                        )}
+            {!isSearchOpen && (
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger className="flex-1 md:flex-none w-auto">
+                  <SelectValue placeholder="Currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="IDR">IDR</SelectItem>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="EUR">EUR</SelectItem>
+                  <SelectItem value="GBP">GBP</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
 
             <div className="hidden md:block relative flex-grow w-full sm:w-auto sm:max-w-md">
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
@@ -209,33 +220,47 @@ export default function BuySellPage() {
               </Select>
             </div>
             {!isSearchOpen && (
-
-
-            <button
-              className="md:hidden border rounded-md p-1 flex-shrink-0"
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-            >
-              <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-M1TMmjYwGjHFhjLbq4bbWyCgHduG6y.png"
-                alt="Search"
-                width={24}
-                height={24}
-              />
-            </button>
-
-            <div className="relative filter-dropdown-container flex-shrink-0">
               <button
-                onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
-                className="h-10 px-3 py-2 md:w-[150px] flex items-center justify-between rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:border-[#000000] active:border-[#000000] disabled:cursor-not-allowed disabled:opacity-50"
+                className="md:hidden border rounded-md p-1 flex-shrink-0"
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
               >
                 <Image
-                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-MaTVHgyEEk1geuXl77pbxjPzcQzTkb.png"
-                  alt="Dropdown"
-                  width={15}
-                  height={15}
-                  className="h-4 w-4 opacity-70 md:inline"
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-M1TMmjYwGjHFhjLbq4bbWyCgHduG6y.png"
+                  alt="Search"
+                  width={24}
+                  height={24}
                 />
               </button>
+            )}
+
+            <div className="hidden md:block">
+              <Select defaultValue="exchange_rate" onValueChange={setSortBy}>
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="exchange_rate">Sort by: Exchange rate</SelectItem>
+                  <SelectItem value="user_rating_average">Sort by: Rating</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="relative filter-dropdown-container flex-shrink-0">
+              {!isSearchOpen && (
+                <button
+                  onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
+                  className="h-10 px-3 py-2 md:w-[150px] flex items-center justify-between rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:border-[#000000] active:border-[#000000] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <span className="text-sm hidden md:inline">Filter by</span>
+                  <Image
+                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-MaTVHgyEEk1geuXl77pbxjPzcQzTkb.png"
+                    alt="Dropdown"
+                    width={15}
+                    height={15}
+                    className="h-4 w-4 opacity-70 md:inline"
+                  />
+                </button>
+              )}
               {isFilterPopupOpen && (
                 <FilterPopup
                   isOpen={isFilterPopupOpen}
@@ -247,6 +272,7 @@ export default function BuySellPage() {
             </div>
           </div>
 
+          {/* Mobile Search Input (conditionally shown) */}
           {isSearchOpen && (
             <div className="md:hidden flex">
               <div
@@ -275,6 +301,7 @@ export default function BuySellPage() {
                     const value = e.target.value
                     setSearchQuery(value)
                     if (value.trim() === "") {
+                      // If search is empty, fetch all adverts
                       fetchAdverts("")
                     } else {
                       debouncedFetchAdverts()
@@ -292,7 +319,9 @@ export default function BuySellPage() {
         </div>
       </div>
 
+      {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto pb-20 md:pb-4">
+        {/* Advertisers List */}
         <div>
           {isLoading ? (
             <div className="text-center py-12">
@@ -339,6 +368,7 @@ export default function BuySellPage() {
             </div>
           ) : (
             <>
+              {/* Mobile Card View */}
               <div className="md:hidden space-y-4">
                 {adverts.map((ad) => (
                   <div key={ad.id} className="border rounded-lg p-4 bg-white">
@@ -395,9 +425,9 @@ export default function BuySellPage() {
                       {ad.account_currency} 1.00 = {ad.payment_currency}{" "}
                       {ad.exchange_rate
                         ? ad.exchange_rate.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })
                         : "N/A"}
                     </div>
 
@@ -424,9 +454,8 @@ export default function BuySellPage() {
                         {ad.payment_method_names?.map((method, index) => (
                           <div key={index} className="flex items-center">
                             <div
-                              className={`h-2 w-2 rounded-full mr-2 ${
-                                method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"
-                              }`}
+                              className={`h-2 w-2 rounded-full mr-2 ${method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"
+                                }`}
                             ></div>
                             <span className="text-sm">{method}</span>
                           </div>
@@ -447,6 +476,7 @@ export default function BuySellPage() {
                 ))}
               </div>
 
+              {/* Desktop Table View */}
               <div className="hidden md:block">
                 <Table>
                   <TableHeader className="border-b sticky top-0 bg-white">
@@ -503,15 +533,14 @@ export default function BuySellPage() {
                           {ad.payment_currency}{" "}
                           {ad.exchange_rate
                             ? ad.exchange_rate.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })
                             : "N/A"}
                         </TableCell>
                         <TableCell className="py-4 px-4">
-                          <div>{`${ad.account_currency} ${ad.minimum_order_amount || "N/A"} - ${
-                            ad.actual_maximum_order_amount || "N/A"
-                          }`}</div>
+                          <div>{`${ad.account_currency} ${ad.minimum_order_amount || "N/A"} - ${ad.actual_maximum_order_amount || "N/A"
+                            }`}</div>
                           <div className="flex items-center text-xs text-slate-500 mt-1">
                             <div className="flex items-center bg-slate-100 rounded-sm px-2 py-1">
                               <Image
@@ -531,9 +560,8 @@ export default function BuySellPage() {
                               <div key={index} className="flex items-center">
                                 {method && (
                                   <div
-                                    className={`h-2 w-2 rounded-full mr-2 ${
-                                      method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"
-                                    }`}
+                                    className={`h-2 w-2 rounded-full mr-2 ${method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"
+                                      }`}
                                   ></div>
                                 )}
                                 <span className="text-sm">{method}</span>
