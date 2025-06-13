@@ -10,9 +10,9 @@ export default function Sidebar() {
   const pathname = usePathname()
 
   const navItems = [
-    { name: "Home", href: "/", icon: <Home className="h-5 w-5" /> },
-    { name: "Trade", href: "/trade", icon: <BarChart2 className="h-5 w-5" /> },
-    { name: "Wallets", href: "/wallets", icon: <Wallet2 className="h-5 w-5" /> },
+    { name: "Home", href:"https://hub.deriv.com/tradershub", icon: <Home className="h-5 w-5" /> },
+    { name: "Trade", href:"https://hub.deriv.com/tradershub/cfds", icon: <BarChart2 className="h-5 w-5" /> },
+    { name: "Wallets", href: "https://hub.deriv.com/tradershub/wallets", icon: <Wallet2 className="h-5 w-5" /> },
     { name: "P2P", href: "/", icon: <MessageSquare className="h-5 w-5" /> },
   ]
 
