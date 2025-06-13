@@ -40,7 +40,7 @@ export default function Main({
       <div className="hidden md:block">
         <Sidebar />
         {isHeaderVisible && <Header />}
-        <div className="pl-[280px] pt-16 min-h-screen">
+        <div className="pl-[280px] min-h-screen">
           <div className="container mx-auto p-4">{children}</div>
         </div>
       </div>
