@@ -131,14 +131,9 @@ export default function BuySellPage() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden px-4">
-      {/* Mobile View (unchanged) */}
       <div className="md:hidden">
-        {/* Fixed Header Section */}
-        <div className="flex-shrink-0">
-          {/* Desktop Navigation */}
+        <div className="flex-shrink-0">   
           {!isSearchOpen && <Navigation title="P2P Wallet" />}
-
-          {/* Buy/Sell Toggle and Filters - Fixed */}
           <div className="mb-4 md:mb-6 md:flex justify-between items-center">
             {!isSearchOpen && (
               <div className="flex flex-row justify-between items-center gap-4">
@@ -277,7 +272,6 @@ export default function BuySellPage() {
               </div>
             </div>
 
-            {/* Mobile Search Input (conditionally shown) */}
             {isSearchOpen && (
               <div className="md:hidden flex">
                 <div
@@ -305,8 +299,7 @@ export default function BuySellPage() {
                     onChange={(e) => {
                       const value = e.target.value
                       setSearchQuery(value)
-                      if (value.trim() === "") {
-                        // If search is empty, fetch all adverts
+                      if (value.trim() === ""){
                         fetchAdverts("")
                       } else {
                         debouncedFetchAdverts()
