@@ -29,7 +29,7 @@ export default function Header() {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "inline-flex h-12 items-center border-b-2 px-1 text-sm",
+                  "inline-flex h-12 items-center border-b-2 px-4 text-sm",
                       isActive
                         ? "text-slate-1400 border-[#00D0FF] font-bold"
                         : "border-transparent text-slate-600 hover:border-slate-300 hover:text-slate-700"
