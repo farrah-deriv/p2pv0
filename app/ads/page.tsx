@@ -122,9 +122,7 @@ export default function AdsPage() {
   return (
     <div className="flex flex-col h-screen">
       {/* Fixed header section */}
-      <div className="flex-none px-4">
-        <Navigation title="" />
-      </div>
+
 
       {/* Fixed success banners - Updated to use StatusBanner component */}
       {showDeletedBanner && (

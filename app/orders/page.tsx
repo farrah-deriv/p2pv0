@@ -265,9 +265,7 @@ export default function OrdersPage() {
   return (
     <div className="flex flex-col h-full px-4">
       <div className="flex-shrink-0">
-        <Navigation title="" />
-
-        {/* Tabs */}
+  
         <div className="mb-6">
           <Tabs defaultValue={activeTab} onValueChange={(value) => setActiveTab(value as "active" | "past")}>
             <TabsList>
