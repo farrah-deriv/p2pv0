@@ -34,13 +34,17 @@ export default function Main({
     }
   }, [pathname, router])
 
+  if (pathname === "/login") {
+    return <div className="container mx-auto">{children}</div>
+  }
+
   return (
     <>
       {/* Desktop layout with sidebar */}
       <div className="hidden md:block">
-        <Sidebar />
+        {isHeaderVisible && <Sidebar />}
         {isHeaderVisible && <Header />}
-        <div className="pl-[280px] min-h-screen">
+        <div className="pl-[280px] pt-16 min-h-screen">
           <div className="container mx-auto p-4">{children}</div>
         </div>
       </div>

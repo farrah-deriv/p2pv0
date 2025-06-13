@@ -4,7 +4,8 @@ import { useState } from "react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { usePathname } from "next/navigation"
-import { ArrowLeft, X } from "lucide-react"
+import { ArrowLeft, X, Search } from "lucide-react"
+import { Input } from "@/components/ui/input"
 import BalanceInfoPopup from "@/components/balance-info-popup"
 
 interface NavigationProps {
@@ -27,17 +28,8 @@ export default function Navigation({
 
   const currencies = ["USD", "BTC", "LTC", "ETH", "USDT"]
 
-  const navItems = [
-    { name: "Buy/Sell", href: "/" },
-    { name: "Orders", href: "/orders" },
-    { name: "My ads", href: "/ads" },
-    { name: "Wallet", href: "/wallet" },
-    { name: "Profile", href: "/profile" },
-  ]
-
   return (
     <div className="mb-4 md:pt-16">
-      {/* Mobile title bar */}
       {title && (
         <div className="flex items-center justify-between md:my-3 p-4 -mx-4 md:-mx-0 md:px-0 border-b md:border-none">
           {isBackBtnVisible ? (
@@ -56,35 +48,8 @@ export default function Navigation({
         </div>
       )}
 
-      {/* Mobile navigation */}
-      <div className="md:hidden flex items-center justify-between mb-6">
-        {isVisible && (
-          <nav className="border-b border-slate-200 w-full overflow-x-auto">
-            <ul className="flex space-x-8">
-              {navItems.map((item) => (
-                <li key={item.name}>
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "inline-flex h-12 items-center border-b-2 px-1 text-sm whitespace-nowrap",
-                      pathname === item.href
-                        ? "text-slate-1400 border-[#00D0FF] font-bold"
-                        : "border-transparent text-slate-600 hover:border-slate-300 hover:text-slate-700",
-                    )}
-                  >
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )}
-      </div>
-
-      {/* Desktop Buy/Sell and Currency tabs */}
       {isVisible && pathname === "/" && (
         <div className="hidden md:block">
-          {/* Buy/Sell Toggle */}
           <div className="flex mb-4">
             <div className="grid grid-cols-2 w-full max-w-xs rounded-md overflow-hidden border border-slate-200">
               <button
@@ -108,7 +73,6 @@ export default function Navigation({
             </div>
           </div>
 
-          {/* Currency Tabs */}
           <div className="flex space-x-2 mb-4 overflow-x-auto pb-1">
             {currencies.map((currency) => (
               <button
@@ -124,6 +88,73 @@ export default function Navigation({
                 {currency}
               </button>
             ))}
+          </div>
+
+          <div className="grid grid-cols-4 gap-3 mb-6">
+            <div className="flex items-center border rounded-md px-3 py-2">
+              <span>IDR</span>
+              <svg className="ml-2 h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M6 9L12 15L18 9"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+
+            <div className="flex items-center border rounded-md px-3 py-2">
+              <span>Payment (All)</span>
+              <svg className="ml-2 h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M6 9L12 15L18 9"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input className="pl-10" placeholder="Enter nickname" />
+            </div>
+
+            <div className="flex gap-2">
+              <div className="flex items-center border rounded-md px-3 py-2 flex-1">
+                <span>Sort by: Exch</span>
+                <svg className="ml-2 h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M6 9L12 15L18 9"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+
+              <div className="flex items-center border rounded-md px-3 py-2">
+                <span>Filter by</span>
+                <svg className="ml-2 h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M6 9L12 15L18 9"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 mb-2 px-4">
+            <div className="text-sm text-slate-600">Advertisers</div>
+            <div className="text-sm text-slate-600">Rates</div>
+            <div className="text-sm text-slate-600">Payment methods</div>
           </div>
         </div>
       )}
