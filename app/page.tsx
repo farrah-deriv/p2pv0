@@ -556,6 +556,7 @@ export default function BuySellPage() {
           <div className="text-sm text-slate-600">Advertisers</div>
           <div className="text-sm text-slate-600">Rates</div>
           <div className="text-sm text-slate-600">Payment methods</div>
+          <div></div>
         </div>
 
         {/* Advertisers List */}
@@ -703,15 +704,16 @@ export default function BuySellPage() {
                         ))}
                       </div>
 
-                      {USER.id != ad.user?.id && (
+                      
+                    </div>
+                    <div>{USER.id != ad.user?.id && (
                         <Button
                           onClick={() => handleOrderClick(ad)}
                           className="mt-2 w-full bg-[#00C390] hover:bg-[#00B380] text-white"
                         >
                           Buy USD
                         </Button>
-                      )}
-                    </div>
+                      )}</div>
                   </div>
                 </div>
               ))}
