@@ -121,7 +121,6 @@ export default function AdsPage() {
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Fixed header section */}
 
 
       {/* Fixed success banners - Updated to use StatusBanner component */}
