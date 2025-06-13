@@ -24,7 +24,7 @@ export default function Navigation({
   const [isBalanceInfoOpen, setIsBalanceInfoOpen] = useState(false)
 
   return (
-    <div className="mb-4 md:pt-16">
+    <div className="mb-4">
       <div className="flex items-center justify-between md:my-3 p-4 -mx-4 md:-mx-0 md:px-0 border-b md:border-none">
         {isBackBtnVisible ? (
           <Link href={redirectUrl} className="flex items-center text-slate-1400">
