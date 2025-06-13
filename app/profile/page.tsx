@@ -113,7 +113,7 @@ export default function ProfilePage() {
 
   return (
     <div className="px-4 md:px-4">
-      <Navigation title="P2P Wallet" />
+      <Navigation title="" />
 
       <div className="flex flex-col md:flex-row gap-6 h-full">
         <div className="flex-1 order-1">
