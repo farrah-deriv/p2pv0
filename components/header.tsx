@@ -16,8 +16,8 @@ export default function Header() {
   ]
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white border-b border-slate-200 z-10 h-16 pl-[280px]">
-      <div className="h-full">
+    <header className="fixed top-0 left-[280px] right-0 bg-white z-10 border-b border-slate-200">
+      <div className="h-16">
         <nav className="flex h-full">
           {navItems.map((item) => {
             const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)

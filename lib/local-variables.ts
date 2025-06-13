@@ -1,6 +1,6 @@
 let USER_DATA = null;
 let USER_TOKEN = null;
-let USER_ID = null;
+let USER_ID= null;
 if (typeof window !== "undefined") {
   USER_DATA = JSON.parse(localStorage.getItem("user_data") ?? "{}")
   USER_TOKEN = localStorage.getItem("auth_token") ?? "";
