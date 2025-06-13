@@ -136,8 +136,7 @@ export default function BuySellPage() {
     <div className="flex flex-col h-screen overflow-hidden px-4">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
-        {/* Desktop Navigation */}
-        {!isSearchOpen && <Navigation title="" />}
+  
 
         {/* Buy/Sell Toggle and Filters - Fixed */}
         <div className="mb-4 md:mb-6 md:flex justify-between items-center">
