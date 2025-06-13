@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { AlertCircle, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
+import Navigation from "@/components/navigation"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
@@ -133,7 +134,12 @@ export default function BuySellPage() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden px-4">
-         <div className="flex-shrink-0">
+      {/* Fixed Header Section */}
+      <div className="flex-shrink-0">
+        {/* Desktop Navigation */}
+        {!isSearchOpen && <Navigation title="P2P Wallet" />}
+
+        {/* Buy/Sell Toggle and Filters - Fixed */}
         <div className="mb-4 md:mb-6 md:flex justify-between items-center">
           {!isSearchOpen && (
             <div className="flex flex-row justify-between items-center gap-4">

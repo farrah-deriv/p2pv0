@@ -1,11 +1,8 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Search } from "lucide-react"
-import { Input } from "@/components/ui/input"
 
 export default function Header() {
   const pathname = usePathname()
@@ -19,7 +16,7 @@ export default function Header() {
   ]
 
   return (
-    <header className="fixed top-0 left-[280px] right-0 bg-white z-10">
+    <header className="hidden md:block fixed top-0 left-[280px] right-0 bg-white z-10">
       <div className="border-b border-slate-200">
         <nav className="flex h-16">
           {navItems.map((item) => {
