@@ -123,7 +123,6 @@ export default function AdsPage() {
     <div className="flex flex-col h-screen">
 
 
-      {/* Fixed success banners - Updated to use StatusBanner component */}
       {showDeletedBanner && (
         <StatusBanner variant="success" message="Ad deleted" onClose={() => setShowDeletedBanner(false)} />
       )}
@@ -132,7 +131,6 @@ export default function AdsPage() {
         <StatusBanner variant="success" message="Ad updated successfully" onClose={() => setShowUpdatedBanner(false)} />
       )}
 
-      {/* Fixed controls section */}
       <div className="flex-none container mx-auto pr-4">
         <MyAdsHeader hasAds={ads.length > 0} />
         {/* Only show button here on desktop */}
