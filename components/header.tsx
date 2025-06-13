@@ -9,8 +9,6 @@ import { Input } from "@/components/ui/input"
 
 export default function Header() {
   const pathname = usePathname()
-  const [activeTab, setActiveTab] = useState<"buy" | "sell">("buy")
-  const [activeCurrency, setActiveCurrency] = useState<string>("USD")
 
   const navItems = [
     { name: "Market", href: "/" },
@@ -19,8 +17,6 @@ export default function Header() {
     { name: "Wallet", href: "/wallet" },
     { name: "Profile", href: "/profile" },
   ]
-
-  const currencies = ["USD", "BTC", "LTC", "ETH", "USDT"]
 
   return (
     <header className="fixed top-0 left-[280px] right-0 bg-white z-10">
