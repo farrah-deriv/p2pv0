@@ -17,7 +17,7 @@ export default function Main({
 
     useEffect(() => {
         const PUBLIC_ROUTES = ['/login'];
-        const token = localStorage.getItem("auth_token");
+        const token = localStorage.getItem('auth_token');
         const isPublic = PUBLIC_ROUTES.includes(pathname);
 
         if (!token && !isPublic) {
