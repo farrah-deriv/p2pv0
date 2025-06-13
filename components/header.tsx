@@ -20,7 +20,7 @@ export default function Header() {
   return (
     <header className="hidden md:block fixed top-0 left-[280px] right-0 bg-white z-10">
       <div className="border-b border-slate-200">
-        <nav className="flex h-16">
+        <nav className="flex h-12 mx-6">
           {navItems.map((item) => {
             const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
 
@@ -41,7 +41,7 @@ export default function Header() {
           })}
         </nav>
       </div>
-      <div className="absolute top-0 right-4 h-16 flex items-center space-x-4">
+      <div className="absolute top-0 right-4 h-12 flex items-center space-x-4">
         <div className="text-slate-600 hover:text-slate-700">
           <NovuNotifications />
         </div>
