@@ -557,7 +557,7 @@ export default function BuySellPage() {
                           </div>
                         </TableCell>
                         <TableCell className="py-4 px-4 sm:table-cell">
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-col flex-wrap gap-2">
                             {ad.payment_method_names?.map((method, index) => (
                               <div key={index} className="flex items-center">
                                 {method && (
