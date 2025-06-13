@@ -1,11 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Home, BarChart2, Wallet, RefreshCcw } from "lucide-react"
-import { cn } from "@/lib/utils"
 import { Avatar } from "@/components/ui/avatar"
+import { cn } from "@/lib/utils"
+import { Home, BarChart2, Wallet, MessageSquare } from "lucide-react"
 
 export default function Sidebar() {
   const pathname = usePathname()
@@ -13,32 +12,31 @@ export default function Sidebar() {
   const navItems = [
     { name: "Home", href: "/", icon: Home },
     { name: "Trade", href: "/trade", icon: BarChart2 },
-    { name: "Wallets", href: "/wallets", icon: Wallet },
-    { name: "P2P", href: "/p2p", icon: RefreshCcw },
+    { name: "Wallets", href: "/wallet", icon: Wallet },
+    { name: "P2P", href: "/p2p", icon: MessageSquare },
   ]
 
   return (
-    <div className="hidden md:flex flex-col w-[280px] fixed top-0 left-0 bottom-0 border-r border-slate-200 bg-white z-20">
-      <div className="flex flex-col items-center p-6 border-b border-slate-200">
-        <Avatar className="h-16 w-16 mb-2">
-          <Image src="/placeholder-user.jpg" alt="User" width={64} height={64} className="rounded-full object-cover" />
+    <div className="hidden md:flex fixed left-0 top-0 bottom-0 w-[280px] flex-col border-r border-slate-200 bg-white">
+      <div className="flex flex-col items-center pt-8 pb-6">
+        <Avatar className="h-16 w-16">
+          <img src="/placeholder-user.jpg" alt="User avatar" />
         </Avatar>
-        <span className="font-medium text-base">User 123456789</span>
+        <h2 className="mt-4 text-base font-medium">User 123456789</h2>
       </div>
-      <nav className="flex-1 p-4">
+      <nav className="flex-1 px-4 pt-4">
         <ul className="space-y-2">
           {navItems.map((item) => {
-            const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
-
             const Icon = item.icon
+            const isActive = item.href === pathname
 
             return (
               <li key={item.name}>
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-md text-base font-medium",
-                    isActive ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
+                    isActive ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
                   )}
                 >
                   <Icon className="h-5 w-5" />

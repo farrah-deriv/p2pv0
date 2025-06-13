@@ -3,6 +3,8 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { NovuNotifications } from "./novu-notifications"
+import { User } from "lucide-react"
 
 export default function Header() {
   const pathname = usePathname()
@@ -36,6 +38,14 @@ export default function Header() {
             )
           })}
         </nav>
+      </div>
+      <div className="absolute top-0 right-4 h-16 flex items-center space-x-4">
+        <div className="text-slate-600 hover:text-slate-700">
+          <NovuNotifications />
+        </div>
+        <Link href="/profile" className="text-slate-600 hover:text-slate-700">
+          <User className="h-5 w-5" />
+        </Link>
       </div>
     </header>
   )
