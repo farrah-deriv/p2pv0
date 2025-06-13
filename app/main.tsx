@@ -40,7 +40,6 @@ export default function Main({
 
   return (
     <>
-      {/* Desktop layout with sidebar */}
       <div className="hidden md:block">
         {isHeaderVisible && <Sidebar />}
         {isHeaderVisible && <Header />}
@@ -49,7 +48,6 @@ export default function Main({
         </div>
       </div>
 
-      {/* Mobile layout (unchanged) */}
       <div className="md:hidden container mx-auto flex flex-col h-screen overflow-hidden">
         {isHeaderVisible && <Header className="flex-shrink-0" />}
         <main className="flex-1 overflow-hidden">{children}</main>
