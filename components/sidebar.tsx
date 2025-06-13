@@ -17,7 +17,7 @@ export default function Sidebar() {
   ]
 
   return (
-    <div className="fixed left-0 top-0 h-full w-[280px] bg-white border-r border-slate-200 z-20 flex flex-col">
+    <div className="hidden md:flex fixed left-0 top-0 h-full w-[280px] bg-white border-r border-slate-200 z-20 flex-col">
       <div className="p-6 flex items-center space-x-3">
         <div className="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden">
           <Image

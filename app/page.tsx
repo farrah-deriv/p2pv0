@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Navigation from "@/components/navigation"
 import { Input } from "@/components/ui/input"
@@ -13,6 +13,8 @@ import { BuySellAPI } from "@/services/api"
 import { debounce } from "lodash"
 import FilterPopup, { type FilterOptions } from "@/components/buy-sell/filter-popup"
 import OrderSidebar from "@/components/buy-sell/order-sidebar"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import Image from "next/image"
 
 export default function BuySellPage() {
   const router = useRouter()
@@ -29,7 +31,7 @@ export default function BuySellPage() {
   })
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("all")
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("all") // Updated default value
   const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(false)
 
   const [isOrderSidebarOpen, setIsOrderSidebarOpen] = useState(false)
@@ -55,6 +57,7 @@ export default function BuySellPage() {
     fetchPaymentMethods()
   }, [])
 
+  // Update the fetchAdverts function to ensure adverts is always an array
   const fetchAdverts = async (query = null) => {
     setIsLoading(true)
     setError(null)
@@ -67,12 +70,16 @@ export default function BuySellPage() {
         sortBy: sortBy,
       }
 
+      // Apply additional filters
       if (filterOptions.fromFollowing) {
+        // Use favourites_only: 1 parameter for the API
         params.favourites_only = 1
       }
+      // Note: withinLimits would typically be handled by the backend
 
       const data = await BuySellAPI.getAdvertisements(params)
 
+      // Ensure data is an array before setting it
       if (Array.isArray(data)) {
         setAdverts(data)
       } else {
@@ -100,6 +107,7 @@ export default function BuySellPage() {
     router.push(`/advertiser/${userId}`)
   }
 
+  // Handle opening the order sidebar
   const handleOrderClick = (ad: Advertisement) => {
     setSelectedAd(ad)
     setIsOrderSidebarOpen(true)
@@ -122,285 +130,594 @@ export default function BuySellPage() {
   }, [isFilterPopupOpen])
 
   return (
-    <div className="flex flex-col">
-      <Navigation isVisible={true} />
+    <div className="flex flex-col h-screen overflow-hidden px-4">
+      {/* Mobile View (unchanged) */}
+      <div className="md:hidden">
+        {/* Fixed Header Section */}
+        <div className="flex-shrink-0">
+          {/* Desktop Navigation */}
+          {!isSearchOpen && <Navigation title="P2P Wallet" />}
 
-      {/* Filter Row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
-        <Select value={currency} onValueChange={setCurrency}>
-          <SelectTrigger>
-            <SelectValue placeholder="IDR" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="IDR">IDR</SelectItem>
-            <SelectItem value="USD">USD</SelectItem>
-            <SelectItem value="EUR">EUR</SelectItem>
-            <SelectItem value="GBP">GBP</SelectItem>
-          </SelectContent>
-        </Select>
+          {/* Buy/Sell Toggle and Filters - Fixed */}
+          <div className="mb-4 md:mb-6 md:flex justify-between items-center">
+            {!isSearchOpen && (
+              <div className="flex flex-row justify-between items-center gap-4">
+                {/* Buy/Sell Toggle */}
+                <Tabs
+                  defaultValue={activeTab}
+                  onValueChange={(value) => setActiveTab(value as "buy" | "sell")}
+                  className="w-full"
+                >
+                  <TabsList className="w-full md:min-w-3xs">
+                    <TabsTrigger className="w-full md:w-auto" value="sell">
+                      Buy
+                    </TabsTrigger>
+                    <TabsTrigger className="w-full md:w-auto" value="buy">
+                      Sell
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            )}
 
-        <Select
-          value={selectedPaymentMethod}
-          onValueChange={setSelectedPaymentMethod}
-          disabled={isLoadingPaymentMethods}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={isLoadingPaymentMethods ? "Loading..." : "Payment (All)"} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All payment methods</SelectItem>
-            {paymentMethods.map((method) => (
-              <SelectItem key={method.method} value={method.method}>
-                {method.display_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+            {/* Responsive Filters Row */}
+            <div className="flex flex-wrap gap-2 md:gap-3 md:px-0 mt-4 md:mt-0">
+              {!isSearchOpen && (
+                <Select value={currency} onValueChange={setCurrency}>
+                  <SelectTrigger className="flex-1 md:flex-none w-auto">
+                    <SelectValue placeholder="Currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="IDR">IDR</SelectItem>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                    <SelectItem value="GBP">GBP</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
 
-        <div className="relative">
-          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+              <div className="hidden md:block relative flex-grow w-full sm:w-auto sm:max-w-md">
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
+                  <Image
+                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-M1TMmjYwGjHFhjLbq4bbWyCgHduG6y.png"
+                    alt="Search"
+                    width={24}
+                    height={24}
+                  />
+                </div>
+                <Input
+                  className="pl-10 w-full"
+                  placeholder="Enter nickname"
+                  onChange={(e) => {
+                    const value = e.target.value
+                    setSearchQuery(value)
+                    if (value.trim() === "") {
+                      // If search is empty, fetch all adverts
+                      fetchAdverts("")
+                    } else {
+                      debouncedFetchAdverts()
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      fetchAdverts()
+                    }
+                  }}
+                />
+              </div>
+              <div className="hidden md:block">
+                <Select
+                  value={selectedPaymentMethod}
+                  onValueChange={setSelectedPaymentMethod}
+                  disabled={isLoadingPaymentMethods}
+                >
+                  <SelectTrigger className="w-full sm:w-[200px]">
+                    <SelectValue placeholder={isLoadingPaymentMethods ? "Loading..." : "Payment method"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All payment methods</SelectItem>
+                    {paymentMethods.map((method) => (
+                      <SelectItem key={method.method} value={method.method}>
+                        {method.display_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {!isSearchOpen && (
+                <button
+                  className="md:hidden border rounded-md p-1 flex-shrink-0"
+                  onClick={() => setIsSearchOpen(!isSearchOpen)}
+                >
+                  <Image
+                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-M1TMmjYwGjHFhjLbq4bbWyCgHduG6y.png"
+                    alt="Search"
+                    width={24}
+                    height={24}
+                  />
+                </button>
+              )}
+
+              <div className="hidden md:block">
+                <Select defaultValue="exchange_rate" onValueChange={setSortBy}>
+                  <SelectTrigger className="w-full sm:w-[200px]">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="exchange_rate">Sort by: Exchange rate</SelectItem>
+                    <SelectItem value="user_rating_average">Sort by: Rating</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="relative filter-dropdown-container flex-shrink-0">
+                {!isSearchOpen && (
+                  <button
+                    onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
+                    className="h-10 px-3 py-2 md:w-[150px] flex items-center justify-between rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:border-[#000000] active:border-[#000000] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <span className="text-sm hidden md:inline">Filter by</span>
+                    <Image
+                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-MaTVHgyEEk1geuXl77pbxjPzcQzTkb.png"
+                      alt="Dropdown"
+                      width={15}
+                      height={15}
+                      className="h-4 w-4 opacity-70 md:inline"
+                    />
+                  </button>
+                )}
+                {isFilterPopupOpen && (
+                  <FilterPopup
+                    isOpen={isFilterPopupOpen}
+                    onClose={() => setIsFilterPopupOpen(false)}
+                    onApply={setFilterOptions}
+                    initialFilters={filterOptions}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Mobile Search Input (conditionally shown) */}
+            {isSearchOpen && (
+              <div className="md:hidden flex">
+                <div
+                  href="/"
+                  className="flex items-center text-slate-1400"
+                  onClick={() => {
+                    setIsSearchOpen(false)
+                    setSearchQuery(null)
+                  }}
+                >
+                  <ArrowLeft className="h-5 w-5 mr-2" />
+                </div>
+                <div className="relative w-full">
+                  <div className="absolute left-2 top-1/2 transform -translate-y-1/2 text-slate-400">
+                    <Image
+                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-M1TMmjYwGjHFhjLbq4bbWyCgHduG6y.png"
+                      alt="Search"
+                      width={24}
+                      height={24}
+                    />
+                  </div>
+                  <Input
+                    className="pl-10 w-full focus:ring-0 focus:border-[#000000] focus:outline-none"
+                    placeholder="Enter nickname"
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setSearchQuery(value)
+                      if (value.trim() === "") {
+                        // If search is empty, fetch all adverts
+                        fetchAdverts("")
+                      } else {
+                        debouncedFetchAdverts()
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        fetchAdverts()
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
-          <Input
-            className="pl-10 w-full"
-            placeholder="Enter nickname"
-            onChange={(e) => {
-              const value = e.target.value
-              setSearchQuery(value)
-              if (value.trim() === "") {
-                fetchAdverts("")
-              } else {
-                debouncedFetchAdverts()
-              }
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                fetchAdverts()
-              }
-            }}
-          />
         </div>
 
-        <div className="flex gap-3">
-          <Select defaultValue="exchange_rate" onValueChange={setSortBy} className="flex-1">
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto pb-20 md:pb-4">
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {adverts.map((ad) => (
+              <div key={ad.id} className="border rounded-lg p-4 bg-white">
+                <div className="flex items-center mb-3">
+                  <div className="h-8 w-8 flex-shrink-0 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-sm mr-2">
+                    {(ad.user?.nickname?.charAt(0) || "U").toUpperCase()}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center">
+                      <button
+                        onClick={() => handleAdvertiserClick(ad.user?.id || 0)}
+                        className="font-medium hover:underline cursor-pointer"
+                      >
+                        {ad.user?.nickname || "Unknown"}
+                      </button>
+                      {ad.user?.is_favourite && (
+                        <span className="ml-2 px-2 py-0.5 border border-[#29823B] text-[#29823B]text-xs rounded-sm">
+                          Following
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center text-xs text-slate-500 mb-2">
+                  {ad.user_rating_average && (
+                    <span className="flex items-center">
+                      <Image
+                        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-6OumZ18zNMtAEyxgeIh25pHnlCud1B.png"
+                        alt="Rating"
+                        width={16}
+                        height={16}
+                        className="mr-1"
+                      />
+                      <span className="text-[#FFAD3A]">{ad.user_rating_average.toFixed(2)}</span>
+                    </span>
+                  )}
+                  {ad.user.completed_orders_count > 0 && (
+                    <>
+                      <span className="mx-2">•</span>
+                      <span>{ad.user.completed_orders_count} orders</span>
+                    </>
+                  )}
+
+                  {ad.user.completion_rate > 0 && (
+                    <>
+                      <span className="mx-2">•</span>
+                      <span>{ad.user.completion_rate}% completion</span>
+                    </>
+                  )}
+                </div>
+
+                <div className="text-lg font-bold mb-2">
+                  {ad.account_currency} 1.00 = {ad.payment_currency}{" "}
+                  {ad.exchange_rate
+                    ? ad.exchange_rate.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })
+                    : "N/A"}
+                </div>
+
+                <div className="text-sm mb-2">
+                  Limits: {ad.account_currency} {ad.minimum_order_amount || "N/A"} -{" "}
+                  {ad.actual_maximum_order_amount || "N/A"}
+                </div>
+
+                <div className="flex items-center text-xs text-slate-500 mb-3 mt-1">
+                  <div className="flex items-center bg-slate-100 rounded-sm px-2 py-1">
+                    <Image
+                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-yvSdAuwjE496WbipvfAqwVr5jalzr4.png"
+                      alt="Clock"
+                      width={12}
+                      height={12}
+                      className="mr-1"
+                    />
+                    <span>{ad.order_expiry_period} min</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <div className="flex flex-wrap gap-2">
+                    {ad.payment_method_names?.map((method, index) => (
+                      <div key={index} className="flex items-center">
+                        <div
+                          className={`h-2 w-2 rounded-full mr-2 ${
+                            method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"
+                          }`}
+                        ></div>
+                        <span className="text-sm">{method}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {USER.id != ad.user.id && (
+                    <Button
+                      size="sm"
+                      onClick={() => handleOrderClick(ad)}
+                      className="rounded-full bg-[#00C390] hover:bg-[#00B380]"
+                    >
+                      {ad.type === "buy" ? "Buy" : "Sell"} {ad.account_currency}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop View (new design) */}
+      <div className="hidden md:block">
+        <Navigation isVisible={true} />
+
+        {/* Filter Row */}
+        <div className="grid grid-cols-4 gap-3 mb-6">
+          <Select value={currency} onValueChange={setCurrency}>
             <SelectTrigger>
-              <SelectValue placeholder="Sort by: Exch" />
+              <SelectValue placeholder="IDR" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="exchange_rate">Sort by: Exchange rate</SelectItem>
-              <SelectItem value="user_rating_average">Sort by: Rating</SelectItem>
+              <SelectItem value="IDR">IDR</SelectItem>
+              <SelectItem value="USD">USD</SelectItem>
+              <SelectItem value="EUR">EUR</SelectItem>
+              <SelectItem value="GBP">GBP</SelectItem>
             </SelectContent>
           </Select>
 
-          <div className="relative filter-dropdown-container">
-            <button
-              onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
-              className="h-10 px-3 py-2 flex items-center justify-between rounded-md border border-input bg-background text-sm ring-offset-background focus:outline-none focus:ring-0 focus:border-[#000000] active:border-[#000000] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <span className="text-sm">Filter by</span>
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="ml-2"
-              >
+          <Select
+            value={selectedPaymentMethod}
+            onValueChange={setSelectedPaymentMethod}
+            disabled={isLoadingPaymentMethods}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={isLoadingPaymentMethods ? "Loading..." : "Payment (All)"} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All payment methods</SelectItem>
+              {paymentMethods.map((method) => (
+                <SelectItem key={method.method} value={method.method}>
+                  {method.display_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
-                  d="M6 9L12 15L18 9"
+                  d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
                   stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
-            </button>
-            {isFilterPopupOpen && (
-              <FilterPopup
-                isOpen={isFilterPopupOpen}
-                onClose={() => setIsFilterPopupOpen(false)}
-                onApply={setFilterOptions}
-                initialFilters={filterOptions}
-              />
-            )}
+            </div>
+            <Input
+              className="pl-10 w-full"
+              placeholder="Enter nickname"
+              onChange={(e) => {
+                const value = e.target.value
+                setSearchQuery(value)
+                if (value.trim() === "") {
+                  fetchAdverts("")
+                } else {
+                  debouncedFetchAdverts()
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  fetchAdverts()
+                }
+              }}
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <Select defaultValue="exchange_rate" onValueChange={setSortBy} className="flex-1">
+              <SelectTrigger>
+                <SelectValue placeholder="Sort by: Exch" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="exchange_rate">Sort by: Exchange rate</SelectItem>
+                <SelectItem value="user_rating_average">Sort by: Rating</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <div className="relative filter-dropdown-container">
+              <button
+                onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
+                className="h-10 px-3 py-2 flex items-center justify-between rounded-md border border-input bg-background text-sm ring-offset-background focus:outline-none focus:ring-0 focus:border-[#000000] active:border-[#000000] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <span className="text-sm">Filter by</span>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="ml-2"
+                >
+                  <path
+                    d="M6 9L12 15L18 9"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+              {isFilterPopupOpen && (
+                <FilterPopup
+                  isOpen={isFilterPopupOpen}
+                  onClose={() => setIsFilterPopupOpen(false)}
+                  onApply={setFilterOptions}
+                  initialFilters={filterOptions}
+                />
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Table Headers */}
-      <div className="grid grid-cols-3 gap-4 mb-2 px-4">
-        <div className="text-sm text-slate-600">Advertisers</div>
-        <div className="text-sm text-slate-600">Rates</div>
-        <div className="text-sm text-slate-600">Payment methods</div>
-      </div>
+        {/* Table Headers */}
+        <div className="grid grid-cols-3 gap-4 mb-2 px-4">
+          <div className="text-sm text-slate-600">Advertisers</div>
+          <div className="text-sm text-slate-600">Rates</div>
+          <div className="text-sm text-slate-600">Payment methods</div>
+        </div>
 
-      {/* Advertisers List */}
-      <div>
-        {isLoading ? (
-          <div className="text-center py-12">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-r-transparent"></div>
-            <p className="mt-2 text-slate-600">Loading ads...</p>
-          </div>
-        ) : error ? (
-          <div className="text-center py-8">{error}</div>
-        ) : adverts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16">
-            {searchQuery ? (
-              <>
-                <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="text-slate-400"
-                  >
-                    <path
-                      d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-medium text-slate-800 mb-2">No results for "{searchQuery}"</h3>
-                <p className="text-slate-600 text-center">
-                  We couldn't find an advertiser with that nickname. Try a different name.
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="w-16 h-16 rounded-full bg-slate-200 flex items-center justify-center mb-4">
-                  <AlertCircle className="h-8 w-8 text-slate-400" />
-                </div>
-                <p className="text-xl font-medium text-slate-800">No ads available.</p>
-              </>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {adverts.map((ad) => (
-              <div key={ad.id} className="border rounded-lg p-4 bg-white">
-                <div className="grid grid-cols-3 gap-4">
-                  {/* Advertiser */}
-                  <div>
-                    <div className="flex items-center mb-2">
-                      <div className="h-8 w-8 flex-shrink-0 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-sm mr-2">
-                        {(ad.user?.nickname?.charAt(0) || "M").toUpperCase()}
+        {/* Advertisers List */}
+        <div>
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-r-transparent"></div>
+              <p className="mt-2 text-slate-600">Loading ads...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">{error}</div>
+          ) : adverts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              {searchQuery ? (
+                <>
+                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="text-slate-400"
+                    >
+                      <path
+                        d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-medium text-slate-800 mb-2">No results for "{searchQuery}"</h3>
+                  <p className="text-slate-600 text-center">
+                    We couldn't find an advertiser with that nickname. Try a different name.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="w-16 h-16 rounded-full bg-slate-200 flex items-center justify-center mb-4">
+                    <AlertCircle className="h-8 w-8 text-slate-400" />
+                  </div>
+                  <p className="text-xl font-medium text-slate-800">No ads available.</p>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {adverts.map((ad) => (
+                <div key={ad.id} className="border rounded-lg p-4 bg-white">
+                  <div className="grid grid-cols-3 gap-4">
+                    {/* Advertiser */}
+                    <div>
+                      <div className="flex items-center mb-2">
+                        <div className="h-8 w-8 flex-shrink-0 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-sm mr-2">
+                          {(ad.user?.nickname?.charAt(0) || "M").toUpperCase()}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center">
+                            <button
+                              onClick={() => handleAdvertiserClick(ad.user?.id || 0)}
+                              className="font-medium hover:underline cursor-pointer"
+                            >
+                              {ad.user?.nickname || "Mariana Rueda"}
+                            </button>
+                            {ad.user?.is_favourite && (
+                              <span className="ml-2 px-2 py-0.5 border border-[#29823B] text-[#29823B] text-xs rounded-sm">
+                                Following
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center">
-                          <button
-                            onClick={() => handleAdvertiserClick(ad.user?.id || 0)}
-                            className="font-medium hover:underline cursor-pointer"
+                      <div className="flex items-center text-xs text-slate-500 mb-2">
+                        <span className="flex items-center">
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="text-[#FFAD3A] mr-1"
                           >
-                            {ad.user?.nickname || "Mariana Rueda"}
-                          </button>
-                          {ad.user?.is_favourite && (
-                            <span className="ml-2 px-2 py-0.5 border border-[#29823B] text-[#29823B] text-xs rounded-sm">
-                              Following
-                            </span>
-                          )}
+                            <path
+                              d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+                              fill="currentColor"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                          <span className="text-[#FFAD3A]">{ad.user_rating_average?.toFixed(1) || "4.3"}</span>
+                        </span>
+                        <span className="mx-2">•</span>
+                        <span>{ad.user?.completed_orders_count || "43"} orders</span>
+                        <span className="mx-2">•</span>
+                        <span>{ad.user?.completion_rate || "98"}% completion</span>
+                      </div>
+                    </div>
+
+                    {/* Rates */}
+                    <div>
+                      <div className="text-lg font-bold mb-2">
+                        IDR {ad.exchange_rate?.toLocaleString() || "14,600.00"}
+                      </div>
+                      <div className="text-sm mb-2">
+                        Trade Limits: USD {ad.minimum_order_amount || "10.00"} -{" "}
+                        {ad.actual_maximum_order_amount || "100.00"}
+                      </div>
+                      <div className="flex items-center text-xs text-slate-500">
+                        <div className="flex items-center bg-slate-100 rounded-sm px-2 py-1">
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="mr-1"
+                          >
+                            <path
+                              d="M12 8V12L15 15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                          <span>{ad.order_expiry_period || "15"} min</span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center text-xs text-slate-500 mb-2">
-                      <span className="flex items-center">
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="text-[#FFAD3A] mr-1"
-                        >
-                          <path
-                            d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
-                            fill="currentColor"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                        <span className="text-[#FFAD3A]">{ad.user_rating_average?.toFixed(1) || "4.3"}</span>
-                      </span>
-                      <span className="mx-2">•</span>
-                      <span>{ad.user?.completed_orders_count || "43"} orders</span>
-                      <span className="mx-2">•</span>
-                      <span>{ad.user?.completion_rate || "98"}% completion</span>
-                    </div>
-                  </div>
 
-                  {/* Rates */}
-                  <div>
-                    <div className="text-lg font-bold mb-2">
-                      IDR {ad.exchange_rate?.toLocaleString() || "14,600.00"}
-                    </div>
-                    <div className="text-sm mb-2">
-                      Trade Limits: USD {ad.minimum_order_amount || "10.00"} -{" "}
-                      {ad.actual_maximum_order_amount || "100.00"}
-                    </div>
-                    <div className="flex items-center text-xs text-slate-500">
-                      <div className="flex items-center bg-slate-100 rounded-sm px-2 py-1">
-                        <svg
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="mr-1"
-                        >
-                          <path
-                            d="M12 8V12L15 15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                        <span>{ad.order_expiry_period || "15"} min</span>
+                    {/* Payment Methods */}
+                    <div className="flex flex-col justify-between">
+                      <div className="flex flex-col gap-2">
+                        {(ad.payment_method_names || ["Bank transfer", "Skrill", "PayPal"]).map((method, index) => (
+                          <div key={index} className="flex items-center">
+                            <div
+                              className={`h-2 w-2 rounded-full mr-2 ${method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"}`}
+                            ></div>
+                            <span className="text-sm">{method}</span>
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Payment Methods */}
-                  <div className="flex flex-col justify-between">
-                    <div className="flex flex-col gap-2">
-                      {(ad.payment_method_names || ["Bank transfer", "Skrill", "PayPal"]).map((method, index) => (
-                        <div key={index} className="flex items-center">
-                          <div
-                            className={`h-2 w-2 rounded-full mr-2 ${method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"}`}
-                          ></div>
-                          <span className="text-sm">{method}</span>
-                        </div>
-                      ))}
+                      {USER.id != ad.user?.id && (
+                        <Button
+                          onClick={() => handleOrderClick(ad)}
+                          className="mt-2 w-full bg-[#00C390] hover:bg-[#00B380] text-white"
+                        >
+                          Buy USD
+                        </Button>
+                      )}
                     </div>
-
-                    {USER.id != ad.user?.id && (
-                      <Button
-                        onClick={() => handleOrderClick(ad)}
-                        className="mt-2 w-full bg-[#00C390] hover:bg-[#00B380] text-white"
-                      >
-                        Buy USD
-                      </Button>
-                    )}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <OrderSidebar
