@@ -137,7 +137,7 @@ export default function BuySellPage() {
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Desktop Navigation */}
-        {!isSearchOpen && <Navigation title="P2P Wallet" />}
+        {!isSearchOpen && <Navigation title="" />}
 
         {/* Buy/Sell Toggle and Filters - Fixed */}
         <div className="mb-4 md:mb-6 md:flex justify-between items-center">
