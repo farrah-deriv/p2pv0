@@ -15,7 +15,7 @@ interface NavigationProps {
 }
 
 export default function Navigation({
-  isBackBtnVisible = true,
+  isBackBtnVisible = false,
   isVisible = true,
   redirectUrl = "/",
   title,
