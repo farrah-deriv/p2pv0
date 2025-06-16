@@ -64,10 +64,7 @@ export default function LoginPage() {
 
       if (response.access_token) {
         localStorage.setItem("auth_token", response.access_token)
-
-        if (response.user) {
-          localStorage.setItem("user_data", JSON.stringify(response.user))
-        }
+        
         await AuthAPI.fetchUserIdAndStore()
 
         window.location.href = "/"
