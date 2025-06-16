@@ -42,16 +42,15 @@ export default function Main({
     <>
       <div className="hidden md:flex">
         {isHeaderVisible && <Sidebar />}
-        {isHeaderVisible && <Header />}
+        <div className="flex-1">{isHeaderVisible && <Header />}
         <div className="min-h-screen">
           <div className="container mx-auto p-4">{children}</div>
-        </div>
+        </div></div>
       </div>
-
       <div className="md:hidden container mx-auto flex flex-col h-screen overflow-hidden">
-        <div>{isHeaderVisible && <Header className="flex-shrink-0" />}
+        {isHeaderVisible && <Header className="flex-shrink-0" />}
         <main className="flex-1 overflow-hidden">{children}</main>
-        </div>
+      
         <MobileFooterNav className="flex-shrink-0" />
       </div>
     </>
