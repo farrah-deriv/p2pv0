@@ -27,7 +27,7 @@ export default function Sidebar() {
       <nav className="flex-1 px-4 pt-4">
         <ul className="space-y-2">
           {navItems.map((item) => {
-            const isActive = item.href === pathname
+            const isActive = item.name === "P2P"
 
             return (
               <li key={item.name}>
