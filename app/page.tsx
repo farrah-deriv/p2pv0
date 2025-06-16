@@ -162,8 +162,26 @@ export default function BuySellPage() {
                 </SelectContent>
               </Select>
             )}
-
-            <div className="hidden md:block relative flex-grow w-full sm:w-auto sm:max-w-md">
+            <div className="hidden md:block">
+              <Select
+                value={selectedPaymentMethod}
+                onValueChange={setSelectedPaymentMethod}
+                disabled={isLoadingPaymentMethods}
+              >
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectValue placeholder={isLoadingPaymentMethods ? "Loading..." : "Payment method"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All payment methods</SelectItem>
+                  {paymentMethods.map((method) => (
+                    <SelectItem key={method.method} value={method.method}>
+                      {method.display_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+             <div className="hidden md:block relative flex-grow w-full sm:w-auto sm:max-w-md">
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
                 <Image
                   src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-M1TMmjYwGjHFhjLbq4bbWyCgHduG6y.png"
@@ -191,25 +209,6 @@ export default function BuySellPage() {
                   }
                 }}
               />
-            </div>
-            <div className="hidden md:block">
-              <Select
-                value={selectedPaymentMethod}
-                onValueChange={setSelectedPaymentMethod}
-                disabled={isLoadingPaymentMethods}
-              >
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <SelectValue placeholder={isLoadingPaymentMethods ? "Loading..." : "Payment method"} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All payment methods</SelectItem>
-                  {paymentMethods.map((method) => (
-                    <SelectItem key={method.method} value={method.method}>
-                      {method.display_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
             {!isSearchOpen && (
               <button
