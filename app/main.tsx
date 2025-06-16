@@ -50,7 +50,6 @@ export default function Main({
       <div className="md:hidden container mx-auto flex flex-col h-screen overflow-hidden">
         {isHeaderVisible && <Header className="flex-shrink-0" />}
         <main className="flex-1 overflow-hidden">{children}</main>
-      
         <MobileFooterNav className="flex-shrink-0" />
       </div>
     </>
