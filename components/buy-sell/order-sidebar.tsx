@@ -103,7 +103,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
 
   const isBuy = orderType === "buy"
   const title = isBuy ? "Sell USD" : "Buy USD"
-  const youSendText = isBuy ? "You receive" : "You send"
+  const youSendText = isBuy ? "You receive" : "You pay"
 
   // Calculate order limits
   const minLimit = ad?.minimum_order_amount || "0.00"
