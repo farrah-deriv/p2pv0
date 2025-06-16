@@ -17,12 +17,12 @@ export default function Sidebar() {
   ]
 
   return (
-    <div className="hidden md:flex w-[295px] flex-col border-r border-slate-200 bg-white">
+    <div className="hidden md:flex w-[295px] flex-col border-r border-slate-200">
       <div className="flex flex-row items-center p-6 gap-4">
         <Avatar className="h-8 w-8">
           <Image src="/icons/default-user-icon.svg" alt="User avatar" width={64} height={64} />
         </Avatar>
-        <h2 className="text-sm">User</h2>
+        <h2 className="text-sm font-bold text-slate-1400">User</h2>
       </div>
       <nav className="flex-1 px-4 pt-4">
         <ul>
