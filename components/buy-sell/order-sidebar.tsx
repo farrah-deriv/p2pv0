@@ -154,28 +154,28 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
             </div>
             <div className="mx-4 mt-4 text-sm">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-500">Rate ({ad.account_currency} 1)</span>
-                <span className="font-medium">
+                <span className="text-slate-500">Rate ({ad.account_currency} 1)</span>
+                <span className="text-slate-1400">
                   {ad.payment_currency} {ad.exchange_rate?.toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-500">Order limit</span>
-                <span className="font-medium">
+                <span className="text-slate-500">Order limit</span>
+                <span className="text-slate-1400">
                   {ad.account_currency} {minLimit} - {maxLimit}
                 </span>
               </div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-500">Payment time</span>
-                <span className="font-medium">{ad.order_expiry_period} min</span>
+                <span className="text-slate-500">Payment time</span>
+                <span className="text-slate-1400">{ad.order_expiry_period} min</span>
               </div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-500">{isBuy ? "Buyer" : "Seller"}</span>
-                <span className="font-medium">{ad.user?.nickname}</span>
+                <span className="text-slate-500">{isBuy ? "Buyer" : "Seller"}</span>
+                <span className="text-slate-1400">{ad.user?.nickname}</span>
               </div>
             </div>
             <div className="border-t m-4 py-2 text-sm">
-              <h3 className="text-gray-500">{isBuy ? "Buyer's payment method(s)" : "Seller's payment method(s)"}</h3>
+              <h3 className="text-slate-500">{isBuy ? "Buyer's payment method(s)" : "Seller's payment method(s)"}</h3>
               <div className="flex flex-wrap gap-4">
                 {ad.payment_method_names?.map((method, index) => (
                   <div key={index} className="flex items-center">
@@ -187,7 +187,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                           : "bg-yellow-500"
                         }`}
                     />
-                    <span className="font-medium">
+                    <span className="text-slate-1400">
                       {method.toLowerCase().includes("bank")
                         ? "Bank transfer"
                         : method.toLowerCase().includes("wallet") || method.toLowerCase().includes("ewallet")
@@ -199,8 +199,8 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
               </div>
             </div>
             <div className="mx-4 mt-4 border-t py-2 text-sm">
-              <h3 className="text-gray-500">{isBuy ? "Buyer's instructions" : "Seller's instructions"}</h3>
-              <p className="text-gray-800 break-words">
+              <h3 className="text-slate-500">{isBuy ? "Buyer's instructions" : "Seller's instructions"}</h3>
+              <p className="text-slate-1400 break-words">
                 {ad.description ||
                   "Kindly transfer the payment to the provided account details after placing your order."}
               </p>
