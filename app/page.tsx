@@ -139,14 +139,13 @@ export default function BuySellPage() {
   
 
         {/* Buy/Sell Toggle and Filters - Fixed */}
-        <div className="mb-4 md:mb-6 md:flex justify-between items-center">
+        <div className="mb-4 md:mb-6 md:flex md:flex-col justify-between items-center">
           {!isSearchOpen && (
             <div className="flex flex-row justify-between items-center gap-4">
               {/* Buy/Sell Toggle */}
               <Tabs
                 defaultValue={activeTab}
                 onValueChange={(value) => setActiveTab(value as "buy" | "sell")}
-                className="w-full"
               >
                 <TabsList className="w-full md:min-w-3xs">
                   <TabsTrigger className="w-full md:w-auto" value="sell">
