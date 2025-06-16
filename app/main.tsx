@@ -40,7 +40,7 @@ export default function Main({
 
   return (
     <>
-      <div className="hidden md:flex">
+      <div className="hidden md:flex p-6">
         {isHeaderVisible && <Sidebar />}
         <div className="flex-1">{isHeaderVisible && <Header />}
         <div className="min-h-screen">
