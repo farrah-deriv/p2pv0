@@ -10,26 +10,11 @@ export default function Sidebar() {
   const pathname = usePathname()
 
   const navItems = [
-    { name: "Home", href: "https://hub.deriv.com/tradershub", icon: null, customIcon: "home" },
-    { name: "Trade", href: "https://hub.deriv.com/tradershub/cfds", icon: null, customIcon: "trade" },
-    { name: "Wallets", href: "https://hub.deriv.com/tradershub/wallets", icon: null, customIcon: "wallets" },
-    { name: "P2P", href: "/", icon: null, customIcon: "p2p" },
+    { name: "Home", href: "https://hub.deriv.com/tradershub", icon: "/icons/home-icon.png" },
+    { name: "Trade", href: "https://hub.deriv.com/tradershub/cfds", icon: "/icons/trade-icon.svg" },
+    { name: "Wallets", href: "https://hub.deriv.com/tradershub/wallets", icon: "/icons/wallet-icon.svg" },
+    { name: "P2P", href: "/", icon: "/icons/p2p-icon.svg" },
   ]
-
-  const getCustomIconPath = (iconType: string) => {
-    switch (iconType) {
-      case "home":
-        return "/icons/home-icon.png"
-      case "trade":
-        return "/icons/trade-icon.svg"
-      case "wallets":
-        return "/icons/wallet-icon.svg"
-      case "p2p":
-        return "/icons/p2p-icon.svg"
-      default:
-        return ""
-    }
-  }
 
   return (
     <div className="hidden md:flex fixed left-0 top-0 bottom-0 w-[280px] flex-col border-r border-slate-200 bg-white">
@@ -53,18 +38,14 @@ export default function Sidebar() {
                     isActive ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
                   )}
                 >
-                  {item.customIcon ? (
                     <div className="h-5 w-5 flex items-center justify-center">
                       <Image
-                        src={getCustomIconPath(item.customIcon) || "/placeholder.svg"}
+                        src={item.icon}
                         alt={item.name}
                         width={20}
                         height={20}
                       />
                     </div>
-                  ) : (
-                    item.icon && <item.icon className="h-5 w-5" />
-                  )}
                   {item.name}
                 </Link>
               </li>
