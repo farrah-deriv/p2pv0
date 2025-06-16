@@ -41,12 +41,7 @@ export default function Sidebar() {
                 >
                   {item.customIcon ? (
                     <div className="h-5 w-5 flex items-center justify-center">
-                      <Image
-                        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-Y1fqNEBgmiu1GcXp9sZoqPt8ltmSaW.png"
-                        alt="Home"
-                        width={20}
-                        height={20}
-                      />
+                      <Image src="/icons/home-icon.png" alt="Home" width={20} height={20} />
                     </div>
                   ) : (
                     item.icon && <item.icon className="h-5 w-5" />
