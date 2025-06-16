@@ -15,10 +15,15 @@ interface WalletBalanceProps {
   className?: string
 }
 
+type OperationType = "DEPOSIT" | "WITHDRAW"
+
 export default function WalletBalance({ className }: WalletBalanceProps) {
   const [isDepositSheetOpen, setIsDepositSheetOpen] = useState(false)
   const [isDepositSidebarOpen, setIsDepositSidebarOpen] = useState(false)
+  const [isWithdrawSheetOpen, setIsWithdrawSheetOpen] = useState(false)
+  const [isWithdrawSidebarOpen, setIsWithdrawSidebarOpen] = useState(false)
   const [isIframeModalOpen, setIsIframeModalOpen] = useState(false)
+  const [currentOperation, setCurrentOperation] = useState<OperationType>("DEPOSIT")
   const [balance, setBalance] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -46,7 +51,7 @@ export default function WalletBalance({ className }: WalletBalanceProps) {
 
       if (responseData && responseData.data) {
         const data = responseData.data
-        setBalance(data.balances?.USD || 0)
+        setBalance(data.balances?.USD?.amount ? Number.parseFloat(data.balances.USD.amount) : 0)
       }
 
       setIsLoading(false)
@@ -67,6 +72,7 @@ export default function WalletBalance({ className }: WalletBalanceProps) {
   }
 
   const handleDepositClick = () => {
+    setCurrentOperation("DEPOSIT")
     if (isMobile) {
       setIsDepositSheetOpen(true)
     } else {
@@ -74,9 +80,26 @@ export default function WalletBalance({ className }: WalletBalanceProps) {
     }
   }
 
+  const handleWithdrawClick = () => {
+    setCurrentOperation("WITHDRAW")
+    if (isMobile) {
+      setIsWithdrawSheetOpen(true)
+    } else {
+      setIsWithdrawSidebarOpen(true)
+    }
+  }
+
   const handleDirectDepositClick = () => {
     setIsDepositSheetOpen(false)
     setIsDepositSidebarOpen(false)
+    setCurrentOperation("DEPOSIT")
+    setIsIframeModalOpen(true)
+  }
+
+  const handleDirectWithdrawClick = () => {
+    setIsWithdrawSheetOpen(false)
+    setIsWithdrawSidebarOpen(false)
+    setCurrentOperation("WITHDRAW")
     setIsIframeModalOpen(true)
   }
 
@@ -96,12 +119,7 @@ export default function WalletBalance({ className }: WalletBalanceProps) {
         <h1 className="text-[32px] font-black text-black text-center leading-normal">
           {isLoading ? "Loading..." : `${Number(balance).toFixed(2)} USD`}
         </h1>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleRefresh}
-          aria-label="Refresh balance"
-        >
+        <Button variant="ghost" size="sm" onClick={handleRefresh} aria-label="Refresh balance">
           <RefreshCw className={cn("h-4 w-4 text-gray-400", isRefreshing && "animate-spin")} />
         </Button>
       </div>
@@ -126,6 +144,7 @@ export default function WalletBalance({ className }: WalletBalanceProps) {
             size="icon"
             className="h-14 w-14 !rounded-full rounded-[9999px] aspect-square overflow-hidden flex-shrink-0 min-h-[56px] min-w-[56px] max-h-[56px] max-w-[56px] border-2 border-[#00080A] bg-white hover:bg-gray-50 transition-colors p-0"
             aria-label="Withdraw"
+            onClick={handleWithdrawClick}
           >
             <Minus className="h-6 w-6" />
           </Button>
@@ -157,7 +176,24 @@ export default function WalletBalance({ className }: WalletBalanceProps) {
         onDirectDepositClick={handleDirectDepositClick}
       />
 
-      <FullScreenIframeModal isOpen={isIframeModalOpen} onClose={() => setIsIframeModalOpen(false)} />
+      <DepositBottomSheet
+        isOpen={isWithdrawSheetOpen}
+        onClose={() => setIsWithdrawSheetOpen(false)}
+        onDirectDepositClick={handleDirectWithdrawClick}
+      />
+
+      <DepositSidebar
+        isOpen={isWithdrawSidebarOpen}
+        onClose={() => setIsWithdrawSidebarOpen(false)}
+        onDirectDepositClick={handleDirectWithdrawClick}
+      />
+
+      <FullScreenIframeModal
+        isOpen={isIframeModalOpen}
+        onClose={() => setIsIframeModalOpen(false)}
+        operation={currentOperation}
+      />
     </div>
   )
 }
+

@@ -4,19 +4,24 @@ import { X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
-import { WALLETS } from "@/lib/local-variables"
 import { Button } from "@/components/ui/button"
+import { WALLETS } from "@/lib/local-variables"
 
 interface IframeResponse {
-  iframe_url: string
+  status: string
+  data: {
+    iframe_url: string
+  }
+  message: string
 }
 
 interface FullScreenIframeModalProps {
   isOpen: boolean
   onClose: () => void
+  operation?: "DEPOSIT" | "WITHDRAW"
 }
 
-export default function FullScreenIframeModal({ isOpen, onClose }: FullScreenIframeModalProps) {
+export default function FullScreenIframeModal({ isOpen, onClose, operation = "DEPOSIT" }: FullScreenIframeModalProps) {
   const router = useRouter()
   const [iframeUrl, setIframeUrl] = useState<string>("")
   const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -37,26 +42,34 @@ export default function FullScreenIframeModal({ isOpen, onClose }: FullScreenIfr
       setIframeLoaded(false)
       setError(null)
 
+
+      const requestParams = {
+        ...WALLETS.defaultParams,
+        operation: operation === "DEPOSIT" ? "DEPOSIT" : "PAYOUT",
+      }
+
       try {
         const response = await fetch(WALLETS.cashierUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "X-Branch": "staging",
           },
-          body: JSON.stringify(WALLETS.defaultParams),
+          body: JSON.stringify(requestParams),
         })
 
         if (!response.ok) {
-          throw new Error(`API request failed with status ${response.status}`)
+          const errorText = await response.text()
+          throw new Error(`API request failed with status ${response.status}: ${errorText}`)
         }
 
         const data: IframeResponse = await response.json()
 
-        if (!data.iframe_url) {
+        if (!data.data?.iframe_url) {
           throw new Error("No iframe URL returned from API")
         }
 
-        setIframeUrl(data.iframe_url)
+        setIframeUrl(data.data.iframe_url)
         setIsLoading(false)
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch iframe URL")
@@ -65,7 +78,7 @@ export default function FullScreenIframeModal({ isOpen, onClose }: FullScreenIfr
     }
 
     fetchIframeUrl()
-  }, [isOpen])
+  }, [isOpen, operation])
 
   const handleIframeLoad = () => {
     setIframeLoaded(true)
@@ -78,10 +91,14 @@ export default function FullScreenIframeModal({ isOpen, onClose }: FullScreenIfr
 
   if (!isOpen || !mounted) return null
 
+  const title = operation === "DEPOSIT" ? "Deposit to P2P" : "Withdraw from P2P"
+  const loadingText = operation === "DEPOSIT" ? "Loading deposit page..." : "Loading withdrawal page..."
+  const errorTitle = operation === "DEPOSIT" ? "Error loading deposit page" : "Error loading withdrawal page"
+
   return createPortal(
     <div className="fixed inset-0 z-[9999] bg-background flex flex-col">
       <div className="flex h-16 px-4 py-1 justify-between items-center border-b border-border bg-background z-10">
-        <h1 className="text-lg font-bold text-black leading-7">Deposit to P2P</h1>
+        <h1 className="text-lg font-bold text-black leading-7">{title}</h1>
         <Button
           variant="ghost"
           size="icon"
@@ -98,7 +115,7 @@ export default function FullScreenIframeModal({ isOpen, onClose }: FullScreenIfr
           <div className="absolute inset-0 flex items-center justify-center bg-background z-10">
             <div className="flex flex-col items-center">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
-              <p className="text-muted-foreground">Loading deposit page...</p>
+              <p className="text-muted-foreground">{loadingText}</p>
             </div>
           </div>
         )}
@@ -106,7 +123,7 @@ export default function FullScreenIframeModal({ isOpen, onClose }: FullScreenIfr
         {error && (
           <div className="flex items-center justify-center h-full">
             <div className="text-destructive text-center p-4">
-              <p className="text-lg font-semibold">Error loading deposit page</p>
+              <p className="text-lg font-semibold">{errorTitle}</p>
               <p className="mt-2">{error}</p>
               <Button
                 variant="default"
@@ -123,7 +140,7 @@ export default function FullScreenIframeModal({ isOpen, onClose }: FullScreenIfr
           <iframe
             src={iframeUrl}
             className="absolute inset-0 w-full h-full border-0"
-            title="Deposit to P2P"
+            title={title}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             onLoad={handleIframeLoad}
