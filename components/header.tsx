@@ -18,7 +18,7 @@ export default function Header() {
   ]
 
   return (
-    <header className="hidden md:block fixed top-0 left-[280px] right-0 bg-white z-10">
+    <header className="hidden md:block fixed top-6 left-[280px] right-6 bg-white z-10">
       <div>
         <nav className="flex h-12 mx-6 border-b border-slate-200">
           {navItems.map((item) => {
@@ -41,7 +41,7 @@ export default function Header() {
           })}
         </nav>
       </div>
-      <div className="absolute top-0 right-4 h-12 flex items-center space-x-4">
+      <div className="absolute top-6 right-6 h-12 flex items-center space-x-4">
         <div className="text-slate-600 hover:text-slate-700">
           <NovuNotifications />
         </div>
