@@ -18,7 +18,7 @@ export default function Header() {
   ]
 
   return (
-    <header className="hidden md:flex justify-between items-center z-10">
+    <header className="hidden md:flex justify-between items-center p-6 z-10">
       <div>
         <nav className="flex h-12 mx-6 border-b border-slate-200">
           {navItems.map((item) => {
