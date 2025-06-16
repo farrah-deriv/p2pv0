@@ -27,9 +27,11 @@ async function fetchSubscriberHash() {
         }
 
         const data = await response.json()
-        return data.subscriber.subscriberHash
+        return {
+            subscriberHash: data.subscriber.subscriberHash,
+            subscriberId: data.subscriber.subscriberId,
+        }
     } catch (error) {
-        console.log(error)
         return null
     }
 }
@@ -40,8 +42,9 @@ export function NovuNotifications() {
     const [subscriberHash, setSubscriberHash] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [subscriberId, setSubscriberId] = useState<string | null>(null)
 
-    const subscriberId = USER.id || ""
+    const userIdFallback = USER.id || ""
     const applicationIdentifier = NOTIFICATIONS.applicationId
 
     const appearance = {
@@ -64,8 +67,8 @@ export function NovuNotifications() {
     useEffect(() => {
         setMounted(true)
 
-        // Only fetch if we have a subscriber ID
-        if (!subscriberId) {
+        // Only fetch if we have a user ID fallback
+        if (!userIdFallback) {
             setError("No user ID available")
             setIsLoading(false)
             return
@@ -76,10 +79,12 @@ export function NovuNotifications() {
             setIsLoading(true)
             setError(null)
             try {
-                const hash = await fetchSubscriberHash()
-                setSubscriberHash(hash)
-                if (!hash) {
-                    setError("Failed to retrieve subscriber hash")
+                const result = await fetchSubscriberHash()
+                if (result) {
+                    setSubscriberHash(result.subscriberHash)
+                    setSubscriberId(result.subscriberId)
+                } else {
+                    setError("Failed to retrieve subscriber data")
                 }
             } catch (err: any) {
                 setError(err.message)
@@ -89,7 +94,7 @@ export function NovuNotifications() {
         }
 
         getSubscriberHash()
-    }, [subscriberId])
+    }, [userIdFallback])
 
     if (!mounted || isLoading) {
         return (
@@ -99,7 +104,7 @@ export function NovuNotifications() {
         )
     }
 
-    if (error || !subscriberHash) {
+    if (error || !subscriberHash || !subscriberId) {
         return (
             <div
                 className="relative inline-flex h-5 w-5 bg-red-100 rounded-full"
@@ -114,7 +119,7 @@ export function NovuNotifications() {
         <div style={{ position: "static" }}>
             <Inbox
                 applicationIdentifier={applicationIdentifier}
-                subscriber={subscriberId}
+                subscriber={subscriberId || ""}
                 subscriberHash={subscriberHash}
                 colorScheme="light"
                 i18n={{
