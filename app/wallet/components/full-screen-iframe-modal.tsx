@@ -42,7 +42,6 @@ export default function FullScreenIframeModal({ isOpen, onClose, operation = "DE
       setIframeLoaded(false)
       setError(null)
 
-
       const requestParams = {
         ...WALLETS.defaultParams,
         operation: operation === "DEPOSIT" ? "DEPOSIT" : "PAYOUT",
@@ -92,8 +91,6 @@ export default function FullScreenIframeModal({ isOpen, onClose, operation = "DE
   if (!isOpen || !mounted) return null
 
   const title = operation === "DEPOSIT" ? "Deposit to P2P" : "Withdraw from P2P"
-  const loadingText = operation === "DEPOSIT" ? "Loading deposit page..." : "Loading withdrawal page..."
-  const errorTitle = operation === "DEPOSIT" ? "Error loading deposit page" : "Error loading withdrawal page"
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] bg-background flex flex-col">
@@ -115,7 +112,7 @@ export default function FullScreenIframeModal({ isOpen, onClose, operation = "DE
           <div className="absolute inset-0 flex items-center justify-center bg-background z-10">
             <div className="flex flex-col items-center">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
-              <p className="text-muted-foreground">{loadingText}</p>
+              <p className="text-muted-foreground">Loading...</p>
             </div>
           </div>
         )}
@@ -123,7 +120,7 @@ export default function FullScreenIframeModal({ isOpen, onClose, operation = "DE
         {error && (
           <div className="flex items-center justify-center h-full">
             <div className="text-destructive text-center p-4">
-              <p className="text-lg font-semibold">{errorTitle}</p>
+              <p className="text-lg font-semibold">An error occurred while fetching the content. Please try again later.</p>
               <p className="mt-2">{error}</p>
               <Button
                 variant="default"
