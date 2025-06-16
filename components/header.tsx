@@ -41,7 +41,7 @@ export default function Header() {
           })}
         </nav>
       </div>
-      <div className="absolute top-0 right-6 h-12 flex items-center space-x-4">
+      <div className="h-12 flex items-center space-x-4">
         <div className="text-slate-600 hover:text-slate-700">
           <NovuNotifications />
         </div>
