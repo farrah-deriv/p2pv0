@@ -134,15 +134,10 @@ export default function BuySellPage() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden px-4">
-      {/* Fixed Header Section */}
       <div className="flex-shrink-0">
-  
-
-        {/* Buy/Sell Toggle and Filters - Fixed */}
-        <div className="mb-4 md:mb-6 md:flex md:flex-col justify-between items-center">
+        <div className="mb-4 md:mb-6 md:flex md:flex-col justify-between gap-4">
           {!isSearchOpen && (
             <div className="flex flex-row justify-between items-center gap-4">
-              {/* Buy/Sell Toggle */}
               <Tabs
                 defaultValue={activeTab}
                 onValueChange={(value) => setActiveTab(value as "buy" | "sell")}
@@ -158,8 +153,6 @@ export default function BuySellPage() {
               </Tabs>
             </div>
           )}
-
-          {/* Responsive Filters Row */}
           <div className="flex flex-wrap gap-2 md:gap-3 md:px-0 mt-4 md:mt-0">
             {!isSearchOpen && (
               <Select value={currency} onValueChange={setCurrency}>

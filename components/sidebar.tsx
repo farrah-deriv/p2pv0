@@ -35,7 +35,7 @@ export default function Sidebar() {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
+                    "flex items-center gap-3 rounded-md p-4 text-sm font-medium",
                     isActive ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
                   )}
                 >
