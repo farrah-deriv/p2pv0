@@ -208,7 +208,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
             <div className="mt-auto p-4 border-t">
               <Button
                 className="w-full"
-                variant={isBuy ? "destructive" : "secondary"}
+                variant="primary"
                 size="lg"
                 onClick={handleSubmit}
                 disabled={!!validationError || isSubmitting}
