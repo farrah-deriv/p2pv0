@@ -22,7 +22,7 @@ export default function Sidebar() {
         <Avatar className="h-8 w-8">
           <Image src="/icons/default-user-icon.svg" alt="User avatar" width={64} height={64} />
         </Avatar>
-        <h2 className="text-base font-medium">User</h2>
+        <h2 className="text-sm">User</h2>
       </div>
       <nav className="flex-1 px-4 pt-4">
         <ul className="space-y-2">
