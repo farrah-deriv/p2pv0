@@ -8,10 +8,9 @@ import { cn } from "@/lib/utils"
 interface DepositOptionProps {
   onClose: () => void
   onDirectDepositClick: () => void
-  operation?: "DEPOSIT" | "WITHDRAW"
 }
 
-export default function DepositOptions({ onClose, onDirectDepositClick, operation = "DEPOSIT" }: DepositOptionProps) {
+export default function DepositOptions({ onClose, onDirectDepositClick }: DepositOptionProps) {
   const router = useRouter()
 
   const handleDirectDepositClick = (e: React.MouseEvent) => {
@@ -39,13 +38,9 @@ export default function DepositOptions({ onClose, onDirectDepositClick, operatio
           <ArrowLeftRight className="w-6 h-6 text-muted-foreground" />
         </div>
         <div className="flex-1">
-          <h3 className="text-base font-bold text-black leading-6 mb-1">
-            {operation === "DEPOSIT" ? "P2P Trading" : "Marketplace"}
-          </h3>
+          <h3 className="text-base font-bold text-black leading-6 mb-1">P2P Trading</h3>
           <p className="text-muted-foreground text-sm font-normal leading-[22px]">
-            {operation === "DEPOSIT"
-              ? "Buy USD directly from other users on the P2P marketplace."
-              : "Trade USD directly with other users on the marketplace."}
+            Buy USD directly from other users on the P2P marketplace.
           </p>
         </div>
       </div>
@@ -61,13 +56,9 @@ export default function DepositOptions({ onClose, onDirectDepositClick, operatio
           <Building2 className="w-6 h-6 text-muted-foreground" />
         </div>
         <div className="flex-1">
-          <h3 className="text-base font-bold text-black leading-6 mb-1">
-            {operation === "DEPOSIT" ? "Direct deposit" : "Direct withdrawal"}
-          </h3>
+          <h3 className="text-base font-bold text-black leading-6 mb-1">Direct deposit</h3>
           <p className="text-muted-foreground text-sm font-normal leading-[22px]">
-            {operation === "DEPOSIT"
-              ? "Deposit funds directly from your bank account, e-wallet, or other payment methods."
-              : "Withdraw funds directly to your bank account, e-wallet, or other payment methods."}
+            Deposit funds directly from your bank account, e-wallet, or other payment methods.
           </p>
         </div>
       </div>

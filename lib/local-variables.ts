@@ -1,16 +1,20 @@
 let USER_DATA = null
 let USER_TOKEN = null
 let USER_ID = null
+let SOCKET_TOKEN = null;
+
 if (typeof window !== "undefined") {
   USER_DATA = JSON.parse(localStorage.getItem("user_data") ?? "{}")
   USER_TOKEN = localStorage.getItem("auth_token") ?? ""
   USER_ID = localStorage.getItem("user_id") ?? ""
+  SOCKET_TOKEN = localStorage.getItem("socket_token") ?? "";
 }
 
 export const USER = {
   id: USER_ID,
   nickname: USER_DATA?.nickname,
   token: USER_TOKEN,
+  socketToken: SOCKET_TOKEN,
 }
 
 export const API = {
@@ -53,7 +57,6 @@ export const APP_SETTINGS = {
 export const AUTH = {
   getAuthHeader: () => ({
     Authorization: `Bearer ${USER.token}`,
-    // Read headers from environment variables with fallbacks
     "X-Data-Source": process.env.NEXT_PUBLIC_DATA_SOURCE,
     "X-Branch": process.env.NEXT_PUBLIC_BRANCH,
   }),
