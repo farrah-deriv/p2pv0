@@ -73,16 +73,11 @@ export default function BuySellPage() {
         sortBy: sortBy,
       }
 
-      // Apply additional filters
       if (filterOptions.fromFollowing) {
-        // Use favourites_only: 1 parameter for the API
         params.favourites_only = 1
       }
-      // Note: withinLimits would typically be handled by the backend
 
       const data = await BuySellAPI.getAdvertisements(params)
-
-      // Ensure data is an array before setting it
       if (Array.isArray(data)) {
         setAdverts(data)
       } else {
@@ -316,9 +311,7 @@ export default function BuySellPage() {
         </div>
       </div>
 
-      {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto pb-20 md:pb-4">
-        {/* Advertisers List */}
         <div>
           {isLoading ? (
             <div className="text-center py-12">
@@ -365,7 +358,6 @@ export default function BuySellPage() {
             </div>
           ) : (
             <>
-              {/* Mobile Card View */}
               <div className="md:hidden space-y-4">
                 {adverts.map((ad) => (
                   <div key={ad.id} className="border rounded-lg p-4 bg-white">
@@ -473,7 +465,6 @@ export default function BuySellPage() {
                 ))}
               </div>
 
-              {/* Desktop Table View */}
               <div className="hidden md:block">
                 <Table>
                   <TableHeader className="border-b sticky top-0 bg-white">
@@ -489,7 +480,7 @@ export default function BuySellPage() {
                   <TableBody className="bg-white divide-y divide-slate-200 font-normal text-sm">
                     {adverts.map((ad) => (
                       <TableRow key={ad.id}>
-                        <TableCell className="py-4 px-4">
+                        <TableCell className="py-4 px-4 align-top">
                           <div className="flex items-center">
                             <div className="h-10 w-10 flex-shrink-0 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-xl mr-3">
                               {(ad.user?.nickname || "U").charAt(0).toUpperCase()}
@@ -525,7 +516,7 @@ export default function BuySellPage() {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="py-4 px-4">
+                        <TableCell className="py-4 px-4 align-top">
                           <div className="font-bold">{ad.payment_currency}{" "}
                           {ad.exchange_rate
                             ? ad.exchange_rate.toLocaleString(undefined, {
@@ -549,7 +540,7 @@ export default function BuySellPage() {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="py-4 px-4 sm:table-cell">
+                        <TableCell className="py-4 px-4 sm:table-cell align-top">
                           <div className="flex flex-col flex-wrap gap-2">
                             {ad.payment_method_names?.map((method, index) => (
                               <div key={index} className="flex items-center">
@@ -564,7 +555,7 @@ export default function BuySellPage() {
                             ))}
                           </div>
                         </TableCell>
-                        <TableCell className="py-4 px-4 text-right">
+                        <TableCell className="py-4 px-4 text-right align-top">
                           {USER.id != ad.user.id && (
                             <Button
                               variant={ad.type === "buy" ? "destructive" : "secondary"}

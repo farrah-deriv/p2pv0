@@ -20,7 +20,7 @@ export default function Sidebar() {
     <div className="hidden md:flex fixed left-0 top-0 bottom-0 w-[280px] flex-col border-r border-slate-200 bg-white">
       <div className="flex flex-row items-center p-4">
         <Avatar className="h-16 w-16">
-          <img src="/placeholder.svg?height=64&width=64" alt="User avatar" />
+          <img src="/placeholder-user.jpg" alt="User avatar" />
         </Avatar>
         <h2 className="mt-4 text-base font-medium">User</h2>
       </div>
@@ -38,9 +38,14 @@ export default function Sidebar() {
                     isActive ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
                   )}
                 >
-                  <div className="h-5 w-5 flex items-center justify-center">
-                    <Image src={item.icon || "/placeholder.svg"} alt={item.name} width={20} height={20} />
-                  </div>
+                    <div className="h-5 w-5 flex items-center justify-center">
+                      <Image
+                        src={item.icon}
+                        alt={item.name}
+                        width={20}
+                        height={20}
+                      />
+                    </div>
                   {item.name}
                 </Link>
               </li>
