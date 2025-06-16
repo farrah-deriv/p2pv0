@@ -47,7 +47,7 @@ export default function Main({
           <div className="container mx-auto p-4">{children}</div>
         </div></div>
       </div>
-      <div className="md:hidden container mx-auto flex flex-col h-screen overflow-hidden">
+      <div className="md:hidden container mx-auto p-4 flex flex-col h-screen overflow-hidden">
         {isHeaderVisible && <Header className="flex-shrink-0" />}
         <main className="flex-1 overflow-hidden">{children}</main>
         <MobileFooterNav className="flex-shrink-0" />
