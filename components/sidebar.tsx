@@ -39,7 +39,7 @@ export default function Sidebar() {
                   )}
                 >
                   <div className="h-5 w-5 flex items-center justify-center">
-                    <Image src={item.icon || "/placeholder.svg"} alt={item.name} width={20} height={20} />
+                    <Image src={item.icon} alt={item.name} width={20} height={20} />
                   </div>
                   {item.name}
                 </Link>
