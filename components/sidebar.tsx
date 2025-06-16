@@ -18,7 +18,7 @@ export default function Sidebar() {
 
   return (
     <div className="hidden md:flex fixed left-0 top-0 bottom-0 w-[280px] flex-col border-r border-slate-200 bg-white">
-      <div className="flex flex-row items-center pt-8 pb-6">
+      <div className="flex flex-row items-center p-4">
         <Avatar className="h-16 w-16">
           <img src="/placeholder-user.jpg" alt="User avatar" />
         </Avatar>
