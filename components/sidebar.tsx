@@ -5,7 +5,6 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Avatar } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
-import { MessageSquare } from "lucide-react"
 
 export default function Sidebar() {
   const pathname = usePathname()
@@ -14,7 +13,7 @@ export default function Sidebar() {
     { name: "Home", href: "https://hub.deriv.com/tradershub", icon: null, customIcon: "home" },
     { name: "Trade", href: "https://hub.deriv.com/tradershub/cfds", icon: null, customIcon: "trade" },
     { name: "Wallets", href: "https://hub.deriv.com/tradershub/wallets", icon: null, customIcon: "wallets" },
-    { name: "P2P", href: "/", icon: MessageSquare },
+    { name: "P2P", href: "/", icon: null, customIcon: "p2p" },
   ]
 
   const getCustomIconPath = (iconType: string) => {
@@ -25,6 +24,8 @@ export default function Sidebar() {
         return "/icons/trade-icon.svg"
       case "wallets":
         return "/icons/wallet-icon.svg"
+      case "p2p":
+        return "/icons/p2p-icon.svg"
       default:
         return ""
     }
