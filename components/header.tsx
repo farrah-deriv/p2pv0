@@ -45,9 +45,6 @@ export default function Header() {
         <div className="text-slate-600 hover:text-slate-700">
           <NovuNotifications />
         </div>
-        <Link href="/profile" className="text-slate-600 hover:text-slate-700">
-          <User className="h-5 w-5" />
-        </Link>
       </div>
     </header>
   )
