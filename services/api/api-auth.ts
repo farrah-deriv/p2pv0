@@ -145,11 +145,10 @@ export async function fetchUserIdAndStore(): Promise<void> {
 
     const result = await response.json()
     const userId = result?.data?.id
-    const userNickname = result?.data?.nickname
 
     if (userId) {
       localStorage.setItem("user_id", userId.toString())
-      localStorage.setItem("user_nickname", userId.toString())
+      localStorage.setItem("user_data", JSON.stringify(result.data))
     }
   } catch (error) {
     console.error("Error fetching user ID:", error)
