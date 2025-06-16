@@ -120,7 +120,7 @@ export default function FullScreenIframeModal({ isOpen, onClose, operation = "DE
         {error && (
           <div className="flex items-center justify-center h-full">
             <div className="text-destructive text-center p-4">
-              <p className="text-lg font-semibold">An error occurred while fetching the content. Please try again later.</p>
+              <p className="text-lg font-semibold">Error loading page</p>
               <p className="mt-2">{error}</p>
               <Button
                 variant="default"

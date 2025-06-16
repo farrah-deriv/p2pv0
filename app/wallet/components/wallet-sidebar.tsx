@@ -4,19 +4,19 @@ import DepositOptions from "./deposit-options"
 import WithdrawOptions from "./withdraw-options"
 import { Button } from "@/components/ui/button"
 
-interface DepositSidebarProps {
+interface WalletSidebarProps {
   isOpen: boolean
   onClose: () => void
   onDirectDepositClick: () => void
   operation?: "DEPOSIT" | "WITHDRAW"
 }
 
-export default function DepositSidebar({
+export default function WalletSidebar({
   isOpen,
   onClose,
   onDirectDepositClick,
   operation = "DEPOSIT",
-}: DepositSidebarProps) {
+}: WalletSidebarProps) {
   if (!isOpen) return null
 
   return (

@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react"
 import { Plus, Minus, RefreshCw } from "lucide-react"
 import Image from "next/image"
-import DepositBottomSheet from "./deposit-bottom-sheet"
-import DepositSidebar from "./deposit-sidebar"
+import WalletBottomSheet from "./wallet-bottom-sheet"
+import WalletSidebar from "./wallet-sidebar"
 import FullScreenIframeModal from "./full-screen-iframe-modal"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import { cn } from "@/lib/utils"
@@ -164,28 +164,30 @@ export default function WalletBalance({ className }: WalletBalanceProps) {
         </div>
       </div>
 
-      <DepositBottomSheet
+      <WalletBottomSheet
         isOpen={isDepositSheetOpen}
         onClose={() => setIsDepositSheetOpen(false)}
         onDirectDepositClick={handleDirectDepositClick}
       />
 
-      <DepositSidebar
+      <WalletSidebar
         isOpen={isDepositSidebarOpen}
         onClose={() => setIsDepositSidebarOpen(false)}
         onDirectDepositClick={handleDirectDepositClick}
       />
 
-      <DepositBottomSheet
+      <WalletBottomSheet
         isOpen={isWithdrawSheetOpen}
         onClose={() => setIsWithdrawSheetOpen(false)}
         onDirectDepositClick={handleDirectWithdrawClick}
+        operation="WITHDRAW"
       />
 
-      <DepositSidebar
+      <WalletSidebar
         isOpen={isWithdrawSidebarOpen}
         onClose={() => setIsWithdrawSidebarOpen(false)}
         onDirectDepositClick={handleDirectWithdrawClick}
+        operation="WITHDRAW"
       />
 
       <FullScreenIframeModal
@@ -196,4 +198,3 @@ export default function WalletBalance({ className }: WalletBalanceProps) {
     </div>
   )
 }
-

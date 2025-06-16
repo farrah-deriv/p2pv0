@@ -4,19 +4,19 @@ import DepositOptions from "./deposit-options"
 import WithdrawOptions from "./withdraw-options"
 import { Button } from "@/components/ui/button"
 
-interface DepositBottomSheetProps {
+interface WalletBottomSheetProps {
   isOpen: boolean
   onClose: () => void
   onDirectDepositClick: () => void
   operation?: "DEPOSIT" | "WITHDRAW"
 }
 
-export default function DepositBottomSheet({
+export default function WalletBottomSheet({
   isOpen,
   onClose,
   onDirectDepositClick,
   operation = "DEPOSIT",
-}: DepositBottomSheetProps) {
+}: WalletBottomSheetProps) {
   if (!isOpen) return null
 
   return (
