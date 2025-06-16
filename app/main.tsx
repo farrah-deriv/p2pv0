@@ -43,7 +43,7 @@ export default function Main({
       <div className="hidden md:flex">
         {isHeaderVisible && <Sidebar />}
         {isHeaderVisible && <Header />}
-        <div className="pl-[295px] pt-20 min-h-screen">
+        <div className="min-h-screen">
           <div className="container mx-auto p-4">{children}</div>
         </div>
       </div>
