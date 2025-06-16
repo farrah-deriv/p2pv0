@@ -12,7 +12,7 @@ export default function Header() {
   const navItems = [
     { name: "Market", href: "/" },
     { name: "Orders", href: "/orders" },
-    { name: "My Ads", href: "/my-ads" },
+    { name: "My Ads", href: "/ads" },
     { name: "Wallet", href: "/wallet" },
     { name: "Profile", href: "/profile" },
   ]
