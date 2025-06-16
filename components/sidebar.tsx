@@ -5,14 +5,14 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Avatar } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
-import { BarChart2, Wallet, MessageSquare } from "lucide-react"
+import { Wallet, MessageSquare } from "lucide-react"
 
 export default function Sidebar() {
   const pathname = usePathname()
 
   const navItems = [
-    { name: "Home", href: "https://hub.deriv.com/tradershub", icon: null, customIcon: true },
-    { name: "Trade", href: "https://hub.deriv.com/tradershub/cfds", icon: BarChart2 },
+    { name: "Home", href: "https://hub.deriv.com/tradershub", icon: null, customIcon: "home" },
+    { name: "Trade", href: "https://hub.deriv.com/tradershub/cfds", icon: null, customIcon: "trade" },
     { name: "Wallets", href: "https://hub.deriv.com/tradershub/wallets", icon: Wallet },
     { name: "P2P", href: "/", icon: MessageSquare },
   ]
@@ -41,7 +41,12 @@ export default function Sidebar() {
                 >
                   {item.customIcon ? (
                     <div className="h-5 w-5 flex items-center justify-center">
-                      <Image src="/icons/home-icon.png" alt="Home" width={20} height={20} />
+                      <Image
+                        src={item.customIcon === "home" ? "/icons/home-icon.png" : "/icons/trade-icon.svg"}
+                        alt={item.name}
+                        width={20}
+                        height={20}
+                      />
                     </div>
                   ) : (
                     item.icon && <item.icon className="h-5 w-5" />
