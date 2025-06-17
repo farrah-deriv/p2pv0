@@ -162,7 +162,7 @@ export default function BuySellPage() {
                 </SelectContent>
               </Select>
             )}
-            <div className="hidden md:block">
+            <div className="hidden">
               <Select
                 value={selectedPaymentMethod}
                 onValueChange={setSelectedPaymentMethod}
