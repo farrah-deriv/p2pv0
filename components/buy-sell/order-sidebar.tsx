@@ -247,7 +247,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                                   method.type === "bank" ? "bg-green-500" : "bg-blue-500"
                                 }`}
                               />
-                              <span className="font-medium text-gray-900">{method.display_name}</span>
+                              <span className="font-medium text-gray-600">{method.display_name}</span>
                             </div>
                           </div>
                           <Checkbox
@@ -301,10 +301,10 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                 </div>
 
                 {isBuy && (
-                  <div className="mx-4 mt-4">
-                    <h3 className="text-sm font-medium text-gray-900 mb-3">Receive payment to</h3>
+                  <div className="mx-4 mt-4 pb-6 border-b">
+                    <h3 className="text-sm text-slate-1400 mb-3">Receive payment to</h3>
                     <div
-                      className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+                      className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
                       onClick={() => setShowPaymentSelection(true)}
                     >
                       <div className="flex items-center justify-between">
