@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { X } from "lucide-react"
+import { X, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { Advertisement } from "@/services/api/api-buy-sell"
@@ -45,12 +45,12 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
     if (ad && amount) {
       const numAmount = Number.parseFloat(amount)
       const exchangeRate = ad.exchange_rate || 0
-      const total = (numAmount * exchangeRate)
+      const total = numAmount * exchangeRate
       setTotalAmount(total)
 
       // Validate amount against limits
-      const minLimit = parseFloat(ad.minimum_order_amount) || 0
-      const maxLimit = parseFloat(ad.actual_maximum_order_amount) || 0
+      const minLimit = Number.parseFloat(ad.minimum_order_amount) || 0
+      const maxLimit = Number.parseFloat(ad.actual_maximum_order_amount) || 0
 
       if (numAmount < minLimit) {
         setValidationError(`Amount must be at least ${ad.account_currency} ${minLimit}`)
@@ -112,13 +112,15 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div
-        className={`fixed inset-0 bg-black/30 transition-opacity duration-300 ${isOpen && isAnimating ? "opacity-100" : "opacity-0"
-          }`}
+        className={`fixed inset-0 bg-black/30 transition-opacity duration-300 ${
+          isOpen && isAnimating ? "opacity-100" : "opacity-0"
+        }`}
         onClick={handleClose}
       />
       <div
-        className={`relative w-full max-w-md bg-white h-full overflow-y-auto transform transition-transform duration-300 ease-in-out ${isOpen && isAnimating ? "translate-x-0" : "translate-x-full"
-          }`}
+        className={`relative w-full max-w-md bg-white h-full overflow-y-auto transform transition-transform duration-300 ease-in-out ${
+          isOpen && isAnimating ? "translate-x-0" : "translate-x-full"
+        }`}
       >
         {ad && (
           <div className="flex flex-col h-full">
@@ -131,12 +133,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
             <div className="p-4 bg-gray-50 m-4 rounded-lg">
               <div className="mb-2">
                 <div className="flex items-center justify-between">
-                  <Input
-                    type="number"
-                    value={amount}
-                    onChange={handleAmountChange}
-                    placeholder="Enter amount"
-                  />
+                  <Input type="number" value={amount} onChange={handleAmountChange} placeholder="Enter amount" />
                   <span className="text-gray-500 hidden">{ad.account_currency}</span>
                 </div>
               </div>
@@ -150,6 +147,15 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                     maximumFractionDigits: 2,
                   })}
                 </span>
+              </div>
+            </div>
+            <div className="mx-4 mt-4">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">Receive payment to</h3>
+              <div className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">Select payment</span>
+                  <ChevronRight className="h-5 w-5 text-gray-400" />
+                </div>
               </div>
             </div>
             <div className="mx-4 mt-4 text-sm">
@@ -180,12 +186,13 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                 {ad.payment_method_names?.map((method, index) => (
                   <div key={index} className="flex items-center">
                     <div
-                      className={`h-4 w-4 rounded-full mr-2 ${method.toLowerCase().includes("bank")
-                        ? "bg-green-500"
-                        : method.toLowerCase().includes("wallet") || method.toLowerCase().includes("ewallet")
-                          ? "bg-blue-500"
-                          : "bg-yellow-500"
-                        }`}
+                      className={`h-4 w-4 rounded-full mr-2 ${
+                        method.toLowerCase().includes("bank")
+                          ? "bg-green-500"
+                          : method.toLowerCase().includes("wallet") || method.toLowerCase().includes("ewallet")
+                            ? "bg-blue-500"
+                            : "bg-yellow-500"
+                      }`}
                     />
                     <span className="text-slate-1400">
                       {method.toLowerCase().includes("bank")
