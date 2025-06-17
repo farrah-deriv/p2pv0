@@ -121,7 +121,7 @@ export async function fetchUserIdAndStore(): Promise<void> {
     const token = getAuthToken()
     if (!token) throw new Error("No auth token found")
 
-    const response = await fetch(`${API.baseUrl}/auth/me`, {
+    const response = await fetch(`${API.baseUrl}/users/me`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
