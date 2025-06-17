@@ -246,7 +246,15 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                         className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
                         onClick={() => handlePaymentMethodToggle(method.id)}
                       >
-                      
+                      <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            
+                          </div>
+                          <Checkbox
+                            checked={selectedPaymentMethods.includes(method.id)}
+                            onCheckedChange={() => handlePaymentMethodToggle(method.id)}
+                          />
+                        </div>
                       </div>
                     ))
                   )}
