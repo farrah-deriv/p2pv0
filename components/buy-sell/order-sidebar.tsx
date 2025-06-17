@@ -141,6 +141,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
       setSelectedPaymentMethods([])
       setAmount(null)
       setValidationError(null)
+      setShowPaymentSelection(false)
       onClose()
     }, 300)
   }
