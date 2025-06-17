@@ -146,7 +146,6 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
       >
         {ad && (
           <div className="flex flex-col h-full">
-            {/* Header */}
             <div className="flex items-center justify-between p-4 border-b">
               {showPaymentSelection ? (
                 <>
@@ -168,7 +167,6 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
             </div>
 
             {showPaymentSelection ? (
-              /* Payment Selection View */
               <div className="flex flex-col h-full">
                 <div className="flex-1 p-4 space-y-4">
                   {ad.payment_method_names.map((method) => (
@@ -218,8 +216,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                 </div>
               </div>
             ) : (
-              /* Main Order View */
-              <>
+                 <>
                 <div className="p-4 bg-gray-50 m-4 rounded-lg">
                   <div className="mb-2">
                     <div className="flex items-center justify-between">
