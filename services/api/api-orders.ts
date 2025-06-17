@@ -252,7 +252,7 @@ export async function disputeOrder(orderId: string, reason: string): Promise<{ s
   }
 }
 
-export async function createOrder(advertId: number, amount: number, paymentMethodIds:[]): Promise<Order> {
+export async function createOrder(advertId: number, amount: number, paymentMethodIds: []): Promise<Order> {
   try {
     const url = `${API.baseUrl}${API.endpoints.orders}`
     const headers = {
@@ -264,7 +264,7 @@ export async function createOrder(advertId: number, amount: number, paymentMetho
       data: {
         advert_id: advertId,
         amount: amount,
-        ...(paymentMethodIds && { payment_method_ids: paymentMethodIds }),
+        ...(paymentMethodIds.length > 0 && { payment_method_ids: paymentMethodIds }),
       },
     })
 
@@ -449,13 +449,13 @@ export async function sendChatMessage(
       success: true,
       message: data.data ||
         data.message || {
-          id: Date.now().toString(),
-          orderId,
-          senderId: 0,
-          content: message,
-          time,
-          isRead: false,
-        },
+        id: Date.now().toString(),
+        orderId,
+        senderId: 0,
+        content: message,
+        time,
+        isRead: false,
+      },
     }
   } catch (error) {
     throw error
