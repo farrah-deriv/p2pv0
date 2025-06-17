@@ -237,7 +237,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                   </div>
                 </div>
 
-                <div className="mx-4 mt-4">
+               {isBuy && <div className="mx-4 mt-4">
                   <h3 className="text-sm font-medium text-gray-900 mb-3">Receive payment to</h3>
                   <div
                     className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
@@ -250,7 +250,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                       <ChevronRight className="h-5 w-5 text-gray-400" />
                     </div>
                   </div>
-                </div>
+                </div>}
 
                 <div className="mx-4 mt-4 text-sm">
                   <div className="flex justify-between items-center mb-2">
