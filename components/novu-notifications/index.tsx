@@ -43,7 +43,6 @@ export function NovuNotifications() {
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [subscriberId, setSubscriberId] = useState<string | null>(null)
-    const [retryCount, setRetryCount] = useState(0)
 
     const userIdFallback = USER.id || ""
     const applicationIdentifier = NOTIFICATIONS.applicationId
@@ -95,7 +94,7 @@ export function NovuNotifications() {
         }
 
         getSubscriberHash()
-    }, [userIdFallback, USER.token, retryCount])
+    }, [userIdFallback, USER.token])
 
     if (!mounted || isLoading) {
         return (
@@ -110,7 +109,6 @@ export function NovuNotifications() {
             <div
                 className="relative inline-flex h-5 w-5 bg-red-100 rounded-full"
                 title={error || "Failed to load notifications"}
-                onClick={() => setRetryCount((prev) => prev + 1)}
             >
                 <span className="sr-only">Notifications error</span>
             </div>
