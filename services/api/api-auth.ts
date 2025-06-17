@@ -139,6 +139,7 @@ export async function fetchUserIdAndStore(): Promise<void> {
 
     if (userId) {
       localStorage.setItem("user_id", userId.toString())
+      localStorage.setItem("user_data", JSON.stringify(result.data))
     }
   } catch (error) {
     console.error("Error fetching user ID:", error)

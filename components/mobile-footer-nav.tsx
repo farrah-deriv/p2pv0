@@ -31,7 +31,7 @@ export default function MobileFooterNav() {
                 : {}
             }
           />
-          <span className="text-xs mt-1">Buy/Sell</span>
+          <span className="text-xs mt-1">Market</span>
         </Link>
         <Link
           href="/orders"
@@ -81,7 +81,7 @@ export default function MobileFooterNav() {
             }`}
         >
           <Image
-            src="/icons/wallet-icon.png"
+            src="/icons/wallet-icon.svg"
             alt="Wallet"
             width={20}
             height={20}
