@@ -9,12 +9,22 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { Advertisement } from "@/services/api/api-buy-sell"
 import { createOrder } from "@/services/api/api-orders"
+import { getUserPaymentMethods } from "@/app/profile/api/api-payment-methods"
 
 interface OrderSidebarProps {
   isOpen: boolean
   onClose: () => void
   ad: Advertisement | null
   orderType: "buy" | "sell"
+}
+
+interface PaymentMethod {
+  id: string
+  type: string
+  display_name: string
+  fields: Record<string, any>
+  is_enabled: number
+  method: string
 }
 
 export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSidebarProps) {
@@ -27,6 +37,9 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
   const [orderStatus, setOrderStatus] = useState<{ success: boolean; message: string } | null>(null)
   const [showPaymentSelection, setShowPaymentSelection] = useState(false)
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>([])
+  const [userPaymentMethods, setUserPaymentMethods] = useState<PaymentMethod[]>([])
+  const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(false)
+  const [paymentMethodsError, setPaymentMethodsError] = useState<string | null>(null)
 
   useEffect(() => {
     if (isOpen) {
@@ -64,6 +77,47 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
       }
     }
   }, [amount, ad])
+
+  // Fetch user payment methods when payment selection is shown
+  useEffect(() => {
+    if (showPaymentSelection && ad) {
+      fetchUserPaymentMethods()
+    }
+  }, [showPaymentSelection, ad])
+
+  const fetchUserPaymentMethods = async () => {
+    try {
+      setIsLoadingPaymentMethods(true)
+      setPaymentMethodsError(null)
+
+      const response = await getUserPaymentMethods()
+
+      if (response.error) {
+        setPaymentMethodsError(response.error.message || "Failed to fetch payment methods")
+        return
+      }
+
+      // Filter user payment methods to only show those accepted by the buyer
+      const buyerAcceptedMethods = ad?.payment_method_names || []
+      const filteredMethods =
+        response.p2p_advertiser_payment_methods?.list?.filter((method: PaymentMethod) => {
+          // Check if the user's payment method matches any of the buyer's accepted methods
+          return buyerAcceptedMethods.some(
+            (buyerMethod: string) =>
+              method.display_name.toLowerCase().includes(buyerMethod.toLowerCase()) ||
+              method.method.toLowerCase().includes(buyerMethod.toLowerCase()) ||
+              buyerMethod.toLowerCase().includes(method.method.toLowerCase()),
+          )
+        }) || []
+
+      setUserPaymentMethods(filteredMethods)
+    } catch (error) {
+      console.error("Error fetching payment methods:", error)
+      setPaymentMethodsError("Failed to load payment methods")
+    } finally {
+      setIsLoadingPaymentMethods(false)
+    }
+  }
 
   if (!isOpen && !isAnimating) return null
 
@@ -117,10 +171,54 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
   const getSelectedPaymentMethodsText = () => {
     if (selectedPaymentMethods.length === 0) return "Select payment"
     if (selectedPaymentMethods.length === 1) {
-      const method = paymentMethods.find((m) => m.id === selectedPaymentMethods[0])
-      return method ? `${method.name} - ${method.provider}` : "Select payment"
+      const method = userPaymentMethods.find((m) => m.id === selectedPaymentMethods[0])
+      return method ? `${method.display_name}` : "Select payment"
     }
     return `${selectedPaymentMethods.length} methods selected`
+  }
+
+  const getPaymentMethodDetails = (method: PaymentMethod) => {
+    // Extract relevant details from the method fields
+    const fields = method.fields || {}
+
+    // For bank transfers, show account number
+    if (method.type === "bank" && fields.account) {
+      const account = fields.account
+      // Mask account number for security
+      const maskedAccount =
+        account.length > 8 ? `${account.substring(0, 6)}****${account.substring(account.length - 4)}` : account
+      return maskedAccount
+    }
+
+    // For eWallets, show email or phone
+    if (method.type === "ewallet" || method.method.toLowerCase().includes("wallet")) {
+      if (fields.login_id) {
+        // Mask email for security
+        const email = fields.login_id
+        const [username, domain] = email.split("@")
+        if (domain) {
+          const maskedUsername =
+            username.length > 4 ? `${username.substring(0, 2)}****${username.substring(username.length - 2)}` : username
+          return `${maskedUsername}@${domain}`
+        }
+        return email
+      }
+    }
+
+    // Fallback to method name
+    return method.display_name
+  }
+
+  const getPaymentMethodProvider = (method: PaymentMethod) => {
+    const fields = method.fields || {}
+
+    // For bank transfers, show bank name
+    if (method.type === "bank" && fields.bank_name) {
+      return fields.bank_name
+    }
+
+    // For other methods, use the method name
+    return method.method
   }
 
   const isBuy = orderType === "buy"
@@ -169,32 +267,53 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
             {showPaymentSelection ? (
               <div className="flex flex-col h-full">
                 <div className="flex-1 p-4 space-y-4">
-                  {ad.payment_method_names.map((method) => (
-                    <div
-                      key={method.id}
-                      className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
-                      onClick={() => handlePaymentMethodToggle(method.id)}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center mb-2">
-                            <div
-                              className={`h-3 w-3 rounded-full mr-2 ${
-                                method.type === "bank" ? "bg-green-500" : "bg-blue-500"
-                              }`}
-                            />
-                            <span className="font-medium text-gray-900">{method.name}</span>
-                          </div>
-                          <div className="text-gray-900 font-medium mb-1">{method.details}</div>
-                          <div className="text-gray-500 text-sm">{method.provider}</div>
-                        </div>
-                        <Checkbox
-                          checked={selectedPaymentMethods.includes(method.id)}
-                          onCheckedChange={() => handlePaymentMethodToggle(method.id)}
-                        />
-                      </div>
+                  {isLoadingPaymentMethods ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="h-8 w-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+                      <span className="ml-2 text-gray-600">Loading payment methods...</span>
                     </div>
-                  ))}
+                  ) : paymentMethodsError ? (
+                    <div className="text-center py-8">
+                      <p className="text-red-600 mb-4">{paymentMethodsError}</p>
+                      <Button onClick={fetchUserPaymentMethods} variant="outline">
+                        Retry
+                      </Button>
+                    </div>
+                  ) : userPaymentMethods.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600 mb-4">No compatible payment methods found</p>
+                      <p className="text-sm text-gray-500">
+                        Add a payment method that matches the buyer's accepted methods
+                      </p>
+                    </div>
+                  ) : (
+                    userPaymentMethods.map((method) => (
+                      <div
+                        key={method.id}
+                        className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+                        onClick={() => handlePaymentMethodToggle(method.id)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center mb-2">
+                              <div
+                                className={`h-3 w-3 rounded-full mr-2 ${
+                                  method.type === "bank" ? "bg-green-500" : "bg-blue-500"
+                                }`}
+                              />
+                              <span className="font-medium text-gray-900">{method.display_name}</span>
+                            </div>
+                            <div className="text-gray-900 font-medium mb-1">{getPaymentMethodDetails(method)}</div>
+                            <div className="text-gray-500 text-sm">{getPaymentMethodProvider(method)}</div>
+                          </div>
+                          <Checkbox
+                            checked={selectedPaymentMethods.includes(method.id)}
+                            onCheckedChange={() => handlePaymentMethodToggle(method.id)}
+                          />
+                        </div>
+                      </div>
+                    ))
+                  )}
 
                   <div className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors">
                     <div className="flex items-center justify-center">
@@ -216,7 +335,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                 </div>
               </div>
             ) : (
-                 <>
+              <>
                 <div className="p-4 bg-gray-50 m-4 rounded-lg">
                   <div className="mb-2">
                     <div className="flex items-center justify-between">
@@ -237,20 +356,22 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                   </div>
                 </div>
 
-               {isBuy && <div className="mx-4 mt-4">
-                  <h3 className="text-sm font-medium text-gray-900 mb-3">Receive payment to</h3>
-                  <div
-                    className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
-                    onClick={() => setShowPaymentSelection(true)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className={selectedPaymentMethods.length > 0 ? "text-gray-900" : "text-gray-500"}>
-                        {getSelectedPaymentMethodsText()}
-                      </span>
-                      <ChevronRight className="h-5 w-5 text-gray-400" />
+                {isBuy && (
+                  <div className="mx-4 mt-4">
+                    <h3 className="text-sm font-medium text-gray-900 mb-3">Receive payment to</h3>
+                    <div
+                      className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+                      onClick={() => setShowPaymentSelection(true)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className={selectedPaymentMethods.length > 0 ? "text-gray-900" : "text-gray-500"}>
+                          {getSelectedPaymentMethodsText()}
+                        </span>
+                        <ChevronRight className="h-5 w-5 text-gray-400" />
+                      </div>
                     </div>
                   </div>
-                </div>}
+                )}
 
                 <div className="mx-4 mt-4 text-sm">
                   <div className="flex justify-between items-center mb-2">
