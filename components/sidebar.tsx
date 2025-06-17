@@ -3,6 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
+import { USER } from "@/lib/local-variables"
 import { Avatar } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 
@@ -22,7 +23,7 @@ export default function Sidebar() {
         <Avatar className="h-8 w-8">
           <Image src="/icons/default-user-icon.svg" alt="User avatar" width={64} height={64} />
         </Avatar>
-        <h2 className="text-sm font-bold text-slate-1400">User</h2>
+        <h2 className="text-sm font-bold text-slate-1400">{USER.nickname}</h2>
       </div>
       <nav className="flex-1 px-4">
         <ul>
