@@ -100,13 +100,10 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
       // Filter user payment methods to only show those accepted by the buyer
       const buyerAcceptedMethods = ad?.payment_method_names || []
       const filteredMethods =
-        response.p2p_advertiser_payment_methods?.list?.filter((method: PaymentMethod) => {
+        response.data?.filter((method: PaymentMethod) => {
           // Check if the user's payment method matches any of the buyer's accepted methods
           return buyerAcceptedMethods.some(
-            (buyerMethod: string) =>
-              method.display_name.toLowerCase().includes(buyerMethod.toLowerCase()) ||
-              method.method.toLowerCase().includes(buyerMethod.toLowerCase()) ||
-              buyerMethod.toLowerCase().includes(method.method.toLowerCase()),
+            (buyerMethod: string) => method.method.toLowerCase() === buyerMethod.toLowerCase()
           )
         }) || []
 
