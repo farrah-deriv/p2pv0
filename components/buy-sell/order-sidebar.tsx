@@ -246,23 +246,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                         className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
                         onClick={() => handlePaymentMethodToggle(method.id)}
                       >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center mb-2">
-                              <div
-                                className={`h-3 w-3 rounded-full mr-2 ${
-                                  method.type === "bank" ? "bg-green-500" : "bg-blue-500"
-                                }`}
-                              />
-                              <span className="font-medium text-gray-900">{method.display_name}</span>
-                            </div>
-                            <div className="text-gray-500 text-sm">{method.fields?.account?.value}</div>
-                          </div>
-                          <Checkbox
-                            checked={selectedPaymentMethods.includes(method.id)}
-                            onCheckedChange={() => handlePaymentMethodToggle(method.id)}
-                          />
-                        </div>
+                      
                       </div>
                     ))
                   )}
