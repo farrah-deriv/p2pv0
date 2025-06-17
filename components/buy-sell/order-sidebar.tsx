@@ -379,7 +379,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                     variant="primary"
                     size="lg"
                     onClick={handleSubmit}
-                    disabled={!!validationError || isSubmitting}
+                    disabled={!!amount || (isBuy && selectedPaymentMethods.length > 0) || !!validationError || isSubmitting }
                   >
                     {isSubmitting ? (
                       <span className="flex items-center justify-center">
