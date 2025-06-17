@@ -94,7 +94,7 @@ export function NovuNotifications() {
         }
 
         getSubscriberHash()
-    }, [userIdFallback])
+    }, [userIdFallback, USER.token])
 
     if (!mounted || isLoading) {
         return (

@@ -7,7 +7,7 @@ import { X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import Image from "next/image"
 
 interface AddPaymentMethodPanelProps {
   onClose: () => void
@@ -105,9 +105,13 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
       // Create a fields object with all the form field values
       const fieldValues = { ...details }
 
-      // Add instructions if present
-      if (instructions.trim()) {
-        fieldValues.instructions = instructions.trim()
+      // Add instructions if present, otherwise use "-"
+      fieldValues.instructions = instructions.trim() || "-"
+
+      // For bank transfer, ensure all fields are present with "-" as default for optional fields
+      if (selectedMethod === "bank_transfer") {
+        fieldValues.bank_code = fieldValues.bank_code || "-"
+        fieldValues.branch = fieldValues.branch || "-"
       }
 
       // Pass the method value and field values to the parent component
@@ -132,20 +136,39 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
       <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
         <div className="p-6 space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-500 mb-2">Choose your payment method</label>
-            <Select value={selectedMethod} onValueChange={(value) => setSelectedMethod(value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select payment method" />
-              </SelectTrigger>
-              <SelectContent>
-                {PAYMENT_METHODS.map((method) => (
-                  <SelectItem key={method.value} value={method.value}>
-                    {method.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.method && <p className="mt-1 text-xs">{errors.method}</p>}
+            <label className="block text-sm font-medium text-gray-500 mb-3">Choose your payment method</label>
+            <div className="space-y-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setSelectedMethod("bank_transfer")}
+                className={`w-full p-4 justify-start gap-3 h-auto rounded-lg border ${selectedMethod === "bank_transfer"
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-200 hover:border-gray-300"
+                  }`}
+              >
+                <Image
+                  src="/icons/bank-transfer-icon.png"
+                  alt="Bank Transfer"
+                  width={20}
+                  height={20}
+                  className="w-5 h-5"
+                />
+                <span className="font-medium">Bank transfer</span>
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setSelectedMethod("alipay")}
+                className={`w-full p-4 justify-start gap-3 h-auto rounded-lg border ${selectedMethod === "alipay" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"
+                  }`}
+              >
+                <Image src="/icons/alipay-icon.png" alt="Alipay" width={20} height={20} className="w-5 h-5" />
+                <span className="font-medium">Alipay</span>
+              </Button>
+            </div>
+            {errors.method && <p className="mt-2 text-xs text-red-500">{errors.method}</p>}
           </div>
 
           {selectedMethodConfig && (
