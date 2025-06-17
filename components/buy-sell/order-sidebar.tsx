@@ -125,11 +125,9 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
       setIsSubmitting(true)
       setOrderStatus(null)
 
-      // Convert amount to number
       const numAmount = Number.parseFloat(amount)
 
-      // Call the API to create the order
-      const order = await createOrder(ad.id, numAmount)
+      const order = await createOrder(ad.id, numAmount, selectedPaymentMethods)
       router.push("/orders/" + order.data.id)
     } catch (error) {
       console.error("Failed to create order:", error)
