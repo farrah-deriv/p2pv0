@@ -195,7 +195,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
               {showPaymentSelection ? (
                 <>
                   <div className="flex items-center">
-                    <Button onClick={() => setShowPaymentSelection(false)} variant="ghost" className="p-1 mr-3">
+                    <Button onClick={() => setShowPaymentSelection(false)} variant="ghost" size="sm" className="p-1 mr-3">
                       <ArrowLeft className="h-6 w-6" />
                     </Button>
                     <h2 className="text-xl font-bold">Select payment</h2>
