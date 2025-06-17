@@ -52,9 +52,6 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
   }, [isOpen])
 
   useEffect(() => {
-    if (ad && ad.minimum_order_amount) {
-      setAmount(ad.minimum_order_amount)
-    }
     if(ad) {
       fetchUserPaymentMethods()
     }
