@@ -3,11 +3,20 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { X, ChevronRight } from "lucide-react"
+import { X, ChevronRight, ArrowLeft, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import type { Advertisement } from "@/services/api/api-buy-sell"
 import { createOrder } from "@/services/api/api-orders"
+
+interface PaymentMethod {
+  id: string
+  type: "bank" | "ewallet"
+  name: string
+  details: string
+  provider: string
+}
 
 interface OrderSidebarProps {
   isOpen: boolean
@@ -24,6 +33,33 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
   const [isAnimating, setIsAnimating] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderStatus, setOrderStatus] = useState<{ success: boolean; message: string } | null>(null)
+  const [showPaymentSelection, setShowPaymentSelection] = useState(false)
+  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>([])
+
+  // Mock payment methods - in real app, this would come from API
+  const paymentMethods: PaymentMethod[] = [
+    {
+      id: "1",
+      type: "bank",
+      name: "Bank transfer",
+      details: "245778****0123",
+      provider: "Citi Bank",
+    },
+    {
+      id: "2",
+      type: "bank",
+      name: "Bank transfer",
+      details: "245778****0123",
+      provider: "Maybank",
+    },
+    {
+      id: "3",
+      type: "ewallet",
+      name: "eWallet",
+      details: "nhan****p2p@gmail.com",
+      provider: "Skrill",
+    },
+  ]
 
   useEffect(() => {
     if (isOpen) {
@@ -101,6 +137,25 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
     }, 300) // Match this with the CSS transition duration
   }
 
+  const handlePaymentMethodToggle = (methodId: string) => {
+    setSelectedPaymentMethods((prev) =>
+      prev.includes(methodId) ? prev.filter((id) => id !== methodId) : [...prev, methodId],
+    )
+  }
+
+  const handleConfirmPaymentSelection = () => {
+    setShowPaymentSelection(false)
+  }
+
+  const getSelectedPaymentMethodsText = () => {
+    if (selectedPaymentMethods.length === 0) return "Select payment"
+    if (selectedPaymentMethods.length === 1) {
+      const method = paymentMethods.find((m) => m.id === selectedPaymentMethods[0])
+      return method ? `${method.name} - ${method.provider}` : "Select payment"
+    }
+    return `${selectedPaymentMethods.length} methods selected`
+  }
+
   const isBuy = orderType === "buy"
   const title = isBuy ? "Sell USD" : "Buy USD"
   const youSendText = isBuy ? "You receive" : "You pay"
@@ -124,115 +179,197 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
       >
         {ad && (
           <div className="flex flex-col h-full">
+            {/* Header */}
             <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-2xl font-bold">{title}</h2>
-              <Button onClick={handleClose} variant="ghost" className="p-1">
-                <X className="h-6 w-6" />
-              </Button>
-            </div>
-            <div className="p-4 bg-gray-50 m-4 rounded-lg">
-              <div className="mb-2">
-                <div className="flex items-center justify-between">
-                  <Input type="number" value={amount} onChange={handleAmountChange} placeholder="Enter amount" />
-                  <span className="text-gray-500 hidden">{ad.account_currency}</span>
-                </div>
-              </div>
-              {validationError && <p className="text-xs text-red-500 text-sm mb-2">{validationError}</p>}
-              <div className="flex items-center">
-                <span className="text-gray-500">{youSendText}:&nbsp;</span>
-                <span className="font-bold">
-                  {ad.payment_currency}{" "}
-                  {Number.parseFloat(totalAmount).toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </span>
-              </div>
-            </div>
-            <div className="mx-4 mt-4">
-              <h3 className="text-sm font-medium text-gray-900 mb-3">Receive payment to</h3>
-              <div className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-500">Select payment</span>
-                  <ChevronRight className="h-5 w-5 text-gray-400" />
-                </div>
-              </div>
-            </div>
-            <div className="mx-4 mt-4 text-sm">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-slate-500">Rate ({ad.account_currency} 1)</span>
-                <span className="text-slate-1400">
-                  {ad.payment_currency} {ad.exchange_rate?.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-slate-500">Order limit</span>
-                <span className="text-slate-1400">
-                  {ad.account_currency} {minLimit} - {maxLimit}
-                </span>
-              </div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-slate-500">Payment time</span>
-                <span className="text-slate-1400">{ad.order_expiry_period} min</span>
-              </div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-slate-500">{isBuy ? "Buyer" : "Seller"}</span>
-                <span className="text-slate-1400">{ad.user?.nickname}</span>
-              </div>
-            </div>
-            <div className="border-t m-4 py-2 text-sm">
-              <h3 className="text-slate-500">{isBuy ? "Buyer's payment method(s)" : "Seller's payment method(s)"}</h3>
-              <div className="flex flex-wrap gap-4">
-                {ad.payment_method_names?.map((method, index) => (
-                  <div key={index} className="flex items-center">
-                    <div
-                      className={`h-4 w-4 rounded-full mr-2 ${
-                        method.toLowerCase().includes("bank")
-                          ? "bg-green-500"
-                          : method.toLowerCase().includes("wallet") || method.toLowerCase().includes("ewallet")
-                            ? "bg-blue-500"
-                            : "bg-yellow-500"
-                      }`}
-                    />
-                    <span className="text-slate-1400">
-                      {method.toLowerCase().includes("bank")
-                        ? "Bank transfer"
-                        : method.toLowerCase().includes("wallet") || method.toLowerCase().includes("ewallet")
-                          ? "eWallet"
-                          : method}
-                    </span>
+              {showPaymentSelection ? (
+                <>
+                  <div className="flex items-center">
+                    <Button onClick={() => setShowPaymentSelection(false)} variant="ghost" className="p-1 mr-3">
+                      <ArrowLeft className="h-6 w-6" />
+                    </Button>
+                    <h2 className="text-2xl font-bold">Select payment</h2>
                   </div>
-                ))}
-              </div>
-            </div>
-            <div className="mx-4 mt-4 border-t py-2 text-sm">
-              <h3 className="text-slate-500">{isBuy ? "Buyer's instructions" : "Seller's instructions"}</h3>
-              <p className="text-slate-1400 break-words">
-                {ad.description ||
-                  "Kindly transfer the payment to the provided account details after placing your order."}
-              </p>
-            </div>
-            <div className="mt-auto p-4 border-t">
-              <Button
-                className="w-full"
-                variant="primary"
-                size="lg"
-                onClick={handleSubmit}
-                disabled={!!validationError || isSubmitting}
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center justify-center">
-                    <span className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
-                    Processing...
-                  </span>
-                ) : (
-                  "Place order"
-                )}
-              </Button>
-              {orderStatus && !orderStatus.success && (
-                <div className="mt-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">{orderStatus.message}</div>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-2xl font-bold">{title}</h2>
+                  <Button onClick={handleClose} variant="ghost" className="p-1">
+                    <X className="h-6 w-6" />
+                  </Button>
+                </>
               )}
             </div>
+
+            {showPaymentSelection ? (
+              /* Payment Selection View */
+              <div className="flex flex-col h-full">
+                <div className="flex-1 p-4 space-y-4">
+                  {paymentMethods.map((method) => (
+                    <div
+                      key={method.id}
+                      className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+                      onClick={() => handlePaymentMethodToggle(method.id)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center mb-2">
+                            <div
+                              className={`h-3 w-3 rounded-full mr-2 ${
+                                method.type === "bank" ? "bg-green-500" : "bg-blue-500"
+                              }`}
+                            />
+                            <span className="font-medium text-gray-900">{method.name}</span>
+                          </div>
+                          <div className="text-gray-900 font-medium mb-1">{method.details}</div>
+                          <div className="text-gray-500 text-sm">{method.provider}</div>
+                        </div>
+                        <Checkbox
+                          checked={selectedPaymentMethods.includes(method.id)}
+                          onCheckedChange={() => handlePaymentMethodToggle(method.id)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  <div className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center justify-center">
+                      <Plus className="h-5 w-5 mr-2 text-gray-600" />
+                      <span className="text-gray-900 font-medium">Add payment method</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 border-t">
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    onClick={handleConfirmPaymentSelection}
+                    disabled={selectedPaymentMethods.length === 0}
+                  >
+                    Confirm
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              /* Main Order View */
+              <>
+                <div className="p-4 bg-gray-50 m-4 rounded-lg">
+                  <div className="mb-2">
+                    <div className="flex items-center justify-between">
+                      <Input type="number" value={amount} onChange={handleAmountChange} placeholder="Enter amount" />
+                      <span className="text-gray-500 hidden">{ad.account_currency}</span>
+                    </div>
+                  </div>
+                  {validationError && <p className="text-xs text-red-500 text-sm mb-2">{validationError}</p>}
+                  <div className="flex items-center">
+                    <span className="text-gray-500">{youSendText}:&nbsp;</span>
+                    <span className="font-bold">
+                      {ad.payment_currency}{" "}
+                      {Number.parseFloat(totalAmount).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mx-4 mt-4">
+                  <h3 className="text-sm font-medium text-gray-900 mb-3">Receive payment to</h3>
+                  <div
+                    className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+                    onClick={() => setShowPaymentSelection(true)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={selectedPaymentMethods.length > 0 ? "text-gray-900" : "text-gray-500"}>
+                        {getSelectedPaymentMethodsText()}
+                      </span>
+                      <ChevronRight className="h-5 w-5 text-gray-400" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mx-4 mt-4 text-sm">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-slate-500">Rate ({ad.account_currency} 1)</span>
+                    <span className="text-slate-1400">
+                      {ad.payment_currency} {ad.exchange_rate?.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-slate-500">Order limit</span>
+                    <span className="text-slate-1400">
+                      {ad.account_currency} {minLimit} - {maxLimit}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-slate-500">Payment time</span>
+                    <span className="text-slate-1400">{ad.order_expiry_period} min</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-slate-500">{isBuy ? "Buyer" : "Seller"}</span>
+                    <span className="text-slate-1400">{ad.user?.nickname}</span>
+                  </div>
+                </div>
+
+                <div className="border-t m-4 py-2 text-sm">
+                  <h3 className="text-slate-500">
+                    {isBuy ? "Buyer's payment method(s)" : "Seller's payment method(s)"}
+                  </h3>
+                  <div className="flex flex-wrap gap-4">
+                    {ad.payment_method_names?.map((method, index) => (
+                      <div key={index} className="flex items-center">
+                        <div
+                          className={`h-4 w-4 rounded-full mr-2 ${
+                            method.toLowerCase().includes("bank")
+                              ? "bg-green-500"
+                              : method.toLowerCase().includes("wallet") || method.toLowerCase().includes("ewallet")
+                                ? "bg-blue-500"
+                                : "bg-yellow-500"
+                          }`}
+                        />
+                        <span className="text-slate-1400">
+                          {method.toLowerCase().includes("bank")
+                            ? "Bank transfer"
+                            : method.toLowerCase().includes("wallet") || method.toLowerCase().includes("ewallet")
+                              ? "eWallet"
+                              : method}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mx-4 mt-4 border-t py-2 text-sm">
+                  <h3 className="text-slate-500">{isBuy ? "Buyer's instructions" : "Seller's instructions"}</h3>
+                  <p className="text-slate-1400 break-words">
+                    {ad.description ||
+                      "Kindly transfer the payment to the provided account details after placing your order."}
+                  </p>
+                </div>
+
+                <div className="mt-auto p-4 border-t">
+                  <Button
+                    className="w-full"
+                    variant="primary"
+                    size="lg"
+                    onClick={handleSubmit}
+                    disabled={!!validationError || isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <span className="flex items-center justify-center">
+                        <span className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                        Processing...
+                      </span>
+                    ) : (
+                      "Place order"
+                    )}
+                  </Button>
+                  {orderStatus && !orderStatus.success && (
+                    <div className="mt-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">{orderStatus.message}</div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
