@@ -29,7 +29,7 @@ interface PaymentMethod {
 
 export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSidebarProps) {
   const router = useRouter()
-  const [amount, setAmount] = useState("")
+  const [amount, setAmount] = useState(null)
   const [totalAmount, setTotalAmount] = useState(0)
   const [validationError, setValidationError] = useState<string | null>(null)
   const [isAnimating, setIsAnimating] = useState(false)
