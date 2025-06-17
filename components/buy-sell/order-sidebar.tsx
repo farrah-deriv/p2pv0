@@ -136,12 +136,12 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
   }
 
   const handleClose = () => {
-    // First set animating to false (which will trigger the closing animation)
     setIsAnimating(false)
-    // Then actually close after animation completes
-    setTimeout(() => {
+      setTimeout(() => {
+      setSelectedPaymentMethods([])
+      setAmount(null)
       onClose()
-    }, 300) // Match this with the CSS transition duration
+    }, 300)
   }
 
   const handlePaymentMethodToggle = (methodId: string) => {
