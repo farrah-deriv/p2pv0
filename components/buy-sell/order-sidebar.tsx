@@ -191,19 +191,19 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
       >
         {ad && (
           <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center justify-between px-4 py-1 border-b">
               {showPaymentSelection ? (
                 <>
                   <div className="flex items-center">
                     <Button onClick={() => setShowPaymentSelection(false)} variant="ghost" className="p-1 mr-3">
                       <ArrowLeft className="h-6 w-6" />
                     </Button>
-                    <h2 className="text-2xl font-bold">Select payment</h2>
+                    <h2 className="text-xl font-bold">Select payment</h2>
                   </div>
                 </>
               ) : (
                 <>
-                  <h2 className="text-2xl font-bold">{title}</h2>
+                  <h2 className="text-xl font-bold">{title}</h2>
                   <Button onClick={handleClose} variant="ghost" className="p-1">
                     <X className="h-6 w-6" />
                   </Button>
