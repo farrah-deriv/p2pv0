@@ -165,7 +165,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
       const method = userPaymentMethods.find((m) => m.id === selectedPaymentMethods[0])
       return method ? `${method.display_name}` : "Select payment"
     }
-    return `${selectedPaymentMethods.length} methods selected`
+    return `Selected (${selectedPaymentMethods.length})`
 }
 
   const isBuy = orderType === "buy"
