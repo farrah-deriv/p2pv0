@@ -1,14 +1,16 @@
 "use client"
 
-import Link from "next/link"
 import { usePathname } from "next/navigation"
+import Link from "next/link"
+import { USER } from "@/lib/local-variables"
 import { cn } from "@/lib/utils"
 import { NovuNotifications } from "./novu-notifications"
-import { User } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import * as AuthAPI from "@/services/api/api-auth"
 
 export default function Header() {
   const pathname = usePathname()
-
+  const isAuthenticated = !!USER.token;
   const navItems = [
     { name: "Market", href: "/" },
     { name: "Orders", href: "/orders" },
@@ -30,9 +32,9 @@ export default function Header() {
                 href={item.href}
                 className={cn(
                   "inline-flex h-12 items-center border-b-2 px-4 text-sm",
-                      isActive
-                        ? "text-slate-1400 border-[#00D0FF] font-bold"
-                        : "border-transparent text-slate-600 hover:border-slate-300 hover:text-slate-700"
+                  isActive
+                    ? "text-slate-1400 border-[#00D0FF] font-bold"
+                    : "border-transparent text-slate-600 hover:border-slate-300 hover:text-slate-700"
                 )}
               >
                 {item.name}
@@ -45,6 +47,11 @@ export default function Header() {
         <div className="text-slate-600 hover:text-slate-700">
           <NovuNotifications />
         </div>
+        {isAuthenticated && <Button
+          size="sm"
+          onClick={() => AuthAPI.logout()}>
+          Logout
+        </Button>}
       </div>
     </header>
   )

@@ -1,15 +1,22 @@
 "use client"
 import { X } from "lucide-react"
 import DepositOptions from "./deposit-options"
+import WithdrawOptions from "./withdraw-options"
 import { Button } from "@/components/ui/button"
 
-interface DepositBottomSheetProps {
+interface WalletBottomSheetProps {
   isOpen: boolean
   onClose: () => void
   onDirectDepositClick: () => void
+  operation?: "DEPOSIT" | "WITHDRAW"
 }
 
-export default function DepositBottomSheet({ isOpen, onClose, onDirectDepositClick }: DepositBottomSheetProps) {
+export default function WalletBottomSheet({
+  isOpen,
+  onClose,
+  onDirectDepositClick,
+  operation = "DEPOSIT",
+}: WalletBottomSheetProps) {
   if (!isOpen) return null
 
   return (
@@ -21,7 +28,9 @@ export default function DepositBottomSheet({ isOpen, onClose, onDirectDepositCli
 
         <div className="p-4 pb-8">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="overflow-hidden text-black truncate text-xl font-bold leading-[30px]">Deposit</h2>
+            <h2 className="overflow-hidden text-black truncate text-xl font-bold leading-[30px]">
+              {operation === "DEPOSIT" ? "Deposit" : "Withdraw"}
+            </h2>
             <Button
               onClick={onClose}
               variant="ghost"
@@ -34,7 +43,11 @@ export default function DepositBottomSheet({ isOpen, onClose, onDirectDepositCli
           </div>
 
           <div className="space-y-4">
-            <DepositOptions onClose={onClose} onDirectDepositClick={onDirectDepositClick} />
+            {operation === "DEPOSIT" ? (
+              <DepositOptions onClose={onClose} onDirectDepositClick={onDirectDepositClick} />
+            ) : (
+              <WithdrawOptions onClose={onClose} onDirectWithdrawClick={onDirectDepositClick} />
+            )}
           </div>
         </div>
       </div>

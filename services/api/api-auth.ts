@@ -1,4 +1,4 @@
-import { API } from "@/lib/local-variables"
+import { API, AUTH } from "@/lib/local-variables"
 
 export interface LoginRequest {
   email: string
@@ -92,22 +92,13 @@ export function getAuthToken(): string | null {
  */
 export async function logout(): Promise<void> {
   try {
-    const token = getAuthToken()
-    if (token) {
-      await fetch(`${API.coreUrl}/logout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }).catch((e) => {
-        console.log(e);
-      })
-    }
-
     if (typeof window !== "undefined") {
       localStorage.removeItem("auth_token")
       localStorage.removeItem("user_data")
+      localStorage.removeItem("user_id")
+      localStorage.removeItem("socket_token")
+
+      window.location.href = "/"
     }
   } catch (error) {
     console.error("Logout error:", error)
@@ -152,5 +143,36 @@ export async function fetchUserIdAndStore(): Promise<void> {
     }
   } catch (error) {
     console.error("Error fetching user ID:", error)
+  }
+}
+
+/**
+ * Get websocket token
+ */
+export async function getSocketToken(token: string): Promise<void> {
+  try {
+
+    const response = await fetch(`${API.baseUrl}/user-websocket-token`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "X-Data-Source": process.env.NEXT_PUBLIC_DATA_SOURCE,
+        "X-Branch": process.env.NEXT_PUBLIC_BRANCH,
+        "Content-Type": "application/json",
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch token: ${response.statusText}`)
+    }
+
+    const result = await response.json()
+    const socketToken = result?.data
+
+    if (socketToken) {
+      localStorage.setItem("socket_token", socketToken.toString())
+    }
+  } catch (error) {
+    console.error("Error fetching token:", error)
   }
 }
