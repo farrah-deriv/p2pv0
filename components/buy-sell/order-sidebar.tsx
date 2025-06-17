@@ -239,10 +239,9 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                     userPaymentMethods.map((method) => (
                       <div
                         key={method.id}
-                        className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
-                        onClick={() => handlePaymentMethodToggle(method.id)}
+                        className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-color"
                       >
-                      <div className="flex items-start justify-between">
+                            <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center mb-2">
                               <div
