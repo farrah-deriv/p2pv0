@@ -251,7 +251,6 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                               />
                               <span className="font-medium text-gray-900">{method.display_name}</span>
                             </div>
-                            <div className="text-gray-500 text-sm">{method.fields?.account?.value}</div>
                           </div>
                           <Checkbox
                             checked={selectedPaymentMethods.includes(method.id)}
