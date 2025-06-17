@@ -3,11 +3,10 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { X } from "lucide-react"
+import { X, Building2, CreditCard } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface AddPaymentMethodPanelProps {
   onClose: () => void
@@ -106,8 +105,11 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
       const fieldValues = { ...details }
 
       // Add instructions if present
-      if (instructions.trim()) {
-        fieldValues.instructions = instructions.trim()
+      fieldValues.instructions = instructions.trim() || "-"
+
+      if (selectedMethod === "bank_transfer") {
+        fieldValues.bank_code = fieldValues.bank_code || "-"
+        fieldValues.branch = fieldValues.branch || "-"
       }
 
       // Pass the method value and field values to the parent component
@@ -132,20 +134,31 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
       <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
         <div className="p-6 space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-500 mb-2">Choose your payment method</label>
-            <Select value={selectedMethod} onValueChange={(value) => setSelectedMethod(value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select payment method" />
-              </SelectTrigger>
-              <SelectContent>
-                {PAYMENT_METHODS.map((method) => (
-                  <SelectItem key={method.value} value={method.value}>
-                    {method.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.method && <p className="mt-1 text-xs">{errors.method}</p>}
+            <label className="block text-sm font-medium text-gray-500 mb-3">Choose your payment method</label>
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => setSelectedMethod("bank_transfer")}
+                className={`w-full p-4 border rounded-lg flex items-center gap-3 text-left transition-colors ${selectedMethod === "bank_transfer"
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-200 hover:border-gray-300"
+                  }`}
+              >
+                <Building2 className="h-5 w-5 text-green-600" />
+                <span className="font-medium">Bank transfer</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedMethod("alipay")}
+                className={`w-full p-4 border rounded-lg flex items-center gap-3 text-left transition-colors ${selectedMethod === "alipay" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"
+                  }`}
+              >
+                <CreditCard className="h-5 w-5 text-blue-600" />
+                <span className="font-medium">Alipay</span>
+              </button>
+            </div>
+            {errors.method && <p className="mt-2 text-xs text-red-500">{errors.method}</p>}
           </div>
 
           {selectedMethodConfig && (

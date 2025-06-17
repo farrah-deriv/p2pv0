@@ -59,36 +59,12 @@ export async function addPaymentMethod(method: string, fields: Record<string, an
         formattedFields.instructions = fields.instructions
       }
     } else if (formattedMethod === "bank_transfer") {
-      // For bank transfer, format according to the screenshot structure
       formattedFields = {
-        account: {
-          required: true,
-          value: fields.account,
-        },
-        bank_code: {
-          display_name: "SWIFT or IFSC code",
-          required: false,
-          value: fields.bank_code || "",
-        },
-        bank_name: {
-          display_name: "Bank Name",
-          required: true,
-          value: fields.bank_name,
-        },
-        branch: {
-          display_name: "Branch",
-          required: false,
-          value: fields.branch || "",
-        },
-      }
-
-      // Add instructions if present
-      if (fields.instructions) {
-        formattedFields.instructions = {
-          display_name: "Instructions",
-          required: false,
-          value: fields.instructions,
-        }
+        account: fields.account || "",
+        bank_code: fields.bank_code || "-",
+        bank_name: fields.bank_name || "",
+        branch: fields.branch || "-",
+        instructions: fields.instructions || "-",
       }
     } else {
       // For other methods, just pass the fields as is for now
@@ -194,39 +170,14 @@ export async function updatePaymentMethod(id: string, fields: Record<string, any
     let formattedFields: Record<string, any> = {}
 
     if (methodType === "bank_transfer") {
-      // For bank transfer, format exactly according to the required structure
       const { instructions, account, bank_name, bank_code, branch } = fields
 
-      // Format fields according to the exact required structure
       formattedFields = {
-        account: {
-          value: account || "",
-          required: true,
-        },
-        bank_name: {
-          value: bank_name || "",
-          required: true,
-          display_name: "Bank Name",
-        },
-        bank_code: {
-          value: bank_code || "",
-          required: false,
-          display_name: "SWIFT or IFSC code",
-        },
-        branch: {
-          value: branch || "",
-          required: false,
-          display_name: "Branch",
-        },
-      }
-
-      // Add instructions if present
-      if (instructions) {
-        formattedFields.instructions = {
-          value: instructions,
-          required: false,
-          display_name: "Instructions",
-        }
+        account: account || "",
+        bank_name: bank_name || "",
+        bank_code: bank_code || "-",
+        branch: branch || "-",
+        instructions: instructions || "-",
       }
 
       console.log("Formatted bank transfer fields:", formattedFields)
@@ -371,7 +322,7 @@ export async function deletePaymentMethod(id: string): Promise<PaymentMethodResp
         const errorData = JSON.parse(errorText)
         return { success: false, errors: errorData.errors }
       } catch (error) {
-        console.log(error);
+        console.log(error)
         return { success: false, errors: [{ code: "api_error", message: response.statusText }] }
       }
     }

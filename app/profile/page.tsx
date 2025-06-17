@@ -100,7 +100,7 @@ export default function ProfilePage() {
                 max: data.daily_limits?.sell || 0,
               },
             },
-            balance: data.balances?.USD || 0,
+            balance: data.balances?.USD?.amount || 0,
           }))
         }
       } catch (error) {
@@ -133,7 +133,6 @@ export default function ProfilePage() {
             sellLimit={userData.tradeLimits.sell}
             balance={userData.balance}
           />
-
         </div>
       </div>
     </div>

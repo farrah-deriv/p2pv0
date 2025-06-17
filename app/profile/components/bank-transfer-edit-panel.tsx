@@ -176,13 +176,9 @@ export default function BankTransferEditPanel({
         method_type: "bank_transfer",
         account,
         bank_name: bankName,
-        bank_code: bankCode,
-        branch,
-      }
-
-      // Add instructions if present
-      if (instructions.trim()) {
-        fieldValues.instructions = instructions.trim()
+        bank_code: bankCode || "-",
+        branch: branch || "-",
+        instructions: instructions.trim() || "-",
       }
 
       console.log("Submitting bank transfer field values:", fieldValues)
