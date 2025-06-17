@@ -248,6 +248,14 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                       >
                       <div className="flex items-start justify-between">
                           <div className="flex-1">
+                            <div className="flex items-center mb-2">
+                              <div
+                                className={`h-3 w-3 rounded-full mr-2 ${
+                                  method.type === "bank" ? "bg-green-500" : "bg-blue-500"
+                                }`}
+                              />
+                              <span className="font-medium text-gray-900">{method.display_name}</span>
+                            </div>
                             
                           </div>
                           <Checkbox
