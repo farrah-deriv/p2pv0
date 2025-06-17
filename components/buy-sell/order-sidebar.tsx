@@ -10,14 +10,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import type { Advertisement } from "@/services/api/api-buy-sell"
 import { createOrder } from "@/services/api/api-orders"
 
-interface PaymentMethod {
-  id: string
-  type: "bank" | "ewallet"
-  name: string
-  details: string
-  provider: string
-}
-
 interface OrderSidebarProps {
   isOpen: boolean
   onClose: () => void
@@ -35,31 +27,6 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
   const [orderStatus, setOrderStatus] = useState<{ success: boolean; message: string } | null>(null)
   const [showPaymentSelection, setShowPaymentSelection] = useState(false)
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>([])
-
-  // Mock payment methods - in real app, this would come from API
-  const paymentMethods: PaymentMethod[] = [
-    {
-      id: "1",
-      type: "bank",
-      name: "Bank transfer",
-      details: "245778****0123",
-      provider: "Citi Bank",
-    },
-    {
-      id: "2",
-      type: "bank",
-      name: "Bank transfer",
-      details: "245778****0123",
-      provider: "Maybank",
-    },
-    {
-      id: "3",
-      type: "ewallet",
-      name: "eWallet",
-      details: "nhan****p2p@gmail.com",
-      provider: "Skrill",
-    },
-  ]
 
   useEffect(() => {
     if (isOpen) {
@@ -204,7 +171,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
               /* Payment Selection View */
               <div className="flex flex-col h-full">
                 <div className="flex-1 p-4 space-y-4">
-                  {paymentMethods.map((method) => (
+                  {ad.payment_method_names.map((method) => (
                     <div
                       key={method.id}
                       className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
