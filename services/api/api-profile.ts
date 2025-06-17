@@ -134,11 +134,10 @@ export async function getUserBalance(): Promise<{ balance: number; currency: str
  */
 export async function getUserPaymentMethods(): Promise<PaymentMethod[]> {
   try {
-    const response = await fetch(`${API.baseUrl}${API.endpoints.profile}/payment-methods`, {
+    const response = await fetch(`${API.baseUrl}/user-payment-methods`, {
       headers: {
         ...AUTH.getAuthHeader(),
         "Content-Type": "application/json",
-        "X-Data-Source": "live",
       },
     })
 
