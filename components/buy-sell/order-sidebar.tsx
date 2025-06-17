@@ -172,51 +172,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
       return method ? `${method.display_name}` : "Select payment"
     }
     return `${selectedPaymentMethods.length} methods selected`
-  }
-
-  const getPaymentMethodDetails = (method: PaymentMethod) => {
-    // Extract relevant details from the method fields
-    const fields = method.fields || {}
-
-    // For bank transfers, show account number
-    if (method.type === "bank" && fields.account) {
-      const account = fields.account
-      // Mask account number for security
-      const maskedAccount =
-        account.length > 8 ? `${account.substring(0, 6)}****${account.substring(account.length - 4)}` : account
-      return maskedAccount
-    }
-
-    // For eWallets, show email or phone
-    if (method.type === "ewallet" || method.method.toLowerCase().includes("wallet")) {
-      if (fields.login_id) {
-        // Mask email for security
-        const email = fields.login_id
-        const [username, domain] = email.split("@")
-        if (domain) {
-          const maskedUsername =
-            username.length > 4 ? `${username.substring(0, 2)}****${username.substring(username.length - 2)}` : username
-          return `${maskedUsername}@${domain}`
-        }
-        return email
-      }
-    }
-
-    // Fallback to method name
-    return method.display_name
-  }
-
-  const getPaymentMethodProvider = (method: PaymentMethod) => {
-    const fields = method.fields || {}
-
-    // For bank transfers, show bank name
-    if (method.type === "bank" && fields.bank_name) {
-      return fields.bank_name
-    }
-
-    // For other methods, use the method name
-    return method.method
-  }
+}
 
   const isBuy = orderType === "buy"
   const title = isBuy ? "Sell USD" : "Buy USD"
@@ -300,8 +256,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                               />
                               <span className="font-medium text-gray-900">{method.display_name}</span>
                             </div>
-                            <div className="text-gray-900 font-medium mb-1">{getPaymentMethodDetails(method)}</div>
-                            <div className="text-gray-500 text-sm">{getPaymentMethodProvider(method)}</div>
+                            <div className="text-gray-500 text-sm">{method.fields?.account?.value}</div>
                           </div>
                           <Checkbox
                             checked={selectedPaymentMethods.includes(method.id)}
