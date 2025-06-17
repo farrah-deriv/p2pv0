@@ -261,7 +261,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                     ))
                   )}
 
-                  <div className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors">
+                  <div className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors hidden">
                     <div className="flex items-center justify-center">
                       <Plus className="h-5 w-5 mr-2 text-gray-600" />
                       <span className="text-gray-900 font-medium">Add payment method</span>
