@@ -3,10 +3,11 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { X, Building2, CreditCard } from "lucide-react"
+import { X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 interface AddPaymentMethodPanelProps {
   onClose: () => void
@@ -104,9 +105,10 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
       // Create a fields object with all the form field values
       const fieldValues = { ...details }
 
-      // Add instructions if present
+      // Add instructions if present, otherwise use "-"
       fieldValues.instructions = instructions.trim() || "-"
 
+      // For bank transfer, ensure all fields are present with "-" as default for optional fields
       if (selectedMethod === "bank_transfer") {
         fieldValues.bank_code = fieldValues.bank_code || "-"
         fieldValues.branch = fieldValues.branch || "-"
@@ -136,27 +138,35 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
           <div>
             <label className="block text-sm font-medium text-gray-500 mb-3">Choose your payment method</label>
             <div className="space-y-3">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => setSelectedMethod("bank_transfer")}
-                className={`w-full p-4 border rounded-lg flex items-center gap-3 text-left transition-colors ${selectedMethod === "bank_transfer"
+                className={`w-full p-4 justify-start gap-3 h-auto rounded-lg border ${selectedMethod === "bank_transfer"
                   ? "border-blue-500 bg-blue-50"
                   : "border-gray-200 hover:border-gray-300"
                   }`}
               >
-                <Building2 className="h-5 w-5 text-green-600" />
+                <Image
+                  src="/icons/bank-transfer-icon.png"
+                  alt="Bank Transfer"
+                  width={20}
+                  height={20}
+                  className="w-5 h-5"
+                />
                 <span className="font-medium">Bank transfer</span>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => setSelectedMethod("alipay")}
-                className={`w-full p-4 border rounded-lg flex items-center gap-3 text-left transition-colors ${selectedMethod === "alipay" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"
+                className={`w-full p-4 justify-start gap-3 h-auto rounded-lg border ${selectedMethod === "alipay" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"
                   }`}
               >
-                <CreditCard className="h-5 w-5 text-blue-600" />
+                <Image src="/icons/alipay-icon.png" alt="Alipay" width={20} height={20} className="w-5 h-5" />
                 <span className="font-medium">Alipay</span>
-              </button>
+              </Button>
             </div>
             {errors.method && <p className="mt-2 text-xs text-red-500">{errors.method}</p>}
           </div>
