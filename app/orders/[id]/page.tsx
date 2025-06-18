@@ -305,7 +305,7 @@ export default function OrderDetailsPage() {
                 <div className="space-y-4">
                     {order.type === "buy" && <h2 className="text-lg font-bold">Seller payment details</h2>}
                   {order.type === "sell" && <h2 className="text-lg font-bold"> My payment details</h2>}
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <div className="bg-yellow-50 border border-orange-200 rounded-lg p-4">
                     <div className="flex items-start gap-3">
                       <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0 mt-0.5">
                         <AlertCircle className="h-3 w-3 text-white" />
