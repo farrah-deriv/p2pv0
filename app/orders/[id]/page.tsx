@@ -259,7 +259,7 @@ export default function OrderDetailsPage() {
                       {order.user.id == USER.id ? "Awaiting payment" : "Complete payment"}
                     </span>
                   </div>
-                  <div className="flex items-center text-blue-600">
+                  <div className="flex items-center text-yellow-600">
                     <Clock className="h-4 w-4 mr-1" />
                     <span>Time left: {timeLeft}</span>
                   </div>
