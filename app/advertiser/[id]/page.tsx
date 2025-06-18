@@ -90,8 +90,8 @@ export default function AdvertiserProfilePage() {
       setError("Failed to load advertiser profile. Please try again.")
 
       // If the API fails, use mock data as fallback
-      setProfile(createMockProfile(id))
-      setAdverts(createMockAdverts(id))
+      setProfile(null)
+      setAdverts([])
     } finally {
       setIsLoading(false)
     }
@@ -149,119 +149,6 @@ export default function AdvertiserProfilePage() {
         },
       },
     }
-  }
-
-  // Create mock profile data as fallback
-  const createMockProfile = (userId: string): AdvertiserProfile => {
-    return {
-      id: userId,
-      nickname: "John_doe",
-      isOnline: true,
-      joinedDate: "Joined 100d ago",
-      rating: {
-        score: 5,
-        count: 99,
-      },
-      completionRate: 100,
-      ordersCount: 43,
-      isVerified: {
-        id: true,
-        address: true,
-        phone: true,
-      },
-      stats: {
-        buyCompletion: {
-          rate: 100,
-          count: 20,
-        },
-        sellCompletion: {
-          rate: 100,
-          count: 230,
-        },
-        avgPayTime: "5 min",
-        avgReleaseTime: "5 min",
-        tradePartners: 10,
-        tradeVolume: {
-          amount: 500.0,
-          currency: "USD",
-        },
-      },
-    }
-  }
-
-  // Create mock adverts data as fallback
-  const createMockAdverts = (userId: string): Advertisement[] => {
-    return [
-      {
-        id: 1,
-        user: {
-          nickname: "John_doe",
-          id: Number.parseInt(userId),
-          is_favourite: false,
-          created_at: Date.now() / 1000,
-        },
-        account_currency: "USD",
-        actual_maximum_order_amount: 100,
-        available_amount: 500,
-        created_at: Date.now() / 1000,
-        description: "",
-        exchange_rate: 14500,
-        exchange_rate_type: "fixed",
-        is_active: true,
-        maximum_order_amount: 100,
-        minimum_order_amount: 10,
-        order_expiry_period: 15,
-        payment_currency: "IDR",
-        payment_method_names: ["Bank transfer", "Skrill", "PayPal"],
-        type: "buy",
-      },
-      {
-        id: 2,
-        user: {
-          nickname: "John_doe",
-          id: Number.parseInt(userId),
-          is_favourite: false,
-          created_at: Date.now() / 1000,
-        },
-        account_currency: "USD",
-        actual_maximum_order_amount: 100,
-        available_amount: 500,
-        created_at: Date.now() / 1000,
-        description: "",
-        exchange_rate: 14600,
-        exchange_rate_type: "fixed",
-        is_active: true,
-        maximum_order_amount: 100,
-        minimum_order_amount: 10,
-        order_expiry_period: 15,
-        payment_currency: "IDR",
-        payment_method_names: ["Bank transfer", "Skrill", "PayPal"],
-        type: "buy",
-      },
-      {
-        id: 3,
-        user: {
-          nickname: "John_doe",
-          id: Number.parseInt(userId),
-          is_favourite: false,
-          created_at: Date.now() / 1000,
-        },
-        account_currency: "USD",
-        actual_maximum_order_amount: 100,
-        available_amount: 500,
-        created_at: Date.now() / 1000,
-        description: "",
-        exchange_rate: 12500,
-        exchange_rate_type: "fixed",
-        is_active: true,
-        maximum_order_amount: 100,
-        minimum_order_amount: 10,
-        order_expiry_period: 15,
-        payment_currency: "IDR",
-        payment_method_names: ["Bank transfer", "Skrill", "PayPal"],
-        type: "buy",
-      },
-    ]
   }
 
   const toggleFollow = async () => {
@@ -543,7 +430,7 @@ export default function AdvertiserProfilePage() {
                       </div>
 
                       <div className="flex flex-wrap gap-2 mb-4">
-                        {ad.payment_method_names?.map((method, index) => (
+                        {ad.payment_methods?.map((method, index) => (
                           <div key={index} className="flex items-center">
                             <div
                               className={`h-2 w-2 rounded-full mr-1 ${method.toLowerCase().includes("bank")
@@ -602,7 +489,7 @@ export default function AdvertiserProfilePage() {
                           </TableCell>
                           <TableCell className="py-4 px-4">
                             <div className="flex flex-wrap gap-2">
-                              {ad.payment_method_names?.map((method, index) => (
+                              {ad.payment_methods?.map((method, index) => (
                                 <div key={index} className="flex items-center">
                                   <div
                                     className={`h-2 w-2 rounded-full mr-1 ${method.toLowerCase().includes("bank")
