@@ -66,9 +66,10 @@ export default function LoginPage() {
         localStorage.setItem("auth_token", response.access_token)
 
         await AuthAPI.fetchUserIdAndStore()
+        await AuthAPI.getSocketToken(response.access_token)
 
         window.location.href = "/"
-        await AuthAPI.getSocketToken(response.access_token)
+        
       } else {
         setError("Verification failed. Please try again.")
       }
