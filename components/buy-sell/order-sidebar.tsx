@@ -52,7 +52,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
   }, [isOpen])
 
   useEffect(() => {
-    if(ad) {
+    if (ad) {
       fetchUserPaymentMethods()
     }
   }, [ad])
@@ -70,7 +70,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
 
       if (numAmount < minLimit || numAmount > maxLimit) {
         setValidationError(`Order limit: ${ad.account_currency} ${minLimit} - ${maxLimit}`)
-    } else {
+      } else {
         setValidationError(null)
       }
     }
@@ -89,7 +89,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
       }
 
       // Filter user payment methods to only show those accepted by the buyer
-      const buyerAcceptedMethods = ad?.payment_method_names || []
+      const buyerAcceptedMethods = ad?.payment_methods || []
       const filteredMethods =
         response.data?.filter((method: PaymentMethod) => {
           // Check if the user's payment method matches any of the buyer's accepted methods
@@ -137,7 +137,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
 
   const handleClose = () => {
     setIsAnimating(false)
-      setTimeout(() => {
+    setTimeout(() => {
       setSelectedPaymentMethods([])
       setAmount(null)
       setValidationError(null)
@@ -163,7 +163,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
       return method ? `${method.display_name}` : "Select payment"
     }
     return `Selected (${selectedPaymentMethods.length})`
-}
+  }
 
   const isBuy = orderType === "buy"
   const title = isBuy ? "Sell USD" : "Buy USD"
@@ -176,15 +176,13 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div
-        className={`fixed inset-0 bg-black/30 transition-opacity duration-300 ${
-          isOpen && isAnimating ? "opacity-100" : "opacity-0"
-        }`}
+        className={`fixed inset-0 bg-black/30 transition-opacity duration-300 ${isOpen && isAnimating ? "opacity-100" : "opacity-0"
+          }`}
         onClick={handleClose}
       />
       <div
-        className={`relative w-full max-w-md bg-white h-full overflow-y-auto transform transition-transform duration-300 ease-in-out ${
-          isOpen && isAnimating ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`relative w-full max-w-md bg-white h-full overflow-y-auto transform transition-transform duration-300 ease-in-out ${isOpen && isAnimating ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         {ad && (
           <div className="flex flex-col h-full">
@@ -236,13 +234,12 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                         key={method.id}
                         className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-color"
                       >
-                            <div className="flex items-start justify-between">
+                        <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center mb-2">
                               <div
-                                className={`h-3 w-3 rounded-full mr-2 ${
-                                  method.type === "bank" ? "bg-green-500" : "bg-blue-500"
-                                }`}
+                                className={`h-3 w-3 rounded-full mr-2 ${method.type === "bank" ? "bg-green-500" : "bg-blue-500"
+                                  }`}
                               />
                               <span className="font-medium text-gray-600">{method.display_name}</span>
                             </div>
@@ -305,7 +302,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                       onClick={() => setShowPaymentSelection(true)}
                     >
                       <div className="flex items-center justify-between">
-                        <span className = "text-gray-500">
+                        <span className="text-gray-500">
                           {getSelectedPaymentMethodsText()}
                         </span>
                         <ChevronRight className="h-5 w-5 text-gray-400" />
@@ -342,16 +339,15 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                     {isBuy ? "Buyer's payment method(s)" : "Seller's payment method(s)"}
                   </h3>
                   <div className="flex flex-wrap gap-4">
-                    {ad.payment_method_names?.map((method, index) => (
+                    {ad.payment_methods?.map((method, index) => (
                       <div key={index} className="flex items-center">
                         <div
-                          className={`h-4 w-4 rounded-full mr-2 ${
-                            method.toLowerCase().includes("bank")
-                              ? "bg-green-500"
-                              : method.toLowerCase().includes("wallet") || method.toLowerCase().includes("ewallet")
-                                ? "bg-blue-500"
-                                : "bg-yellow-500"
-                          }`}
+                          className={`h-4 w-4 rounded-full mr-2 ${method.toLowerCase().includes("bank")
+                            ? "bg-green-500"
+                            : method.toLowerCase().includes("wallet") || method.toLowerCase().includes("ewallet")
+                              ? "bg-blue-500"
+                              : "bg-yellow-500"
+                            }`}
                         />
                         <span className="text-slate-1400">
                           {method.toLowerCase().includes("bank")
@@ -379,7 +375,7 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
                     variant="primary"
                     size="lg"
                     onClick={handleSubmit}
-                    disabled={!amount || (isBuy && selectedPaymentMethods.length === 0) || !!validationError || isSubmitting }
+                    disabled={!amount || (isBuy && selectedPaymentMethods.length === 0) || !!validationError || isSubmitting}
                   >
                     {isSubmitting ? (
                       <span className="flex items-center justify-center">
