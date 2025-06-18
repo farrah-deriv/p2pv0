@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
-import { AlertCircle, X, ChevronRight, DollarSign, Clock, Star, ThumbsUp, ThumbsDown } from "lucide-react"
+import { AlertCircle, X, ChevronRight, Clock, Star, ThumbsUp, ThumbsDown } from "lucide-react"
 import Navigation from "@/components/navigation"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -218,9 +218,30 @@ export default function OrderDetailsPage() {
 
   // Safely access user properties
   const counterpartyNickname = order.advert.user.id == USER.id ? order?.user?.nickname : order?.advert?.user?.nickname
-  const counterpartyLabel = order.type === "buy" ? (order.user.id == USER.id ? "Seller" : "Buyer") : (order.user.id == USER.id ? "Buyer" : "Seller")
-  const pendingReleaseLabel = order.type === "buy" ? (order.user.id == USER.id ? "Waiting seller's confirmation" : "Confirm payment") : (order.user.id == USER.id ? "Confirm payment" : "Waiting seller's confirmation")
-  const youPayReceiveLabel = order.type === "buy" ? (order.user.id == USER.id ? "You receive" : "You pay") : (order.user.id == USER.id ? "You pay" : "You receive")
+  const counterpartyLabel =
+    order.type === "buy"
+      ? order.user.id == USER.id
+        ? "Seller"
+        : "Buyer"
+      : order.user.id == USER.id
+        ? "Buyer"
+        : "Seller"
+  const pendingReleaseLabel =
+    order.type === "buy"
+      ? order.user.id == USER.id
+        ? "Waiting seller's confirmation"
+        : "Confirm payment"
+      : order.user.id == USER.id
+        ? "Confirm payment"
+        : "Waiting seller's confirmation"
+  const youPayReceiveLabel =
+    order.type === "buy"
+      ? order.user.id == USER.id
+        ? "You receive"
+        : "You pay"
+      : order.user.id == USER.id
+        ? "You pay"
+        : "You receive"
 
   const orderAmount = order.amount
 
@@ -248,9 +269,7 @@ export default function OrderDetailsPage() {
               {order.status === "pending_release" && (
                 <div className="bg-blue-50 p-4 flex justify-between items-center border border-blue-50 rounded-lg">
                   <div className="flex items-center">
-                    <span className="text-blue-600 font-medium">
-                      {pendingReleaseLabel}
-                    </span>
+                    <span className="text-blue-600 font-medium">{pendingReleaseLabel}</span>
                   </div>
                   <div className="flex items-center text-blue-600">
                     <Clock className="h-4 w-4 mr-1" />
@@ -299,30 +318,73 @@ export default function OrderDetailsPage() {
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="payment" className="p-4">
-                  <div className="bg-yellow-50 p-4 rounded-md mb-4">
-                    <div className="flex">
-                      <AlertCircle className="h-5 w-5 text-yellow-600 mr-2 flex-shrink-0" />
-                      <p className="text-sm text-yellow-800">
-                        Don't risk your funds with cash transactions. Use bank transfers or e-wallets instead.
-                      </p>
+                <TabsContent value="payment" className="p-0">
+                  <div className="space-y-4">
+                    {/* Warning Banner */}
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <AlertCircle className="h-3 w-3 text-white" />
+                        </div>
+                        <p className="text-sm text-orange-800">
+                          Cash transactions may carry risks. For safer payments, use bank transfers or e-wallets.
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="border rounded-md p-4">
-                    <div className="flex items-center">
-                      <DollarSign className="h-5 w-5 text-blue-500 mr-2" />
-                      <p className="text-slate-700">User didn't add any payment methods.</p>
+                    {/* Payment Methods */}
+                    <div className="space-y-3">
+                      <div className="border rounded-lg">
+                        <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50">
+                          <div className="flex items-center gap-3">
+                            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                            <span className="font-medium">Bank transfer</span>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-gray-400" />
+                        </div>
+                      </div>
+
+                      <div className="border rounded-lg">
+                        <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50">
+                          <div className="flex items-center gap-3">
+                            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                            <span className="font-medium">GrabPay</span>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-gray-400" />
+                        </div>
+                      </div>
+
+                      <div className="border rounded-lg">
+                        <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50">
+                          <div className="flex items-center gap-3">
+                            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                            <span className="font-medium">Neteller</span>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-gray-400" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Buyer's Instructions */}
+                    <div className="pt-4">
+                      <h3 className="text-gray-600 font-medium mb-2">Buyer's instructions</h3>
+                      <p className="text-gray-700">
+                        Kindly transfer the payment to the provided account details after placing your order.
+                      </p>
                     </div>
                   </div>
                 </TabsContent>
 
                 <TabsContent value="contact" className="p-4">
-                  <p className="text-slate-600">No additional contact details or instructions provided.</p>
+                  <div className="space-y-4">
+                    <h3 className="text-gray-600 font-medium">Contact details and instructions</h3>
+                    <p className="text-slate-600">No additional contact details or instructions provided.</p>
+                  </div>
                 </TabsContent>
               </Tabs>
 
-              {((order.type === "buy" && order.status === "pending_payment" && order.user.id == USER.id) || (order.type === "sell" && order.status === "pending_payment" && order.advert.user.id == USER.id)) && (
+              {((order.type === "buy" && order.status === "pending_payment" && order.user.id == USER.id) ||
+                (order.type === "sell" && order.status === "pending_payment" && order.advert.user.id == USER.id)) && (
                 <div className="p-4 flex gap-4">
                   <Button
                     variant="outline"
@@ -344,7 +406,8 @@ export default function OrderDetailsPage() {
                   </Button>
                 </div>
               )}
-              {((order.type === "buy" && order.status === "pending_release" && order.advert.user.id == USER.id) || (order.type === "sell" && order.status === "pending_release" && order.user.id == USER.id)) && (
+              {((order.type === "buy" && order.status === "pending_release" && order.advert.user.id == USER.id) ||
+                (order.type === "sell" && order.status === "pending_release" && order.user.id == USER.id)) && (
                 <div className="p-4 flex gap-4">
                   <Button className="flex-1" size="sm" onClick={handleConfirmOrder} disabled={isConfirmLoading}>
                     {isConfirmLoading ? (
