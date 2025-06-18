@@ -187,7 +187,7 @@ export default function OrdersPage() {
                 <TableCell className="py-4 px-4">{order.created_at ? formatDate(order.created_at) : ""}</TableCell>
               )}
               <TableCell className="py-4 px-4">
-                {order.type === "buy" ? order.advert.user.nickname : order.user.nickname}
+                {order.advert.user.nickname}
               </TableCell>
               <TableCell className="py-4 px-4">
                 <span className={`px-3 py-1 rounded-full text-xs ${getStatusBadgeStyle(order.status)}`}>

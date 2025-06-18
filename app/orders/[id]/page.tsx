@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
-import { AlertCircle, X, ChevronRight, DollarSign, Clock, Star, ThumbsUp, ThumbsDown } from "lucide-react"
+import { AlertCircle, X, ChevronRight, Clock, Star, ThumbsUp, ThumbsDown } from "lucide-react"
 import Navigation from "@/components/navigation"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { OrdersAPI } from "@/services/api"
 import type { Order } from "@/services/api/api-orders"
 import OrderChat from "@/components/order-chat"
@@ -218,9 +217,30 @@ export default function OrderDetailsPage() {
 
   // Safely access user properties
   const counterpartyNickname = order.advert.user.id == USER.id ? order?.user?.nickname : order?.advert?.user?.nickname
-  const counterpartyLabel = order.type === "buy" ? (order.user.id == USER.id ? "Seller" : "Buyer") : (order.user.id == USER.id ? "Buyer" : "Seller")
-  const pendingReleaseLabel = order.type === "buy" ? (order.user.id == USER.id ? "Waiting seller's confirmation" : "Confirm payment") : (order.user.id == USER.id ? "Confirm payment" : "Waiting seller's confirmation")
-  const youPayReceiveLabel = order.type === "buy" ? (order.user.id == USER.id ? "You receive" : "You pay") : (order.user.id == USER.id ? "You pay" : "You receive")
+  const counterpartyLabel =
+    order.type === "buy"
+      ? order.user.id == USER.id
+        ? "Seller"
+        : "Buyer"
+      : order.user.id == USER.id
+        ? "Buyer"
+        : "Seller"
+  const pendingReleaseLabel =
+    order.type === "buy"
+      ? order.user.id == USER.id
+        ? "Waiting seller's confirmation"
+        : "Confirm payment"
+      : order.user.id == USER.id
+        ? "Confirm payment"
+        : "Waiting seller's confirmation"
+  const youPayReceiveLabel =
+    order.type === "buy"
+      ? order.user.id == USER.id
+        ? "You receive"
+        : "You pay"
+      : order.user.id == USER.id
+        ? "You pay"
+        : "You receive"
 
   const orderAmount = order.amount
 
@@ -233,13 +253,13 @@ export default function OrderDetailsPage() {
           <div className="flex flex-row gap-6">
             <div className="w-full lg:w-1/2 rounded-lg">
               {order.status === "pending_payment" && (
-                <div className="bg-blue-50 p-4 flex justify-between items-center border border-blue-50 rounded-lg">
+                <div className="bg-yellow-50 p-4 flex justify-between items-center border border-blue-50 rounded-lg">
                   <div className="flex items-center">
-                    <span className="text-blue-600 font-medium">
+                    <span className="text-yellow-600 font-medium">
                       {order.user.id == USER.id ? "Awaiting payment" : "Complete payment"}
                     </span>
                   </div>
-                  <div className="flex items-center text-blue-600">
+                  <div className="flex items-center text-yellow-600">
                     <Clock className="h-4 w-4 mr-1" />
                     <span>Time left: {timeLeft}</span>
                   </div>
@@ -248,9 +268,7 @@ export default function OrderDetailsPage() {
               {order.status === "pending_release" && (
                 <div className="bg-blue-50 p-4 flex justify-between items-center border border-blue-50 rounded-lg">
                   <div className="flex items-center">
-                    <span className="text-blue-600 font-medium">
-                      {pendingReleaseLabel}
-                    </span>
+                    <span className="text-blue-600 font-medium">{pendingReleaseLabel}</span>
                   </div>
                   <div className="flex items-center text-blue-600">
                     <Clock className="h-4 w-4 mr-1" />
@@ -283,46 +301,25 @@ export default function OrderDetailsPage() {
                 </div>
               </div>
 
-              <Tabs defaultValue="payment">
-                <TabsList className="bg-transparent w-full rounded-none justify-start h-auto">
-                  <TabsTrigger
-                    value="payment"
-                    className="py-3 px-4 data-[state=active]:border-b-2 data-[state=active]:shadow-none rounded-none"
-                  >
-                    Payment details
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="contact"
-                    className="py-3 px-4 data-[state=active]:border-b-2 data-[state=active]:shadow-none rounded-none"
-                  >
-                    Contact details and instructions
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="payment" className="p-4">
-                  <div className="bg-yellow-50 p-4 rounded-md mb-4">
-                    <div className="flex">
-                      <AlertCircle className="h-5 w-5 text-yellow-600 mr-2 flex-shrink-0" />
-                      <p className="text-sm text-yellow-800">
-                        Don't risk your funds with cash transactions. Use bank transfers or e-wallets instead.
+              <div className="space-y-6 mt-4">
+                <div className="space-y-4">
+                    {order.type === "buy" && <h2 className="text-lg font-bold">Seller payment details</h2>}
+                  {order.type === "sell" && <h2 className="text-lg font-bold"> My payment details</h2>}
+                  <div className="bg-yellow-50 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <AlertCircle className="h-3 w-3 text-white" />
+                      </div>
+                      <p className="text-sm text-slate-500">
+                        Cash transactions may carry risks. For safer payments, use bank transfers or e-wallets.
                       </p>
                     </div>
                   </div>
+                </div>
+              </div>
 
-                  <div className="border rounded-md p-4">
-                    <div className="flex items-center">
-                      <DollarSign className="h-5 w-5 text-blue-500 mr-2" />
-                      <p className="text-slate-700">User didn't add any payment methods.</p>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="contact" className="p-4">
-                  <p className="text-slate-600">No additional contact details or instructions provided.</p>
-                </TabsContent>
-              </Tabs>
-
-              {((order.type === "buy" && order.status === "pending_payment" && order.user.id == USER.id) || (order.type === "sell" && order.status === "pending_payment" && order.advert.user.id == USER.id)) && (
+              {((order.type === "buy" && order.status === "pending_payment" && order.user.id == USER.id) ||
+                (order.type === "sell" && order.status === "pending_payment" && order.advert.user.id == USER.id)) && (
                 <div className="p-4 flex gap-4">
                   <Button
                     variant="outline"
@@ -344,7 +341,8 @@ export default function OrderDetailsPage() {
                   </Button>
                 </div>
               )}
-              {((order.type === "buy" && order.status === "pending_release" && order.advert.user.id == USER.id) || (order.type === "sell" && order.status === "pending_release" && order.user.id == USER.id)) && (
+              {((order.type === "buy" && order.status === "pending_release" && order.advert.user.id == USER.id) ||
+                (order.type === "sell" && order.status === "pending_release" && order.user.id == USER.id)) && (
                 <div className="p-4 flex gap-4">
                   <Button className="flex-1" size="sm" onClick={handleConfirmOrder} disabled={isConfirmLoading}>
                     {isConfirmLoading ? (
