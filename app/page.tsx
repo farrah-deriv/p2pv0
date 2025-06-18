@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { AlertCircle, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
-import Navigation from "@/components/navigation"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
@@ -181,7 +180,7 @@ export default function BuySellPage() {
                 </SelectContent>
               </Select>
             </div>
-             <div className="hidden md:block relative flex-grow w-full sm:w-auto sm:max-w-md">
+            <div className="hidden md:block relative flex-grow w-full sm:w-auto sm:max-w-md">
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
                 <Image
                   src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-M1TMmjYwGjHFhjLbq4bbWyCgHduG6y.png"
@@ -439,7 +438,7 @@ export default function BuySellPage() {
 
                     <div className="flex justify-between items-center">
                       <div className="flex flex-wrap gap-2">
-                        {ad.payment_method_names?.map((method, index) => (
+                        {ad.payment_methods?.map((method, index) => (
                           <div key={index} className="flex items-center">
                             <div
                               className={`h-2 w-2 rounded-full mr-2 ${method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"
@@ -517,14 +516,14 @@ export default function BuySellPage() {
                         </TableCell>
                         <TableCell className="py-4 px-4 align-top">
                           <div className="font-bold">{ad.payment_currency}{" "}
-                          {ad.exchange_rate
-                            ? ad.exchange_rate.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })
-                            : "N/A"}
+                            {ad.exchange_rate
+                              ? ad.exchange_rate.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })
+                              : "N/A"}
                           </div>
-                            <div>{`Trade Limits: ${ad.account_currency} ${ad.minimum_order_amount || "N/A"} - ${ad.actual_maximum_order_amount || "N/A"
+                          <div>{`Trade Limits: ${ad.account_currency} ${ad.minimum_order_amount || "N/A"} - ${ad.actual_maximum_order_amount || "N/A"
                             }`}</div>
                           <div className="flex items-center text-xs text-slate-500 mt-1">
                             <div className="flex items-center bg-slate-100 rounded-sm px-2 py-1">
@@ -541,7 +540,7 @@ export default function BuySellPage() {
                         </TableCell>
                         <TableCell className="py-4 px-4 sm:table-cell align-top">
                           <div className="flex flex-col flex-wrap gap-2">
-                            {ad.payment_method_names?.map((method, index) => (
+                            {ad.payment_methods?.map((method, index) => (
                               <div key={index} className="flex items-center">
                                 {method && (
                                   <div

@@ -23,6 +23,7 @@ export interface Advertisement {
   order_expiry_period: number
   payment_currency: string
   payment_method_names: string[]
+  payment_methods: string[]
   type: string
   user_rating_average?: number
 }
