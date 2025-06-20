@@ -63,8 +63,9 @@ export function NovuNotifications() {
       colorBackground: "#ffffff",
     },
     elements: {
-     nv-preferences__button: {
-      display: none
+      notificationPrimaryAction__button: {
+        backgroundColor: "red",
+      },
     },
   }
 
@@ -125,8 +126,8 @@ export function NovuNotifications() {
         applicationIdentifier={applicationIdentifier}
         subscriber={subscriberId || ""}
         subscriberHash={subscriberHash}
-        localization= {{
-          "inbox.filters.labels.default": "Notifications",    
+        localization={{
+          "inbox.filters.labels.default": "Notifications",
         }}
         colorScheme="light"
         i18n={{
