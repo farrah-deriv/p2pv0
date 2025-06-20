@@ -63,8 +63,8 @@ export function NovuNotifications() {
       colorBackground: "#ffffff",
     },
     elements: {
-   nv-preferences__button: {
-    display: none
+     nv-preferences__button: {
+      display: none
     },
   }
 
