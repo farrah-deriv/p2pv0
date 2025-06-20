@@ -51,8 +51,8 @@ export default function WalletBalance({ className }: WalletBalanceProps) {
 
       if (responseData && responseData.data) {
         const data = responseData.data
-        const usdBalance = data.balances?.find((b) => b.currency === "USD")?.amount
-        setBalance(usdBalance ? Number.parseFloat(usdBalance) : 0)
+        const balance = data.balances?.[0]?.amount
+        setBalance(balance ? Number.parseFloat(balance) : 0)
       }
 
       setIsLoading(false)
