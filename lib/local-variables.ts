@@ -39,7 +39,7 @@ export const API = {
 export const WALLETS = {
   cashierUrl: process.env.NEXT_PUBLIC_CASHIER_URL,
   defaultParams: {
-    wallet_id: USER_DATA?.balances?.[0]?.wallet_id || "",
+    wallet_id: USER_DATA?.balances?.[0]?.wallet_id,
     user_id: USER_DATA?.external_user_id || "",
     operation: "DEPOSIT",
     currency: "USD",
