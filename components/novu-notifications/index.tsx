@@ -62,6 +62,10 @@ export function NovuNotifications() {
       colorForeground: "#181C25",
       colorBackground: "#ffffff",
     },
+     elements: {
+    notificationPrimaryAction__button: {
+      backgroundColor: 'red',
+    },
   }
 
   useEffect(() => {
