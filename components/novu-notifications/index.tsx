@@ -121,7 +121,7 @@ export function NovuNotifications() {
         applicationIdentifier={applicationIdentifier}
         subscriber={subscriberId || ""}
         subscriberHash={subscriberHash}
-        localization=
+        localization= {{
           "inbox.filters.labels.default": "Notifications",    
         }}
         colorScheme="light"
