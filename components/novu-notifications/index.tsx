@@ -47,27 +47,28 @@ export function NovuNotifications() {
   const userIdFallback = USER.id || ""
   const applicationIdentifier = NOTIFICATIONS.applicationId
 
-  const appearance = {
-    variables: {
-      borderRadius: "8px",
-      fontSize: "16px",
-      colorShadow: "rgba(0, 0, 0, 0.1)",
-      colorNeutral: "#1A1523",
-      colorCounterForeground: "#ffffff",
-      colorCounter: "#00D0FF",
-      colorSecondaryForeground: "#1A1523",
-      colorSecondary: "#002A33",
-      colorPrimaryForeground: "#ffffff",
-      colorPrimary: "#00D0FF",
-      colorForeground: "#181C25",
-      colorBackground: "#ffffff",
+const appearance = {
+  variables: {
+    borderRadius: "8px",
+    fontSize: "16px",
+    colorShadow: "rgba(0, 0, 0, 0.1)",
+    colorNeutral: "#1A1523",
+    colorCounterForeground: "#ffffff",
+    colorCounter: "#00D0FF",
+    colorSecondaryForeground: "#1A1523",
+    colorSecondary: "#002A33",
+    colorPrimaryForeground: "#ffffff",
+    colorPrimary: "#00D0FF",
+    colorForeground: "#181C25",
+    colorBackground: "#ffffff",
+  },
+  elements: {
+    "nv-preferences__button": {
+      display: "none",
     },
-    elements: {
-      nv-preferences__button: {
-        display: none,
-      },
-    },
-  }
+  },
+}
+
 
   useEffect(() => {
     setMounted(true)
