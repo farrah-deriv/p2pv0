@@ -4,6 +4,7 @@ import { Inbox } from "@novu/nextjs"
 import { useEffect, useState } from "react"
 import { USER, NOTIFICATIONS } from "@/lib/local-variables"
 import { useRouter } from "next/navigation"
+import { Bell } from "lucide-react"
 
 // Function to fetch the subscriber hash
 async function fetchSubscriberHash() {
@@ -73,6 +74,9 @@ export function NovuNotifications() {
       "nv-preferences__button": {
         display: "none",
       },
+    },
+    icons: {
+      bell: () => <Bell className="w-5 h-5 text-gray-500" />,
     },
   }
 
