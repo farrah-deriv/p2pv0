@@ -28,7 +28,6 @@ async function fetchSubscriberHash() {
 
     const responseData = await response.json()
 
-    // Handle new API response structure
     const subscriberData = responseData.data?.subscriber || responseData.subscriber
 
     if (!subscriberData) {
