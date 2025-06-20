@@ -26,10 +26,18 @@ async function fetchSubscriberHash() {
       throw new Error(`Failed to fetch subscriber hash: ${response.status}`)
     }
 
-    const data = await response.json()
+    const responseData = await response.json()
+
+    // Handle new API response structure
+    const subscriberData = responseData.data?.subscriber || responseData.subscriber
+
+    if (!subscriberData) {
+      throw new Error("Invalid response structure: missing subscriber data")
+    }
+
     return {
-      subscriberHash: data.subscriber.subscriberHash,
-      subscriberId: data.subscriber.subscriberId,
+      subscriberHash: subscriberData.subscriberHash,
+      subscriberId: subscriberData.subscriberId,
     }
   } catch (error) {
     return null
@@ -47,28 +55,27 @@ export function NovuNotifications() {
   const userIdFallback = USER.id || ""
   const applicationIdentifier = NOTIFICATIONS.applicationId
 
-const appearance = {
-  variables: {
-    borderRadius: "8px",
-    fontSize: "16px",
-    colorShadow: "rgba(0, 0, 0, 0.1)",
-    colorNeutral: "#1A1523",
-    colorCounterForeground: "#ffffff",
-    colorCounter: "#00D0FF",
-    colorSecondaryForeground: "#1A1523",
-    colorSecondary: "#002A33",
-    colorPrimaryForeground: "#ffffff",
-    colorPrimary: "#00D0FF",
-    colorForeground: "#181C25",
-    colorBackground: "#ffffff",
-  },
-  elements: {
-    "nv-preferences__button": {
-      display: "none",
+  const appearance = {
+    variables: {
+      borderRadius: "8px",
+      fontSize: "16px",
+      colorShadow: "rgba(0, 0, 0, 0.1)",
+      colorNeutral: "#1A1523",
+      colorCounterForeground: "#ffffff",
+      colorCounter: "#00D0FF",
+      colorSecondaryForeground: "#1A1523",
+      colorSecondary: "#002A33",
+      colorPrimaryForeground: "#ffffff",
+      colorPrimary: "#00D0FF",
+      colorForeground: "#181C25",
+      colorBackground: "#ffffff",
     },
-  },
-}
-
+    elements: {
+      "nv-preferences__button": {
+        display: "none",
+      },
+    },
+  }
 
   useEffect(() => {
     setMounted(true)
