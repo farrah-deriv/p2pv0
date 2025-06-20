@@ -146,7 +146,7 @@ const appearance = {
           bell: {
             root: {
               background: "transparent",
-              color: "red",
+              color: "black",
             },
           },
           popover: {
