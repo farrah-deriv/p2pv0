@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Navigation from "@/components/navigation"
 import UserInfo from "@/components/profile/user-info"
 import TradeLimits from "@/components/profile/trade-limits"
 import StatsTabs from "./components/stats-tabs"
@@ -100,7 +99,7 @@ export default function ProfilePage() {
                 max: data.daily_limits?.sell || 0,
               },
             },
-            balance: data.balances?.USD?.amount || 0,
+            balance: data.balances?.find((b: any) => b.currency === "USD")?.amount || 0,
           }))
         }
       } catch (error) {

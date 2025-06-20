@@ -1,13 +1,13 @@
 let USER_DATA = null
 let USER_TOKEN = null
 let USER_ID = null
-let SOCKET_TOKEN = null;
+let SOCKET_TOKEN = null
 
 if (typeof window !== "undefined") {
   USER_DATA = JSON.parse(localStorage.getItem("user_data") ?? "{}")
   USER_TOKEN = localStorage.getItem("auth_token") ?? ""
   USER_ID = localStorage.getItem("user_id") ?? ""
-  SOCKET_TOKEN = localStorage.getItem("socket_token") ?? "";
+  SOCKET_TOKEN = localStorage.getItem("socket_token") ?? ""
 }
 
 export const USER = {
@@ -39,11 +39,11 @@ export const API = {
 export const WALLETS = {
   cashierUrl: process.env.NEXT_PUBLIC_CASHIER_URL,
   defaultParams: {
-   wallet_id: USER_DATA?.balances?.USD?.wallet_id || "",
-   user_id: USER_DATA?.external_user_id || "",
-   operation: "DEPOSIT",
-   currency: "USD",
-   brand_id: USER_DATA?.brand_name || "",
+    wallet_id: USER_DATA?.balances?.find((b) => b.currency === "USD")?.wallet_id,
+    user_id: USER_DATA?.external_user_id || "",
+    operation: "DEPOSIT",
+    currency: "USD",
+    brand_id: USER_DATA?.brand_name || "",
   },
 }
 
