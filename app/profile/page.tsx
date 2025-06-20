@@ -99,7 +99,7 @@ export default function ProfilePage() {
                 max: data.daily_limits?.sell || 0,
               },
             },
-            balance: data.balances?.[0]?.amount || 0,
+            balance: data.balances?.find((b: any) => b.currency === "USD")?.amount || 0,
           }))
         }
       } catch (error) {
