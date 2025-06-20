@@ -303,7 +303,7 @@ export default function OrderDetailsPage() {
 
               <div className="space-y-6 mt-4">
                 <div className="space-y-4">
-                    {order.type === "buy" && <h2 className="text-lg font-bold">Seller payment details</h2>}
+                  {order.type === "buy" && <h2 className="text-lg font-bold">Seller payment details</h2>}
                   {order.type === "sell" && <h2 className="text-lg font-bold"> My payment details</h2>}
                   <div className="bg-yellow-50 rounded-lg p-4">
                     <div className="flex items-start gap-3">
@@ -320,42 +320,42 @@ export default function OrderDetailsPage() {
 
               {((order.type === "buy" && order.status === "pending_payment" && order.user.id == USER.id) ||
                 (order.type === "sell" && order.status === "pending_payment" && order.advert.user.id == USER.id)) && (
-                <div className="p-4 flex gap-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => setShowCancelConfirmation(true)}
-                  >
-                    Cancel order
-                  </Button>
-                  <Button className="flex-1" size="sm" onClick={handlePayOrder} disabled={isPaymentLoading}>
-                    {isPaymentLoading ? (
-                      <>
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent mr-2"></div>
-                        Processing...
-                      </>
-                    ) : (
-                      "I've paid"
-                    )}
-                  </Button>
-                </div>
-              )}
+                  <div className="p-4 flex gap-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setShowCancelConfirmation(true)}
+                    >
+                      Cancel order
+                    </Button>
+                    <Button className="flex-1" size="sm" onClick={handlePayOrder} disabled={isPaymentLoading}>
+                      {isPaymentLoading ? (
+                        <>
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent mr-2"></div>
+                          Processing...
+                        </>
+                      ) : (
+                        "I've paid"
+                      )}
+                    </Button>
+                  </div>
+                )}
               {((order.type === "buy" && order.status === "pending_release" && order.advert.user.id == USER.id) ||
                 (order.type === "sell" && order.status === "pending_release" && order.user.id == USER.id)) && (
-                <div className="p-4 flex gap-4">
-                  <Button className="flex-1" size="sm" onClick={handleConfirmOrder} disabled={isConfirmLoading}>
-                    {isConfirmLoading ? (
-                      <>
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent mr-2"></div>
-                        Processing...
-                      </>
-                    ) : (
-                      "Confirm"
-                    )}
-                  </Button>
-                </div>
-              )}
+                  <div className="p-4 flex gap-4">
+                    <Button className="flex-1" size="sm" onClick={handleConfirmOrder} disabled={isConfirmLoading}>
+                      {isConfirmLoading ? (
+                        <>
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent mr-2"></div>
+                          Processing...
+                        </>
+                      ) : (
+                        "Confirm"
+                      )}
+                    </Button>
+                  </div>
+                )}
               {order.status === "completed" && order.is_reviewable && (
                 <div className="p-4">
                   <Button variant="destructive" size="sm" className="w-full" onClick={() => setShowRatingSidebar(true)}>
@@ -405,6 +405,7 @@ export default function OrderDetailsPage() {
                         description: "Your order has been successfully cancelled.",
                         variant: "default",
                       })
+                      fetchOrderDetails();
                     }
                   } catch (error) {
                     console.error("Failed to cancel order:", error)
