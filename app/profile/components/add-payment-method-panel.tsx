@@ -9,34 +9,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { getPaymentMethods } from "@/services/api/api-buy-sell"
-import { getPaymentMethodFields, getPaymentMethodIcon } from "@/lib/utils"
+import { getPaymentMethodFields, getPaymentMethodIcon, type AvailablePaymentMethod } from "@/lib/utils"
 
 interface AddPaymentMethodPanelProps {
   onClose: () => void
   onAdd: (method: string, fields: Record<string, string>) => void
   isLoading: boolean
-}
-
-interface AvailablePaymentMethod {
-  id: number
-  method: string
-  display_name: string
-  type: string
-  fields: Record<
-    string,
-    {
-      display_name: string
-      required: boolean
-      value?: string
-    }
-  >
-}
-
-interface PaymentMethodField {
-  name: string
-  label: string
-  type: string
-  required: boolean
 }
 
 export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: AddPaymentMethodPanelProps) {
