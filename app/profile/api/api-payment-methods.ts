@@ -35,6 +35,26 @@ export async function getUserPaymentMethods(): Promise<PaymentMethod[]> {
   }
 }
 
+export async function getAvailablePaymentMethods(): Promise<PaymentMethod[]> {
+  try {
+    const response = await fetch(`${API.baseUrl}${API.endpoints.availablePaymentMethods}`, {
+      headers: {
+        accept: "application/json",
+        ...AUTH.getAuthHeader(),
+      },
+    })
+    const responseData = await response.json()
+
+    if (responseData && responseData.data && Array.isArray(responseData.data)) {
+      return responseData.data
+    } else {
+      return []
+    }
+  } catch (error) {
+    return []
+  }
+}
+
 export async function addPaymentMethod(method: string, fields: Record<string, any>): Promise<PaymentMethodResponse> {
   try {
     const formattedMethod = method.toLowerCase()
@@ -259,6 +279,7 @@ export async function deletePaymentMethod(id: string): Promise<PaymentMethodResp
 
 export const PaymentMethodsAPI = {
   getUserPaymentMethods,
+  getAvailablePaymentMethods,
   addPaymentMethod,
   updatePaymentMethod,
   deletePaymentMethod,
