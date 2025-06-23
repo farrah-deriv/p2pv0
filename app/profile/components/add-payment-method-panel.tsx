@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
-import { getAvailablePaymentMethods } from "../api/api-payment-methods"
+import { getPaymentMethods } from "@/services/api/api-buy-sell"
 
 interface AddPaymentMethodPanelProps {
   onClose: () => void
@@ -53,12 +53,18 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
       try {
         setIsLoadingMethods(true)
 
-        const response = await getAvailablePaymentMethods()
+        const response = await getPaymentMethods()
 
-        if (response && response.data && Array.isArray(response.data)) {
-          setAvailablePaymentMethods(response.data)
-        } else if (Array.isArray(response)) {
-          setAvailablePaymentMethods(response)
+        if (Array.isArray(response)) {
+          // Transform the response to match our expected structure
+          const transformedMethods = response.map((method) => ({
+            id: Math.random(), // Generate a temporary ID since the API doesn't provide one
+            method: method.method,
+            display_name: method.display_name,
+            type: method.type,
+            fields: {}, // This will need to be populated based on the method type
+          }))
+          setAvailablePaymentMethods(transformedMethods)
         } else {
           setAvailablePaymentMethods([])
         }
