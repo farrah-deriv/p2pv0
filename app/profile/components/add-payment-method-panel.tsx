@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
-import { getUserPaymentMethods } from "../api/api-payment-methods"
+import { getAvailablePaymentMethods } from "../api/api-payment-methods"
 
 interface AddPaymentMethodPanelProps {
   onClose: () => void
@@ -53,17 +53,22 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
       try {
         setIsLoadingMethods(true)
 
-        const response = await getUserPaymentMethods()
+        const response = await getAvailablePaymentMethods()
+        console.log("Available Payment Methods API Response:", response)
 
         // Check if response has the expected structure
         if (response && response.data && Array.isArray(response.data)) {
+          console.log("Setting available payment methods:", response.data)
           setAvailablePaymentMethods(response.data)
         } else if (Array.isArray(response)) {
+          console.log("Setting available payment methods (direct array):", response)
           setAvailablePaymentMethods(response)
         } else {
+          console.log("Unexpected response structure:", response)
           setAvailablePaymentMethods([])
         }
       } catch (error) {
+        console.error("Error fetching available payment methods:", error)
         setAvailablePaymentMethods([])
       } finally {
         setIsLoadingMethods(false)
