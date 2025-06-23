@@ -122,12 +122,14 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
       <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl flex flex-col">
         <div className="p-6 border-b relative">
           <h2 className="text-xl font-semibold">Add payment method</h2>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onClose}
             className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-gray-500">Loading payment methods...</div>
@@ -141,12 +143,14 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
       <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl flex flex-col">
         <div className="p-6 border-b relative">
           <h2 className="text-xl font-semibold">Add payment method</h2>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onClose}
             className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-gray-500">No payment methods available</div>
@@ -159,12 +163,14 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
     <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl flex flex-col">
       <div className="p-6 border-b relative">
         <h2 className="text-xl font-semibold">Add payment method</h2>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={onClose}
           className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
         >
           <X className="h-5 w-5" />
-        </button>
+        </Button>
       </div>
 
       <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
