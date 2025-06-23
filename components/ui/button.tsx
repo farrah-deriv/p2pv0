@@ -32,11 +32,11 @@ const buttonVariants = cva(
 )
 
 const VALID_VARIANTS = ["default", "hover", "disabled", "outline", "destructive", "secondary", "ghost"]
-const VALID_SIZES = ["default", "sm"]
+const VALID_SIZES = ["default", "sm", "icon"]
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-  VariantProps<typeof buttonVariants> {
+    VariantProps<typeof buttonVariants> {
   asChild?: boolean
 }
 
