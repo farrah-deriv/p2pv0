@@ -126,7 +126,7 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 h-10 w-10 rounded-[20px]"
+            className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 h-10 w-10 rounded-full"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -147,7 +147,7 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 h-10 w-10 rounded-[20px]"
+            className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 h-10 w-10 rounded-full"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -167,7 +167,7 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
           variant="ghost"
           size="icon"
           onClick={onClose}
-          className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 h-10 w-10 rounded-[20px]"
+          className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 h-10 w-10 rounded-full"
         >
           <X className="h-5 w-5" />
         </Button>
