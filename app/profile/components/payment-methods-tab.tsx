@@ -76,8 +76,6 @@ export default function PaymentMethodsTab() {
       })
 
       if (!response.ok) {
-        console.error("Error Response:", response.status, response.statusText)
-        console.groupEnd()
         throw new Error(`Error fetching payment methods: ${response.statusText}`)
       }
 
@@ -86,41 +84,16 @@ export default function PaymentMethodsTab() {
 
       try {
         data = JSON.parse(responseText)
-        console.log("Response Body (parsed):", data)
       } catch (e) {
-        console.warn("⚠️ Could not parse response as JSON:", e)
-        console.log("Response Body (raw):", responseText)
         data = { data: [] }
       }
 
-      // Add this new section for detailed raw response logging
-      console.log("✅ Successfully fetched payment methods")
-      console.log("📋 RAW API RESPONSE:", responseText)
-      console.groupEnd()
-
       // Process and categorize the payment methods from the new response format
       const methodsData = data.data || []
-      console.log("Payment Methods Data:", methodsData)
-
-      // Log each method individually for better debugging
-      if (methodsData.length > 0) {
-        console.group("🔍 Individual Payment Methods")
-        methodsData.forEach((method, index) => {
-          console.group(`Method ${index + 1}: ${method.method || "Unknown"} (ID: ${method.id || "N/A"})`)
-          console.log("Full Method Object:", method)
-          console.log("Fields:", method.fields)
-          if (method.fields) {
-            Object.entries(method.fields).forEach(([key, value]) => {
-              console.log(`Field "${key}":`, value)
-            })
-          }
-          console.groupEnd()
-        })
-        console.groupEnd()
-      }
 
       // Transform the data to match our PaymentMethod interface
       const transformedMethods = methodsData.map((method: any) => {
+        console.log("User Payment Methods Response:", data)
         // Get the method type (e.g., "alipay", "bank_transfer")
         const methodType = method.method || ""
 
@@ -167,14 +140,8 @@ export default function PaymentMethodsTab() {
         }
       })
 
-      console.log("Transformed Payment Methods:", transformedMethods)
       setPaymentMethods(transformedMethods)
     } catch (error) {
-      console.group("💥 Payment Methods API Exception")
-      console.error("Error:", error)
-      console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-      console.groupEnd()
-
       setError(error instanceof Error ? error.message : "Failed to load payment methods")
     } finally {
       setIsLoading(false)
@@ -183,14 +150,11 @@ export default function PaymentMethodsTab() {
 
   // Fetch payment methods on mount
   useEffect(() => {
-    console.log("🔄 Fetching payment methods...")
     fetchPaymentMethods()
   }, [fetchPaymentMethods])
 
   // Handle edit payment method
   const handleEditPaymentMethod = (method: PaymentMethod) => {
-    console.log("Opening edit panel for method:", method)
-
     // Create a cleaned version of the payment method for editing
     const cleanedMethod = {
       ...method,
@@ -216,8 +180,6 @@ export default function PaymentMethodsTab() {
       if (paymentMethod) {
         formattedFields.method_type = paymentMethod.type
       }
-
-      console.log("Sending fields to API:", formattedFields)
 
       const result = await ProfileAPI.PaymentMethods.updatePaymentMethod(id, formattedFields)
 
@@ -254,7 +216,7 @@ export default function PaymentMethodsTab() {
         })
       }
     } catch (error) {
-      console.error("Error updating payment method:", error)
+      setError(error instanceof Error ? error.message : "An error occurred. Please try again.")
 
       // Show error modal
       setStatusModal({
@@ -310,7 +272,7 @@ export default function PaymentMethodsTab() {
         })
       }
     } catch (error) {
-      console.error("Error deleting payment method:", error)
+      setError(error instanceof Error ? error.message : "An error occurred. Please try again.")
 
       // Show error modal
       setStatusModal({
