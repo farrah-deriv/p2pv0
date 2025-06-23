@@ -90,43 +90,29 @@ export default function PaymentMethodsTab() {
 
       // Process and categorize the payment methods from the new response format
       const methodsData = data.data || []
+      console.log("User Payment Methods Response:", data)
 
       // Transform the data to match our PaymentMethod interface
       const transformedMethods = methodsData.map((method: any) => {
-        console.log("User Payment Methods Response:", data)
         // Get the method type (e.g., "alipay", "bank_transfer")
         const methodType = method.method || ""
 
-        // Determine the category based on the method type
+        // Determine the category based on the type field from API
         let category: "bank_transfer" | "e_wallet" | "other" = "other"
 
-        if (["bank_transfer", "bank"].includes(methodType.toLowerCase())) {
+        if (method.type === "bank") {
           category = "bank_transfer"
-        } else if (
-          ["alipay", "google_pay", "nequi", "paypal", "skrill", "wechat_pay"].includes(methodType.toLowerCase())
-        ) {
+        } else if (method.type === "ewallet") {
           category = "e_wallet"
         }
 
         // Extract instructions specifically for display
         let instructions = ""
-        if (method.fields?.instructions) {
-          if (typeof method.fields.instructions === "object") {
-            if ("value" in method.fields.instructions) {
-              instructions = method.fields.instructions.value
-            } else if (
-              method.fields.instructions.value &&
-              typeof method.fields.instructions.value === "object" &&
-              "value" in method.fields.instructions.value
-            ) {
-              instructions = method.fields.instructions.value.value
-            }
-          } else if (typeof method.fields.instructions === "string") {
-            instructions = method.fields.instructions
-          }
+        if (method.fields?.instructions?.value) {
+          instructions = method.fields.instructions.value
         }
 
-        // Format the method name for display (capitalize first letter)
+        // Use display_name from API response
         const name = method.display_name || methodType.charAt(0).toUpperCase() + methodType.slice(1)
 
         return {
@@ -136,7 +122,7 @@ export default function PaymentMethodsTab() {
           category: category,
           details: method.fields || {},
           instructions: instructions,
-          isDefault: false, // Default value, update if API provides this info
+          isDefault: false,
         }
       })
 
