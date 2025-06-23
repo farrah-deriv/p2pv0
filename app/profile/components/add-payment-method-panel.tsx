@@ -55,16 +55,10 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
 
         const response = await getPaymentMethods()
 
-        if (Array.isArray(response)) {
-          // Transform the response to match our expected structure
-          const transformedMethods = response.map((method) => ({
-            id: Math.random(), // Generate a temporary ID since the API doesn't provide one
-            method: method.method,
-            display_name: method.display_name,
-            type: method.type,
-            fields: {}, // This will need to be populated based on the method type
-          }))
-          setAvailablePaymentMethods(transformedMethods)
+        if (response && response.data && Array.isArray(response.data)) {
+          setAvailablePaymentMethods(response.data)
+        } else if (Array.isArray(response)) {
+          setAvailablePaymentMethods(response)
         } else {
           setAvailablePaymentMethods([])
         }
