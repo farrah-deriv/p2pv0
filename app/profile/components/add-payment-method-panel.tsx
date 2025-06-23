@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import { getUserPaymentMethods } from "../api/api-payment-methods"
 
 interface AddPaymentMethodPanelProps {
   onClose: () => void
@@ -51,21 +52,11 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
     const fetchAvailablePaymentMethods = async () => {
       try {
         setIsLoadingMethods(true)
-        const response = await fetch("/api/available-payment-methods", {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        })
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch available payment methods")
-        }
-
-        const data = await response.json()
+        const data = await getUserPaymentMethods()
         console.log("Available Payment Methods API Response:", data)
 
-        if (data.data && Array.isArray(data.data)) {
-          setAvailablePaymentMethods(data.data)
+        if (Array.isArray(data)) {
+          setAvailablePaymentMethods(data)
         }
       } catch (error) {
         console.error("Error fetching available payment methods:", error)
@@ -101,12 +92,8 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
       }))
   }
 
-  const getPaymentMethodIcon = (method: string): string => {
-    const iconMap: Record<string, string> = {
-      bank_transfer: "/icons/bank-transfer-icon.png",
-      alipay: "/icons/alipay-icon.png",
-    }
-    return iconMap[method] || "/icons/bank-transfer-icon.png"
+  const getPaymentMethodIcon = (type: string): string => {
+    return type === "ewallet" ? "/icons/alipay-icon.png" : "/icons/bank-transfer-icon.png"
   }
 
   const validateForm = () => {
@@ -217,7 +204,7 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
                   }`}
                 >
                   <Image
-                    src={getPaymentMethodIcon(paymentMethod.method) || "/placeholder.svg"}
+                    src={getPaymentMethodIcon(paymentMethod.type) || "/placeholder.svg"}
                     alt={paymentMethod.display_name}
                     width={20}
                     height={20}
