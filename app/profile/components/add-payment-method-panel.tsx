@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { getPaymentMethods } from "@/services/api/api-buy-sell"
-import { getPaymentMethodFields, getPaymentMethodIcon } from "@/lib/payment-utils"
+import { getPaymentMethodFields, getPaymentMethodIcon } from "@/lib/utils"
 
 interface AddPaymentMethodPanelProps {
   onClose: () => void
