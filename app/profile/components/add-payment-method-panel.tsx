@@ -63,7 +63,7 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
           setAvailablePaymentMethods([])
         }
       } catch (error) {
-        setAvailablePaymentMethods([])
+        // Remove the setAvailablePaymentMethods([]) call here since it's already initialized as empty
       } finally {
         setIsLoadingMethods(false)
       }
