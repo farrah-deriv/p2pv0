@@ -59,32 +59,19 @@ export async function addPaymentMethod(method: string, fields: Record<string, an
   try {
     const formattedMethod = method.toLowerCase()
 
-    let formattedFields: Record<string, any> = {}
+    // Clean the fields to only include the values, not the full field objects
+    const cleanFields: Record<string, any> = {}
 
-    if (formattedMethod === "alipay") {
-      formattedFields = {
-        account: fields.alipay_id,
+    Object.keys(fields).forEach((key) => {
+      if (fields[key] && typeof fields[key] === "string") {
+        cleanFields[key] = fields[key]
       }
-
-      if (fields.instructions) {
-        formattedFields.instructions = fields.instructions
-      }
-    } else if (formattedMethod === "bank_transfer") {
-      formattedFields = {
-        account: fields.account || "",
-        bank_code: fields.bank_code || "-",
-        bank_name: fields.bank_name || "",
-        branch: fields.branch || "-",
-        instructions: fields.instructions || "-",
-      }
-    } else {
-      formattedFields = { ...fields }
-    }
+    })
 
     const requestBody = {
       data: {
         method: formattedMethod,
-        fields: formattedFields,
+        fields: cleanFields,
       },
     }
 
@@ -146,12 +133,21 @@ export async function addPaymentMethod(method: string, fields: Record<string, an
 
 export async function updatePaymentMethod(id: string, fields: Record<string, any>): Promise<PaymentMethodResponse> {
   try {
-    // Remove method_type from fields before sending
+    // Remove method_type from fields before sending and clean the fields
     const { method_type, ...cleanFields } = fields
+
+    // Clean the fields to only include the values, not the full field objects
+    const finalFields: Record<string, any> = {}
+
+    Object.keys(cleanFields).forEach((key) => {
+      if (cleanFields[key] && typeof cleanFields[key] === "string") {
+        finalFields[key] = cleanFields[key]
+      }
+    })
 
     const requestBody = {
       data: {
-        fields: cleanFields,
+        fields: finalFields,
       },
     }
 
