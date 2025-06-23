@@ -59,11 +59,8 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
           setAvailablePaymentMethods(response.data)
         } else if (Array.isArray(response)) {
           setAvailablePaymentMethods(response)
-        } else {
-          setAvailablePaymentMethods([])
         }
       } catch (error) {
-        // Remove the setAvailablePaymentMethods([]) call here since it's already initialized as empty
       } finally {
         setIsLoadingMethods(false)
       }
