@@ -5,7 +5,6 @@ import UserInfo from "@/components/profile/user-info"
 import TradeLimits from "@/components/profile/trade-limits"
 import StatsTabs from "./components/stats-tabs"
 import { USER, API, AUTH } from "@/lib/local-variables"
-import { PaymentMethodsAPI } from "./api/api-payment-methods"
 
 export default function ProfilePage() {
   const [userData, setUserData] = useState({
@@ -109,19 +108,6 @@ export default function ProfilePage() {
     }
 
     fetchUserData()
-  }, [])
-
-  useEffect(() => {
-    const fetchPaymentMethods = async () => {
-      try {
-        const paymentMethods = await PaymentMethodsAPI.getUserPaymentMethods()
-        console.log("Available Payment Methods Response:", paymentMethods)
-      } catch (error) {
-        console.error("Error fetching payment methods:", error)
-      }
-    }
-
-    fetchPaymentMethods()
   }, [])
 
   return (
