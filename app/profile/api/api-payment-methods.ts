@@ -146,36 +146,12 @@ export async function addPaymentMethod(method: string, fields: Record<string, an
 
 export async function updatePaymentMethod(id: string, fields: Record<string, any>): Promise<PaymentMethodResponse> {
   try {
-    const methodType = fields.method_type || "unknown"
-
-    let formattedFields: Record<string, any> = {}
-
-    if (methodType === "bank_transfer") {
-      const { instructions, account, bank_name, bank_code, branch } = fields
-
-      formattedFields = {
-        account: account || "",
-        bank_name: bank_name || "",
-        bank_code: bank_code || "-",
-        branch: branch || "-",
-        instructions: instructions || "-",
-      }
-    } else if (methodType === "alipay") {
-      formattedFields = {
-        account: fields.account || "",
-      }
-
-      if (fields.instructions) {
-        formattedFields.instructions = fields.instructions
-      }
-    } else {
-      const { ...restFields } = fields
-      formattedFields = { ...restFields }
-    }
+    // Remove method_type from fields before sending
+    const { method_type, ...cleanFields } = fields
 
     const requestBody = {
       data: {
-        fields: formattedFields,
+        fields: cleanFields,
       },
     }
 
