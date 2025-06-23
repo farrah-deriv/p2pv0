@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import { getPaymentMethods } from "@/services/api/api-buy-sell"
+import { getPaymentMethodFields, getPaymentMethodIcon, type AvailablePaymentMethod } from "@/lib/utils"
 
 interface AddPaymentMethodPanelProps {
   onClose: () => void
@@ -15,24 +17,29 @@ interface AddPaymentMethodPanelProps {
   isLoading: boolean
 }
 
-// Define payment method types and their required fields based on the screenshots
-const PAYMENT_METHODS = [
-  {
-    value: "bank_transfer",
-    label: "Bank Transfer",
-    fields: [
-      { name: "account", label: "Account Number", type: "text", required: true },
-      { name: "bank_code", label: "SWIFT or IFSC code", type: "text", required: false },
-      { name: "bank_name", label: "Bank Name", type: "text", required: true },
-      { name: "branch", label: "Branch", type: "text", required: false },
-    ],
-  },
-  {
-    value: "alipay",
-    label: "Alipay",
-    fields: [{ name: "alipay_id", label: "Alipay ID", type: "text" }],
-  },
-]
+interface PanelWrapperProps {
+  onClose: () => void
+  children: React.ReactNode
+}
+
+function PanelWrapper({ onClose, children }: PanelWrapperProps) {
+  return (
+    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl flex flex-col">
+      <div className="p-6 border-b relative">
+        <h2 className="text-xl font-semibold">Add payment method</h2>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 h-10 w-10 rounded-full"
+        >
+          <X className="h-5 w-5" />
+        </Button>
+      </div>
+      {children}
+    </div>
+  )
+}
 
 export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: AddPaymentMethodPanelProps) {
   const [selectedMethod, setSelectedMethod] = useState<string>("")
@@ -41,34 +48,53 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const [charCount, setCharCount] = useState(0)
+  const [availablePaymentMethods, setAvailablePaymentMethods] = useState<AvailablePaymentMethod[]>([])
+  const [isLoadingMethods, setIsLoadingMethods] = useState(true)
 
-  // Reset details when payment method changes
+  useEffect(() => {
+    const fetchAvailablePaymentMethods = async () => {
+      try {
+        setIsLoadingMethods(true)
+
+        const response = await getPaymentMethods()
+
+        if (response && response.data && Array.isArray(response.data)) {
+          setAvailablePaymentMethods(response.data)
+        } else if (Array.isArray(response)) {
+          setAvailablePaymentMethods(response)
+        }
+      } catch (error) {
+      } finally {
+        setIsLoadingMethods(false)
+      }
+    }
+
+    fetchAvailablePaymentMethods()
+  }, [])
+
   useEffect(() => {
     setDetails({})
     setErrors({})
     setTouched({})
   }, [selectedMethod])
 
-  // Update character count for instructions
   useEffect(() => {
     setCharCount(instructions.length)
   }, [instructions])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
-    const method = PAYMENT_METHODS.find((m) => m.value === selectedMethod)
+    const fields = getPaymentMethodFields(selectedMethod, availablePaymentMethods)
 
     if (!selectedMethod) {
       newErrors.method = "Please select a payment method"
     }
 
-    if (method) {
-      method.fields.forEach((field) => {
-        if (!details[field.name]?.trim() && field.required) {
-          newErrors[field.name] = `${field.label} is required`
-        }
-      })
-    }
+    fields.forEach((field) => {
+      if (!details[field.name]?.trim() && field.required) {
+        newErrors[field.name] = `${field.label} is required`
+      }
+    })
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -78,7 +104,6 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
     setDetails((prev) => ({ ...prev, [name]: value }))
     setTouched((prev) => ({ ...prev, [name]: true }))
 
-    // Clear error when user types
     if (errors[name]) {
       setErrors((prev) => {
         const newErrors = { ...prev }
@@ -91,92 +116,91 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Mark all fields as touched
-    const method = PAYMENT_METHODS.find((m) => m.value === selectedMethod)
-    if (method) {
+    const fields = getPaymentMethodFields(selectedMethod, availablePaymentMethods)
+    if (fields.length > 0) {
       const allTouched: Record<string, boolean> = {}
-      method.fields.forEach((field) => {
+      fields.forEach((field) => {
         allTouched[field.name] = true
       })
       setTouched(allTouched)
     }
 
     if (validateForm()) {
-      // Create a fields object with all the form field values
       const fieldValues = { ...details }
 
-      // Add instructions if present, otherwise use "-"
       fieldValues.instructions = instructions.trim() || "-"
 
-      // For bank transfer, ensure all fields are present with "-" as default for optional fields
       if (selectedMethod === "bank_transfer") {
         fieldValues.bank_code = fieldValues.bank_code || "-"
         fieldValues.branch = fieldValues.branch || "-"
       }
 
-      // Pass the method value and field values to the parent component
       onAdd(selectedMethod, fieldValues)
     }
   }
 
-  const selectedMethodConfig = PAYMENT_METHODS.find((m) => m.value === selectedMethod)
+  const selectedMethodFields = getPaymentMethodFields(selectedMethod, availablePaymentMethods)
+
+  if (isLoadingMethods) {
+    return (
+      <PanelWrapper onClose={onClose}>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-gray-500">Loading payment methods...</div>
+        </div>
+      </PanelWrapper>
+    )
+  }
+
+  if (availablePaymentMethods.length === 0 && !isLoadingMethods) {
+    return (
+      <PanelWrapper onClose={onClose}>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-gray-500">No payment methods available</div>
+        </div>
+      </PanelWrapper>
+    )
+  }
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl flex flex-col">
-      <div className="p-6 border-b relative">
-        <h2 className="text-xl font-semibold">Add payment method</h2>
-        <button
-          onClick={onClose}
-          className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-        >
-          <X className="h-5 w-5" />
-        </button>
-      </div>
-
+    <PanelWrapper onClose={onClose}>
       <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
         <div className="p-6 space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-500 mb-3">Choose your payment method</label>
             <div className="space-y-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setSelectedMethod("bank_transfer")}
-                className={`w-full p-4 justify-start gap-3 h-auto rounded-lg border ${selectedMethod === "bank_transfer"
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 hover:border-gray-300"
+              {availablePaymentMethods.map((paymentMethod) => (
+                <Button
+                  key={paymentMethod.method}
+                  type="button"
+                  variant="outline"
+                  onClick={() => setSelectedMethod(paymentMethod.method)}
+                  className={`w-full p-4 justify-start gap-3 h-auto rounded-lg border ${
+                    selectedMethod === paymentMethod.method
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-gray-300"
                   }`}
-              >
-                <Image
-                  src="/icons/bank-transfer-icon.png"
-                  alt="Bank Transfer"
-                  width={20}
-                  height={20}
-                  className="w-5 h-5"
-                />
-                <span className="font-medium">Bank transfer</span>
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setSelectedMethod("alipay")}
-                className={`w-full p-4 justify-start gap-3 h-auto rounded-lg border ${selectedMethod === "alipay" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"
-                  }`}
-              >
-                <Image src="/icons/alipay-icon.png" alt="Alipay" width={20} height={20} className="w-5 h-5" />
-                <span className="font-medium">Alipay</span>
-              </Button>
+                >
+                  <Image
+                    src={getPaymentMethodIcon(paymentMethod.type) || "/placeholder.svg"}
+                    alt={paymentMethod.display_name}
+                    width={20}
+                    height={20}
+                    className="w-5 h-5"
+                  />
+                  <span className="font-medium">{paymentMethod.display_name}</span>
+                </Button>
+              ))}
             </div>
             {errors.method && <p className="mt-2 text-xs text-red-500">{errors.method}</p>}
           </div>
 
-          {selectedMethodConfig && (
+          {selectedMethodFields.length > 0 && (
             <div className="space-y-4">
-              {selectedMethodConfig.fields.map((field) => (
+              {selectedMethodFields.map((field) => (
                 <div key={field.name}>
                   <label htmlFor={field.name} className="block text-sm font-medium text-gray-500 mb-2">
                     {field.label}
+                    {field.required && <span className="text-red-500 ml-1">*</span>}
                   </label>
                   <Input
                     id={field.name}
@@ -185,7 +209,9 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
                     onChange={(e) => handleInputChange(field.name, e.target.value)}
                     placeholder={`Enter ${field.label.toLowerCase()}`}
                   />
-                  {touched[field.name] && errors[field.name] && <p className="mt-1 text-xs">{errors[field.name]}</p>}
+                  {touched[field.name] && errors[field.name] && (
+                    <p className="mt-1 text-xs text-red-500">{errors[field.name]}</p>
+                  )}
                 </div>
               ))}
             </div>
@@ -215,6 +241,6 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
           {isLoading ? "Adding..." : "Add"}
         </Button>
       </div>
-    </div>
+    </PanelWrapper>
   )
 }

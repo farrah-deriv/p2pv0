@@ -21,18 +21,16 @@ interface PaymentMethod {
   name: string
   type: string
   category: "bank_transfer" | "e_wallet" | "other"
-  details: Record<string, any> // Changed to any to handle nested objects
+  details: Record<string, any>
   instructions?: string
   isDefault?: boolean
 }
 
 export default function PaymentMethodsTab() {
-  // Add state for delete confirmation modal and success/error modals
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Add these new state variables for modals
   const [deleteConfirmModal, setDeleteConfirmModal] = useState({
     show: false,
     methodId: "",
@@ -50,14 +48,12 @@ export default function PaymentMethodsTab() {
     message: "",
   })
 
-  // Add state for edit panel
   const [editPanel, setEditPanel] = useState({
     show: false,
     paymentMethod: null as PaymentMethod | null,
   })
   const [isEditing, setIsEditing] = useState(false)
 
-  // Use useCallback to memoize the fetchPaymentMethods function
   const fetchPaymentMethods = useCallback(async () => {
     try {
       setIsLoading(true)
@@ -71,13 +67,10 @@ export default function PaymentMethodsTab() {
       }
       const response = await fetch(url, {
         headers,
-        // Add cache: 'no-store' to ensure we always get fresh data
         cache: "no-store",
       })
 
       if (!response.ok) {
-        console.error("Error Response:", response.status, response.statusText)
-        console.groupEnd()
         throw new Error(`Error fetching payment methods: ${response.statusText}`)
       }
 
@@ -86,74 +79,28 @@ export default function PaymentMethodsTab() {
 
       try {
         data = JSON.parse(responseText)
-        console.log("Response Body (parsed):", data)
       } catch (e) {
-        console.warn("⚠️ Could not parse response as JSON:", e)
-        console.log("Response Body (raw):", responseText)
         data = { data: [] }
       }
 
-      // Add this new section for detailed raw response logging
-      console.log("✅ Successfully fetched payment methods")
-      console.log("📋 RAW API RESPONSE:", responseText)
-      console.groupEnd()
-
-      // Process and categorize the payment methods from the new response format
       const methodsData = data.data || []
-      console.log("Payment Methods Data:", methodsData)
 
-      // Log each method individually for better debugging
-      if (methodsData.length > 0) {
-        console.group("🔍 Individual Payment Methods")
-        methodsData.forEach((method, index) => {
-          console.group(`Method ${index + 1}: ${method.method || "Unknown"} (ID: ${method.id || "N/A"})`)
-          console.log("Full Method Object:", method)
-          console.log("Fields:", method.fields)
-          if (method.fields) {
-            Object.entries(method.fields).forEach(([key, value]) => {
-              console.log(`Field "${key}":`, value)
-            })
-          }
-          console.groupEnd()
-        })
-        console.groupEnd()
-      }
-
-      // Transform the data to match our PaymentMethod interface
       const transformedMethods = methodsData.map((method: any) => {
-        // Get the method type (e.g., "alipay", "bank_transfer")
         const methodType = method.method || ""
 
-        // Determine the category based on the method type
         let category: "bank_transfer" | "e_wallet" | "other" = "other"
 
-        if (["bank_transfer", "bank"].includes(methodType.toLowerCase())) {
+        if (method.type === "bank") {
           category = "bank_transfer"
-        } else if (
-          ["alipay", "google_pay", "nequi", "paypal", "skrill", "wechat_pay"].includes(methodType.toLowerCase())
-        ) {
+        } else if (method.type === "ewallet") {
           category = "e_wallet"
         }
 
-        // Extract instructions specifically for display
         let instructions = ""
-        if (method.fields?.instructions) {
-          if (typeof method.fields.instructions === "object") {
-            if ("value" in method.fields.instructions) {
-              instructions = method.fields.instructions.value
-            } else if (
-              method.fields.instructions.value &&
-              typeof method.fields.instructions.value === "object" &&
-              "value" in method.fields.instructions.value
-            ) {
-              instructions = method.fields.instructions.value.value
-            }
-          } else if (typeof method.fields.instructions === "string") {
-            instructions = method.fields.instructions
-          }
+        if (method.fields?.instructions?.value) {
+          instructions = method.fields.instructions.value
         }
 
-        // Format the method name for display (capitalize first letter)
         const name = method.display_name || methodType.charAt(0).toUpperCase() + methodType.slice(1)
 
         return {
@@ -163,35 +110,23 @@ export default function PaymentMethodsTab() {
           category: category,
           details: method.fields || {},
           instructions: instructions,
-          isDefault: false, // Default value, update if API provides this info
+          isDefault: false,
         }
       })
 
-      console.log("Transformed Payment Methods:", transformedMethods)
       setPaymentMethods(transformedMethods)
     } catch (error) {
-      console.group("💥 Payment Methods API Exception")
-      console.error("Error:", error)
-      console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-      console.groupEnd()
-
       setError(error instanceof Error ? error.message : "Failed to load payment methods")
     } finally {
       setIsLoading(false)
     }
   }, [])
 
-  // Fetch payment methods on mount
   useEffect(() => {
-    console.log("🔄 Fetching payment methods...")
     fetchPaymentMethods()
   }, [fetchPaymentMethods])
 
-  // Handle edit payment method
   const handleEditPaymentMethod = (method: PaymentMethod) => {
-    console.log("Opening edit panel for method:", method)
-
-    // Create a cleaned version of the payment method for editing
     const cleanedMethod = {
       ...method,
       details: { ...method.details },
@@ -203,41 +138,32 @@ export default function PaymentMethodsTab() {
     })
   }
 
-  // Handle save payment method
   const handleSavePaymentMethod = async (id: string, fields: Record<string, string>) => {
     try {
       setIsEditing(true)
 
-      // Format fields based on payment method type
       const paymentMethod = paymentMethods.find((m) => m.id === id)
       const formattedFields: Record<string, any> = { ...fields }
 
-      // Make sure to include method_type for the API to know which payment method type it is
       if (paymentMethod) {
         formattedFields.method_type = paymentMethod.type
       }
 
-      console.log("Sending fields to API:", formattedFields)
-
       const result = await ProfileAPI.PaymentMethods.updatePaymentMethod(id, formattedFields)
 
       if (result.success) {
-        // Show notification banner
         setNotification({
           show: true,
           message: "Payment method details updated successfully.",
         })
 
-        // Refresh the payment methods list
         fetchPaymentMethods()
       } else {
-        // Get error message based on error code
         let errorMessage = "Failed to update payment method. Please try again."
 
         if (result.errors && result.errors.length > 0) {
           const errorCode = result.errors[0].code
 
-          // Map error codes to user-friendly messages
           if (errorCode === "PaymentMethodUsedByOpenOrder") {
             errorMessage = "This payment method is currently being used by an open order and cannot be modified."
           } else if (result.errors[0].message) {
@@ -245,7 +171,6 @@ export default function PaymentMethodsTab() {
           }
         }
 
-        // Show error modal
         setStatusModal({
           show: true,
           type: "error",
@@ -254,9 +179,8 @@ export default function PaymentMethodsTab() {
         })
       }
     } catch (error) {
-      console.error("Error updating payment method:", error)
+      setError(error instanceof Error ? error.message : "An error occurred. Please try again.")
 
-      // Show error modal
       setStatusModal({
         show: true,
         type: "error",
@@ -264,7 +188,6 @@ export default function PaymentMethodsTab() {
         message: error instanceof Error ? error.message : "An error occurred. Please try again.",
       })
     } finally {
-      // Always close the edit panel, whether successful or not
       setEditPanel({
         show: false,
         paymentMethod: null,
@@ -273,7 +196,6 @@ export default function PaymentMethodsTab() {
     }
   }
 
-  // Update the handleDeletePaymentMethod function to show confirmation modal
   const handleDeletePaymentMethod = (id: string, name: string) => {
     setDeleteConfirmModal({
       show: true,
@@ -282,26 +204,21 @@ export default function PaymentMethodsTab() {
     })
   }
 
-  // Add a function to confirm deletion
   const confirmDeletePaymentMethod = async () => {
     try {
       setIsDeleting(true)
       const result = await ProfileAPI.PaymentMethods.deletePaymentMethod(deleteConfirmModal.methodId)
 
       if (result.success) {
-        // Close the confirmation modal
         setDeleteConfirmModal({ show: false, methodId: "", methodName: "" })
 
-        // Show notification banner instead of success modal
         setNotification({
           show: true,
           message: "Payment method deleted.",
         })
 
-        // Refresh the payment methods list
         fetchPaymentMethods()
       } else {
-        // Show error modal
         setStatusModal({
           show: true,
           type: "error",
@@ -310,9 +227,8 @@ export default function PaymentMethodsTab() {
         })
       }
     } catch (error) {
-      console.error("Error deleting payment method:", error)
+      setError(error instanceof Error ? error.message : "An error occurred. Please try again.")
 
-      // Show error modal
       setStatusModal({
         show: true,
         type: "error",
@@ -324,21 +240,17 @@ export default function PaymentMethodsTab() {
     }
   }
 
-  // Add a function to cancel deletion
   const cancelDeletePaymentMethod = () => {
     setDeleteConfirmModal({ show: false, methodId: "", methodName: "" })
   }
 
-  // Add a function to close status modal
   const closeStatusModal = () => {
     setStatusModal((prev) => ({ ...prev, show: false }))
   }
 
-  // Group payment methods by category
   const bankTransfers = paymentMethods.filter((method) => method.category === "bank_transfer")
   const eWallets = paymentMethods.filter((method) => method.category === "e_wallet")
 
-  // Get the appropriate icon for a payment method
   const getBankIcon = () => (
     <div className="w-10 h-10 flex items-center justify-center text-success">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -368,7 +280,6 @@ export default function PaymentMethodsTab() {
     </div>
   )
 
-  // Render loading state (shimmer)
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -392,7 +303,6 @@ export default function PaymentMethodsTab() {
     )
   }
 
-  // Render error state
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-8">
@@ -417,7 +327,6 @@ export default function PaymentMethodsTab() {
         />
       )}
 
-      {/* Bank transfer */}
       <div className="mb-8 mt-6">
         <h3 className="text-xl font-bold mb-4">Bank transfer</h3>
         {bankTransfers.length > 0 ? (
@@ -468,7 +377,6 @@ export default function PaymentMethodsTab() {
         )}
       </div>
 
-      {/* E-wallets */}
       <div className="mb-8">
         <h3 className="text-xl font-bold mb-4">E-wallets</h3>
         {eWallets.length > 0 ? (
@@ -519,7 +427,6 @@ export default function PaymentMethodsTab() {
         )}
       </div>
 
-      {/* Delete Confirmation Modal */}
       <DeleteConfirmationDialog
         open={deleteConfirmModal.show}
         title="Delete payment method?"
@@ -529,7 +436,6 @@ export default function PaymentMethodsTab() {
         onCancel={cancelDeletePaymentMethod}
       />
 
-      {/* Edit Payment Method Panel - conditionally render based on payment method type */}
       {editPanel.show &&
         editPanel.paymentMethod &&
         (editPanel.paymentMethod.type === "bank_transfer" ? (
@@ -548,7 +454,6 @@ export default function PaymentMethodsTab() {
           />
         ))}
 
-      {/* Error Modal - only show for errors, not for success */}
       {statusModal.show && (
         <CustomStatusModal
           type={statusModal.type}
