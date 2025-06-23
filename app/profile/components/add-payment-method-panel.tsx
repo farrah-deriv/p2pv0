@@ -52,14 +52,25 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
     const fetchAvailablePaymentMethods = async () => {
       try {
         setIsLoadingMethods(true)
-        const data = await getUserPaymentMethods()
-        console.log("Available Payment Methods API Response:", data)
+        console.log("Fetching available payment methods...")
 
-        if (Array.isArray(data)) {
-          setAvailablePaymentMethods(data)
+        const response = await getUserPaymentMethods()
+        console.log("Raw API Response:", response)
+
+        // Check if response has the expected structure
+        if (response && response.data && Array.isArray(response.data)) {
+          console.log("Setting available payment methods:", response.data)
+          setAvailablePaymentMethods(response.data)
+        } else if (Array.isArray(response)) {
+          console.log("Setting available payment methods (direct array):", response)
+          setAvailablePaymentMethods(response)
+        } else {
+          console.log("Unexpected response structure:", response)
+          setAvailablePaymentMethods([])
         }
       } catch (error) {
         console.error("Error fetching available payment methods:", error)
+        setAvailablePaymentMethods([])
       } finally {
         setIsLoadingMethods(false)
       }
@@ -169,6 +180,25 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-gray-500">Loading payment methods...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (availablePaymentMethods.length === 0 && !isLoadingMethods) {
+    return (
+      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl flex flex-col">
+        <div className="p-6 border-b relative">
+          <h2 className="text-xl font-semibold">Add payment method</h2>
+          <button
+            onClick={onClose}
+            className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-gray-500">No payment methods available</div>
         </div>
       </div>
     )
