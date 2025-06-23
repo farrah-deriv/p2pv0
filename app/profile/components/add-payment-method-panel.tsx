@@ -17,6 +17,30 @@ interface AddPaymentMethodPanelProps {
   isLoading: boolean
 }
 
+interface PanelWrapperProps {
+  onClose: () => void
+  children: React.ReactNode
+}
+
+function PanelWrapper({ onClose, children }: PanelWrapperProps) {
+  return (
+    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl flex flex-col">
+      <div className="p-6 border-b relative">
+        <h2 className="text-xl font-semibold">Add payment method</h2>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 h-10 w-10 rounded-full"
+        >
+          <X className="h-5 w-5" />
+        </Button>
+      </div>
+      {children}
+    </div>
+  )
+}
+
 export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: AddPaymentMethodPanelProps) {
   const [selectedMethod, setSelectedMethod] = useState<string>("")
   const [details, setDetails] = useState<Record<string, string>>({})
@@ -119,60 +143,26 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
 
   if (isLoadingMethods) {
     return (
-      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl flex flex-col">
-        <div className="p-6 border-b relative">
-          <h2 className="text-xl font-semibold">Add payment method</h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 h-10 w-10 rounded-full"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
+      <PanelWrapper onClose={onClose}>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-gray-500">Loading payment methods...</div>
         </div>
-      </div>
+      </PanelWrapper>
     )
   }
 
   if (availablePaymentMethods.length === 0 && !isLoadingMethods) {
     return (
-      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl flex flex-col">
-        <div className="p-6 border-b relative">
-          <h2 className="text-xl font-semibold">Add payment method</h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 h-10 w-10 rounded-full"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
+      <PanelWrapper onClose={onClose}>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-gray-500">No payment methods available</div>
         </div>
-      </div>
+      </PanelWrapper>
     )
   }
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl flex flex-col">
-      <div className="p-6 border-b relative">
-        <h2 className="text-xl font-semibold">Add payment method</h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 h-10 w-10 rounded-full"
-        >
-          <X className="h-5 w-5" />
-        </Button>
-      </div>
-
+    <PanelWrapper onClose={onClose}>
       <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
         <div className="p-6 space-y-6">
           <div>
@@ -251,6 +241,6 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
           {isLoading ? "Adding..." : "Add"}
         </Button>
       </div>
-    </div>
+    </PanelWrapper>
   )
 }
