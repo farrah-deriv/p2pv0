@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { getPaymentMethods } from "@/services/api/api-buy-sell"
+import { getPaymentMethodFields, getPaymentMethodIcon } from "@/lib/payment-utils"
 
 interface AddPaymentMethodPanelProps {
   onClose: () => void
@@ -79,27 +80,9 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
     setCharCount(instructions.length)
   }, [instructions])
 
-  const getPaymentMethodFields = (method: string): PaymentMethodField[] => {
-    const paymentMethod = availablePaymentMethods.find((pm) => pm.method === method)
-    if (!paymentMethod) return []
-
-    return Object.entries(paymentMethod.fields)
-      .filter(([key]) => key !== "instructions")
-      .map(([key, field]) => ({
-        name: key,
-        label: field.display_name,
-        type: "text",
-        required: field.required,
-      }))
-  }
-
-  const getPaymentMethodIcon = (type: string): string => {
-    return type === "ewallet" ? "/icons/ewallet-icon.png" : "/icons/bank-transfer-icon.png"
-  }
-
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
-    const fields = getPaymentMethodFields(selectedMethod)
+    const fields = getPaymentMethodFields(selectedMethod, availablePaymentMethods)
 
     if (!selectedMethod) {
       newErrors.method = "Please select a payment method"
@@ -131,7 +114,7 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    const fields = getPaymentMethodFields(selectedMethod)
+    const fields = getPaymentMethodFields(selectedMethod, availablePaymentMethods)
     if (fields.length > 0) {
       const allTouched: Record<string, boolean> = {}
       fields.forEach((field) => {
@@ -154,7 +137,7 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
     }
   }
 
-  const selectedMethodFields = getPaymentMethodFields(selectedMethod)
+  const selectedMethodFields = getPaymentMethodFields(selectedMethod, availablePaymentMethods)
 
   if (isLoadingMethods) {
     return (
