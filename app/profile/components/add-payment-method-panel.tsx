@@ -54,21 +54,15 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
         setIsLoadingMethods(true)
 
         const response = await getAvailablePaymentMethods()
-        console.log("Available Payment Methods API Response:", response)
 
-        // Check if response has the expected structure
         if (response && response.data && Array.isArray(response.data)) {
-          console.log("Setting available payment methods:", response.data)
           setAvailablePaymentMethods(response.data)
         } else if (Array.isArray(response)) {
-          console.log("Setting available payment methods (direct array):", response)
           setAvailablePaymentMethods(response)
         } else {
-          console.log("Unexpected response structure:", response)
           setAvailablePaymentMethods([])
         }
       } catch (error) {
-        console.error("Error fetching available payment methods:", error)
         setAvailablePaymentMethods([])
       } finally {
         setIsLoadingMethods(false)

@@ -30,7 +30,6 @@ export async function getUserPaymentMethods(): Promise<PaymentMethod[]> {
 
     return await response.json()
   } catch (error) {
-    console.error("Failed to fetch payment methods:", error)
     throw error
   }
 }
@@ -59,7 +58,6 @@ export async function addPaymentMethod(method: string, fields: Record<string, an
   try {
     const formattedMethod = method.toLowerCase()
 
-    // Clean the fields to only include the values, not the full field objects
     const cleanFields: Record<string, any> = {}
 
     Object.keys(fields).forEach((key) => {
@@ -90,7 +88,6 @@ export async function addPaymentMethod(method: string, fields: Record<string, an
     try {
       responseData = responseText ? JSON.parse(responseText) : { success: response.ok }
     } catch (e) {
-      console.error("Failed to parse response as JSON:", e)
       return {
         success: false,
         errors: [{ code: "parse_error", message: "Failed to parse server response" }],
@@ -116,9 +113,6 @@ export async function addPaymentMethod(method: string, fields: Record<string, an
 
     return { success: true, data: responseData.data }
   } catch (error) {
-    console.error("Error:", error)
-    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-
     return {
       success: false,
       errors: [
@@ -133,10 +127,8 @@ export async function addPaymentMethod(method: string, fields: Record<string, an
 
 export async function updatePaymentMethod(id: string, fields: Record<string, any>): Promise<PaymentMethodResponse> {
   try {
-    // Remove method_type from fields before sending and clean the fields
     const { method_type, ...cleanFields } = fields
 
-    // Clean the fields to only include the values, not the full field objects
     const finalFields: Record<string, any> = {}
 
     Object.keys(cleanFields).forEach((key) => {
@@ -166,7 +158,6 @@ export async function updatePaymentMethod(id: string, fields: Record<string, any
     try {
       responseData = responseText ? JSON.parse(responseText) : { success: response.ok }
     } catch (e) {
-      console.error("Failed to parse response as JSON:", e)
       return {
         success: false,
         errors: [{ code: "parse_error", message: "Failed to parse server response" }],
@@ -192,9 +183,6 @@ export async function updatePaymentMethod(id: string, fields: Record<string, any
 
     return { success: true, data: responseData.data }
   } catch (error) {
-    console.error("Error:", error)
-    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-
     return {
       success: false,
       errors: [
@@ -241,7 +229,6 @@ export async function deletePaymentMethod(id: string): Promise<PaymentMethodResp
 
     return { success: true }
   } catch (error) {
-    console.error(`Failed to delete payment method with ID ${id}:`, error)
     return {
       success: false,
       errors: [{ code: "exception", message: error instanceof Error ? error.message : "An unexpected error occurred" }],
