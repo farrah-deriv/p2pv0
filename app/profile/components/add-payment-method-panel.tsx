@@ -93,7 +93,7 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
   }
 
   const getPaymentMethodIcon = (type: string): string => {
-    return type === "ewallet" ? "/icons/alipay-icon.png" : "/icons/bank-transfer-icon.png"
+    return type === "ewallet" ? "/icons/ewallet-icon.png" : "/icons/bank-transfer-icon.png"
   }
 
   const validateForm = () => {
