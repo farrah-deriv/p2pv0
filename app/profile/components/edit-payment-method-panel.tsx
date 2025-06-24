@@ -7,6 +7,8 @@ import { X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import { getPaymentMethods } from "@/services/api/api-buy-sell"
+import { getPaymentMethodFields, type AvailablePaymentMethod } from "@/lib/utils"
 
 interface EditPaymentMethodPanelProps {
   onClose: () => void
@@ -62,6 +64,34 @@ export default function EditPaymentMethodPanel({
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({})
   const [instructions, setInstructions] = useState("")
   const [charCount, setCharCount] = useState(0)
+  const [availablePaymentMethods, setAvailablePaymentMethods] = useState<AvailablePaymentMethod[]>([])
+  const [isLoadingMethods, setIsLoadingMethods] = useState(true)
+
+  // Fetch available payment methods for fallback validation (when using details structure)
+  useEffect(() => {
+    const fetchAvailablePaymentMethods = async () => {
+      try {
+        setIsLoadingMethods(true)
+        const response = await getPaymentMethods()
+
+        if (response && response.data && Array.isArray(response.data)) {
+          setAvailablePaymentMethods(response.data)
+        } else if (Array.isArray(response)) {
+          setAvailablePaymentMethods(response)
+        }
+      } catch (error) {
+      } finally {
+        setIsLoadingMethods(false)
+      }
+    }
+
+    // Only fetch if we don't have fields structure (fallback for details structure)
+    if (paymentMethod && !paymentMethod.fields) {
+      fetchAvailablePaymentMethods()
+    } else {
+      setIsLoadingMethods(false)
+    }
+  }, [paymentMethod])
 
   useEffect(() => {
     if (!paymentMethod) return
@@ -168,21 +198,40 @@ export default function EditPaymentMethodPanel({
     return "text"
   }
 
+  const getRequiredFields = (): string[] => {
+    if (!paymentMethod) return []
+
+    // Use fields structure if available (new API)
+    if (paymentMethod.fields) {
+      return Object.entries(paymentMethod.fields)
+        .filter(([fieldName, fieldConfig]) => fieldName !== "instructions" && fieldConfig.required)
+        .map(([fieldName]) => fieldName)
+    }
+
+    // Fallback to available payment methods API (old details structure)
+    if (!isLoadingMethods && availablePaymentMethods.length > 0) {
+      const fields = getPaymentMethodFields(paymentMethod.type, availablePaymentMethods)
+      return fields.filter((field) => field.required).map((field) => field.name)
+    }
+
+    return []
+  }
+
   const isFormValid = (): boolean => {
     if (!paymentMethod) return false
 
-    if (paymentMethod.fields) {
-      const requiredFields = Object.entries(paymentMethod.fields)
-        .filter(([fieldName, fieldConfig]) => fieldName !== "instructions" && fieldConfig.required)
-        .map(([fieldName]) => fieldName)
+    // If we're still loading methods for validation, disable the button
+    if (!paymentMethod.fields && isLoadingMethods) return false
 
-      return requiredFields.every((fieldName) => {
-        const currentValue = fieldValues[fieldName]
-        return currentValue && currentValue.trim() !== ""
-      })
-    }
+    const requiredFields = getRequiredFields()
 
-    return Object.keys(fieldValues).length > 0
+    // Check if all required fields are filled
+    const allRequiredFieldsFilled = requiredFields.every((fieldName) => {
+      const currentValue = fieldValues[fieldName]
+      return currentValue && currentValue.trim() !== ""
+    })
+
+    return allRequiredFieldsFilled
   }
 
   if (!paymentMethod) {
@@ -196,6 +245,8 @@ export default function EditPaymentMethodPanel({
   }
 
   const renderFields = () => {
+    const requiredFields = getRequiredFields()
+
     if (paymentMethod.fields) {
       const editableFields = Object.entries(paymentMethod.fields).filter(([fieldName]) => fieldName !== "instructions")
 
@@ -220,6 +271,7 @@ export default function EditPaymentMethodPanel({
       <div key={fieldName}>
         <label htmlFor={fieldName} className="block text-sm font-medium text-gray-500 mb-2">
           {getFieldLabel(fieldName)}
+          {requiredFields.includes(fieldName) && <span className="text-red-500 ml-1">*</span>}
         </label>
         <Input
           id={fieldName}
@@ -238,6 +290,17 @@ export default function EditPaymentMethodPanel({
 
   const getInstructionsLabel = () => {
     return paymentMethod.fields?.instructions?.display_name || "Instructions"
+  }
+
+  // Show loading state if we're fetching required field info for validation
+  if (!paymentMethod.fields && isLoadingMethods) {
+    return (
+      <PanelWrapper onClose={onClose}>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-gray-500">Loading...</div>
+        </div>
+      </PanelWrapper>
+    )
   }
 
   return (
