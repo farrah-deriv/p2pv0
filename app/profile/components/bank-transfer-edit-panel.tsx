@@ -36,12 +36,8 @@ export default function BankTransferEditPanel({
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const [charCount, setCharCount] = useState(0)
 
-  // Extract values from the nested structure
   useEffect(() => {
     if (paymentMethod && paymentMethod.details) {
-      console.log("Bank Transfer Edit - Payment Method:", paymentMethod)
-
-      // Extract account
       if (paymentMethod.details.account) {
         const accountField = paymentMethod.details.account
         if (typeof accountField === "object") {
@@ -55,7 +51,6 @@ export default function BankTransferEditPanel({
         }
       }
 
-      // Extract bank name
       if (paymentMethod.details.bank_name) {
         const bankNameField = paymentMethod.details.bank_name
         if (typeof bankNameField === "object") {
@@ -69,7 +64,6 @@ export default function BankTransferEditPanel({
         }
       }
 
-      // Extract bank code
       if (paymentMethod.details.bank_code) {
         const bankCodeField = paymentMethod.details.bank_code
         if (typeof bankCodeField === "object") {
@@ -83,7 +77,6 @@ export default function BankTransferEditPanel({
         }
       }
 
-      // Extract branch
       if (paymentMethod.details.branch) {
         const branchField = paymentMethod.details.branch
         if (typeof branchField === "object") {
@@ -97,7 +90,6 @@ export default function BankTransferEditPanel({
         }
       }
 
-      // Extract instructions
       let instructionsValue = ""
       if (paymentMethod.details.instructions) {
         const instructionsField = paymentMethod.details.instructions
@@ -120,20 +112,16 @@ export default function BankTransferEditPanel({
 
       setInstructions(instructionsValue)
 
-      // Reset errors and touched state
       setErrors({})
       setTouched({})
     }
   }, [paymentMethod])
 
-  // Update character count for instructions
   useEffect(() => {
     setCharCount(instructions.length)
   }, [instructions])
 
-  // Simple validation - check if required fields are filled
   const isFormValid = (): boolean => {
-    // For bank transfer, account and bank_name are typically required
     return !!(account && account.trim() && bankName && bankName.trim())
   }
 
@@ -141,7 +129,6 @@ export default function BankTransferEditPanel({
     setter(value)
     setTouched((prev) => ({ ...prev, [name]: true }))
 
-    // Clear error when user types
     if (errors[name]) {
       setErrors((prev) => {
         const newErrors = { ...prev }
@@ -154,7 +141,6 @@ export default function BankTransferEditPanel({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Mark required fields as touched
     setTouched({
       account: true,
       bank_name: true,
@@ -162,7 +148,6 @@ export default function BankTransferEditPanel({
     })
 
     if (isFormValid()) {
-      // Create a fields object with all the form field values
       const fieldValues = {
         method_type: "bank_transfer",
         account,
@@ -172,9 +157,6 @@ export default function BankTransferEditPanel({
         instructions: instructions.trim() || "-",
       }
 
-      console.log("Submitting bank transfer field values:", fieldValues)
-
-      // Pass the payment method ID and field values to the parent component
       onSave(paymentMethod.id, fieldValues)
     }
   }

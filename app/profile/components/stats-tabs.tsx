@@ -57,8 +57,6 @@ export default function StatsTabs({ stats: initialStats }: StatsTabsProps) {
         const userId = USER.id
         const url = `${API.baseUrl}/users/${userId}`
 
-        console.log(`Fetching user stats for user ID: ${userId}`)
-
         const response = await fetch(url, {
           headers: {
             ...AUTH.getAuthHeader(),
@@ -71,7 +69,6 @@ export default function StatsTabs({ stats: initialStats }: StatsTabsProps) {
         }
 
         const responseData = await response.json()
-        console.log("User stats API response:", responseData)
 
         if (responseData && responseData.data) {
           const data = responseData.data
@@ -113,7 +110,6 @@ export default function StatsTabs({ stats: initialStats }: StatsTabsProps) {
             },
           }
 
-          console.log("Transformed stats:", transformedStats)
           setUserStats(transformedStats)
         }
       } catch (error) {
@@ -130,18 +126,7 @@ export default function StatsTabs({ stats: initialStats }: StatsTabsProps) {
     try {
       setIsAddingPaymentMethod(true)
 
-      console.group("🔍 PAYMENT METHOD DATA FROM UI")
-      console.log("Method:", method)
-      console.log("Fields:", fields)
-      console.groupEnd()
-
       const result = await ProfileAPI.PaymentMethods.addPaymentMethod(method, fields)
-
-      console.group("🔍 PAYMENT METHOD API RESULT")
-      console.log("Success:", result.success)
-      console.log("Data:", result.data)
-      console.log("Errors:", result.errors)
-      console.groupEnd()
 
       if (result.success) {
         setShowAddPaymentMethodPanel(false)
@@ -162,8 +147,6 @@ export default function StatsTabs({ stats: initialStats }: StatsTabsProps) {
         })
       }
     } catch (error) {
-      console.error("Error adding payment method:", error)
-
       setErrorModal({
         show: true,
         message: error instanceof Error ? error.message : "An unexpected error occurred",

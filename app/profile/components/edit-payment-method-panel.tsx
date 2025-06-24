@@ -35,7 +35,6 @@ export default function EditPaymentMethodPanel({
   const [availablePaymentMethods, setAvailablePaymentMethods] = useState<AvailablePaymentMethod[]>([])
   const [isLoadingMethods, setIsLoadingMethods] = useState(true)
 
-  // Fetch available payment methods to get field requirements
   useEffect(() => {
     const fetchAvailablePaymentMethods = async () => {
       try {
@@ -59,11 +58,8 @@ export default function EditPaymentMethodPanel({
 
   useEffect(() => {
     if (paymentMethod) {
-      console.log("Initializing edit form with payment method:", paymentMethod)
-
       const formattedDetails: Record<string, string> = {}
 
-      // Extract values from potentially nested objects in details
       Object.entries(paymentMethod.details).forEach(([key, value]) => {
         if (key === "instructions") return
 
@@ -89,7 +85,6 @@ export default function EditPaymentMethodPanel({
 
       setDetails(formattedDetails)
 
-      // Handle instructions
       let instructionsValue = ""
       const instructionsField = paymentMethod.details?.instructions
 
@@ -104,8 +99,6 @@ export default function EditPaymentMethodPanel({
       }
 
       setInstructions(instructionsValue)
-
-      console.log("Formatted details for form:", formattedDetails)
     }
   }, [paymentMethod])
 
@@ -127,7 +120,6 @@ export default function EditPaymentMethodPanel({
         fieldValues.instructions = instructions.trim()
       }
 
-      console.log("Submitting field values:", fieldValues)
       onSave(paymentMethod.id, fieldValues)
     }
   }
@@ -152,7 +144,6 @@ export default function EditPaymentMethodPanel({
     return "text"
   }
 
-  // Get required fields for this payment method from API data
   const getRequiredFields = () => {
     if (isLoadingMethods || !availablePaymentMethods.length) return []
 
@@ -160,20 +151,15 @@ export default function EditPaymentMethodPanel({
     return fields.filter((field) => field.required).map((field) => field.name)
   }
 
-  // Check if form is valid based on required fields from API
   const isFormValid = (): boolean => {
     if (isLoadingMethods) return false
 
     const requiredFields = getRequiredFields()
 
-    // Check if all required fields are filled
     const allRequiredFieldsFilled = requiredFields.every((fieldName) => {
       const currentValue = details[fieldName]
       return currentValue && currentValue.trim() !== ""
     })
-
-    console.log("Required fields:", requiredFields)
-    console.log("All required fields filled:", allRequiredFieldsFilled)
 
     return allRequiredFieldsFilled
   }
