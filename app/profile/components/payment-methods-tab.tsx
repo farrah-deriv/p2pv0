@@ -336,11 +336,11 @@ export default function PaymentMethodsTab() {
               <Card key={method.id} variant="default" className="overflow-hidden">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
                       {getBankIcon()}
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <div className="font-medium text-lg">Bank Transfer</div>
-                        <StatusIndicator variant="neutral" size="sm">
+                        <StatusIndicator variant="neutral" size="sm" className="truncate">
                           {method.details?.account?.value
                             ? maskAccountNumber(method.details.account.value)
                             : `ID: ${method.id}`}
@@ -349,7 +349,7 @@ export default function PaymentMethodsTab() {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="p-1 hover:bg-gray-100 rounded-full">
+                        <button className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 ml-2">
                           <MoreVertical className="h-5 w-5 text-gray-500" />
                         </button>
                       </DropdownMenuTrigger>
@@ -388,18 +388,18 @@ export default function PaymentMethodsTab() {
               <Card key={method.id} variant="default" className="overflow-hidden">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
                       {getEWalletIcon()}
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <div className="font-medium text-lg">{method.name}</div>
-                        <StatusIndicator variant="neutral" size="sm">
+                        <StatusIndicator variant="neutral" size="sm" className="truncate">
                           {method.details?.account?.value || `ID: ${method.id}`}
                         </StatusIndicator>
                       </div>
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="p-1 hover:bg-gray-100 rounded-full">
+                        <button className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 ml-2">
                           <MoreVertical className="h-5 w-5 text-gray-500" />
                         </button>
                       </DropdownMenuTrigger>
