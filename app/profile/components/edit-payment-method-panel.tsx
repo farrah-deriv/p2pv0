@@ -23,6 +23,30 @@ interface EditPaymentMethodPanelProps {
   }
 }
 
+interface PanelWrapperProps {
+  onClose: () => void
+  children: React.ReactNode
+}
+
+function PanelWrapper({ onClose, children }: PanelWrapperProps) {
+  return (
+    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl flex flex-col">
+      <div className="p-6 border-b relative">
+        <h2 className="text-xl font-semibold">Edit payment method</h2>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 h-10 w-10 rounded-full"
+        >
+          <X className="h-5 w-5" />
+        </Button>
+      </div>
+      {children}
+    </div>
+  )
+}
+
 export default function EditPaymentMethodPanel({
   onClose,
   onSave,
@@ -165,37 +189,18 @@ export default function EditPaymentMethodPanel({
 
   if (isLoadingMethods) {
     return (
-      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl flex flex-col">
-        <div className="p-6 border-b relative">
-          <h2 className="text-xl font-semibold">Edit payment method</h2>
-          <button
-            onClick={onClose}
-            className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+      <PanelWrapper onClose={onClose}>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-gray-500">Loading...</div>
         </div>
-      </div>
+      </PanelWrapper>
     )
   }
 
   const requiredFields = getRequiredFields()
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl flex flex-col">
-      <div className="p-6 border-b relative">
-        <h2 className="text-xl font-semibold">Edit payment method</h2>
-        <button
-          onClick={onClose}
-          className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-        >
-          <X className="h-5 w-5" />
-        </button>
-      </div>
-
+    <PanelWrapper onClose={onClose}>
       <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
         <div className="p-6 space-y-6">
           <div className="text-lg font-medium">{paymentMethod.name}</div>
@@ -246,6 +251,6 @@ export default function EditPaymentMethodPanel({
           {isLoading ? "Saving..." : "Save details"}
         </Button>
       </div>
-    </div>
+    </PanelWrapper>
   )
 }
