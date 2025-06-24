@@ -206,16 +206,18 @@ export default function EditPaymentMethodPanel({
   const isFormValid = (): boolean => {
     // Get all fields that were originally filled (excluding system fields)
     const originallyFilledFields = Object.entries(originalDetails)
-      .filter(([key, value]) => key !== "method_type" && value?.trim())
+      .filter(([key, value]) => key !== "method_type" && value && value.trim())
       .map(([key]) => key)
 
     // Check if all originally filled fields are still filled
     const allOriginalFieldsStillFilled = originallyFilledFields.every((fieldName) => {
-      return details[fieldName]?.trim()
+      const currentValue = details[fieldName]
+      return currentValue && currentValue.trim()
     })
 
     // Also check if instructions are still filled if they were originally filled
-    const instructionsValid = originalInstructions.trim() ? instructions.trim() !== "" : true // If originally empty, current state doesn't matter
+    const instructionsValid =
+      originalInstructions && originalInstructions.trim() ? instructions && instructions.trim() !== "" : true // If originally empty, current state doesn't matter
 
     return allOriginalFieldsStillFilled && instructionsValid
   }
