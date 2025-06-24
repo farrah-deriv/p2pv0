@@ -349,9 +349,9 @@ export default function PaymentMethodsTab() {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 ml-2">
+                        <Button variant="ghost" size="sm" className="p-1 h-auto w-auto flex-shrink-0 ml-2">
                           <MoreVertical className="h-5 w-5 text-gray-500" />
-                        </button>
+                        </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-[160px]">
                         <DropdownMenuItem
@@ -399,9 +399,9 @@ export default function PaymentMethodsTab() {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="p-1 hover:bg-gray-100 rounded-full flex-shrink-0 ml-2">
+                        <Button variant="ghost" size="sm" className="p-1 h-auto w-auto flex-shrink-0 ml-2">
                           <MoreVertical className="h-5 w-5 text-gray-500" />
-                        </button>
+                        </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-[160px]">
                         <DropdownMenuItem
