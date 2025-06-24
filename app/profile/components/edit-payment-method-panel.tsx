@@ -202,24 +202,36 @@ export default function EditPaymentMethodPanel({
     return "text"
   }
 
-  // Check if form is valid based on originally filled fields
+  // Check if form is valid based on payment method type requirements
   const isFormValid = (): boolean => {
-    // Get all fields that were originally filled (excluding system fields)
+    // For bank transfer, check specific required fields
+    if (paymentMethod.type === "bank_transfer") {
+      const hasAccount = details.account && details.account.trim() !== ""
+      const hasBankName = details.bank_name && details.bank_name.trim() !== ""
+      return hasAccount && hasBankName
+    }
+
+    // For alipay, check account field
+    if (paymentMethod.type === "alipay") {
+      return details.account && details.account.trim() !== ""
+    }
+
+    // For e-wallets like google_pay, paypal, skrill, check identifier
+    if (["google_pay", "paypal", "skrill"].includes(paymentMethod.type)) {
+      return details.identifier && details.identifier.trim() !== ""
+    }
+
+    // For other payment methods, check if all originally filled fields are still filled
     const originallyFilledFields = Object.entries(originalDetails)
       .filter(([key, value]) => key !== "method_type" && value && value.trim())
       .map(([key]) => key)
 
-    // Check if all originally filled fields are still filled
     const allOriginalFieldsStillFilled = originallyFilledFields.every((fieldName) => {
       const currentValue = details[fieldName]
       return currentValue && currentValue.trim()
     })
 
-    // Also check if instructions are still filled if they were originally filled
-    const instructionsValid =
-      originalInstructions && originalInstructions.trim() ? instructions && instructions.trim() !== "" : true // If originally empty, current state doesn't matter
-
-    return allOriginalFieldsStillFilled && instructionsValid
+    return allOriginalFieldsStillFilled
   }
 
   return (
