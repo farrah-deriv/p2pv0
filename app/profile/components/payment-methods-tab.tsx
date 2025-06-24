@@ -340,7 +340,7 @@ export default function PaymentMethodsTab() {
                       <div>
                         <div className="font-medium text-lg">Bank Transfer</div>
                         <StatusIndicator variant="neutral" size="sm">
-                          ID: {method.id}
+                          {method.details?.account?.value || `ID: ${method.id}`}
                         </StatusIndicator>
                       </div>
                     </div>
@@ -390,7 +390,7 @@ export default function PaymentMethodsTab() {
                       <div>
                         <div className="font-medium text-lg">{method.name}</div>
                         <StatusIndicator variant="neutral" size="sm">
-                          ID: {method.id}
+                          {method.details?.account?.value || `ID: ${method.id}`}
                         </StatusIndicator>
                       </div>
                     </div>
