@@ -113,7 +113,6 @@ export default function StatsTabs({ stats: initialStats }: StatsTabsProps) {
           setUserStats(transformedStats)
         }
       } catch (error) {
-        console.error("Error fetching user stats:", error)
       } finally {
         setIsLoadingStats(false)
       }

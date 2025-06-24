@@ -47,7 +47,7 @@ export default function EditPaymentMethodPanel({
           setAvailablePaymentMethods(response)
         }
       } catch (error) {
-        console.error("Error fetching payment methods:", error)
+        //
       } finally {
         setIsLoadingMethods(false)
       }
