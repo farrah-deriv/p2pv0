@@ -53,6 +53,7 @@ export const maskAccountNumber = (accountNumber: string): string => {
     return accountNumber
   }
   const lastFour = accountNumber.slice(-4)
-  const maskedPart = "*".repeat(accountNumber.length - 4)
+  const maskedPart="".padStart(accountNumber.length - 4, "*")
+
   return maskedPart + lastFour
 }
