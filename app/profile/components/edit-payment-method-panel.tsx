@@ -29,76 +29,68 @@ export default function EditPaymentMethodPanel({
 }: EditPaymentMethodPanelProps) {
   const [details, setDetails] = useState<Record<string, string>>({})
   const [instructions, setInstructions] = useState("")
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [touched, setTouched] = useState<Record<string, boolean>>({})
   const [charCount, setCharCount] = useState(0)
-  const [originalDetails, setOriginalDetails] = useState<Record<string, string>>({})
-  const [originalInstructions, setOriginalInstructions] = useState("")
+  const [originalFieldsWithValues, setOriginalFieldsWithValues] = useState<string[]>([])
+  const [originalHadInstructions, setOriginalHadInstructions] = useState(false)
 
   useEffect(() => {
     if (paymentMethod) {
       console.log("Initializing edit form with payment method:", paymentMethod)
 
-      const formattedDetails: Record<string, string> = {
-        method_type: paymentMethod.type,
-      }
+      const formattedDetails: Record<string, string> = {}
+      const fieldsWithValues: string[] = []
 
       // Extract values from potentially nested objects in details
       Object.entries(paymentMethod.details).forEach(([key, value]) => {
         if (key === "instructions") return
 
+        let extractedValue = ""
+
         if (value && typeof value === "object") {
-          if ("value" in value) {
-            formattedDetails[key] = value.value || ""
-          } else if (value.value && typeof value.value === "object" && "value" in value.value) {
-            formattedDetails[key] = value.value.value || ""
+          if ("value" in value && value.value) {
+            extractedValue = String(value.value)
+          } else if (value.value && typeof value.value === "object" && "value" in value.value && value.value.value) {
+            extractedValue = String(value.value.value)
           } else {
-            const nestedValue = Object.values(value).find((v) => typeof v === "string" || typeof v === "number")
+            const nestedValue = Object.values(value).find((v) => v && (typeof v === "string" || typeof v === "number"))
             if (nestedValue) {
-              formattedDetails[key] = String(nestedValue)
+              extractedValue = String(nestedValue)
             }
           }
-        } else if (typeof value === "string") {
-          formattedDetails[key] = value
+        } else if (value && typeof value === "string") {
+          extractedValue = value
+        }
+
+        formattedDetails[key] = extractedValue
+
+        // If this field had a value originally, track it
+        if (extractedValue && extractedValue.trim()) {
+          fieldsWithValues.push(key)
         }
       })
 
       setDetails(formattedDetails)
-      setOriginalDetails(formattedDetails)
+      setOriginalFieldsWithValues(fieldsWithValues)
 
-      // Set instructions
+      // Handle instructions
       let instructionsValue = ""
       const instructionsField = paymentMethod.details?.instructions
 
       if (instructionsField) {
-        if (typeof instructionsField === "object") {
-          if ("value" in instructionsField) {
-            instructionsValue = instructionsField.value || ""
-          } else if (
-            instructionsField.value &&
-            typeof instructionsField.value === "object" &&
-            "value" in instructionsField.value
-          ) {
-            instructionsValue = instructionsField.value.value || ""
-          }
+        if (typeof instructionsField === "object" && "value" in instructionsField && instructionsField.value) {
+          instructionsValue = String(instructionsField.value)
         } else if (typeof instructionsField === "string") {
           instructionsValue = instructionsField
         }
-      } else if (paymentMethod.instructions) {
-        if (typeof paymentMethod.instructions === "object" && "value" in paymentMethod.instructions) {
-          instructionsValue = paymentMethod.instructions.value || ""
-        } else if (typeof paymentMethod.instructions === "string") {
-          instructionsValue = paymentMethod.instructions
-        }
+      } else if (paymentMethod.instructions && typeof paymentMethod.instructions === "string") {
+        instructionsValue = paymentMethod.instructions
       }
 
       setInstructions(instructionsValue)
-      setOriginalInstructions(instructionsValue)
+      setOriginalHadInstructions(instructionsValue.trim() !== "")
 
-      setErrors({})
-      setTouched({})
-
-      console.log("Formatted details for form:", formattedDetails)
+      console.log("Original fields with values:", fieldsWithValues)
+      console.log("Original had instructions:", instructionsValue.trim() !== "")
     }
   }, [paymentMethod])
 
@@ -108,15 +100,6 @@ export default function EditPaymentMethodPanel({
 
   const handleInputChange = (name: string, value: string) => {
     setDetails((prev) => ({ ...prev, [name]: value }))
-    setTouched((prev) => ({ ...prev, [name]: true }))
-
-    if (errors[name]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[name]
-        return newErrors
-      })
-    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -154,24 +137,31 @@ export default function EditPaymentMethodPanel({
     return "text"
   }
 
-  // Simple validation: check if all originally filled fields are still filled
+  // Very simple validation: check if all originally filled fields still have values
   const isFormValid = (): boolean => {
-    // Get all fields that were originally filled (excluding system fields)
-    const originallyFilledFields = Object.entries(originalDetails)
-      .filter(([key, value]) => key !== "method_type" && value && value.trim())
-      .map(([key]) => key)
+    console.log("Checking form validity...")
+    console.log("Original fields with values:", originalFieldsWithValues)
+    console.log("Current details:", details)
+    console.log("Original had instructions:", originalHadInstructions)
+    console.log("Current instructions:", instructions)
 
-    // Check if all originally filled fields are still filled
-    const allOriginalFieldsStillFilled = originallyFilledFields.every((fieldName) => {
+    // Check if all originally filled fields still have values
+    const allOriginalFieldsStillFilled = originalFieldsWithValues.every((fieldName) => {
       const currentValue = details[fieldName]
-      return currentValue && currentValue.trim()
+      const isStillFilled = currentValue && currentValue.trim() !== ""
+      console.log(
+        `Field ${fieldName}: original had value, current value: "${currentValue}", still filled: ${isStillFilled}`,
+      )
+      return isStillFilled
     })
 
-    // Check if instructions are still filled if they were originally filled
-    const instructionsValid =
-      originalInstructions && originalInstructions.trim() ? instructions && instructions.trim() : true
+    // Check instructions if they were originally filled
+    const instructionsStillValid = originalHadInstructions ? instructions.trim() !== "" : true
 
-    return allOriginalFieldsStillFilled && instructionsValid
+    const isValid = allOriginalFieldsStillFilled && instructionsStillValid
+    console.log("Form is valid:", isValid)
+
+    return isValid
   }
 
   return (
@@ -191,27 +181,27 @@ export default function EditPaymentMethodPanel({
           <div className="text-lg font-medium">{paymentMethod.name}</div>
 
           <div className="space-y-4">
-            {Object.entries(details)
-              .filter(([fieldName]) => fieldName !== "instructions" && fieldName !== "method_type")
-              .map(([fieldName, fieldValue]) => (
-                <div key={fieldName}>
-                  <label htmlFor={fieldName} className="block text-sm font-medium text-gray-500 mb-2">
-                    {getFieldLabel(fieldName)}
-                  </label>
-                  <Input
-                    id={fieldName}
-                    type={getFieldType(fieldName)}
-                    value={fieldValue || ""}
-                    onChange={(e) => handleInputChange(fieldName, e.target.value)}
-                    placeholder={`Enter ${getFieldLabel(fieldName).toLowerCase()}`}
-                  />
-                </div>
-              ))}
+            {Object.entries(details).map(([fieldName, fieldValue]) => (
+              <div key={fieldName}>
+                <label htmlFor={fieldName} className="block text-sm font-medium text-gray-500 mb-2">
+                  {getFieldLabel(fieldName)}
+                  {originalFieldsWithValues.includes(fieldName) && <span className="text-red-500 ml-1">*</span>}
+                </label>
+                <Input
+                  id={fieldName}
+                  type={getFieldType(fieldName)}
+                  value={fieldValue || ""}
+                  onChange={(e) => handleInputChange(fieldName, e.target.value)}
+                  placeholder={`Enter ${getFieldLabel(fieldName).toLowerCase()}`}
+                />
+              </div>
+            ))}
           </div>
 
           <div>
             <label htmlFor="instructions" className="block text-sm font-medium text-gray-500 mb-2">
               Instructions
+              {originalHadInstructions && <span className="text-red-500 ml-1">*</span>}
             </label>
             <Textarea
               id="instructions"
