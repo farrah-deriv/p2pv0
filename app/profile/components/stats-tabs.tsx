@@ -1,6 +1,4 @@
 "use client"
-
-import type React from "react"
 import { useState, useEffect } from "react"
 import StatsGrid from "./stats-grid"
 import PaymentMethodsTab from "./payment-methods-tab"
@@ -9,7 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import AddPaymentMethodPanel from "./add-payment-method-panel"
 import { ProfileAPI } from "../api"
 import StatusModal from "./ui/status-modal"
-import NotificationBanner from "./notification-banner"
+import CustomNotificationBanner from "./ui/custom-notification-banner"
 import { PlusCircle } from "lucide-react"
 import { USER, API, AUTH } from "@/lib/local-variables"
 
@@ -178,7 +176,7 @@ export default function StatsTabs({ stats: initialStats }: StatsTabsProps) {
   return (
     <div className="relative">
       {notification.show && (
-        <NotificationBanner
+        <CustomNotificationBanner
           message={notification.message}
           onClose={() => setNotification({ show: false, message: "" })}
         />
