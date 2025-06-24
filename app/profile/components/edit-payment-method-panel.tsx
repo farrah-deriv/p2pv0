@@ -16,7 +16,7 @@ interface EditPaymentMethodPanelProps {
     id: string
     name: string
     type: string
-    fields: Record<
+    fields?: Record<
       string,
       {
         display_name: string
@@ -24,6 +24,7 @@ interface EditPaymentMethodPanelProps {
         value: string
       }
     >
+    details?: Record<string, any>
     instructions?: string
   }
 }
@@ -63,9 +64,11 @@ export default function EditPaymentMethodPanel({
   const [charCount, setCharCount] = useState(0)
 
   useEffect(() => {
-    if (paymentMethod?.fields) {
-      const initialValues: Record<string, string> = {}
+    if (!paymentMethod) return
 
+    const initialValues: Record<string, string> = {}
+
+    if (paymentMethod.fields) {
       Object.entries(paymentMethod.fields).forEach(([fieldName, fieldConfig]) => {
         if (fieldName === "instructions") {
           setInstructions(fieldConfig.value || "")
@@ -73,9 +76,54 @@ export default function EditPaymentMethodPanel({
           initialValues[fieldName] = fieldConfig.value || ""
         }
       })
+    } else if (paymentMethod.details) {
+      Object.entries(paymentMethod.details).forEach(([key, fieldData]) => {
+        if (key === "instructions") return
 
-      setFieldValues(initialValues)
+        let extractedValue = ""
+
+        if (fieldData && typeof fieldData === "object") {
+          if ("value" in fieldData && fieldData.value) {
+            const wrappedValue = fieldData.value
+
+            if (wrappedValue && typeof wrappedValue === "object" && "value" in wrappedValue && wrappedValue.value) {
+              const actualValue = wrappedValue.value
+              extractedValue = String(actualValue)
+            } else {
+              extractedValue = String(wrappedValue)
+            }
+          } else {
+            const nestedValue = Object.values(fieldData).find(
+              (val) => val && (typeof val === "string" || typeof val === "number"),
+            )
+            if (nestedValue) {
+              extractedValue = String(nestedValue)
+            }
+          }
+        } else if (fieldData && typeof fieldData === "string") {
+          extractedValue = fieldData
+        }
+
+        initialValues[key] = extractedValue
+      })
+
+      let instructionsValue = ""
+      const instructionsField = paymentMethod.details?.instructions
+
+      if (instructionsField) {
+        if (typeof instructionsField === "object" && "value" in instructionsField && instructionsField.value) {
+          instructionsValue = String(instructionsField.value)
+        } else if (typeof instructionsField === "string") {
+          instructionsValue = instructionsField
+        }
+      } else if (paymentMethod.instructions && typeof paymentMethod.instructions === "string") {
+        instructionsValue = paymentMethod.instructions
+      }
+
+      setInstructions(instructionsValue)
     }
+
+    setFieldValues(initialValues)
   }, [paymentMethod])
 
   useEffect(() => {
@@ -100,6 +148,20 @@ export default function EditPaymentMethodPanel({
     }
   }
 
+  const getFieldLabel = (fieldName: string): string => {
+    const fieldLabels: Record<string, string> = {
+      account: "Account Number",
+      swift_code: "SWIFT or IFSC code",
+      bank_code: "SWIFT or IFSC code",
+      bank_name: "Bank Name",
+      branch: "Branch",
+      identifier: "Email or phone number",
+      phone_number: "Phone number",
+    }
+
+    return fieldLabels[fieldName] || fieldName.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
+  }
+
   const getFieldType = (fieldName: string): string => {
     if (fieldName.includes("phone")) return "tel"
     if (fieldName.includes("email")) return "email"
@@ -107,16 +169,20 @@ export default function EditPaymentMethodPanel({
   }
 
   const isFormValid = (): boolean => {
-    if (!paymentMethod?.fields) return false
+    if (!paymentMethod) return false
 
-    const requiredFields = Object.entries(paymentMethod.fields)
-      .filter(([fieldName, fieldConfig]) => fieldName !== "instructions" && fieldConfig.required)
-      .map(([fieldName]) => fieldName)
+    if (paymentMethod.fields) {
+      const requiredFields = Object.entries(paymentMethod.fields)
+        .filter(([fieldName, fieldConfig]) => fieldName !== "instructions" && fieldConfig.required)
+        .map(([fieldName]) => fieldName)
 
-    return requiredFields.every((fieldName) => {
-      const currentValue = fieldValues[fieldName]
-      return currentValue && currentValue.trim() !== ""
-    })
+      return requiredFields.every((fieldName) => {
+        const currentValue = fieldValues[fieldName]
+        return currentValue && currentValue.trim() !== ""
+      })
+    }
+
+    return Object.keys(fieldValues).length > 0
   }
 
   if (!paymentMethod) {
@@ -129,7 +195,50 @@ export default function EditPaymentMethodPanel({
     )
   }
 
-  const editableFields = Object.entries(paymentMethod.fields).filter(([fieldName]) => fieldName !== "instructions")
+  const renderFields = () => {
+    if (paymentMethod.fields) {
+      const editableFields = Object.entries(paymentMethod.fields).filter(([fieldName]) => fieldName !== "instructions")
+
+      return editableFields.map(([fieldName, fieldConfig]) => (
+        <div key={fieldName}>
+          <label htmlFor={fieldName} className="block text-sm font-medium text-gray-500 mb-2">
+            {fieldConfig.display_name}
+            {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
+          </label>
+          <Input
+            id={fieldName}
+            type={getFieldType(fieldName)}
+            value={fieldValues[fieldName] || ""}
+            onChange={(e) => handleInputChange(fieldName, e.target.value)}
+            placeholder={`Enter ${fieldConfig.display_name.toLowerCase()}`}
+          />
+        </div>
+      ))
+    }
+
+    return Object.entries(fieldValues).map(([fieldName, fieldValue]) => (
+      <div key={fieldName}>
+        <label htmlFor={fieldName} className="block text-sm font-medium text-gray-500 mb-2">
+          {getFieldLabel(fieldName)}
+        </label>
+        <Input
+          id={fieldName}
+          type={getFieldType(fieldName)}
+          value={fieldValue || ""}
+          onChange={(e) => handleInputChange(fieldName, e.target.value)}
+          placeholder={`Enter ${getFieldLabel(fieldName).toLowerCase()}`}
+        />
+      </div>
+    ))
+  }
+
+  const shouldShowInstructions = () => {
+    return paymentMethod.fields?.instructions || instructions || paymentMethod.details?.instructions
+  }
+
+  const getInstructionsLabel = () => {
+    return paymentMethod.fields?.instructions?.display_name || "Instructions"
+  }
 
   return (
     <PanelWrapper onClose={onClose}>
@@ -137,34 +246,18 @@ export default function EditPaymentMethodPanel({
         <div className="p-6 space-y-6">
           <div className="text-lg font-medium">{paymentMethod.name}</div>
 
-          <div className="space-y-4">
-            {editableFields.map(([fieldName, fieldConfig]) => (
-              <div key={fieldName}>
-                <label htmlFor={fieldName} className="block text-sm font-medium text-gray-500 mb-2">
-                  {fieldConfig.display_name}
-                  {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
-                </label>
-                <Input
-                  id={fieldName}
-                  type={getFieldType(fieldName)}
-                  value={fieldValues[fieldName] || ""}
-                  onChange={(e) => handleInputChange(fieldName, e.target.value)}
-                  placeholder={`Enter ${fieldConfig.display_name.toLowerCase()}`}
-                />
-              </div>
-            ))}
-          </div>
+          <div className="space-y-4">{renderFields()}</div>
 
-          {paymentMethod.fields.instructions && (
+          {shouldShowInstructions() && (
             <div>
               <label htmlFor="instructions" className="block text-sm font-medium text-gray-500 mb-2">
-                {paymentMethod.fields.instructions.display_name}
+                {getInstructionsLabel()}
               </label>
               <Textarea
                 id="instructions"
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
-                placeholder={`Enter ${paymentMethod.fields.instructions.display_name.toLowerCase()}`}
+                placeholder={`Enter ${getInstructionsLabel().toLowerCase()}`}
                 className="min-h-[120px] resize-none"
                 maxLength={300}
               />
