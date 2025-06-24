@@ -83,24 +83,31 @@ export default function EditPaymentMethodPanel({
     if (paymentMethod) {
       const formattedDetails: Record<string, string> = {}
 
-      Object.entries(paymentMethod.details).forEach(([key, value]) => {
+      Object.entries(paymentMethod.details).forEach(([key, fieldData]) => {
         if (key === "instructions") return
 
         let extractedValue = ""
 
-        if (value && typeof value === "object") {
-          if ("value" in value && value.value) {
-            extractedValue = String(value.value)
-          } else if (value.value && typeof value.value === "object" && "value" in value.value && value.value.value) {
-            extractedValue = String(value.value.value)
+        if (fieldData && typeof fieldData === "object") {
+          if ("value" in fieldData && fieldData.value) {
+            const wrappedValue = fieldData.value
+
+            if (wrappedValue && typeof wrappedValue === "object" && "value" in wrappedValue && wrappedValue.value) {
+              const actualValue = wrappedValue.value
+              extractedValue = String(actualValue)
+            } else {
+              extractedValue = String(wrappedValue)
+            }
           } else {
-            const nestedValue = Object.values(value).find((v) => v && (typeof v === "string" || typeof v === "number"))
+            const nestedValue = Object.values(fieldData).find(
+              (val) => val && (typeof val === "string" || typeof val === "number"),
+            )
             if (nestedValue) {
               extractedValue = String(nestedValue)
             }
           }
-        } else if (value && typeof value === "string") {
-          extractedValue = value
+        } else if (fieldData && typeof fieldData === "string") {
+          extractedValue = fieldData
         }
 
         formattedDetails[key] = extractedValue
