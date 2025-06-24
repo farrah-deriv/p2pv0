@@ -198,6 +198,21 @@ export default function EditPaymentMethodPanel({
     return "text"
   }
 
+  // Check if form is valid (all required fields filled)
+  const isFormValid = (): boolean => {
+    // Validate based on payment method type
+    if (paymentMethod.type === "alipay") {
+      return !!details.account?.trim()
+    } else if (["google_pay", "paypal", "skrill"].includes(paymentMethod.type)) {
+      return !!details.identifier?.trim()
+    } else if (paymentMethod.type === "bank_transfer") {
+      return !!details.account?.trim() && !!details.bank_name?.trim()
+    }
+
+    // For other payment methods, assume valid if we have some details
+    return Object.keys(details).some((key) => key !== "method_type" && details[key]?.trim())
+  }
+
   return (
     <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl flex flex-col">
       <div className="p-6 border-b relative">
@@ -254,7 +269,13 @@ export default function EditPaymentMethodPanel({
       </form>
 
       <div className="p-6 border-t">
-        <Button type="button" onClick={handleSubmit} disabled={isLoading} size="sm" className="w-full">
+        <Button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isLoading || !isFormValid()}
+          size="sm"
+          className="w-full"
+        >
           {isLoading ? "Saving..." : "Save details"}
         </Button>
       </div>
