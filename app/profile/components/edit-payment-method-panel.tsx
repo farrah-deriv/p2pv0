@@ -7,6 +7,8 @@ import { X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import { getPaymentMethods } from "@/services/api/api-buy-sell"
+import { getPaymentMethodFields, type AvailablePaymentMethod } from "@/lib/utils"
 
 interface EditPaymentMethodPanelProps {
   onClose: () => void
@@ -30,15 +32,36 @@ export default function EditPaymentMethodPanel({
   const [details, setDetails] = useState<Record<string, string>>({})
   const [instructions, setInstructions] = useState("")
   const [charCount, setCharCount] = useState(0)
-  const [originalFieldsWithValues, setOriginalFieldsWithValues] = useState<string[]>([])
-  const [originalHadInstructions, setOriginalHadInstructions] = useState(false)
+  const [availablePaymentMethods, setAvailablePaymentMethods] = useState<AvailablePaymentMethod[]>([])
+  const [isLoadingMethods, setIsLoadingMethods] = useState(true)
+
+  // Fetch available payment methods to get field requirements
+  useEffect(() => {
+    const fetchAvailablePaymentMethods = async () => {
+      try {
+        setIsLoadingMethods(true)
+        const response = await getPaymentMethods()
+
+        if (response && response.data && Array.isArray(response.data)) {
+          setAvailablePaymentMethods(response.data)
+        } else if (Array.isArray(response)) {
+          setAvailablePaymentMethods(response)
+        }
+      } catch (error) {
+        console.error("Error fetching payment methods:", error)
+      } finally {
+        setIsLoadingMethods(false)
+      }
+    }
+
+    fetchAvailablePaymentMethods()
+  }, [])
 
   useEffect(() => {
     if (paymentMethod) {
       console.log("Initializing edit form with payment method:", paymentMethod)
 
       const formattedDetails: Record<string, string> = {}
-      const fieldsWithValues: string[] = []
 
       // Extract values from potentially nested objects in details
       Object.entries(paymentMethod.details).forEach(([key, value]) => {
@@ -62,15 +85,9 @@ export default function EditPaymentMethodPanel({
         }
 
         formattedDetails[key] = extractedValue
-
-        // If this field had a value originally, track it
-        if (extractedValue && extractedValue.trim()) {
-          fieldsWithValues.push(key)
-        }
       })
 
       setDetails(formattedDetails)
-      setOriginalFieldsWithValues(fieldsWithValues)
 
       // Handle instructions
       let instructionsValue = ""
@@ -87,10 +104,8 @@ export default function EditPaymentMethodPanel({
       }
 
       setInstructions(instructionsValue)
-      setOriginalHadInstructions(instructionsValue.trim() !== "")
 
-      console.log("Original fields with values:", fieldsWithValues)
-      console.log("Original had instructions:", instructionsValue.trim() !== "")
+      console.log("Formatted details for form:", formattedDetails)
     }
   }, [paymentMethod])
 
@@ -137,32 +152,52 @@ export default function EditPaymentMethodPanel({
     return "text"
   }
 
-  // Very simple validation: check if all originally filled fields still have values
-  const isFormValid = (): boolean => {
-    console.log("Checking form validity...")
-    console.log("Original fields with values:", originalFieldsWithValues)
-    console.log("Current details:", details)
-    console.log("Original had instructions:", originalHadInstructions)
-    console.log("Current instructions:", instructions)
+  // Get required fields for this payment method from API data
+  const getRequiredFields = () => {
+    if (isLoadingMethods || !availablePaymentMethods.length) return []
 
-    // Check if all originally filled fields still have values
-    const allOriginalFieldsStillFilled = originalFieldsWithValues.every((fieldName) => {
+    const fields = getPaymentMethodFields(paymentMethod.type, availablePaymentMethods)
+    return fields.filter((field) => field.required).map((field) => field.name)
+  }
+
+  // Check if form is valid based on required fields from API
+  const isFormValid = (): boolean => {
+    if (isLoadingMethods) return false
+
+    const requiredFields = getRequiredFields()
+
+    // Check if all required fields are filled
+    const allRequiredFieldsFilled = requiredFields.every((fieldName) => {
       const currentValue = details[fieldName]
-      const isStillFilled = currentValue && currentValue.trim() !== ""
-      console.log(
-        `Field ${fieldName}: original had value, current value: "${currentValue}", still filled: ${isStillFilled}`,
-      )
-      return isStillFilled
+      return currentValue && currentValue.trim() !== ""
     })
 
-    // Check instructions if they were originally filled
-    const instructionsStillValid = originalHadInstructions ? instructions.trim() !== "" : true
+    console.log("Required fields:", requiredFields)
+    console.log("All required fields filled:", allRequiredFieldsFilled)
 
-    const isValid = allOriginalFieldsStillFilled && instructionsStillValid
-    console.log("Form is valid:", isValid)
-
-    return isValid
+    return allRequiredFieldsFilled
   }
+
+  if (isLoadingMethods) {
+    return (
+      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl flex flex-col">
+        <div className="p-6 border-b relative">
+          <h2 className="text-xl font-semibold">Edit payment method</h2>
+          <button
+            onClick={onClose}
+            className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-gray-500">Loading...</div>
+        </div>
+      </div>
+    )
+  }
+
+  const requiredFields = getRequiredFields()
 
   return (
     <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl flex flex-col">
@@ -185,7 +220,7 @@ export default function EditPaymentMethodPanel({
               <div key={fieldName}>
                 <label htmlFor={fieldName} className="block text-sm font-medium text-gray-500 mb-2">
                   {getFieldLabel(fieldName)}
-                  {originalFieldsWithValues.includes(fieldName) && <span className="text-red-500 ml-1">*</span>}
+                  {requiredFields.includes(fieldName) && <span className="text-red-500 ml-1">*</span>}
                 </label>
                 <Input
                   id={fieldName}
@@ -201,7 +236,6 @@ export default function EditPaymentMethodPanel({
           <div>
             <label htmlFor="instructions" className="block text-sm font-medium text-gray-500 mb-2">
               Instructions
-              {originalHadInstructions && <span className="text-red-500 ml-1">*</span>}
             </label>
             <Textarea
               id="instructions"
