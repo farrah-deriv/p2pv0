@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { maskAccountNumber } from "@/lib/utils"
 
 import { useState, useEffect, useCallback } from "react"
 import { MoreVertical, Edit, Trash } from "lucide-react"
@@ -15,16 +16,6 @@ import BankTransferEditPanel from "./bank-transfer-edit-panel"
 import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
 import { Card, CardContent } from "@/components/ui/card"
 import { StatusIndicator } from "@/components/ui/status-indicator"
-
-// Utility function to mask account numbers for bank transfers
-const maskAccountNumber = (accountNumber: string): string => {
-  if (!accountNumber || accountNumber.length <= 4) {
-    return accountNumber
-  }
-  const lastFour = accountNumber.slice(-4)
-  const maskedPart = "*".repeat(accountNumber.length - 4)
-  return maskedPart + lastFour
-}
 
 interface PaymentMethod {
   id: string
