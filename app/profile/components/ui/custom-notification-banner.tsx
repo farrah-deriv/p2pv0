@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import { Check, X } from "lucide-react"
+import { X } from "lucide-react"
 
 interface CustomNotificationBannerProps {
   message: string
@@ -22,11 +22,11 @@ export default function CustomNotificationBanner({ message, onClose, duration = 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 mx-auto p-4 flex justify-center">
       <div className="bg-primary text-primary-foreground px-4 py-3 rounded-md shadow-md flex items-center max-w-md w-full">
-        <Check className="h-5 w-5 mr-2 flex-shrink-0" />
         <span className="flex-grow">{message}</span>
         <button
           onClick={onClose}
           className="ml-2 text-primary-foreground hover:text-primary-foreground/80 flex-shrink-0"
+          aria-label="Close notification"
         >
           <X className="h-5 w-5" />
         </button>
