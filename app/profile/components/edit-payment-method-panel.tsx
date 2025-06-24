@@ -200,7 +200,7 @@ export default function EditPaymentMethodPanel({
 
   // Check if form is valid (all required fields filled)
   const isFormValid = (): boolean => {
-    // Validate based on payment method type
+    // Use the same validation logic as validateForm() but without setting errors
     if (paymentMethod.type === "alipay") {
       return !!details.account?.trim()
     } else if (["google_pay", "paypal", "skrill"].includes(paymentMethod.type)) {
@@ -209,8 +209,10 @@ export default function EditPaymentMethodPanel({
       return !!details.account?.trim() && !!details.bank_name?.trim()
     }
 
-    // For other payment methods, assume valid if we have some details
-    return Object.keys(details).some((key) => key !== "method_type" && details[key]?.trim())
+    // For other payment methods, check if we have at least one non-empty field
+    const nonSystemFields = Object.entries(details).filter(([key]) => key !== "method_type" && key !== "instructions")
+
+    return nonSystemFields.some(([, value]) => value?.trim())
   }
 
   return (
