@@ -141,6 +141,18 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
 
   const selectedMethodFields = getPaymentMethodFields(selectedMethod, availablePaymentMethods)
 
+  const isFormValid = () => {
+    if (!selectedMethod) return false
+
+    const fields = getPaymentMethodFields(selectedMethod, availablePaymentMethods)
+    return fields.every((field) => {
+      if (field.required) {
+        return details[field.name]?.trim()
+      }
+      return true
+    })
+  }
+
   if (isLoadingMethods) {
     return (
       <PanelWrapper onClose={onClose}>
@@ -237,7 +249,12 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
       </form>
 
       <div className="p-6 border-t">
-        <Button type="submit" onClick={handleSubmit} disabled={isLoading || !selectedMethod} size="sm">
+        <Button
+          type="submit"
+          onClick={handleSubmit}
+          disabled={isLoading || !selectedMethod || !isFormValid()}
+          size="sm"
+        >
           {isLoading ? "Adding..." : "Add"}
         </Button>
       </div>
