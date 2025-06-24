@@ -7,8 +7,6 @@ import { X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { getPaymentMethods } from "@/services/api/api-buy-sell"
-import { getPaymentMethodFields, type AvailablePaymentMethod } from "@/lib/utils"
 
 interface EditPaymentMethodPanelProps {
   onClose: () => void
@@ -18,7 +16,14 @@ interface EditPaymentMethodPanelProps {
     id: string
     name: string
     type: string
-    details: Record<string, any>
+    fields: Record<
+      string,
+      {
+        display_name: string
+        required: boolean
+        value: string
+      }
+    >
     instructions?: string
   }
 }
@@ -53,82 +58,23 @@ export default function EditPaymentMethodPanel({
   isLoading,
   paymentMethod,
 }: EditPaymentMethodPanelProps) {
-  const [details, setDetails] = useState<Record<string, string>>({})
+  const [fieldValues, setFieldValues] = useState<Record<string, string>>({})
   const [instructions, setInstructions] = useState("")
   const [charCount, setCharCount] = useState(0)
-  const [availablePaymentMethods, setAvailablePaymentMethods] = useState<AvailablePaymentMethod[]>([])
-  const [isLoadingMethods, setIsLoadingMethods] = useState(true)
 
   useEffect(() => {
-    const fetchAvailablePaymentMethods = async () => {
-      try {
-        setIsLoadingMethods(true)
-        const response = await getPaymentMethods()
+    if (paymentMethod?.fields) {
+      const initialValues: Record<string, string> = {}
 
-        if (response && response.data && Array.isArray(response.data)) {
-          setAvailablePaymentMethods(response.data)
-        } else if (Array.isArray(response)) {
-          setAvailablePaymentMethods(response)
+      Object.entries(paymentMethod.fields).forEach(([fieldName, fieldConfig]) => {
+        if (fieldName === "instructions") {
+          setInstructions(fieldConfig.value || "")
+        } else {
+          initialValues[fieldName] = fieldConfig.value || ""
         }
-      } catch (error) {
-      } finally {
-        setIsLoadingMethods(false)
-      }
-    }
-
-    fetchAvailablePaymentMethods()
-  }, [])
-
-  useEffect(() => {
-    if (paymentMethod) {
-      const formattedDetails: Record<string, string> = {}
-
-      Object.entries(paymentMethod.details).forEach(([key, fieldData]) => {
-        if (key === "instructions") return
-
-        let extractedValue = ""
-
-        if (fieldData && typeof fieldData === "object") {
-          if ("value" in fieldData && fieldData.value) {
-            const wrappedValue = fieldData.value
-
-            if (wrappedValue && typeof wrappedValue === "object" && "value" in wrappedValue && wrappedValue.value) {
-              const actualValue = wrappedValue.value
-              extractedValue = String(actualValue)
-            } else {
-              extractedValue = String(wrappedValue)
-            }
-          } else {
-            const nestedValue = Object.values(fieldData).find(
-              (val) => val && (typeof val === "string" || typeof val === "number"),
-            )
-            if (nestedValue) {
-              extractedValue = String(nestedValue)
-            }
-          }
-        } else if (fieldData && typeof fieldData === "string") {
-          extractedValue = fieldData
-        }
-
-        formattedDetails[key] = extractedValue
       })
 
-      setDetails(formattedDetails)
-
-      let instructionsValue = ""
-      const instructionsField = paymentMethod.details?.instructions
-
-      if (instructionsField) {
-        if (typeof instructionsField === "object" && "value" in instructionsField && instructionsField.value) {
-          instructionsValue = String(instructionsField.value)
-        } else if (typeof instructionsField === "string") {
-          instructionsValue = instructionsField
-        }
-      } else if (paymentMethod.instructions && typeof paymentMethod.instructions === "string") {
-        instructionsValue = paymentMethod.instructions
-      }
-
-      setInstructions(instructionsValue)
+      setFieldValues(initialValues)
     }
   }, [paymentMethod])
 
@@ -136,36 +82,22 @@ export default function EditPaymentMethodPanel({
     setCharCount(instructions.length)
   }, [instructions])
 
-  const handleInputChange = (name: string, value: string) => {
-    setDetails((prev) => ({ ...prev, [name]: value }))
+  const handleInputChange = (fieldName: string, value: string) => {
+    setFieldValues((prev) => ({ ...prev, [fieldName]: value }))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
     if (isFormValid()) {
-      const fieldValues = { ...details }
+      const submissionData = { ...fieldValues }
 
       if (instructions.trim()) {
-        fieldValues.instructions = instructions.trim()
+        submissionData.instructions = instructions.trim()
       }
 
-      onSave(paymentMethod.id, fieldValues)
+      onSave(paymentMethod.id, submissionData)
     }
-  }
-
-  const getFieldLabel = (fieldName: string): string => {
-    const fieldLabels: Record<string, string> = {
-      account: "Account Number",
-      swift_code: "SWIFT or IFSC code",
-      bank_code: "SWIFT or IFSC code",
-      bank_name: "Bank Name",
-      branch: "Branch",
-      identifier: "Email or phone number",
-      phone_number: "Phone number",
-    }
-
-    return fieldLabels[fieldName] || fieldName.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
   }
 
   const getFieldType = (fieldName: string): string => {
@@ -174,27 +106,20 @@ export default function EditPaymentMethodPanel({
     return "text"
   }
 
-  const getRequiredFields = () => {
-    if (isLoadingMethods || !availablePaymentMethods.length) return []
-
-    const fields = getPaymentMethodFields(paymentMethod.type, availablePaymentMethods)
-    return fields.filter((field) => field.required).map((field) => field.name)
-  }
-
   const isFormValid = (): boolean => {
-    if (isLoadingMethods) return false
+    if (!paymentMethod?.fields) return false
 
-    const requiredFields = getRequiredFields()
+    const requiredFields = Object.entries(paymentMethod.fields)
+      .filter(([fieldName, fieldConfig]) => fieldName !== "instructions" && fieldConfig.required)
+      .map(([fieldName]) => fieldName)
 
-    const allRequiredFieldsFilled = requiredFields.every((fieldName) => {
-      const currentValue = details[fieldName]
+    return requiredFields.every((fieldName) => {
+      const currentValue = fieldValues[fieldName]
       return currentValue && currentValue.trim() !== ""
     })
-
-    return allRequiredFieldsFilled
   }
 
-  if (isLoadingMethods) {
+  if (!paymentMethod) {
     return (
       <PanelWrapper onClose={onClose}>
         <div className="flex-1 flex items-center justify-center">
@@ -204,7 +129,7 @@ export default function EditPaymentMethodPanel({
     )
   }
 
-  const requiredFields = getRequiredFields()
+  const editableFields = Object.entries(paymentMethod.fields).filter(([fieldName]) => fieldName !== "instructions")
 
   return (
     <PanelWrapper onClose={onClose}>
@@ -213,37 +138,39 @@ export default function EditPaymentMethodPanel({
           <div className="text-lg font-medium">{paymentMethod.name}</div>
 
           <div className="space-y-4">
-            {Object.entries(details).map(([fieldName, fieldValue]) => (
+            {editableFields.map(([fieldName, fieldConfig]) => (
               <div key={fieldName}>
                 <label htmlFor={fieldName} className="block text-sm font-medium text-gray-500 mb-2">
-                  {getFieldLabel(fieldName)}
-                  {requiredFields.includes(fieldName) && <span className="text-red-500 ml-1">*</span>}
+                  {fieldConfig.display_name}
+                  {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
                 </label>
                 <Input
                   id={fieldName}
                   type={getFieldType(fieldName)}
-                  value={fieldValue || ""}
+                  value={fieldValues[fieldName] || ""}
                   onChange={(e) => handleInputChange(fieldName, e.target.value)}
-                  placeholder={`Enter ${getFieldLabel(fieldName).toLowerCase()}`}
+                  placeholder={`Enter ${fieldConfig.display_name.toLowerCase()}`}
                 />
               </div>
             ))}
           </div>
 
-          <div>
-            <label htmlFor="instructions" className="block text-sm font-medium text-gray-500 mb-2">
-              Instructions
-            </label>
-            <Textarea
-              id="instructions"
-              value={instructions}
-              onChange={(e) => setInstructions(e.target.value)}
-              placeholder="Enter your instructions"
-              className="min-h-[120px] resize-none"
-              maxLength={300}
-            />
-            <div className="flex justify-end mt-1 text-xs text-gray-500">{charCount}/300</div>
-          </div>
+          {paymentMethod.fields.instructions && (
+            <div>
+              <label htmlFor="instructions" className="block text-sm font-medium text-gray-500 mb-2">
+                {paymentMethod.fields.instructions.display_name}
+              </label>
+              <Textarea
+                id="instructions"
+                value={instructions}
+                onChange={(e) => setInstructions(e.target.value)}
+                placeholder={`Enter ${paymentMethod.fields.instructions.display_name.toLowerCase()}`}
+                className="min-h-[120px] resize-none"
+                maxLength={300}
+              />
+              <div className="flex justify-end mt-1 text-xs text-gray-500">{charCount}/300</div>
+            </div>
+          )}
         </div>
       </form>
 
