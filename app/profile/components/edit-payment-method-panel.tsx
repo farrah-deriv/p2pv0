@@ -32,6 +32,8 @@ export default function EditPaymentMethodPanel({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const [charCount, setCharCount] = useState(0)
+  const [originalDetails, setOriginalDetails] = useState<Record<string, string>>({})
+  const [originalInstructions, setOriginalInstructions] = useState("")
 
   // Update the useEffect hook to better handle the nested structure
   useEffect(() => {
@@ -69,6 +71,7 @@ export default function EditPaymentMethodPanel({
       })
 
       setDetails(formattedDetails)
+      setOriginalDetails(formattedDetails) // Store original details for comparison
 
       // Set instructions if available - extract from nested object if needed
       let instructionsValue = ""
@@ -97,6 +100,7 @@ export default function EditPaymentMethodPanel({
       }
 
       setInstructions(instructionsValue)
+      setOriginalInstructions(instructionsValue) // Store original instructions for comparison
 
       // Reset errors and touched state
       setErrors({})
@@ -198,21 +202,22 @@ export default function EditPaymentMethodPanel({
     return "text"
   }
 
-  // Check if form is valid (all required fields filled)
+  // Check if form is valid based on originally filled fields
   const isFormValid = (): boolean => {
-    // Use the same validation logic as validateForm() but without setting errors
-    if (paymentMethod.type === "alipay") {
-      return !!details.account?.trim()
-    } else if (["google_pay", "paypal", "skrill"].includes(paymentMethod.type)) {
-      return !!details.identifier?.trim()
-    } else if (paymentMethod.type === "bank_transfer") {
-      return !!details.account?.trim() && !!details.bank_name?.trim()
-    }
+    // Get all fields that were originally filled (excluding system fields)
+    const originallyFilledFields = Object.entries(originalDetails)
+      .filter(([key, value]) => key !== "method_type" && value?.trim())
+      .map(([key]) => key)
 
-    // For other payment methods, check if we have at least one non-empty field
-    const nonSystemFields = Object.entries(details).filter(([key]) => key !== "method_type" && key !== "instructions")
+    // Check if all originally filled fields are still filled
+    const allOriginalFieldsStillFilled = originallyFilledFields.every((fieldName) => {
+      return details[fieldName]?.trim()
+    })
 
-    return nonSystemFields.some(([, value]) => value?.trim())
+    // Also check if instructions are still filled if they were originally filled
+    const instructionsValid = originalInstructions.trim() ? instructions.trim() !== "" : true // If originally empty, current state doesn't matter
+
+    return allOriginalFieldsStillFilled && instructionsValid
   }
 
   return (
