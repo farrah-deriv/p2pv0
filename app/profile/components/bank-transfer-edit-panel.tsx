@@ -7,6 +7,7 @@ import { X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import { getPaymentMethods, getPaymentMethodFields } from "../api"
 
 interface BankTransferEditPanelProps {
   onClose: () => void
@@ -35,12 +36,29 @@ export default function BankTransferEditPanel({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const [charCount, setCharCount] = useState(0)
+  const [paymentMethodFields, setPaymentMethodFields] = useState<any[]>([])
+  const [isLoadingFields, setIsLoadingFields] = useState(true)
 
   // Extract values from the nested structure
   useEffect(() => {
-    if (paymentMethod && paymentMethod.details) {
-      console.log("Bank Transfer Edit - Payment Method:", paymentMethod)
+    const fetchPaymentMethodFields = async () => {
+      try {
+        setIsLoadingFields(true)
+        const response = await getPaymentMethods()
+        if (response?.data) {
+          const fields = getPaymentMethodFields(response.data, "bank_transfer")
+          setPaymentMethodFields(fields)
+        }
+      } catch (error) {
+        console.error("Error fetching payment method fields:", error)
+      } finally {
+        setIsLoadingFields(false)
+      }
+    }
 
+    fetchPaymentMethodFields()
+
+    if (paymentMethod && paymentMethod.details) {
       // Extract account
       if (paymentMethod.details.account) {
         const accountField = paymentMethod.details.account
@@ -131,19 +149,28 @@ export default function BankTransferEditPanel({
     setCharCount(instructions.length)
   }, [instructions])
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
+  const isFormValid = (): boolean => {
+    if (isLoadingFields) return false
 
-    if (!account.trim()) {
-      newErrors.account = "Account number is required"
+    const currentValues = {
+      account,
+      bank_name: bankName,
+      bank_code: bankCode,
+      branch,
+      instructions,
     }
 
-    if (!bankName.trim()) {
-      newErrors.bank_name = "Bank name is required"
+    // Check if all required fields are filled
+    for (const field of paymentMethodFields) {
+      if (field.required) {
+        const fieldValue = currentValues[field.name as keyof typeof currentValues]
+        if (!fieldValue || !fieldValue.trim()) {
+          return false
+        }
+      }
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    return true
   }
 
   const handleInputChange = (name: string, value: string, setter: React.Dispatch<React.SetStateAction<string>>) => {
@@ -170,7 +197,7 @@ export default function BankTransferEditPanel({
       ...touched,
     })
 
-    if (validateForm()) {
+    if (isFormValid()) {
       // Create a fields object with all the form field values
       const fieldValues = {
         method_type: "bank_transfer",
@@ -208,6 +235,9 @@ export default function BankTransferEditPanel({
             <div>
               <label htmlFor="account" className="block text-sm font-medium text-gray-500 mb-2">
                 Account Number
+                {paymentMethodFields.find((f) => f.name === "account")?.required && (
+                  <span className="text-red-500 ml-1">*</span>
+                )}
               </label>
               <Input
                 id="account"
@@ -222,6 +252,9 @@ export default function BankTransferEditPanel({
             <div>
               <label htmlFor="bank_name" className="block text-sm font-medium text-gray-500 mb-2">
                 Bank Name
+                {paymentMethodFields.find((f) => f.name === "bank_name")?.required && (
+                  <span className="text-red-500 ml-1">*</span>
+                )}
               </label>
               <Input
                 id="bank_name"
@@ -236,6 +269,9 @@ export default function BankTransferEditPanel({
             <div>
               <label htmlFor="bank_code" className="block text-sm font-medium text-gray-500 mb-2">
                 SWIFT or IFSC code
+                {paymentMethodFields.find((f) => f.name === "bank_code")?.required && (
+                  <span className="text-red-500 ml-1">*</span>
+                )}
               </label>
               <Input
                 id="bank_code"
@@ -249,6 +285,9 @@ export default function BankTransferEditPanel({
             <div>
               <label htmlFor="branch" className="block text-sm font-medium text-gray-500 mb-2">
                 Branch
+                {paymentMethodFields.find((f) => f.name === "branch")?.required && (
+                  <span className="text-red-500 ml-1">*</span>
+                )}
               </label>
               <Input
                 id="branch"
@@ -263,6 +302,9 @@ export default function BankTransferEditPanel({
           <div>
             <label htmlFor="instructions" className="block text-sm font-medium text-gray-500 mb-2">
               Instructions
+              {paymentMethodFields.find((f) => f.name === "instructions")?.required && (
+                <span className="text-red-500 ml-1">*</span>
+              )}
             </label>
             <Textarea
               id="instructions"
@@ -278,7 +320,13 @@ export default function BankTransferEditPanel({
       </form>
 
       <div className="p-6 border-t">
-        <Button type="button" onClick={handleSubmit} disabled={isLoading} size="sm" className="w-full">
+        <Button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isLoading || !isFormValid()}
+          size="sm"
+          className="w-full"
+        >
           {isLoading ? "Saving..." : "Save details"}
         </Button>
       </div>
