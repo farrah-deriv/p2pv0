@@ -16,6 +16,16 @@ import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
 import { Card, CardContent } from "@/components/ui/card"
 import { StatusIndicator } from "@/components/ui/status-indicator"
 
+// Utility function to mask account numbers for bank transfers
+const maskAccountNumber = (accountNumber: string): string => {
+  if (!accountNumber || accountNumber.length <= 4) {
+    return accountNumber
+  }
+  const lastFour = accountNumber.slice(-4)
+  const maskedPart = "*".repeat(accountNumber.length - 4)
+  return maskedPart + lastFour
+}
+
 interface PaymentMethod {
   id: string
   name: string
@@ -340,7 +350,9 @@ export default function PaymentMethodsTab() {
                       <div>
                         <div className="font-medium text-lg">Bank Transfer</div>
                         <StatusIndicator variant="neutral" size="sm">
-                          {method.details?.account?.value || `ID: ${method.id}`}
+                          {method.details?.account?.value
+                            ? maskAccountNumber(method.details.account.value)
+                            : `ID: ${method.id}`}
                         </StatusIndicator>
                       </div>
                     </div>
