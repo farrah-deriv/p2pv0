@@ -47,7 +47,6 @@ export default function EditPaymentMethodPanel({
           setAvailablePaymentMethods(response)
         }
       } catch (error) {
-        //
       } finally {
         setIsLoadingMethods(false)
       }
