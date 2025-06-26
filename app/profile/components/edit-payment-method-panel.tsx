@@ -61,12 +61,20 @@ export default function EditPaymentMethodPanel({
   const [instructions, setInstructions] = useState("")
   const [charCount, setCharCount] = useState(0)
 
+  console.log("EditPaymentMethodPanel - paymentMethod:", paymentMethod)
+  console.log("EditPaymentMethodPanel - paymentMethod.fields:", paymentMethod?.fields)
+
   useEffect(() => {
-    if (!paymentMethod?.fields) return
+    console.log("useEffect - paymentMethod:", paymentMethod)
+    if (!paymentMethod?.fields) {
+      console.log("useEffect - No fields found, returning early")
+      return
+    }
 
     const initialValues: Record<string, string> = {}
 
     Object.entries(paymentMethod.fields).forEach(([fieldName, fieldConfig]) => {
+      console.log(`Processing field: ${fieldName}`, fieldConfig)
       if (fieldName === "instructions") {
         setInstructions(fieldConfig.value || "")
       } else {
@@ -74,6 +82,7 @@ export default function EditPaymentMethodPanel({
       }
     })
 
+    console.log("Setting initial values:", initialValues)
     setFieldValues(initialValues)
   }, [paymentMethod])
 
@@ -119,6 +128,7 @@ export default function EditPaymentMethodPanel({
   }
 
   if (!paymentMethod) {
+    console.log("No paymentMethod provided, showing loading")
     return (
       <PanelWrapper onClose={onClose}>
         <div className="flex-1 flex items-center justify-center">
@@ -131,6 +141,9 @@ export default function EditPaymentMethodPanel({
   const editableFields = Object.entries(paymentMethod.fields || {}).filter(
     ([fieldName]) => fieldName !== "instructions",
   )
+
+  console.log("Editable fields:", editableFields)
+  console.log("Field values:", fieldValues)
 
   return (
     <PanelWrapper onClose={onClose}>
