@@ -64,17 +64,15 @@ export default function EditPaymentMethodPanel({
   useEffect(() => {
     if (!paymentMethod?.details) return
 
-    const initialValues: Record<string, string> = {}
+    setInstructions(paymentMethod.details.instructions?.value || "")
 
-    Object.entries(paymentMethod.details).forEach(([fieldName, fieldConfig]) => {
-      if (fieldName === "instructions") {
-        setInstructions(fieldConfig.value || "")
-      } else {
-        initialValues[fieldName] = fieldConfig.value || ""
-      }
-    })
-
-    setFieldValues(initialValues)
+    setFieldValues(
+      Object.fromEntries(
+        Object.entries(paymentMethod.details)
+          .filter(([fieldName]) => fieldName !== "instructions")
+          .map(([fieldName, fieldConfig]) => [fieldName, fieldConfig.value || ""]),
+      ),
+    )
   }, [paymentMethod])
 
   useEffect(() => {
