@@ -7,7 +7,6 @@ import { X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { getPaymentMethods } from "@/services/api/api-buy-sell"
 import { getPaymentMethodFields, type AvailablePaymentMethod } from "@/lib/utils"
 
 interface EditPaymentMethodPanelProps {
@@ -18,7 +17,7 @@ interface EditPaymentMethodPanelProps {
     id: string
     name: string
     type: string
-    fields?: Record<
+    fields: Record<
       string,
       {
         display_name: string
@@ -26,8 +25,6 @@ interface EditPaymentMethodPanelProps {
         value: string
       }
     >
-    details?: Record<string, any>
-    instructions?: string
   }
 }
 
@@ -68,88 +65,17 @@ export default function EditPaymentMethodPanel({
   const [isLoadingMethods, setIsLoadingMethods] = useState(true)
 
   useEffect(() => {
-    const fetchAvailablePaymentMethods = async () => {
-      try {
-        setIsLoadingMethods(true)
-        const response = await getPaymentMethods()
-
-        if (response && response.data && Array.isArray(response.data)) {
-          setAvailablePaymentMethods(response.data)
-        } else if (Array.isArray(response)) {
-          setAvailablePaymentMethods(response)
-        }
-      } catch (error) {
-      } finally {
-        setIsLoadingMethods(false)
-      }
-    }
-
-    if (paymentMethod && !paymentMethod.fields) {
-      fetchAvailablePaymentMethods()
-    } else {
-      setIsLoadingMethods(false)
-    }
-  }, [paymentMethod])
-
-  useEffect(() => {
-    if (!paymentMethod) return
+    if (!paymentMethod?.fields) return
 
     const initialValues: Record<string, string> = {}
 
-    if (paymentMethod.fields) {
-      Object.entries(paymentMethod.fields).forEach(([fieldName, fieldConfig]) => {
-        if (fieldName === "instructions") {
-          setInstructions(fieldConfig.value || "")
-        } else {
-          initialValues[fieldName] = fieldConfig.value || ""
-        }
-      })
-    } else if (paymentMethod.details) {
-      Object.entries(paymentMethod.details).forEach(([key, fieldData]) => {
-        if (key === "instructions") return
-
-        let extractedValue = ""
-
-        if (fieldData && typeof fieldData === "object") {
-          if ("value" in fieldData && fieldData.value) {
-            const wrappedValue = fieldData.value
-
-            if (wrappedValue && typeof wrappedValue === "object" && "value" in wrappedValue && wrappedValue.value) {
-              const actualValue = wrappedValue.value
-              extractedValue = String(actualValue)
-            } else {
-              extractedValue = String(wrappedValue)
-            }
-          } else {
-            const nestedValue = Object.values(fieldData).find(
-              (val) => val && (typeof val === "string" || typeof val === "number"),
-            )
-            if (nestedValue) {
-              extractedValue = String(nestedValue)
-            }
-          }
-        } else if (fieldData && typeof fieldData === "string") {
-          extractedValue = fieldData
-        }
-
-        initialValues[key] = extractedValue
-      })
-
-      let instructionsValue = ""
-      const instructionsField = paymentMethod.details?.instructions
-
-      if (instructionsField) {
-        if (typeof instructionsField === "object" && "value" in instructionsField && instructionsField.value) {
-          instructionsValue = String(instructionsField.value)
-        } else if (typeof instructionsField === "string") {
-          instructionsValue = instructionsField
-        }
-      } else if (paymentMethod.instructions && typeof paymentMethod.instructions === "string") {
-        instructionsValue = paymentMethod.instructions
+    Object.entries(paymentMethod.fields).forEach(([fieldName, fieldConfig]) => {
+      if (fieldName === "instructions") {
+        setInstructions(fieldConfig.value || "")
+      } else {
+        initialValues[fieldName] = fieldConfig.value || ""
       }
-
-      setInstructions(instructionsValue)
-    }
+    })
 
     setFieldValues(initialValues)
   }, [paymentMethod])
