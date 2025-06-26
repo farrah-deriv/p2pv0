@@ -67,7 +67,6 @@ export default function EditPaymentMethodPanel({
   const [availablePaymentMethods, setAvailablePaymentMethods] = useState<AvailablePaymentMethod[]>([])
   const [isLoadingMethods, setIsLoadingMethods] = useState(true)
 
-  // Fetch available payment methods for fallback validation (when using details structure)
   useEffect(() => {
     const fetchAvailablePaymentMethods = async () => {
       try {
@@ -85,7 +84,6 @@ export default function EditPaymentMethodPanel({
       }
     }
 
-    // Only fetch if we don't have fields structure (fallback for details structure)
     if (paymentMethod && !paymentMethod.fields) {
       fetchAvailablePaymentMethods()
     } else {
@@ -201,14 +199,12 @@ export default function EditPaymentMethodPanel({
   const getRequiredFields = (): string[] => {
     if (!paymentMethod) return []
 
-    // Use fields structure if available (new API)
     if (paymentMethod.fields) {
       return Object.entries(paymentMethod.fields)
         .filter(([fieldName, fieldConfig]) => fieldName !== "instructions" && fieldConfig.required)
         .map(([fieldName]) => fieldName)
     }
 
-    // Fallback to available payment methods API (old details structure)
     if (!isLoadingMethods && availablePaymentMethods.length > 0) {
       const fields = getPaymentMethodFields(paymentMethod.type, availablePaymentMethods)
       return fields.filter((field) => field.required).map((field) => field.name)
@@ -220,12 +216,10 @@ export default function EditPaymentMethodPanel({
   const isFormValid = (): boolean => {
     if (!paymentMethod) return false
 
-    // If we're still loading methods for validation, disable the button
     if (!paymentMethod.fields && isLoadingMethods) return false
 
     const requiredFields = getRequiredFields()
 
-    // Check if all required fields are filled
     const allRequiredFieldsFilled = requiredFields.every((fieldName) => {
       const currentValue = fieldValues[fieldName]
       return currentValue && currentValue.trim() !== ""
@@ -292,7 +286,6 @@ export default function EditPaymentMethodPanel({
     return paymentMethod.fields?.instructions?.display_name || "Instructions"
   }
 
-  // Show loading state if we're fetching required field info for validation
   if (!paymentMethod.fields && isLoadingMethods) {
     return (
       <PanelWrapper onClose={onClose}>
