@@ -58,7 +58,6 @@ export default function EditPaymentMethodPanel({
   paymentMethod,
 }: EditPaymentMethodPanelProps) {
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({})
-  const [charCount, setCharCount] = useState(0)
 
   useEffect(() => {
     if (!paymentMethod?.details) return
@@ -69,10 +68,6 @@ export default function EditPaymentMethodPanel({
       ),
     )
   }, [paymentMethod])
-
-  useEffect(() => {
-    setCharCount(fieldValues.instructions?.length || 0)
-  }, [fieldValues.instructions])
 
   const handleInputChange = (fieldName: string, value: string) => {
     setFieldValues((prev) => ({ ...prev, [fieldName]: value }))
@@ -95,14 +90,12 @@ export default function EditPaymentMethodPanel({
   const isFormValid = (): boolean => {
     if (!paymentMethod?.details) return false
 
-    const requiredFields = Object.entries(paymentMethod.details)
-      .filter(([fieldName, fieldConfig]) => fieldName !== "instructions" && fieldConfig.required)
-      .map(([fieldName]) => fieldName)
-
-    return requiredFields.every((fieldName) => {
-      const currentValue = fieldValues[fieldName]
-      return currentValue && currentValue.trim() !== ""
-    })
+    return Object.entries(paymentMethod.details)
+      .filter(([, fieldConfig]) => fieldConfig.required)
+      .every(([fieldName]) => {
+        const currentValue = fieldValues[fieldName]
+        return currentValue && currentValue.trim() !== ""
+      })
   }
 
   if (!paymentMethod) {
