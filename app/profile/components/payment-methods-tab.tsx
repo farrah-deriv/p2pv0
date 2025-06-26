@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { maskAccountNumber } from "@/lib/utils"
 
 import { useState, useEffect, useCallback } from "react"
 import { MoreVertical, Edit, Trash } from "lucide-react"
@@ -335,20 +336,22 @@ export default function PaymentMethodsTab() {
               <Card key={method.id} variant="default" className="overflow-hidden">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
                       {getBankIcon()}
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <div className="font-medium text-lg">Bank Transfer</div>
-                        <StatusIndicator variant="neutral" size="sm">
-                          ID: {method.id}
+                        <StatusIndicator variant="neutral" size="sm" className="truncate">
+                          {method.details?.account?.value
+                            ? maskAccountNumber(method.details.account.value)
+                            : `ID: ${method.id}`}
                         </StatusIndicator>
                       </div>
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="p-1 hover:bg-gray-100 rounded-full">
+                        <Button variant="ghost" size="sm" className="p-1 h-auto w-auto flex-shrink-0 ml-2">
                           <MoreVertical className="h-5 w-5 text-gray-500" />
-                        </button>
+                        </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-[160px]">
                         <DropdownMenuItem
@@ -385,20 +388,20 @@ export default function PaymentMethodsTab() {
               <Card key={method.id} variant="default" className="overflow-hidden">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
                       {getEWalletIcon()}
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <div className="font-medium text-lg">{method.name}</div>
-                        <StatusIndicator variant="neutral" size="sm">
-                          ID: {method.id}
+                        <StatusIndicator variant="neutral" size="sm" className="truncate">
+                          {method.details?.account?.value || `ID: ${method.id}`}
                         </StatusIndicator>
                       </div>
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="p-1 hover:bg-gray-100 rounded-full">
+                        <Button variant="ghost" size="sm" className="p-1 h-auto w-auto flex-shrink-0 ml-2">
                           <MoreVertical className="h-5 w-5 text-gray-500" />
-                        </button>
+                        </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-[160px]">
                         <DropdownMenuItem
