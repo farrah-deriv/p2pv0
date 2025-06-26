@@ -58,26 +58,21 @@ export default function EditPaymentMethodPanel({
   paymentMethod,
 }: EditPaymentMethodPanelProps) {
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({})
-  const [instructions, setInstructions] = useState("")
   const [charCount, setCharCount] = useState(0)
 
   useEffect(() => {
     if (!paymentMethod?.details) return
 
-    setInstructions(paymentMethod.details.instructions?.value || "")
-
     setFieldValues(
       Object.fromEntries(
-        Object.entries(paymentMethod.details)
-          .filter(([fieldName]) => fieldName !== "instructions")
-          .map(([fieldName, fieldConfig]) => [fieldName, fieldConfig.value || ""]),
+        Object.entries(paymentMethod.details).map(([fieldName, fieldConfig]) => [fieldName, fieldConfig.value || ""]),
       ),
     )
   }, [paymentMethod])
 
   useEffect(() => {
-    setCharCount(instructions.length)
-  }, [instructions])
+    setCharCount(fieldValues.instructions?.length || 0)
+  }, [fieldValues.instructions])
 
   const handleInputChange = (fieldName: string, value: string) => {
     setFieldValues((prev) => ({ ...prev, [fieldName]: value }))
@@ -87,13 +82,7 @@ export default function EditPaymentMethodPanel({
     e.preventDefault()
 
     if (isFormValid()) {
-      const submissionData = { ...fieldValues }
-
-      if (instructions.trim()) {
-        submissionData.instructions = instructions.trim()
-      }
-
-      onSave(paymentMethod.id, submissionData)
+      onSave(paymentMethod.id, fieldValues)
     }
   }
 
@@ -126,10 +115,6 @@ export default function EditPaymentMethodPanel({
     )
   }
 
-  const editableFields = Object.entries(paymentMethod.details || {}).filter(
-    ([fieldName]) => fieldName !== "instructions",
-  )
-
   return (
     <PanelWrapper onClose={onClose}>
       <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
@@ -137,39 +122,38 @@ export default function EditPaymentMethodPanel({
           <div className="text-lg font-medium">{paymentMethod.name}</div>
 
           <div className="space-y-4">
-            {editableFields.map(([fieldName, fieldConfig]) => (
+            {Object.entries(paymentMethod.details).map(([fieldName, fieldConfig]) => (
               <div key={fieldName}>
                 <label htmlFor={fieldName} className="block text-sm font-medium text-gray-500 mb-2">
                   {fieldConfig.display_name}
                   {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
                 </label>
-                <Input
-                  id={fieldName}
-                  type={getFieldType(fieldName)}
-                  value={fieldValues[fieldName] || ""}
-                  onChange={(e) => handleInputChange(fieldName, e.target.value)}
-                  placeholder={`Enter ${fieldConfig.display_name.toLowerCase()}`}
-                />
+                {fieldName === "instructions" ? (
+                  <div>
+                    <Textarea
+                      id={fieldName}
+                      value={fieldValues[fieldName] || ""}
+                      onChange={(e) => handleInputChange(fieldName, e.target.value)}
+                      placeholder={`Enter ${fieldConfig.display_name.toLowerCase()}`}
+                      className="min-h-[120px] resize-none"
+                      maxLength={300}
+                    />
+                    <div className="flex justify-end mt-1 text-xs text-gray-500">
+                      {(fieldValues[fieldName] || "").length}/300
+                    </div>
+                  </div>
+                ) : (
+                  <Input
+                    id={fieldName}
+                    type={getFieldType(fieldName)}
+                    value={fieldValues[fieldName] || ""}
+                    onChange={(e) => handleInputChange(fieldName, e.target.value)}
+                    placeholder={`Enter ${fieldConfig.display_name.toLowerCase()}`}
+                  />
+                )}
               </div>
             ))}
           </div>
-
-          {paymentMethod.details?.instructions && (
-            <div>
-              <label htmlFor="instructions" className="block text-sm font-medium text-gray-500 mb-2">
-                {paymentMethod.details.instructions.display_name}
-              </label>
-              <Textarea
-                id="instructions"
-                value={instructions}
-                onChange={(e) => setInstructions(e.target.value)}
-                placeholder={`Enter ${paymentMethod.details.instructions.display_name.toLowerCase()}`}
-                className="min-h-[120px] resize-none"
-                maxLength={300}
-              />
-              <div className="flex justify-end mt-1 text-xs text-gray-500">{charCount}/300</div>
-            </div>
-          )}
         </div>
       </form>
 
