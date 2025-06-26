@@ -90,7 +90,7 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
       newErrors.method = "Please select a payment method"
     }
 
-    fields.forEach((field) => {
+    selectedMethodFields.forEach((field) => {
       if (!details[field.name]?.trim() && field.required) {
         newErrors[field.name] = `${field.label} is required`
       }
@@ -117,9 +117,9 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
     e.preventDefault()
 
     const fields = getPaymentMethodFields(selectedMethod, availablePaymentMethods)
-    if (fields.length > 0) {
+    if (selectedMethodFields.length > 0) {
       const allTouched: Record<string, boolean> = {}
-      fields.forEach((field) => {
+      selectedMethodFields.forEach((field) => {
         allTouched[field.name] = true
       })
       setTouched(allTouched)
@@ -145,7 +145,7 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
     if (!selectedMethod) return false
 
     const fields = getPaymentMethodFields(selectedMethod, availablePaymentMethods)
-    return fields.every((field) => {
+    return selectedMethodFields.every((field) => {
       if (field.required) {
         return details[field.name]?.trim()
       }
