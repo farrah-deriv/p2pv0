@@ -7,7 +7,6 @@ import { X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { getPaymentMethodFields, type AvailablePaymentMethod } from "@/lib/utils"
 
 interface EditPaymentMethodPanelProps {
   onClose: () => void
@@ -61,8 +60,6 @@ export default function EditPaymentMethodPanel({
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({})
   const [instructions, setInstructions] = useState("")
   const [charCount, setCharCount] = useState(0)
-  const [availablePaymentMethods, setAvailablePaymentMethods] = useState<AvailablePaymentMethod[]>([])
-  const [isLoadingMethods, setIsLoadingMethods] = useState(true)
 
   useEffect(() => {
     if (!paymentMethod?.fields) return
@@ -102,56 +99,23 @@ export default function EditPaymentMethodPanel({
     }
   }
 
-  const getFieldLabel = (fieldName: string): string => {
-    const fieldLabels: Record<string, string> = {
-      account: "Account Number",
-      swift_code: "SWIFT or IFSC code",
-      bank_code: "SWIFT or IFSC code",
-      bank_name: "Bank Name",
-      branch: "Branch",
-      identifier: "Email or phone number",
-      phone_number: "Phone number",
-    }
-
-    return fieldLabels[fieldName] || fieldName.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
-  }
-
   const getFieldType = (fieldName: string): string => {
     if (fieldName.includes("phone")) return "tel"
     if (fieldName.includes("email")) return "email"
     return "text"
   }
 
-  const getRequiredFields = (): string[] => {
-    if (!paymentMethod) return []
-
-    if (paymentMethod.fields) {
-      return Object.entries(paymentMethod.fields)
-        .filter(([fieldName, fieldConfig]) => fieldName !== "instructions" && fieldConfig.required)
-        .map(([fieldName]) => fieldName)
-    }
-
-    if (!isLoadingMethods && availablePaymentMethods.length > 0) {
-      const fields = getPaymentMethodFields(paymentMethod.type, availablePaymentMethods)
-      return fields.filter((field) => field.required).map((field) => field.name)
-    }
-
-    return []
-  }
-
   const isFormValid = (): boolean => {
-    if (!paymentMethod) return false
+    if (!paymentMethod?.fields) return false
 
-    if (!paymentMethod.fields && isLoadingMethods) return false
+    const requiredFields = Object.entries(paymentMethod.fields)
+      .filter(([fieldName, fieldConfig]) => fieldName !== "instructions" && fieldConfig.required)
+      .map(([fieldName]) => fieldName)
 
-    const requiredFields = getRequiredFields()
-
-    const allRequiredFieldsFilled = requiredFields.every((fieldName) => {
+    return requiredFields.every((fieldName) => {
       const currentValue = fieldValues[fieldName]
       return currentValue && currentValue.trim() !== ""
     })
-
-    return allRequiredFieldsFilled
   }
 
   if (!paymentMethod) {
@@ -164,63 +128,9 @@ export default function EditPaymentMethodPanel({
     )
   }
 
-  const renderFields = () => {
-    const requiredFields = getRequiredFields()
-
-    if (paymentMethod.fields) {
-      const editableFields = Object.entries(paymentMethod.fields).filter(([fieldName]) => fieldName !== "instructions")
-
-      return editableFields.map(([fieldName, fieldConfig]) => (
-        <div key={fieldName}>
-          <label htmlFor={fieldName} className="block text-sm font-medium text-gray-500 mb-2">
-            {fieldConfig.display_name}
-            {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
-          </label>
-          <Input
-            id={fieldName}
-            type={getFieldType(fieldName)}
-            value={fieldValues[fieldName] || ""}
-            onChange={(e) => handleInputChange(fieldName, e.target.value)}
-            placeholder={`Enter ${fieldConfig.display_name.toLowerCase()}`}
-          />
-        </div>
-      ))
-    }
-
-    return Object.entries(fieldValues).map(([fieldName, fieldValue]) => (
-      <div key={fieldName}>
-        <label htmlFor={fieldName} className="block text-sm font-medium text-gray-500 mb-2">
-          {getFieldLabel(fieldName)}
-          {requiredFields.includes(fieldName) && <span className="text-red-500 ml-1">*</span>}
-        </label>
-        <Input
-          id={fieldName}
-          type={getFieldType(fieldName)}
-          value={fieldValue || ""}
-          onChange={(e) => handleInputChange(fieldName, e.target.value)}
-          placeholder={`Enter ${getFieldLabel(fieldName).toLowerCase()}`}
-        />
-      </div>
-    ))
-  }
-
-  const shouldShowInstructions = () => {
-    return paymentMethod.fields?.instructions || instructions || paymentMethod.details?.instructions
-  }
-
-  const getInstructionsLabel = () => {
-    return paymentMethod.fields?.instructions?.display_name || "Instructions"
-  }
-
-  if (!paymentMethod.fields && isLoadingMethods) {
-    return (
-      <PanelWrapper onClose={onClose}>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-gray-500">Loading...</div>
-        </div>
-      </PanelWrapper>
-    )
-  }
+  const editableFields = Object.entries(paymentMethod.fields || {}).filter(
+    ([fieldName]) => fieldName !== "instructions",
+  )
 
   return (
     <PanelWrapper onClose={onClose}>
@@ -228,18 +138,34 @@ export default function EditPaymentMethodPanel({
         <div className="p-6 space-y-6">
           <div className="text-lg font-medium">{paymentMethod.name}</div>
 
-          <div className="space-y-4">{renderFields()}</div>
+          <div className="space-y-4">
+            {editableFields.map(([fieldName, fieldConfig]) => (
+              <div key={fieldName}>
+                <label htmlFor={fieldName} className="block text-sm font-medium text-gray-500 mb-2">
+                  {fieldConfig.display_name}
+                  {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
+                </label>
+                <Input
+                  id={fieldName}
+                  type={getFieldType(fieldName)}
+                  value={fieldValues[fieldName] || ""}
+                  onChange={(e) => handleInputChange(fieldName, e.target.value)}
+                  placeholder={`Enter ${fieldConfig.display_name.toLowerCase()}`}
+                />
+              </div>
+            ))}
+          </div>
 
-          {shouldShowInstructions() && (
+          {paymentMethod.fields?.instructions && (
             <div>
               <label htmlFor="instructions" className="block text-sm font-medium text-gray-500 mb-2">
-                {getInstructionsLabel()}
+                {paymentMethod.fields.instructions.display_name}
               </label>
               <Textarea
                 id="instructions"
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
-                placeholder={`Enter ${getInstructionsLabel().toLowerCase()}`}
+                placeholder={`Enter ${paymentMethod.fields.instructions.display_name.toLowerCase()}`}
                 className="min-h-[120px] resize-none"
                 maxLength={300}
               />
