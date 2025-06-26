@@ -16,7 +16,7 @@ interface EditPaymentMethodPanelProps {
     id: string
     name: string
     type: string
-    fields: Record<
+    details: Record<
       string,
       {
         display_name: string
@@ -61,20 +61,12 @@ export default function EditPaymentMethodPanel({
   const [instructions, setInstructions] = useState("")
   const [charCount, setCharCount] = useState(0)
 
-  console.log("EditPaymentMethodPanel - paymentMethod:", paymentMethod)
-  console.log("EditPaymentMethodPanel - paymentMethod.fields:", paymentMethod?.fields)
-
   useEffect(() => {
-    console.log("useEffect - paymentMethod:", paymentMethod)
-    if (!paymentMethod?.fields) {
-      console.log("useEffect - No fields found, returning early")
-      return
-    }
+    if (!paymentMethod?.details) return
 
     const initialValues: Record<string, string> = {}
 
-    Object.entries(paymentMethod.fields).forEach(([fieldName, fieldConfig]) => {
-      console.log(`Processing field: ${fieldName}`, fieldConfig)
+    Object.entries(paymentMethod.details).forEach(([fieldName, fieldConfig]) => {
       if (fieldName === "instructions") {
         setInstructions(fieldConfig.value || "")
       } else {
@@ -82,7 +74,6 @@ export default function EditPaymentMethodPanel({
       }
     })
 
-    console.log("Setting initial values:", initialValues)
     setFieldValues(initialValues)
   }, [paymentMethod])
 
@@ -115,9 +106,9 @@ export default function EditPaymentMethodPanel({
   }
 
   const isFormValid = (): boolean => {
-    if (!paymentMethod?.fields) return false
+    if (!paymentMethod?.details) return false
 
-    const requiredFields = Object.entries(paymentMethod.fields)
+    const requiredFields = Object.entries(paymentMethod.details)
       .filter(([fieldName, fieldConfig]) => fieldName !== "instructions" && fieldConfig.required)
       .map(([fieldName]) => fieldName)
 
@@ -128,7 +119,6 @@ export default function EditPaymentMethodPanel({
   }
 
   if (!paymentMethod) {
-    console.log("No paymentMethod provided, showing loading")
     return (
       <PanelWrapper onClose={onClose}>
         <div className="flex-1 flex items-center justify-center">
@@ -138,12 +128,9 @@ export default function EditPaymentMethodPanel({
     )
   }
 
-  const editableFields = Object.entries(paymentMethod.fields || {}).filter(
+  const editableFields = Object.entries(paymentMethod.details || {}).filter(
     ([fieldName]) => fieldName !== "instructions",
   )
-
-  console.log("Editable fields:", editableFields)
-  console.log("Field values:", fieldValues)
 
   return (
     <PanelWrapper onClose={onClose}>
@@ -169,16 +156,16 @@ export default function EditPaymentMethodPanel({
             ))}
           </div>
 
-          {paymentMethod.fields?.instructions && (
+          {paymentMethod.details?.instructions && (
             <div>
               <label htmlFor="instructions" className="block text-sm font-medium text-gray-500 mb-2">
-                {paymentMethod.fields.instructions.display_name}
+                {paymentMethod.details.instructions.display_name}
               </label>
               <Textarea
                 id="instructions"
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
-                placeholder={`Enter ${paymentMethod.fields.instructions.display_name.toLowerCase()}`}
+                placeholder={`Enter ${paymentMethod.details.instructions.display_name.toLowerCase()}`}
                 className="min-h-[120px] resize-none"
                 maxLength={300}
               />
