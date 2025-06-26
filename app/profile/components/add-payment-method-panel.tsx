@@ -82,9 +82,10 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
     setCharCount(instructions.length)
   }, [instructions])
 
+  const selectedMethodFields = getPaymentMethodFields(selectedMethod, availablePaymentMethods)
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
-    const fields = getPaymentMethodFields(selectedMethod, availablePaymentMethods)
 
     if (!selectedMethod) {
       newErrors.method = "Please select a payment method"
@@ -116,7 +117,6 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    const fields = getPaymentMethodFields(selectedMethod, availablePaymentMethods)
     if (selectedMethodFields.length > 0) {
       const allTouched: Record<string, boolean> = {}
       selectedMethodFields.forEach((field) => {
@@ -139,12 +139,9 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
     }
   }
 
-  const selectedMethodFields = getPaymentMethodFields(selectedMethod, availablePaymentMethods)
-
   const isFormValid = () => {
     if (!selectedMethod) return false
 
-    const fields = getPaymentMethodFields(selectedMethod, availablePaymentMethods)
     return selectedMethodFields.every((field) => {
       if (field.required) {
         return details[field.name]?.trim()
