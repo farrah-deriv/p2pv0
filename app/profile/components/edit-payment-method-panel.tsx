@@ -61,8 +61,6 @@ export default function EditPaymentMethodPanel({
   const [instructions, setInstructions] = useState("")
   const [charCount, setCharCount] = useState(0)
 
-  console.log("EditPaymentMethodPanel - paymentMethod:", paymentMethod)
-
   useEffect(() => {
     if (!paymentMethod?.details) return
 
