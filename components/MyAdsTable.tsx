@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation"
 import { MoreVertical, Pencil, Copy, Share2, Power, Trash2, Search } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { deleteAd, activateAd, updateAd } from "@/services/api/api-my-ads"
 
 interface Ad {
@@ -36,6 +35,33 @@ interface MyAdsTableProps {
   onAdDeleted?: (status?: string) => void
 }
 
+// Function to convert snake_case to Title Case
+const formatPaymentMethodName = (method: string): string => {
+  return method
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ")
+}
+
+// Function to get payment method color based on type
+const getPaymentMethodColor = (method: string): string => {
+  const lowerMethod = method.toLowerCase()
+  if (lowerMethod.includes("bank") || lowerMethod === "bank_transfer") {
+    return "bg-green-500"
+  } else if (
+    lowerMethod.includes("wallet") ||
+    lowerMethod.includes("pay") ||
+    lowerMethod === "alipay" ||
+    lowerMethod === "apple_pay"
+  ) {
+    return "bg-blue-500"
+  } else if (lowerMethod === "airtel") {
+    return "bg-red-500"
+  } else {
+    return "bg-gray-500"
+  }
+}
+
 export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
   const router = useRouter()
   const [isDeleting, setIsDeleting] = useState(false)
@@ -57,20 +83,13 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
 
     return (
       <div className="flex flex-wrap gap-2">
-        {methods.map((method, index) => (
+        {methods.slice(0, 3).map((method, index) => (
           <div key={index} className="flex items-center">
-            <div
-              className={`h-2 w-2 rounded-full mr-2 ${
-                method.toLowerCase().includes("bank")
-                  ? "bg-green-500"
-                  : method.toLowerCase().includes("wallet") || method.toLowerCase().includes("ewallet")
-                    ? "bg-blue-500"
-                    : "bg-gray-500"
-              }`}
-            />
-            <span className="text-sm">{method}</span>
+            <div className={`h-2 w-2 rounded-full mr-2 ${getPaymentMethodColor(method)}`} />
+            <span className="text-sm">{formatPaymentMethodName(method)}</span>
           </div>
         ))}
+        {methods.length > 3 && <span className="text-sm text-gray-500">+{methods.length - 3} more</span>}
       </div>
     )
   }
@@ -78,11 +97,11 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Active":
-        return <Badge variant="success-light">Active</Badge>
+        return <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">Active</span>
       case "Inactive":
-        return <Badge variant="error-light">Inactive</Badge>
+        return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs">Inactive</span>
       default:
-        return <Badge variant="error-light">Inactive</Badge>
+        return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs">Inactive</span>
     }
   }
 

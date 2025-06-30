@@ -53,7 +53,34 @@ export const maskAccountNumber = (accountNumber: string): string => {
     return accountNumber
   }
   const lastFour = accountNumber.slice(-4)
-  const maskedPart= "".padStart(accountNumber.length - 4, "*")
+  const maskedPart = "".padStart(accountNumber.length - 4, "*")
 
   return maskedPart + lastFour
+}
+
+// Function to convert snake_case to Title Case
+export const formatPaymentMethodName = (method: string): string => {
+  return method
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ")
+}
+
+// Function to get payment method color based on type
+export const getPaymentMethodColor = (method: string): string => {
+  const lowerMethod = method.toLowerCase()
+  if (lowerMethod.includes("bank") || lowerMethod === "bank_transfer") {
+    return "bg-green-500"
+  } else if (
+    lowerMethod.includes("wallet") ||
+    lowerMethod.includes("pay") ||
+    lowerMethod === "alipay" ||
+    lowerMethod === "apple_pay"
+  ) {
+    return "bg-blue-500"
+  } else if (lowerMethod === "airtel") {
+    return "bg-red-500"
+  } else {
+    return "bg-gray-500"
+  }
 }
