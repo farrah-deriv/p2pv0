@@ -232,9 +232,35 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
                       <span className={cn("font-medium", ad.type === "Buy" ? "text-buy" : "text-sell")}>{ad.type}</span>
                       <span className="text-gray-900"> {ad.id}</span>
                     </div>
-                    <div className="text-sm text-gray-600">
-                      <div>Rate: {ad.rate.value}</div>
-                      <div>Limits: {formatLimits(ad.limits)}</div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1">
+                        <span
+                          className="text-xs font-normal leading-5"
+                          style={{ color: "var(--Neutral-Neutral-7, #6A7178)" }}
+                        >
+                          Rate:
+                        </span>
+                        <span
+                          className="text-sm font-bold leading-5"
+                          style={{ color: "var(--Neutral-Neutral-10, #101213)" }}
+                        >
+                          {ad.rate.value}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span
+                          className="text-xs font-normal leading-5"
+                          style={{ color: "var(--Neutral-Neutral-7, #6A7178)" }}
+                        >
+                          Limits:
+                        </span>
+                        <span
+                          className="text-sm font-normal leading-5 overflow-hidden text-ellipsis"
+                          style={{ color: "var(--Neutral-Neutral-10, #101213)" }}
+                        >
+                          {formatLimits(ad.limits)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </TableCell>
