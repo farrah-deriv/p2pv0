@@ -46,11 +46,16 @@ export default function AdsPage() {
     try {
       setLoading(true)
       setError(null)
-      console.log(`🚀 Fetching adverts for user ID: ${USER.id}`)
+      console.log(`Fetching adverts for user ID: ${USER.id}`)
 
       // Call getUserAdverts directly without additional transformation
       const userAdverts = await getUserAdverts()
-      console.log("📊 Received ads:", userAdverts.length)
+      console.log("User adverts received:", userAdverts.length)
+
+      // Log payment methods for verification
+      userAdverts.forEach((ad) => {
+        console.log(`Ad ${ad.id} payment methods:`, ad.paymentMethods)
+      })
 
       setAds(userAdverts)
     } catch (err) {
@@ -179,7 +184,7 @@ export default function AdsPage() {
               rate: ad.rate,
               limits: `${ad.limits.currency} ${ad.limits.min} - ${ad.limits.max}`,
               available: ad.available,
-              paymentMethods: ad.paymentMethods, // Pass through directly
+              paymentMethods: ad.paymentMethods,
               status: ad.status,
               description: ad.description || "",
             }))}
@@ -193,7 +198,7 @@ export default function AdsPage() {
               rate: ad.rate,
               limits: `${ad.limits.currency} ${ad.limits.min} - ${ad.limits.max}`,
               available: ad.available,
-              paymentMethods: ad.paymentMethods, // Pass through directly
+              paymentMethods: ad.paymentMethods,
               status: ad.status,
               description: ad.description || "",
             }))}
