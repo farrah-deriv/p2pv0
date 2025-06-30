@@ -9,6 +9,8 @@ export interface Advertisement {
     is_favourite: boolean
     created_at: number
     rating_average?: number
+    completed_orders_count?: number
+    completion_rate?: number
   }
   account_currency: string
   actual_maximum_order_amount: string
@@ -22,8 +24,7 @@ export interface Advertisement {
   minimum_order_amount: string
   order_expiry_period: number
   payment_currency: string
-  payment_method_names: string[]
-  payment_methods: string[]
+  payment_methods: string[] // Updated from payment_method_names
   type: string
   user_rating_average?: number
 }
@@ -94,11 +95,35 @@ export async function getAdvertisements(params?: SearchParams): Promise<Advertis
     if (data && data.data && Array.isArray(data.data)) {
       console.log("✅ Successfully fetched advertisements")
       console.groupEnd()
-      return data.data
+
+      // Process the data to ensure payment_methods is correctly mapped
+      const processedData = data.data.map((ad: any) => ({
+        ...ad,
+        payment_methods: ad.payment_methods || ad.payment_method_names || [], // Handle both field names
+        user: {
+          ...ad.user,
+          completed_orders_count: ad.user?.completed_orders_count || 0,
+          completion_rate: ad.user?.completion_rate || 0,
+        },
+      }))
+
+      return processedData
     } else if (Array.isArray(data)) {
       console.log("✅ Successfully fetched advertisements")
       console.groupEnd()
-      return data
+
+      // Process the data to ensure payment_methods is correctly mapped
+      const processedData = data.map((ad: any) => ({
+        ...ad,
+        payment_methods: ad.payment_methods || ad.payment_method_names || [], // Handle both field names
+        user: {
+          ...ad.user,
+          completed_orders_count: ad.user?.completed_orders_count || 0,
+          completion_rate: ad.user?.completion_rate || 0,
+        },
+      }))
+
+      return processedData
     } else {
       console.warn("⚠️ API response is not in the expected format")
       console.log("Returning empty array")
@@ -271,7 +296,13 @@ export async function getAdvertiserAds(advertiserId: string | number): Promise<A
       data = { data: [] }
     }
 
-    return data.data || []
+    // Process the data to ensure payment_methods is correctly mapped
+    const processedData = (data.data || []).map((ad: any) => ({
+      ...ad,
+      payment_methods: ad.payment_methods || ad.payment_method_names || [], // Handle both field names
+    }))
+
+    return processedData
   } catch (error) {
     return []
   }
@@ -428,10 +459,8 @@ export async function getPaymentMethods(): Promise<PaymentMethod[]> {
       return data.data
     } else if (Array.isArray(data)) {
       return data
-    } else
-      return []
-  }
-  catch (error) {
+    } else return []
+  } catch (error) {
     // Return empty array on error to prevent map errors
     return []
   }

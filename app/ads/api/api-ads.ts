@@ -59,6 +59,9 @@ export async function getUserAdverts(): Promise<MyAd[]> {
       // Determine status based on is_active flag
       const status: "Active" | "Inactive" = isActive ? "Active" : "Inactive"
 
+      // Use payment_methods instead of payment_method_names
+      const paymentMethods = advert.payment_methods || []
+
       return {
         id: String(advert.id || "0"),
         type: ((advert.type || "buy") as string).toLowerCase() === "buy" ? "Buy" : "Sell",
@@ -77,7 +80,7 @@ export async function getUserAdverts(): Promise<MyAd[]> {
           total: actualMaxAmount,
           currency: "USD",
         },
-        paymentMethods: advert.payment_method_names || [],
+        paymentMethods: paymentMethods,
         status: status,
         description: advert.description || "", // Make sure to include the description field
         createdAt: new Date((advert.created_at || 0) * 1000 || Date.now()).toISOString(),
@@ -128,18 +131,24 @@ export async function updateAd(id: string, adData: any): Promise<{ success: bool
       "Content-Type": "application/json",
     }
 
-    // Ensure payment_method_names is an array of strings
+    // Ensure payment_methods is an array of strings (updated field name)
     if (adData.payment_method_names) {
+      // Convert old field name to new field name
+      adData.payment_methods = adData.payment_method_names
+      delete adData.payment_method_names
+    }
+
+    if (adData.payment_methods) {
       // If it's not an array, convert it to an array with a single string
-      if (!Array.isArray(adData.payment_method_names)) {
-        adData.payment_method_names = [String(adData.payment_method_names)]
+      if (!Array.isArray(adData.payment_methods)) {
+        adData.payment_methods = [String(adData.payment_methods)]
       } else {
         // If it is an array, ensure all elements are strings
-        adData.payment_method_names = adData.payment_method_names.map((method) => String(method))
+        adData.payment_methods = adData.payment_methods.map((method) => String(method))
       }
     } else {
       // If it's undefined or null, set it to an empty array
-      adData.payment_method_names = []
+      adData.payment_methods = []
     }
 
     // Format the request body as required by the API
@@ -240,16 +249,16 @@ export async function toggleAdStatus(
       exchange_rate_type: "fixed",
       order_expiry_period: 15, // Default value if not available
       description: "", // Default value if not available
-      payment_method_names: currentAd.type === "Buy" ? currentAd.paymentMethods : [],
+      payment_methods: currentAd.type === "Buy" ? currentAd.paymentMethods : [], // Updated field name
     }
 
     console.log("Prepared Ad Data for Update:", adData)
 
-    // Add this line to specifically check the payment_method_names format
+    // Add this line to specifically check the payment_methods format
     console.log(
       "Payment Methods Format:",
-      Array.isArray(adData.payment_method_names) ? "Array of strings ✅" : "Not an array ❌",
-      adData.payment_method_names,
+      Array.isArray(adData.payment_methods) ? "Array of strings ✅" : "Not an array ❌",
+      adData.payment_methods,
     )
 
     console.groupEnd()
@@ -538,16 +547,16 @@ export async function activateAd(id: string): Promise<{ success: boolean; errors
       exchange_rate_type: "fixed",
       order_expiry_period: 15,
       description: "",
-      payment_method_names: adToActivate.type === "Buy" ? adToActivate.paymentMethods : [],
+      payment_methods: adToActivate.type === "Buy" ? adToActivate.paymentMethods : [], // Updated field name
     }
 
     console.log("Activation payload:", payload)
 
-    // Add this line to specifically check the payment_method_names format
+    // Add this line to specifically check the payment_methods format
     console.log(
       "Payment Methods Format:",
-      Array.isArray(payload.payment_method_names) ? "Array of strings ✅" : "Not an array ❌",
-      payload.payment_method_names,
+      Array.isArray(payload.payment_methods) ? "Array of strings ✅" : "Not an array ❌",
+      payload.payment_methods,
     )
 
     // Use the updateAd function instead of a direct activation endpoint
