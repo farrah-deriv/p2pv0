@@ -75,7 +75,6 @@ export async function getAdvertisements(params?: SearchParams): Promise<Advertis
 
     if (!response.ok) {
       console.error("Error Response:", response.status, response.statusText)
-      console.groupEnd()
       throw new Error(`Error fetching advertisements: ${response.statusText}`)
     }
 
@@ -94,12 +93,11 @@ export async function getAdvertisements(params?: SearchParams): Promise<Advertis
     // Check if the response has a data property that is an array
     if (data && data.data && Array.isArray(data.data)) {
       console.log("✅ Successfully fetched advertisements")
-      console.groupEnd()
 
       // Process the data to ensure payment_methods is correctly mapped
       const processedData = data.data.map((ad: any) => ({
         ...ad,
-        payment_methods: ad.payment_methods || ad.payment_method_names || [], // Handle both field names
+        payment_methods: ad.payment_methods || [], // Use payment_methods directly
         user: {
           ...ad.user,
           completed_orders_count: ad.user?.completed_orders_count || 0,
@@ -110,12 +108,11 @@ export async function getAdvertisements(params?: SearchParams): Promise<Advertis
       return processedData
     } else if (Array.isArray(data)) {
       console.log("✅ Successfully fetched advertisements")
-      console.groupEnd()
 
       // Process the data to ensure payment_methods is correctly mapped
       const processedData = data.map((ad: any) => ({
         ...ad,
-        payment_methods: ad.payment_methods || ad.payment_method_names || [], // Handle both field names
+        payment_methods: ad.payment_methods || [], // Use payment_methods directly
         user: {
           ...ad.user,
           completed_orders_count: ad.user?.completed_orders_count || 0,
@@ -127,7 +124,6 @@ export async function getAdvertisements(params?: SearchParams): Promise<Advertis
     } else {
       console.warn("⚠️ API response is not in the expected format")
       console.log("Returning empty array")
-      console.groupEnd()
       return []
     }
   } catch (error) {
@@ -156,7 +152,6 @@ export async function getAdvertiserById(id: string | number): Promise<any> {
     if (!response.ok) {
       console.warn(`Error Response: ${response.status} ${response.statusText}`)
       console.log("Falling back to getting advertiser data from ads...")
-      console.groupEnd()
 
       // If the user endpoint fails, try to get user data from their ads
       return await getAdvertiserFromAds(id)
@@ -175,7 +170,6 @@ export async function getAdvertiserById(id: string | number): Promise<any> {
     }
 
     console.log("✅ Successfully fetched advertiser details")
-    console.groupEnd()
 
     return data
   } catch (error) {
@@ -299,7 +293,7 @@ export async function getAdvertiserAds(advertiserId: string | number): Promise<A
     // Process the data to ensure payment_methods is correctly mapped
     const processedData = (data.data || []).map((ad: any) => ({
       ...ad,
-      payment_methods: ad.payment_methods || ad.payment_method_names || [], // Handle both field names
+      payment_methods: ad.payment_methods || [], // Use payment_methods directly
     }))
 
     return processedData
@@ -400,7 +394,6 @@ export async function toggleBlockAdvertiser(
 
     if (!response.ok) {
       console.error("Error Response:", response.status, response.statusText)
-      console.groupEnd()
       return {
         success: false,
         message: `Failed to ${isBlocked ? "block" : "unblock"} advertiser: ${response.statusText}`,

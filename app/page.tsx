@@ -17,6 +17,14 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import Image from "next/image"
 
+// Helper function to format payment method names
+const formatPaymentMethodName = (method: string): string => {
+  return method
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ")
+}
+
 export default function BuySellPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<"buy" | "sell">("sell")
@@ -32,9 +40,8 @@ export default function BuySellPage() {
   })
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("all") // Updated default value
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("all")
   const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(false)
-
 
   const [isOrderSidebarOpen, setIsOrderSidebarOpen] = useState(false)
   const [selectedAd, setSelectedAd] = useState<Advertisement | null>(null)
@@ -78,6 +85,10 @@ export default function BuySellPage() {
 
       const data = await BuySellAPI.getAdvertisements(params)
       if (Array.isArray(data)) {
+        console.log(
+          "Fetched adverts with payment methods:",
+          data.map((ad) => ({ id: ad.id, payment_methods: ad.payment_methods })),
+        )
         setAdverts(data)
       } else {
         console.error("API did not return an array:", data)
@@ -132,10 +143,7 @@ export default function BuySellPage() {
         <div className="mb-4 md:mb-6 md:flex md:flex-col justify-between gap-4">
           {!isSearchOpen && (
             <div className="flex flex-row justify-between items-center gap-4">
-              <Tabs
-                defaultValue={activeTab}
-                onValueChange={(value) => setActiveTab(value as "buy" | "sell")}
-              >
+              <Tabs defaultValue={activeTab} onValueChange={(value) => setActiveTab(value as "buy" | "sell")}>
                 <TabsList className="w-full md:min-w-3xs">
                   <TabsTrigger className="w-full md:w-auto" value="sell">
                     Buy
@@ -372,7 +380,7 @@ export default function BuySellPage() {
                             {ad.user?.nickname || "Unknown"}
                           </button>
                           {ad.user?.is_favourite && (
-                            <span className="ml-2 px-2 py-0.5 border border-[#29823B] text-[#29823B]text-xs rounded-sm">
+                            <span className="ml-2 px-2 py-0.5 border border-[#29823B] text-[#29823B] text-xs rounded-sm">
                               Following
                             </span>
                           )}
@@ -412,9 +420,9 @@ export default function BuySellPage() {
                       {ad.account_currency} 1.00 = {ad.payment_currency}{" "}
                       {ad.exchange_rate
                         ? ad.exchange_rate.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })
                         : "N/A"}
                     </div>
 
@@ -441,10 +449,15 @@ export default function BuySellPage() {
                         {ad.payment_methods?.map((method, index) => (
                           <div key={index} className="flex items-center">
                             <div
-                              className={`h-2 w-2 rounded-full mr-2 ${method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"
-                                }`}
+                              className={`h-2 w-2 rounded-full mr-2 ${
+                                method.toLowerCase().includes("bank")
+                                  ? "bg-green-500"
+                                  : method.toLowerCase().includes("wallet") || method.toLowerCase().includes("ewallet")
+                                    ? "bg-blue-500"
+                                    : "bg-yellow-500"
+                              }`}
                             ></div>
-                            <span className="text-sm">{method}</span>
+                            <span className="text-sm">{formatPaymentMethodName(method)}</span>
                           </div>
                         ))}
                       </div>
@@ -492,7 +505,7 @@ export default function BuySellPage() {
                                   {ad.user?.nickname || "Unknown"}
                                 </button>
                                 {ad.user?.is_favourite && (
-                                  <span className="ml-2 px-2 py-0.5 border border-[#29823B]  text-[#29823B] text-xs rounded-sm">
+                                  <span className="ml-2 px-2 py-0.5 border border-[#29823B] text-[#29823B] text-xs rounded-sm">
                                     Following
                                   </span>
                                 )}
@@ -515,16 +528,18 @@ export default function BuySellPage() {
                           </div>
                         </TableCell>
                         <TableCell className="py-4 px-4 align-top">
-                          <div className="font-bold">{ad.payment_currency}{" "}
+                          <div className="font-bold">
+                            {ad.payment_currency}{" "}
                             {ad.exchange_rate
                               ? ad.exchange_rate.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })
                               : "N/A"}
                           </div>
-                          <div>{`Trade Limits: ${ad.account_currency} ${ad.minimum_order_amount || "N/A"} - ${ad.actual_maximum_order_amount || "N/A"
-                            }`}</div>
+                          <div>{`Trade Limits: ${ad.account_currency} ${ad.minimum_order_amount || "N/A"} - ${
+                            ad.actual_maximum_order_amount || "N/A"
+                          }`}</div>
                           <div className="flex items-center text-xs text-slate-500 mt-1">
                             <div className="flex items-center bg-slate-100 rounded-sm px-2 py-1">
                               <Image
@@ -544,11 +559,17 @@ export default function BuySellPage() {
                               <div key={index} className="flex items-center">
                                 {method && (
                                   <div
-                                    className={`h-2 w-2 rounded-full mr-2 ${method.toLowerCase().includes("bank") ? "bg-green-500" : "bg-blue-500"
-                                      }`}
+                                    className={`h-2 w-2 rounded-full mr-2 ${
+                                      method.toLowerCase().includes("bank")
+                                        ? "bg-green-500"
+                                        : method.toLowerCase().includes("wallet") ||
+                                            method.toLowerCase().includes("ewallet")
+                                          ? "bg-blue-500"
+                                          : "bg-yellow-500"
+                                    }`}
                                   ></div>
                                 )}
-                                <span className="text-sm">{method}</span>
+                                <span className="text-sm">{formatPaymentMethodName(method)}</span>
                               </div>
                             ))}
                           </div>
