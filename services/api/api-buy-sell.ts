@@ -9,8 +9,6 @@ export interface Advertisement {
     is_favourite: boolean
     created_at: number
     rating_average?: number
-    completed_orders_count?: number
-    completion_rate?: number
   }
   account_currency: string
   actual_maximum_order_amount: string
@@ -24,7 +22,8 @@ export interface Advertisement {
   minimum_order_amount: string
   order_expiry_period: number
   payment_currency: string
-  payment_methods: string[] // Updated from payment_method_names
+  payment_method_names: string[]
+  payment_methods: string[]
   type: string
   user_rating_average?: number
 }
@@ -75,6 +74,7 @@ export async function getAdvertisements(params?: SearchParams): Promise<Advertis
 
     if (!response.ok) {
       console.error("Error Response:", response.status, response.statusText)
+      console.groupEnd()
       throw new Error(`Error fetching advertisements: ${response.statusText}`)
     }
 
@@ -93,37 +93,16 @@ export async function getAdvertisements(params?: SearchParams): Promise<Advertis
     // Check if the response has a data property that is an array
     if (data && data.data && Array.isArray(data.data)) {
       console.log("✅ Successfully fetched advertisements")
-
-      // Process the data to ensure payment_methods is correctly mapped
-      const processedData = data.data.map((ad: any) => ({
-        ...ad,
-        payment_methods: ad.payment_methods || [], // Use payment_methods directly
-        user: {
-          ...ad.user,
-          completed_orders_count: ad.user?.completed_orders_count || 0,
-          completion_rate: ad.user?.completion_rate || 0,
-        },
-      }))
-
-      return processedData
+      console.groupEnd()
+      return data.data
     } else if (Array.isArray(data)) {
       console.log("✅ Successfully fetched advertisements")
-
-      // Process the data to ensure payment_methods is correctly mapped
-      const processedData = data.map((ad: any) => ({
-        ...ad,
-        payment_methods: ad.payment_methods || [], // Use payment_methods directly
-        user: {
-          ...ad.user,
-          completed_orders_count: ad.user?.completed_orders_count || 0,
-          completion_rate: ad.user?.completion_rate || 0,
-        },
-      }))
-
-      return processedData
+      console.groupEnd()
+      return data
     } else {
       console.warn("⚠️ API response is not in the expected format")
       console.log("Returning empty array")
+      console.groupEnd()
       return []
     }
   } catch (error) {
@@ -152,6 +131,7 @@ export async function getAdvertiserById(id: string | number): Promise<any> {
     if (!response.ok) {
       console.warn(`Error Response: ${response.status} ${response.statusText}`)
       console.log("Falling back to getting advertiser data from ads...")
+      console.groupEnd()
 
       // If the user endpoint fails, try to get user data from their ads
       return await getAdvertiserFromAds(id)
@@ -170,6 +150,7 @@ export async function getAdvertiserById(id: string | number): Promise<any> {
     }
 
     console.log("✅ Successfully fetched advertiser details")
+    console.groupEnd()
 
     return data
   } catch (error) {
@@ -290,13 +271,7 @@ export async function getAdvertiserAds(advertiserId: string | number): Promise<A
       data = { data: [] }
     }
 
-    // Process the data to ensure payment_methods is correctly mapped
-    const processedData = (data.data || []).map((ad: any) => ({
-      ...ad,
-      payment_methods: ad.payment_methods || [], // Use payment_methods directly
-    }))
-
-    return processedData
+    return data.data || []
   } catch (error) {
     return []
   }
@@ -394,6 +369,7 @@ export async function toggleBlockAdvertiser(
 
     if (!response.ok) {
       console.error("Error Response:", response.status, response.statusText)
+      console.groupEnd()
       return {
         success: false,
         message: `Failed to ${isBlocked ? "block" : "unblock"} advertiser: ${response.statusText}`,
@@ -452,8 +428,10 @@ export async function getPaymentMethods(): Promise<PaymentMethod[]> {
       return data.data
     } else if (Array.isArray(data)) {
       return data
-    } else return []
-  } catch (error) {
+    } else
+      return []
+  }
+  catch (error) {
     // Return empty array on error to prevent map errors
     return []
   }
