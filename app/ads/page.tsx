@@ -50,7 +50,6 @@ export default function AdsPage() {
       console.log(`Fetching adverts for user ID: ${USER.id}`)
       const userAdverts = await getUserAdverts()
       console.log("User adverts response:", userAdverts)
-      console.log("Payment methods in first ad:", userAdverts[0]?.paymentMethods)
       setAds(userAdverts)
     } catch (err) {
       console.error("Error fetching ads:", err)
@@ -122,7 +121,7 @@ export default function AdsPage() {
 
   return (
     <div className="flex flex-col h-screen">
-      <Navigation />
+
 
       {showDeletedBanner && (
         <StatusBanner variant="success" message="Ad deleted" onClose={() => setShowDeletedBanner(false)} />

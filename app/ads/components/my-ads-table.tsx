@@ -261,81 +261,85 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {ads.map((ad, index) => (
-              <TableRow key={index} className={cn("border-b", ad.status === "Inactive" ? "opacity-60" : "")}>
-                <TableCell className="py-4">
-                  <div>
-                    <div className="mb-1">
-                      <span
-                        className={cn("font-bold text-base leading-6", ad.type === "Buy" ? "text-buy" : "text-sell")}
-                      >
-                        {ad.type}
-                      </span>
-                      <span className="text-gray-900 text-base font-normal leading-6"> {ad.id}</span>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs font-normal leading-5 text-slate-500">Rate:</span>
-                        <span className="text-sm font-bold leading-5 text-gray-900">{ad.rate.value}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs font-normal leading-5 text-slate-500">Limits:</span>
-                        <span className="text-sm font-normal leading-5 text-gray-900 overflow-hidden text-ellipsis">
-                          {formatLimits(ad.limits)}
+            {ads.map((ad, index) => {
+              console.log(`Ad ${ad.id} payment methods:`, ad.paymentMethods)
+
+              return (
+                <TableRow key={index} className={cn("border-b", ad.status === "Inactive" ? "opacity-60" : "")}>
+                  <TableCell className="py-4">
+                    <div>
+                      <div className="mb-1">
+                        <span
+                          className={cn("font-bold text-base leading-6", ad.type === "Buy" ? "text-buy" : "text-sell")}
+                        >
+                          {ad.type}
                         </span>
+                        <span className="text-gray-900 text-base font-normal leading-6"> {ad.id}</span>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs font-normal leading-5 text-slate-500">Rate:</span>
+                          <span className="text-sm font-bold leading-5 text-gray-900">{ad.rate.value}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs font-normal leading-5 text-slate-500">Limits:</span>
+                          <span className="text-sm font-normal leading-5 text-gray-900 overflow-hidden text-ellipsis">
+                            {formatLimits(ad.limits)}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </TableCell>
-                <TableCell className="py-4">
-                  <div className="mb-1">
-                    {ad.available.currency} {ad.available.current || 0} / {ad.available.total || 0}
-                  </div>
-                  <div className="h-2 bg-gray-200 rounded-full w-full max-w-[180px] overflow-hidden">
-                    <div
-                      className={`h-full bg-black rounded-full w-[${ad.available.total > 0 ? Math.min(((ad.available.current || 0) / ad.available.total) * 100, 100) : 0}%]`}
-                    ></div>
-                  </div>
-                </TableCell>
-                <TableCell className="py-4">{formatPaymentMethods(ad.paymentMethods)}</TableCell>
-                <TableCell className="py-4">{getStatusBadge(ad.status)}</TableCell>
-                <TableCell className="py-4 text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="p-1 hover:bg-gray-100 rounded-full">
-                        <MoreVertical className="h-5 w-5 text-gray-500" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[160px]">
-                      <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleEdit(ad)}>
-                        <Pencil className="h-4 w-4" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="flex items-center gap-2"
-                        onSelect={() => handleToggleStatus(ad)}
-                        disabled={isTogglingStatus}
-                      >
-                        <Power className="h-4 w-4" />
-                        {isTogglingStatus ? "Updating..." : ad.status === "Active" ? "Deactivate" : "Activate"}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleCopy(ad.id)}>
-                        <Copy className="h-4 w-4" />
-                        Copy
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleShare(ad.id)}>
-                        <Share2 className="h-4 w-4" />
-                        Share
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleDelete(ad.id)}>
-                        <Trash2 className="h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="mb-1">
+                      {ad.available.currency} {ad.available.current || 0} / {ad.available.total || 0}
+                    </div>
+                    <div className="h-2 bg-gray-200 rounded-full w-full max-w-[180px] overflow-hidden">
+                      <div
+                        className={`h-full bg-black rounded-full w-[${ad.available.total > 0 ? Math.min(((ad.available.current || 0) / ad.available.total) * 100, 100) : 0}%]`}
+                      ></div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-4">{formatPaymentMethods(ad.paymentMethods)}</TableCell>
+                  <TableCell className="py-4">{getStatusBadge(ad.status)}</TableCell>
+                  <TableCell className="py-4 text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="p-1 hover:bg-gray-100 rounded-full">
+                          <MoreVertical className="h-5 w-5 text-gray-500" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-[160px]">
+                        <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleEdit(ad)}>
+                          <Pencil className="h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="flex items-center gap-2"
+                          onSelect={() => handleToggleStatus(ad)}
+                          disabled={isTogglingStatus}
+                        >
+                          <Power className="h-4 w-4" />
+                          {isTogglingStatus ? "Updating..." : ad.status === "Active" ? "Deactivate" : "Activate"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleCopy(ad.id)}>
+                          <Copy className="h-4 w-4" />
+                          Copy
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleShare(ad.id)}>
+                          <Share2 className="h-4 w-4" />
+                          Share
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleDelete(ad.id)}>
+                          <Trash2 className="h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
       </div>

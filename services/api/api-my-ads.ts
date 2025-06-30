@@ -116,10 +116,6 @@ export async function getUserAdverts(): Promise<MyAd[]> {
       "X-Data-Source": "live",
     }
 
-    console.group("📤 GET User Adverts Request")
-    console.log("URL:", url)
-    console.log("Headers:", headers)
-
     const response = await fetch(url, { headers })
 
     if (!response.ok) {
