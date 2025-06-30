@@ -21,7 +21,7 @@ export interface APIAdvert {
   minimum_order_amount: number
   order_expiry_period: number
   payment_currency?: string
-  payment_method_names: string[]
+  payment_methods: string[] // Fixed: This is the correct field name from API
   type?: string
 }
 
@@ -116,6 +116,10 @@ export async function getUserAdverts(): Promise<MyAd[]> {
       "X-Data-Source": "live",
     }
 
+    console.group("📤 GET User Adverts Request")
+    console.log("URL:", url)
+    console.log("Headers:", headers)
+
     const response = await fetch(url, { headers })
 
     if (!response.ok) {
@@ -154,6 +158,12 @@ export async function getUserAdverts(): Promise<MyAd[]> {
       // Determine status based on is_active flag
       const status: "Active" | "Inactive" = isActive ? "Active" : "Inactive"
 
+      console.log(`Processing ad ${advert.id}:`, {
+        payment_methods: advert.payment_methods,
+        type: typeof advert.payment_methods,
+        isArray: Array.isArray(advert.payment_methods),
+      })
+
       return {
         id: String(advert.id || "0"),
         type: ((advert.type || "buy") as string).toLowerCase() === "buy" ? "Buy" : "Sell",
@@ -172,7 +182,7 @@ export async function getUserAdverts(): Promise<MyAd[]> {
           total: maxAmount,
           currency: "USD",
         },
-        paymentMethods: advert.payment_method_names || [],
+        paymentMethods: advert.payment_methods || [], // Fixed: Use payment_methods from API
         status: status,
         createdAt: new Date((advert.created_at || 0) * 1000 || Date.now()).toISOString(),
         updatedAt: new Date((advert.created_at || 0) * 1000 || Date.now()).toISOString(),

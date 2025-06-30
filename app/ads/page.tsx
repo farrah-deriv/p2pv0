@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import Navigation from "@/components/navigation"
 import MyAdsTable from "./components/my-ads-table"
 import MyAdsHeader from "./components/my-ads-header"
 import { getUserAdverts } from "./api/api-ads"
@@ -50,6 +49,7 @@ export default function AdsPage() {
       console.log(`Fetching adverts for user ID: ${USER.id}`)
       const userAdverts = await getUserAdverts()
       console.log("User adverts response:", userAdverts)
+      console.log("Payment methods in first ad:", userAdverts[0]?.paymentMethods)
       setAds(userAdverts)
     } catch (err) {
       console.error("Error fetching ads:", err)
@@ -121,8 +121,6 @@ export default function AdsPage() {
 
   return (
     <div className="flex flex-col h-screen">
-
-
       {showDeletedBanner && (
         <StatusBanner variant="success" message="Ad deleted" onClose={() => setShowDeletedBanner(false)} />
       )}
@@ -186,19 +184,7 @@ export default function AdsPage() {
             onAdDeleted={handleAdUpdated}
           />
         ) : (
-          <MyAdsTable
-            ads={ads.map((ad) => ({
-              id: ad.id,
-              type: ad.type,
-              rate: ad.rate,
-              limits: `${ad.limits.currency} ${ad.limits.min} - ${ad.limits.max}`,
-              available: ad.available,
-              paymentMethods: ad.paymentMethods,
-              status: ad.status,
-              description: ad.description || "", // Make sure to include the description
-            }))}
-            onAdDeleted={handleAdUpdated}
-          />
+          <MyAdsTable ads={ads} onAdDeleted={handleAdUpdated} />
         )}
       </div>
 
