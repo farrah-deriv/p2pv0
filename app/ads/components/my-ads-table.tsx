@@ -234,7 +234,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
                       >
                         {ad.type}
                       </span>
-                      <span className="text-gray-900"> {ad.id}</span>
+                      <span className="text-gray-900 text-base font-normal leading-6"> {ad.id}</span>
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-1">
