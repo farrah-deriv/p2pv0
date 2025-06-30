@@ -21,7 +21,7 @@ export interface APIAdvert {
   minimum_order_amount: number
   order_expiry_period: number
   payment_currency?: string
-  payment_methods: string[]
+  payment_methods: string[] // Updated field name
   type?: string
 }
 
@@ -104,12 +104,10 @@ export async function getUserAdverts(): Promise<MyAd[]> {
     // Use the user ID from local variables
     const userId = USER.id
 
-    // Match the exact query parameters from the network tab
+    // Fetch adverts for this specific user
     const queryParams = new URLSearchParams({
       user_id: userId.toString(),
-      show_inactive: "true",
-      show_unlisted: "true", // Add this parameter that's in the network tab
-      show_unorderable: "true", // Add this parameter that's in the network tab
+      show_inactive: "true", // Show inactive ads
     })
 
     const url = `${API.baseUrl}${API.endpoints.ads}?${queryParams.toString()}`
@@ -118,7 +116,7 @@ export async function getUserAdverts(): Promise<MyAd[]> {
       "X-Data-Source": "live",
     }
 
-    console.log("🚀 Fetching from URL:", url)
+    console.log("Fetching user adverts from:", url)
 
     const response = await fetch(url, { headers })
 
@@ -128,13 +126,11 @@ export async function getUserAdverts(): Promise<MyAd[]> {
     }
 
     const responseText = await response.text()
-    console.log("📥 Raw Response Text:", responseText)
-
     let apiData
 
     try {
       apiData = JSON.parse(responseText)
-      console.log("📊 Parsed API Data:", apiData)
+      console.log("API Response:", apiData)
     } catch (e) {
       console.warn("⚠️ Could not parse response as JSON:", e)
       console.log("Response Body (raw):", responseText)
@@ -146,13 +142,8 @@ export async function getUserAdverts(): Promise<MyAd[]> {
       return []
     }
 
-    console.log(`📋 Processing ${apiData.data.length} adverts`)
-
     // Transform API data to match our MyAd interface
     return apiData.data.map((advert: any) => {
-      console.log(`\n🔍 Processing Ad ${advert.id}:`)
-      console.log("📄 Full advert data:", advert)
-
       // Add null checks and default values
       const minAmount = Number(advert.minimum_order_amount) || 0
       const maxAmount = Number(advert.maximum_order_amount) || 0
@@ -163,28 +154,18 @@ export async function getUserAdverts(): Promise<MyAd[]> {
       // Determine status based on is_active flag
       const status: "Active" | "Inactive" = isActive ? "Active" : "Inactive"
 
-      // Debug payment methods processing
-      console.log("💳 Payment Methods Check:")
-      console.log("  - advert.payment_methods exists:", !!advert.payment_methods)
-      console.log("  - advert.payment_methods value:", advert.payment_methods)
-      console.log("  - Type:", typeof advert.payment_methods)
+      // Process payment methods - now using payment_methods field
+      console.log(`Processing Ad ${advert.id}:`)
+      console.log("  - Raw payment_methods:", advert.payment_methods)
       console.log("  - Is Array:", Array.isArray(advert.payment_methods))
-      console.log("  - Length:", advert.payment_methods?.length)
 
       // Ensure payment methods is always an array
       let paymentMethods: string[] = []
-
-      // Check if payment_methods exists and is an array
       if (advert.payment_methods && Array.isArray(advert.payment_methods)) {
-        console.log("  ✅ payment_methods is valid array")
-        paymentMethods = advert.payment_methods.filter((method: any) => {
-          const isValidString = method && typeof method === "string"
-          console.log(`    - "${method}" (${typeof method}): ${isValidString ? "✅" : "❌"}`)
-          return isValidString
-        })
-        console.log("  🎯 Filtered payment methods:", paymentMethods)
+        paymentMethods = advert.payment_methods.filter((method: any) => method && typeof method === "string")
+        console.log("  - Processed payment methods:", paymentMethods)
       } else {
-        console.log("  ❌ payment_methods is not a valid array")
+        console.log("  - No valid payment methods found")
       }
 
       const transformedAd = {
@@ -192,7 +173,7 @@ export async function getUserAdverts(): Promise<MyAd[]> {
         type: ((advert.type || "buy") as string).toLowerCase() === "buy" ? "Buy" : "Sell",
         rate: {
           value: `${currency} ${exchangeRate.toFixed(4)}`,
-          percentage: "0.1%",
+          percentage: "0.1%", // Placeholder, replace with actual data when available
           currency: currency,
         },
         limits: {
@@ -205,21 +186,19 @@ export async function getUserAdverts(): Promise<MyAd[]> {
           total: maxAmount,
           currency: "USD",
         },
-        paymentMethods: paymentMethods,
+        paymentMethods: paymentMethods, // Use the processed payment methods
         status: status,
         createdAt: new Date(advert.created_at || Date.now()).toISOString(),
         updatedAt: new Date(advert.created_at || Date.now()).toISOString(),
       }
 
-      console.log(`✅ Final Ad ${advert.id}:`)
-      console.log("  - paymentMethods:", transformedAd.paymentMethods)
-      console.log("  - paymentMethods length:", transformedAd.paymentMethods.length)
+      console.log(`Final Ad ${advert.id} paymentMethods:`, transformedAd.paymentMethods)
 
       return transformedAd
     })
   } catch (error) {
-    console.error("💥 GET User Adverts Error:", error)
-    return []
+    console.error("GET User Adverts Error:", error)
+    return [] // Return empty array on error
   }
 }
 

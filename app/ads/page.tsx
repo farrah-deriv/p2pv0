@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import Navigation from "@/components/navigation"
 import MyAdsTable from "./components/my-ads-table"
 import MyAdsHeader from "./components/my-ads-header"
 import { getUserAdverts } from "./api/api-ads"
@@ -47,16 +48,8 @@ export default function AdsPage() {
       setLoading(true)
       setError(null)
       console.log(`Fetching adverts for user ID: ${USER.id}`)
-
-      // Call getUserAdverts directly without additional transformation
       const userAdverts = await getUserAdverts()
-      console.log("User adverts received:", userAdverts.length)
-
-      // Log payment methods for verification
-      userAdverts.forEach((ad) => {
-        console.log(`Ad ${ad.id} payment methods:`, ad.paymentMethods)
-      })
-
+      console.log("User adverts response:", userAdverts)
       setAds(userAdverts)
     } catch (err) {
       console.error("Error fetching ads:", err)
@@ -128,6 +121,8 @@ export default function AdsPage() {
 
   return (
     <div className="flex flex-col h-screen">
+
+
       {showDeletedBanner && (
         <StatusBanner variant="success" message="Ad deleted" onClose={() => setShowDeletedBanner(false)} />
       )}
@@ -200,7 +195,7 @@ export default function AdsPage() {
               available: ad.available,
               paymentMethods: ad.paymentMethods,
               status: ad.status,
-              description: ad.description || "",
+              description: ad.description || "", // Make sure to include the description
             }))}
             onAdDeleted={handleAdUpdated}
           />
