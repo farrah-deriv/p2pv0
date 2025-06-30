@@ -244,8 +244,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
                 <TableCell className="py-4">{formatLimits(ad.limits)}</TableCell>
                 <TableCell className="py-4">
                   <div className="mb-1">
-                    {ad.available.currency} {ad.available.current || 0} /{" "}
-                    {ad.available.total || 0}
+                    {ad.available.currency} {ad.available.current || 0} / {ad.available.total || 0}
                   </div>
                   <div className="h-2 bg-gray-200 rounded-full w-full max-w-[180px] overflow-hidden">
                     <div
