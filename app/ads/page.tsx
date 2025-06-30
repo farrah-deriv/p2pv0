@@ -2,19 +2,23 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import Navigation from "@/components/navigation"
 import MyAdsTable from "./components/my-ads-table"
 import MyAdsHeader from "./components/my-ads-header"
-import { getUserAdverts, type MyAd } from "@/services/api/api-my-ads"
+import { getUserAdverts } from "./api/api-ads"
+import { USER } from "@/lib/local-variables"
 import { Plus } from "lucide-react"
+import type { MyAd, SuccessData } from "./types"
+import MobileMyAdsList from "./components/mobile-my-ads-list"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
 import { StatusBanner } from "@/components/ui/status-banner"
+
+// Update imports to use the new component locations
 import StatusModal from "./components/ui/status-modal"
 import StatusBottomSheet from "./components/ui/status-bottom-sheet"
-import MobileMyAdsList from "./components/mobile-my-ads-list"
-import type { SuccessData } from "./types"
 
-export default function MyAdsPage() {
+export default function AdsPage() {
   const [ads, setAds] = useState<MyAd[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -32,6 +36,7 @@ export default function MyAdsPage() {
   const isMobile = useIsMobile()
   const router = useRouter()
 
+  // Add error modal state
   const [errorModal, setErrorModal] = useState({
     show: false,
     title: "Error",
@@ -42,37 +47,35 @@ export default function MyAdsPage() {
     try {
       setLoading(true)
       setError(null)
-      const fetchedAds = await getUserAdverts()
-      console.log("Fetched ads in page:", fetchedAds)
-      setAds(fetchedAds)
+      console.log(`Fetching adverts for user ID: ${USER.id}`)
+      const userAdverts = await getUserAdverts()
+      console.log("User adverts response:", userAdverts)
+      console.log("Payment methods in first ad:", userAdverts[0]?.paymentMethods)
+      setAds(userAdverts)
     } catch (err) {
       console.error("Error fetching ads:", err)
-      setError(err instanceof Error ? err.message : "Failed to fetch ads")
+      setError("Failed to load ads. Please try again later.")
+      setAds([])
+
+      // Show error modal
+      setErrorModal({
+        show: true,
+        title: "Error Loading Ads",
+        message: err instanceof Error ? err.message : "Failed to load ads. Please try again later.",
+      })
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleAdDeleted = (status?: string) => {
-    if (status === "deleted") {
-      console.log("Ad deleted successfully")
-      setShowDeletedBanner(true)
-      setTimeout(() => {
-        setShowDeletedBanner(false)
-      }, 3000)
-    }
-    // Refresh the ads list
-    fetchAds()
   }
 
   const handleAdUpdated = (status?: string) => {
     console.log("Ad updated (deleted or status changed), refreshing list...")
     fetchAds()
 
-    if (status === "updated") {
-      setShowUpdatedBanner(true)
+    if (status === "deleted") {
+      setShowDeletedBanner(true)
       setTimeout(() => {
-        setShowUpdatedBanner(false)
+        setShowDeletedBanner(false)
       }, 3000)
     }
   }
@@ -117,24 +120,10 @@ export default function MyAdsPage() {
     setErrorModal((prev) => ({ ...prev, show: false }))
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading your ads...</div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-500">Error: {error}</div>
-      </div>
-    )
-  }
-
   return (
     <div className="flex flex-col h-screen">
+      <Navigation />
+
       {showDeletedBanner && (
         <StatusBanner variant="success" message="Ad deleted" onClose={() => setShowDeletedBanner(false)} />
       )}
@@ -176,7 +165,14 @@ export default function MyAdsPage() {
 
       {/* Content area with fixed table header and scrollable body */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden container mx-auto p-0">
-        {isMobile ? (
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+            <p className="mt-2 text-gray-600">Loading your ads...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">{error}</div>
+        ) : isMobile ? (
           <MobileMyAdsList
             ads={ads.map((ad) => ({
               id: ad.id,
@@ -188,10 +184,22 @@ export default function MyAdsPage() {
               status: ad.status,
               description: ad.description || "",
             }))}
-            onAdDeleted={handleAdDeleted}
+            onAdDeleted={handleAdUpdated}
           />
         ) : (
-          <MyAdsTable ads={ads} onAdDeleted={handleAdDeleted} />
+          <MyAdsTable
+            ads={ads.map((ad) => ({
+              id: ad.id,
+              type: ad.type,
+              rate: ad.rate,
+              limits: `${ad.limits.currency} ${ad.limits.min} - ${ad.limits.max}`,
+              available: ad.available,
+              paymentMethods: ad.paymentMethods,
+              status: ad.status,
+              description: ad.description || "", // Make sure to include the description
+            }))}
+            onAdDeleted={handleAdUpdated}
+          />
         )}
       </div>
 

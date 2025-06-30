@@ -1,6 +1,4 @@
-import { API, AUTH } from "@/lib/local-variables"
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_CORE_URL || "https://api.deriv.com"
+import { USER, API, AUTH } from "@/lib/local-variables"
 
 // Type definitions
 export interface APIAdvert {
@@ -33,20 +31,22 @@ export interface MyAd {
   rate: {
     value: string
     percentage: string
+    currency: string
   }
   limits: {
-    currency: string
     min: number
     max: number
+    currency: string
   }
   available: {
-    currency: string
     current: number
     total: number
+    currency: string
   }
   paymentMethods: string[]
   status: "Active" | "Inactive"
-  description?: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface AdFilters {
@@ -101,59 +101,99 @@ export interface Advert {
  */
 export async function getUserAdverts(): Promise<MyAd[]> {
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/api/adverts?show_inactive=true&show_unlisted=true&show_unorderable=true&user_id=18`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
-    )
+    // Use the user ID from local variables
+    const userId = USER.id
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const data = await response.json()
-    console.log("Raw API response:", data)
-
-    if (data.errors && data.errors.length > 0) {
-      throw new Error(data.errors[0].message || "Failed to fetch user adverts")
-    }
-
-    // Transform the API response to match our interface
-    const transformedAds: MyAd[] = data.data.map((advert: any) => {
-      console.log("Processing advert:", advert.id, "payment_methods:", advert.payment_methods)
-
-      return {
-        id: advert.id.toString(),
-        type: advert.type === "buy" ? "Buy" : "Sell",
-        rate: {
-          value: `${advert.payment_currency} ${advert.exchange_rate}`,
-          percentage: `${advert.exchange_rate_type === "fixed" ? "Fixed" : "Floating"}`,
-        },
-        limits: {
-          currency: advert.account_currency,
-          min: Number.parseFloat(advert.minimum_order_amount),
-          max: Number.parseFloat(advert.maximum_order_amount),
-        },
-        available: {
-          currency: advert.account_currency,
-          current: Number.parseFloat(advert.available_amount),
-          total: Number.parseFloat(advert.maximum_order_amount),
-        },
-        paymentMethods: advert.payment_methods || [],
-        status: advert.is_active ? "Active" : "Inactive",
-        description: advert.description || "",
-      }
+    // Fetch adverts for this specific user
+    const queryParams = new URLSearchParams({
+      user_id: userId.toString(),
+      show_inactive: "true", // Show inactive ads
     })
 
-    console.log("Transformed ads:", transformedAds)
-    return transformedAds
+    const url = `${API.baseUrl}${API.endpoints.ads}?${queryParams.toString()}`
+    const headers = {
+      ...AUTH.getAuthHeader(),
+      "X-Data-Source": "live",
+    }
+
+    console.group("📤 GET User Adverts Request")
+    console.log("URL:", url)
+    console.log("Headers:", headers)
+
+    const response = await fetch(url, { headers })
+
+    if (!response.ok) {
+      console.error("Error Response:", response.status, response.statusText)
+      console.groupEnd()
+      throw new Error("Failed to fetch user adverts")
+    }
+
+    const responseText = await response.text()
+    let apiData
+
+    try {
+      apiData = JSON.parse(responseText)
+      console.log("Response Body (parsed):", apiData)
+    } catch (e) {
+      console.warn("⚠️ Could not parse response as JSON:", e)
+      console.log("Response Body (raw):", responseText)
+      apiData = { data: [] }
+    }
+    console.groupEnd()
+
+    if (!apiData || !apiData.data || !Array.isArray(apiData.data)) {
+      console.warn("Invalid API response format for user adverts")
+      return []
+    }
+
+    // Transform API data to match our MyAd interface
+    return apiData.data.map((advert: APIAdvert) => {
+      // Add null checks and default values
+      const minAmount = advert.minimum_order_amount || 0
+      const maxAmount = advert.maximum_order_amount || 0
+      const exchangeRate = advert.exchange_rate || 0
+      const currency = advert.payment_currency || "USD"
+      const isActive = advert.is_active !== undefined ? advert.is_active : true
+
+      // Determine status based on is_active flag
+      const status: "Active" | "Inactive" = isActive ? "Active" : "Inactive"
+
+      console.log(`Processing ad ${advert.id}:`, {
+        payment_methods: advert.payment_methods,
+        type: typeof advert.payment_methods,
+        isArray: Array.isArray(advert.payment_methods),
+      })
+
+      return {
+        id: String(advert.id || "0"),
+        type: ((advert.type || "buy") as string).toLowerCase() === "buy" ? "Buy" : "Sell",
+        rate: {
+          value: `${currency} ${exchangeRate.toFixed(4)}`,
+          percentage: "0.1%", // Placeholder, replace with actual data when available
+          currency: currency,
+        },
+        limits: {
+          min: minAmount,
+          max: maxAmount,
+          currency: "USD",
+        },
+        available: {
+          current: advert.available_amount || minAmount,
+          total: maxAmount,
+          currency: "USD",
+        },
+        paymentMethods: advert.payment_methods || [], // Fixed: Use payment_methods from API
+        status: status,
+        createdAt: new Date((advert.created_at || 0) * 1000 || Date.now()).toISOString(),
+        updatedAt: new Date((advert.created_at || 0) * 1000 || Date.now()).toISOString(),
+      }
+    })
   } catch (error) {
-    console.error("Error fetching user adverts:", error)
-    throw error
+    console.group("💥 GET User Adverts Exception")
+    console.error("Error:", error)
+    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
+    console.groupEnd()
+    return [] // Return empty array on error
   }
 }
 
@@ -197,24 +237,81 @@ export async function getMyAds(filters?: AdFilters): Promise<MyAd[]> {
 /**
  * Update an advertisement
  */
-export async function updateAd(adId: string, updateData: any): Promise<any> {
+export async function updateAd(id: string, adData: any): Promise<{ success: boolean }> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/adverts/${adId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updateData),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+    const url = `${API.baseUrl}${API.endpoints.ads}/${id}`
+    const headers = {
+      ...AUTH.getAuthHeader(),
+      "Content-Type": "application/json",
     }
 
-    const data = await response.json()
-    return data
+    // Ensure payment_method_names is an array of strings
+    if (adData.payment_method_names) {
+      // If it's not an array, convert it to an array with a single string
+      if (!Array.isArray(adData.payment_method_names)) {
+        adData.payment_method_names = [String(adData.payment_method_names)]
+      } else {
+        // If it is an array, ensure all elements are strings
+        adData.payment_method_names = adData.payment_method_names.map((method) => String(method))
+      }
+    } else {
+      // If it's undefined or null, set it to an empty array
+      adData.payment_method_names = []
+    }
+
+    // Format the request body as required by the API
+    // Wrap the data in a "data" object as expected by the API
+    const requestData = { data: adData }
+    const body = JSON.stringify(requestData)
+
+    // Log request details
+    console.group(`📤 PATCH Update Ad Request`)
+    console.log("URL:", url)
+    console.log("Headers:", headers)
+    console.log("Ad ID:", id)
+    console.log("Request Data:", requestData) // Log the actual object before stringification
+    console.log("Request Body:", body)
+    // Add this line to specifically check the payment_method_names format
+    console.log(
+      "Payment Methods Format:",
+      Array.isArray(adData.payment_method_names) ? "Array of strings ✅" : "Not an array ❌",
+      adData.payment_method_names,
+    )
+
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers,
+      body,
+    })
+
+    const responseText = await response.text()
+    let responseData
+
+    try {
+      responseData = JSON.parse(responseText)
+      console.log("Response Body (parsed):", responseData)
+    } catch (e) {
+      console.warn("⚠️ Could not parse response as JSON:", e)
+      console.log("Response Body (raw):", responseText)
+      responseData = {}
+    }
+
+    if (!response.ok) {
+      console.error("Error Response:", response.status, response.statusText)
+      console.error("Response Body:", responseText)
+      console.groupEnd()
+      throw new Error(`Failed to update ad: ${response.statusText || responseText}`)
+    }
+
+    console.log("✅ Successfully updated ad")
+    console.groupEnd()
+
+    return { success: true }
   } catch (error) {
-    console.error("Error updating ad:", error)
+    console.group("💥 Update Ad Exception")
+    console.error("Error:", error)
+    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
+    console.groupEnd()
     throw error
   }
 }
@@ -278,26 +375,53 @@ export async function toggleAdStatus(id: string, isActive: boolean, currentAd: M
 /**
  * Delete an advertisement
  */
-export async function deleteAd(adId: string): Promise<void> {
+export async function deleteAd(id: string): Promise<{ success: boolean }> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/adverts/${adId}`, {
+    const url = `${API.baseUrl}${API.endpoints.ads}/${id}`
+    const headers = {
+      ...AUTH.getAuthHeader(),
+      Accept: "application/json",
+    }
+
+    // Log request details
+    console.group("📤 DELETE Ad Request")
+    console.log("URL:", url)
+    console.log("Headers:", headers)
+    console.log("Ad ID:", id)
+    console.groupEnd()
+
+    const response = await fetch(url, {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
     })
 
+    const responseText = await response.text()
+    let responseData
+
+    try {
+      responseData = JSON.parse(responseText)
+      console.log("Response Body (parsed):", responseData)
+    } catch (e) {
+      console.warn("⚠️ Could not parse response as JSON:", e)
+      console.log("Response Body (raw):", responseText)
+      responseData = {}
+    }
+
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      console.error("Error Response:", response.status, response.statusText)
+      console.groupEnd()
+      throw new Error(`Failed to delete ad: ${response.statusText}`)
     }
 
-    const data = await response.json()
+    console.log("✅ Successfully deleted ad")
+    console.groupEnd()
 
-    if (data.errors && data.errors.length > 0) {
-      throw new Error(data.errors[0].message || "Failed to delete ad")
-    }
+    return { success: true }
   } catch (error) {
-    console.error("Error deleting ad:", error)
+    console.group("💥 Delete Ad Exception")
+    console.error("Error:", error)
+    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
+    console.groupEnd()
     throw error
   }
 }
@@ -434,18 +558,18 @@ export async function createAd(payload: CreateAdPayload): Promise<{ success: boo
 /**
  * Activate an advertisement (specific function for troubleshooting)
  */
-export async function activateAd(adId: string): Promise<void> {
+export async function activateAd(id: string): Promise<{ success: boolean }> {
   try {
     // First, let's try to get the current ad data to use for activation
-    console.group(`📤 Activating Ad ${adId}`)
+    console.group(`📤 Activating Ad ${id}`)
     console.log("Fetching current ad data before activation")
 
     // Get the current ad data
     const currentAds = await getUserAdverts()
-    const adToActivate = currentAds.find((ad) => ad.id === adId)
+    const adToActivate = currentAds.find((ad) => ad.id === id)
 
     if (!adToActivate) {
-      console.error("Could not find ad with ID:", adId)
+      console.error("Could not find ad with ID:", id)
       throw new Error("Ad not found")
     }
 
@@ -483,7 +607,7 @@ export async function activateAd(adId: string): Promise<void> {
     )
 
     // Use the updateAd function instead of a direct activation endpoint
-    const url = `${API_BASE_URL}/api/adverts/${adId}`
+    const url = `${API.baseUrl}${API.endpoints.ads}/${id}`
     const headers = {
       ...AUTH.getAuthHeader(),
       "Content-Type": "application/json",
@@ -523,6 +647,8 @@ export async function activateAd(adId: string): Promise<void> {
 
     console.log("✅ Successfully activated ad")
     console.groupEnd()
+
+    return { success: true }
   } catch (error) {
     console.group("💥 Activate Ad Exception")
     console.error("Error:", error)
