@@ -53,7 +53,17 @@ export const maskAccountNumber = (accountNumber: string): string => {
     return accountNumber
   }
   const lastFour = accountNumber.slice(-4)
-  const maskedPart= "".padStart(accountNumber.length - 4, "*")
+  const maskedPart = "".padStart(accountNumber.length - 4, "*")
 
   return maskedPart + lastFour
+}
+
+export function formatPaymentMethodName(method: string): string {
+  if (!method) return method
+
+  // Convert snake_case to proper case
+  return method
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ")
 }

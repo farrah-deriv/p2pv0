@@ -9,6 +9,7 @@ import type { MyAd } from "../types"
 import StatusModal from "@/components/ui/status-modal"
 import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { formatPaymentMethodName } from "@/lib/utils"
 
 interface MyAdsMobileViewProps {
   ads: MyAd[]
@@ -284,20 +285,24 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
                 </div>
 
                 {/* Payment Methods */}
-                <div className="flex flex-wrap gap-4">
-                  {ad.paymentMethods.map((method, index) => (
-                    <div key={index} className="flex items-center">
-                      <span
-                        className={`w-3 h-3 rounded-full mr-2 ${method.toLowerCase() === "bank transfer"
-                          ? "bg-green-600"
-                          : method.toLowerCase() === "skrill"
-                            ? "bg-blue-500"
-                            : "bg-blue-400"
+                <div className="space-y-2">
+                  <span className="text-black font-medium text-sm">Payment methods:</span>
+                  <div className="space-y-1">
+                    {ad.paymentMethods.map((method, index) => (
+                      <div key={index} className="flex items-center">
+                        <span
+                          className={`w-3 h-3 rounded-full mr-2 ${
+                            method.toLowerCase().includes("bank") || method.toLowerCase().includes("transfer")
+                              ? "bg-green-600"
+                              : method.toLowerCase().includes("skrill")
+                                ? "bg-blue-500"
+                                : "bg-blue-400"
                           }`}
-                      ></span>
-                      <span>{method}</span>
-                    </div>
-                  ))}
+                        ></span>
+                        <span className="text-sm">{formatPaymentMethodName(method)}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

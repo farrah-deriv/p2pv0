@@ -12,6 +12,7 @@ import type { Ad } from "../types"
 import { cn } from "@/lib/utils"
 import { DeleteConfirmationDialog } from "./ui/delete-confirmation-dialog"
 import StatusModal from "./ui/status-modal"
+import { formatPaymentMethodName } from "@/lib/utils"
 
 interface MyAdsTableProps {
   ads: Ad[]
@@ -41,7 +42,24 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
 
   const formatPaymentMethods = (methods: string[]) => {
     if (!methods || methods.length === 0) return "None"
-    return methods.join(", ")
+    return (
+      <div className="space-y-1">
+        {methods.map((method, index) => (
+          <div key={index} className="flex items-center">
+            <span
+              className={`w-2 h-2 rounded-full mr-2 ${
+                method.toLowerCase().includes("bank") || method.toLowerCase().includes("transfer")
+                  ? "bg-green-600"
+                  : method.toLowerCase().includes("skrill")
+                    ? "bg-blue-500"
+                    : "bg-blue-400"
+              }`}
+            ></span>
+            <span className="text-sm">{formatPaymentMethodName(method)}</span>
+          </div>
+        ))}
+      </div>
+    )
   }
 
   const getStatusBadge = (status: string) => {
