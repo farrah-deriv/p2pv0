@@ -8,26 +8,28 @@ import { Button } from "@/components/ui/button"
 import { deleteAd, activateAd, updateAd } from "@/services/api/api-my-ads"
 
 interface Ad {
-  id: string
-  type: "Buy" | "Sell"
-  rate: {
-    value: string
-    percentage: string
+  id: number
+  type: "buy" | "sell"
+  minimum_order_amount: string
+  maximum_order_amount: string
+  available_amount: string
+  account_currency: string
+  payment_currency: string
+  exchange_rate: number
+  exchange_rate_type: string
+  description: string
+  is_active: boolean
+  payment_methods: string[]
+  user: {
+    id: number
+    nickname: string
+    created_at: number
+    rating_average_lifetime: number
+    order_count_lifetime: number
+    adverts_are_listed: boolean
   }
-  limits:
-    | {
-        min: number
-        max: number
-        currency: string
-      }
-    | string
-  available: {
-    current: number
-    total: number
-  }
-  paymentMethods: string[]
-  status: "Active" | "Inactive"
-  description?: string
+  is_eligible: boolean
+  minimum_trade_band: string
 }
 
 interface MyAdsTableProps {
@@ -59,11 +61,26 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
   const [isTogglingStatus, setIsTogglingStatus] = useState(false)
 
   // Format limits to display as a string
-  const formatLimits = (limits: Ad["limits"]) => {
-    if (typeof limits === "string") {
-      return limits
+  const formatLimits = (ad: Ad) => {
+    return `${ad.account_currency} ${ad.minimum_order_amount} - ${ad.maximum_order_amount}`
+  }
+
+  // Format rate display
+  const formatRate = (ad: Ad) => {
+    return {
+      value: `${ad.payment_currency} ${ad.exchange_rate.toFixed(4)}`,
+      percentage: "0.1%", // This might need to be calculated based on market rate
     }
-    return `${limits.currency} ${limits.min} - ${limits.max}`
+  }
+
+  // Format available amount
+  const formatAvailable = (ad: Ad) => {
+    const current = Number.parseFloat(ad.available_amount)
+    const total = Number.parseFloat(ad.maximum_order_amount)
+    return {
+      current,
+      total,
+    }
   }
 
   // Format payment methods with visual indicators
@@ -85,14 +102,11 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     )
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Active":
-        return <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">Active</span>
-      case "Inactive":
-        return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs">Inactive</span>
-      default:
-        return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs">Inactive</span>
+  const getStatusBadge = (isActive: boolean) => {
+    if (isActive) {
+      return <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">Active</span>
+    } else {
+      return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs">Inactive</span>
     }
   }
 
@@ -108,12 +122,12 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     router.push(`/create-ad?mode=edit&id=${ad.id}`)
   }
 
-  const handleCopy = (adId: string) => {
+  const handleCopy = (adId: number) => {
     console.log("Copy ad:", adId)
     // Add copy functionality
   }
 
-  const handleShare = (adId: string) => {
+  const handleShare = (adId: number) => {
     console.log("Share ad:", adId)
     // Add share functionality
   }
@@ -122,94 +136,48 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     try {
       setIsTogglingStatus(true)
       console.log(
-        `Toggling status for ad ${ad.id} from ${ad.status} to ${ad.status === "Active" ? "Inactive" : "Active"}`,
+        `Toggling status for ad ${ad.id} from ${ad.is_active ? "Active" : "Inactive"} to ${ad.is_active ? "Inactive" : "Active"}`,
       )
 
       // If the ad is inactive, use the direct activate function
-      if (ad.status === "Inactive") {
+      if (!ad.is_active) {
         console.log("Using direct activate function")
         try {
-          const result = await activateAd(ad.id)
+          const result = await activateAd(ad.id.toString())
           console.log("Activate result:", result)
         } catch (activateError) {
           console.error("Activation failed, trying alternative method:", activateError)
 
-          // If direct activation fails, try the toggle method as fallback
-          // Parse the limits if it's a string
-          let minAmount = 0
-          let maxAmount = 0
-
-          if (typeof ad.limits === "string") {
-            const limitsMatch = ad.limits.match(/([A-Z]+) (\d+\.\d+) - (\d+\.\d+)/)
-            minAmount = limitsMatch ? Number.parseFloat(limitsMatch[2]) : 0
-            maxAmount = limitsMatch ? Number.parseFloat(limitsMatch[3]) : 0
-          } else {
-            minAmount = ad.limits.min
-            maxAmount = ad.limits.max
-          }
-
-          // Extract rate value from string (e.g., "IDR 14500.0000" -> 14500.0000)
-          let rateValue = 0
-          if (ad.rate && ad.rate.value) {
-            const rateMatch = ad.rate.value.match(/([A-Z]+)\s+(\d+(?:\.\d+)?)/)
-            if (rateMatch && rateMatch[2]) {
-              rateValue = Number.parseFloat(rateMatch[2])
-            }
-          }
-
           // Try direct update with updateAd
-          const updateResult = await updateAd(ad.id, {
+          const updateResult = await updateAd(ad.id.toString(), {
             is_active: true,
-            minimum_order_amount: minAmount,
-            maximum_order_amount: maxAmount,
-            available_amount: ad.available.current,
-            exchange_rate: rateValue,
-            exchange_rate_type: "fixed",
+            minimum_order_amount: Number.parseFloat(ad.minimum_order_amount),
+            maximum_order_amount: Number.parseFloat(ad.maximum_order_amount),
+            available_amount: Number.parseFloat(ad.available_amount),
+            exchange_rate: ad.exchange_rate,
+            exchange_rate_type: ad.exchange_rate_type,
             order_expiry_period: 15,
-            description: "",
-            payment_method_names: ad.paymentMethods,
+            description: ad.description,
+            payment_method_names: ad.payment_methods,
           })
 
           console.log("Update result (fallback):", updateResult)
         }
       } else {
         // For deactivating, use the existing toggle function
-        const newIsActive = false // We're deactivating
-        console.log(`Setting is_active to: ${newIsActive} (Deactivating)`)
-
-        // Parse the limits if it's a string
-        let minAmount = 0
-        let maxAmount = 0
-
-        if (typeof ad.limits === "string") {
-          const limitsMatch = ad.limits.match(/([A-Z]+) (\d+\.\d+) - (\d+\.\d+)/)
-          minAmount = limitsMatch ? Number.parseFloat(limitsMatch[2]) : 0
-          maxAmount = limitsMatch ? Number.parseFloat(limitsMatch[3]) : 0
-        } else {
-          minAmount = ad.limits.min
-          maxAmount = ad.limits.max
-        }
-
-        // Extract rate value from string (e.g., "IDR 14500.0000" -> 14500.0000)
-        let rateValue = 0
-        if (ad.rate && ad.rate.value) {
-          const rateMatch = ad.rate.value.match(/([A-Z]+)\s+(\d+(?:\.\d+)?)/)
-          if (rateMatch && rateMatch[2]) {
-            rateValue = Number.parseFloat(rateMatch[2])
-          }
-        }
+        console.log("Deactivating ad")
 
         // Try direct update instead of toggleAdStatus
-        const updateResult = await updateAd(ad.id, {
+        const updateResult = await updateAd(ad.id.toString(), {
           is_active: false,
-          minimum_order_amount: minAmount,
-          maximum_order_amount: maxAmount,
-          available_amount: ad.available.current,
-          exchange_rate: rateValue,
-          exchange_rate_type: "fixed",
+          minimum_order_amount: Number.parseFloat(ad.minimum_order_amount),
+          maximum_order_amount: Number.parseFloat(ad.maximum_order_amount),
+          available_amount: Number.parseFloat(ad.available_amount),
+          exchange_rate: ad.exchange_rate,
+          exchange_rate_type: ad.exchange_rate_type,
           order_expiry_period: 15,
-          description: "",
-          payment_method_names: ad.paymentMethods,
+          description: ad.description,
+          payment_method_names: ad.payment_methods,
         })
 
         console.log("Update result (deactivate):", updateResult)
@@ -221,16 +189,16 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
       }
     } catch (error) {
       console.error("Failed to toggle status:", error)
-      alert(`Failed to ${ad.status === "Active" ? "deactivate" : "activate"} ad. Please try again.`)
+      alert(`Failed to ${ad.is_active ? "deactivate" : "activate"} ad. Please try again.`)
     } finally {
       setIsTogglingStatus(false)
     }
   }
 
-  const handleDelete = async (adId: string) => {
+  const handleDelete = async (adId: number) => {
     try {
       setIsDeleting(true)
-      await deleteAd(adId)
+      await deleteAd(adId.toString())
 
       // Call the onAdDeleted callback to refresh the list and show success message
       if (onAdDeleted) {
@@ -279,73 +247,80 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
           </tr>
         </thead>
         <tbody className="relative">
-          {ads.map((ad, index) => (
-            <tr key={index} className={`border-b ${ad.status === "Inactive" ? "grayscale" : ""}`}>
-              <td className="py-4">
-                <div className={`font-medium ${ad.type === "Buy" ? "text-green-600" : "text-red-600"}`}>{ad.type}</div>
-                <div className="text-gray-500">{ad.id}</div>
-              </td>
-              <td className="py-4">
-                <div className="font-medium">{ad.rate.value}</div>
-                <div className="text-gray-500 text-sm">{ad.rate.percentage}</div>
-              </td>
-              <td className="py-4">{formatLimits(ad.limits)}</td>
-              <td className="py-4">
-                <div className="mb-1">
-                  USD {ad.available.current || 0} / {ad.available.total || 0}
-                </div>
-                <div className="h-2 bg-gray-200 rounded-full w-32 overflow-hidden">
-                  <div
-                    className="h-full bg-black rounded-full"
-                    style={{
-                      width: `${ad.available.total ? ((ad.available.current || 0) / ad.available.total) * 100 : 0}%`,
-                    }}
-                  ></div>
-                </div>
-              </td>
-              <td className="py-4">{formatPaymentMethods(ad.paymentMethods)}</td>
-              <td className="py-4 whitespace-nowrap">{getStatusBadge(ad.status)}</td>
-              <td className="py-4 text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="p-1 hover:bg-gray-100 rounded-full">
-                      <MoreVertical className="h-5 w-5 text-gray-500" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-[160px]">
-                    <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleEdit(ad)}>
-                      <Pencil className="h-4 w-4" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleCopy(ad.id)}>
-                      <Copy className="h-4 w-4" />
-                      Copy
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleShare(ad.id)}>
-                      <Share2 className="h-4 w-4" />
-                      Share
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="flex items-center gap-2"
-                      onSelect={() => handleToggleStatus(ad)}
-                      disabled={isTogglingStatus}
-                    >
-                      <Power className="h-4 w-4" />
-                      {isTogglingStatus ? "Updating..." : ad.status === "Active" ? "Deactivate" : "Activate"}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="flex items-center gap-2 text-red-500 focus:text-red-500"
-                      onSelect={() => handleDelete(ad.id)}
-                      disabled={isDeleting}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      {isDeleting ? "Deleting..." : "Delete"}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </td>
-            </tr>
-          ))}
+          {ads.map((ad, index) => {
+            const rate = formatRate(ad)
+            const available = formatAvailable(ad)
+
+            return (
+              <tr key={index} className={`border-b ${!ad.is_active ? "grayscale" : ""}`}>
+                <td className="py-4">
+                  <div className={`font-medium ${ad.type === "buy" ? "text-green-600" : "text-red-600"}`}>
+                    {ad.type.charAt(0).toUpperCase() + ad.type.slice(1)}
+                  </div>
+                  <div className="text-gray-500">{ad.id}</div>
+                </td>
+                <td className="py-4">
+                  <div className="font-medium">{rate.value}</div>
+                  <div className="text-gray-500 text-sm">{rate.percentage}</div>
+                </td>
+                <td className="py-4">{formatLimits(ad)}</td>
+                <td className="py-4">
+                  <div className="mb-1">
+                    USD {available.current || 0} / {available.total || 0}
+                  </div>
+                  <div className="h-2 bg-gray-200 rounded-full w-32 overflow-hidden">
+                    <div
+                      className="h-full bg-black rounded-full"
+                      style={{
+                        width: `${available.total ? ((available.current || 0) / available.total) * 100 : 0}%`,
+                      }}
+                    ></div>
+                  </div>
+                </td>
+                <td className="py-4">{formatPaymentMethods(ad.payment_methods)}</td>
+                <td className="py-4 whitespace-nowrap">{getStatusBadge(ad.is_active)}</td>
+                <td className="py-4 text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="p-1 hover:bg-gray-100 rounded-full">
+                        <MoreVertical className="h-5 w-5 text-gray-500" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-[160px]">
+                      <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleEdit(ad)}>
+                        <Pencil className="h-4 w-4" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleCopy(ad.id)}>
+                        <Copy className="h-4 w-4" />
+                        Copy
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleShare(ad.id)}>
+                        <Share2 className="h-4 w-4" />
+                        Share
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="flex items-center gap-2"
+                        onSelect={() => handleToggleStatus(ad)}
+                        disabled={isTogglingStatus}
+                      >
+                        <Power className="h-4 w-4" />
+                        {isTogglingStatus ? "Updating..." : ad.is_active ? "Deactivate" : "Activate"}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="flex items-center gap-2 text-red-500 focus:text-red-500"
+                        onSelect={() => handleDelete(ad.id)}
+                        disabled={isDeleting}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        {isDeleting ? "Deleting..." : "Delete"}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>
