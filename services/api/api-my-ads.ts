@@ -120,7 +120,6 @@ export async function getUserAdverts(): Promise<MyAd[]> {
 
     if (!response.ok) {
       console.error("Error Response:", response.status, response.statusText)
-      console.groupEnd()
       throw new Error("Failed to fetch user adverts")
     }
 
@@ -129,13 +128,12 @@ export async function getUserAdverts(): Promise<MyAd[]> {
 
     try {
       apiData = JSON.parse(responseText)
-      console.log("Response Body (parsed):", apiData)
+      console.log("Raw API Response:", apiData)
     } catch (e) {
       console.warn("⚠️ Could not parse response as JSON:", e)
       console.log("Response Body (raw):", responseText)
       apiData = { data: [] }
     }
-    console.groupEnd()
 
     if (!apiData || !apiData.data || !Array.isArray(apiData.data)) {
       console.warn("Invalid API response format for user adverts")
@@ -143,24 +141,34 @@ export async function getUserAdverts(): Promise<MyAd[]> {
     }
 
     // Transform API data to match our MyAd interface
-    return apiData.data.map((advert: APIAdvert) => {
+    return apiData.data.map((advert: any) => {
       // Add null checks and default values
-      const minAmount = advert.minimum_order_amount || 0
-      const maxAmount = advert.maximum_order_amount || 0
-      const exchangeRate = advert.exchange_rate || 0
+      const minAmount = Number(advert.minimum_order_amount) || 0
+      const maxAmount = Number(advert.maximum_order_amount) || 0
+      const exchangeRate = Number(advert.exchange_rate) || 0
       const currency = advert.payment_currency || "USD"
       const isActive = advert.is_active !== undefined ? advert.is_active : true
 
       // Determine status based on is_active flag
       const status: "Active" | "Inactive" = isActive ? "Active" : "Inactive"
 
-      console.log(`Processing ad ${advert.id}:`, {
-        payment_methods: advert.payment_methods,
-        type: typeof advert.payment_methods,
-        isArray: Array.isArray(advert.payment_methods),
-      })
+      // Debug payment methods processing
+      console.log(`🔍 Processing Ad ${advert.id}:`)
+      console.log("  - Raw payment_methods:", advert.payment_methods)
+      console.log("  - Type of payment_methods:", typeof advert.payment_methods)
+      console.log("  - Is Array:", Array.isArray(advert.payment_methods))
+      console.log("  - Length:", advert.payment_methods?.length)
 
-      return {
+      // Ensure payment methods is always an array
+      let paymentMethods: string[] = []
+      if (advert.payment_methods && Array.isArray(advert.payment_methods)) {
+        paymentMethods = advert.payment_methods.filter((method: any) => method && typeof method === "string")
+        console.log("  - Processed payment methods:", paymentMethods)
+      } else {
+        console.log("  - No valid payment methods found")
+      }
+
+      const transformedAd = {
         id: String(advert.id || "0"),
         type: ((advert.type || "buy") as string).toLowerCase() === "buy" ? "Buy" : "Sell",
         rate: {
@@ -174,15 +182,20 @@ export async function getUserAdverts(): Promise<MyAd[]> {
           currency: "USD",
         },
         available: {
-          current: advert.available_amount || minAmount,
+          current: Number(advert.available_amount) || minAmount,
           total: maxAmount,
           currency: "USD",
         },
-        paymentMethods: advert.payment_methods || [], // Fixed: Use payment_methods from API
+        paymentMethods: paymentMethods, // Use the processed payment methods
         status: status,
-        createdAt: new Date((advert.created_at || 0) * 1000 || Date.now()).toISOString(),
-        updatedAt: new Date((advert.created_at || 0) * 1000 || Date.now()).toISOString(),
+        createdAt: new Date(advert.created_at || 0 || Date.now()).toISOString(),
+        updatedAt: new Date(advert.created_at || 0 || Date.now()).toISOString(),
       }
+
+      console.log(`✅ Transformed Ad ${advert.id}:`, transformedAd)
+      console.log("  - Final paymentMethods:", transformedAd.paymentMethods)
+
+      return transformedAd
     })
   } catch (error) {
     console.group("💥 GET User Adverts Exception")
