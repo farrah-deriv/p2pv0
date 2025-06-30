@@ -126,6 +126,16 @@ const config: Config = {
           bg: "#fee2e2",
         },
         "default-button-text": "#002A33",
+        success: {
+          light: "rgba(0, 136, 50, 0.08)",
+          DEFAULT: "#267d36",
+          icon: "#008832",
+          bg: "#edfaf3",
+        },
+        error: {
+          light: "rgba(230, 25, 14, 0.08)",
+          DEFAULT: "#c40000",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
