@@ -230,14 +230,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
                   <div>
                     <div className="mb-1">
                       <span
-                        className="font-bold text-base leading-6"
-                        style={{
-                          color:
-                            ad.type === "Buy"
-                              ? "var(--Extended-Palette-Green-Base, #37B24D)"
-                              : "var(--Semantic-Error-Base, #DC2020)",
-                          fontFamily: "Inter",
-                        }}
+                        className={cn("font-bold text-base leading-6", ad.type === "Buy" ? "text-buy" : "text-sell")}
                       >
                         {ad.type}
                       </span>

@@ -58,10 +58,10 @@ const config: Config = {
           DEFAULT: "#c40000",
         },
         buy: {
-          DEFAULT: "#29823b",
+          DEFAULT: "#37B24D", // Updated to match your specification
         },
         sell: {
-          DEFAULT: "#dc2020",
+          DEFAULT: "#DC2020", // Already matches your specification
         },
         warning: {
           bg: "#fff8e7",
