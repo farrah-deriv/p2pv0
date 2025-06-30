@@ -62,6 +62,8 @@ const config: Config = {
           light: "rgba(230, 25, 14, 0.08)",
           DEFAULT: "#c40000",
         },
+        buy: "#008832",
+        sell: "#c40000",
       },
       borderRadius: {
         lg: "var(--radius)",
