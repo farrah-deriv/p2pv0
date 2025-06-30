@@ -1,10 +1,11 @@
-"\"use client"
+"use client"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { MoreVertical, Pencil, Copy, Share2, Power, Trash2, Search } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { deleteAd, activateAd, updateAd } from "@/services/api/api-my-ads"
 
 interface Ad {
@@ -15,12 +16,12 @@ interface Ad {
     percentage: string
   }
   limits:
-  | {
-    min: number
-    max: number
-    currency: string
-  }
-  | string
+    | {
+        min: number
+        max: number
+        currency: string
+      }
+    | string
   available: {
     current: number
     total: number
@@ -48,14 +49,40 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     return `${limits.currency} ${limits.min} - ${limits.max}`
   }
 
+  // Format payment methods with visual indicators
+  const formatPaymentMethods = (methods: string[]) => {
+    if (!methods || methods.length === 0) {
+      return <span className="text-gray-400 text-sm italic">No payment methods</span>
+    }
+
+    return (
+      <div className="flex flex-wrap gap-2">
+        {methods.map((method, index) => (
+          <div key={index} className="flex items-center">
+            <div
+              className={`h-2 w-2 rounded-full mr-2 ${
+                method.toLowerCase().includes("bank")
+                  ? "bg-green-500"
+                  : method.toLowerCase().includes("wallet") || method.toLowerCase().includes("ewallet")
+                    ? "bg-blue-500"
+                    : "bg-gray-500"
+              }`}
+            />
+            <span className="text-sm">{method}</span>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Active":
-        return <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">Active</span>
+        return <Badge variant="success-light">Active</Badge>
       case "Inactive":
-        return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs">Inactive</span>
+        return <Badge variant="error-light">Inactive</Badge>
       default:
-        return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs">Inactive</span>
+        return <Badge variant="error-light">Inactive</Badge>
     }
   }
 
@@ -266,7 +293,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
                   ></div>
                 </div>
               </td>
-              <td className="py-4 truncate">{ad.paymentMethods.join(", ")}</td>
+              <td className="py-4">{formatPaymentMethods(ad.paymentMethods)}</td>
               <td className="py-4 whitespace-nowrap">{getStatusBadge(ad.status)}</td>
               <td className="py-4 text-right">
                 <DropdownMenu>
