@@ -12,40 +12,12 @@ interface MyAdsTableProps {
   onAdDeleted?: (status?: string) => void
 }
 
-// Function to convert snake_case to Title Case
+// Function to convert snake_case to normal case
 const formatPaymentMethodName = (method: string): string => {
-  const methodMap: Record<string, string> = {
-    bank_transfer: "Bank Transfer",
-    alipay: "Alipay",
-    wechat_pay: "WeChat Pay",
-    paypal: "PayPal",
-    skrill: "Skrill",
-    neteller: "Neteller",
-    perfect_money: "Perfect Money",
-    webmoney: "WebMoney",
-    yandex_money: "Yandex Money",
-    qiwi: "QIWI",
-    sticpay: "SticPay",
-    airtm: "AirTM",
-    paysera: "Paysera",
-    advcash: "AdvCash",
-    transferwise: "Wise",
-    revolut: "Revolut",
-    other: "Other",
-    airtel: "Airtel",
-    apple_pay: "Apple Pay",
-    google_pay: "Google Pay",
-    paytm: "Paytm",
-    upi: "UPI",
-    phonepe: "PhonePe",
-    gpay: "GPay",
-    bhim: "BHIM",
-    imps: "IMPS",
-    neft: "NEFT",
-    rtgs: "RTGS",
-  }
-
-  return methodMap[method.toLowerCase()] || method.charAt(0).toUpperCase() + method.slice(1).replace(/_/g, " ")
+  return method
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ")
 }
 
 // Function to get payment method color based on type
