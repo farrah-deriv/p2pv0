@@ -116,8 +116,6 @@ export async function getUserAdverts(): Promise<MyAd[]> {
       "X-Data-Source": "live",
     }
 
-    console.log("🚀 Fetching user adverts from:", url)
-
     const response = await fetch(url, { headers })
 
     if (!response.ok) {
@@ -130,8 +128,7 @@ export async function getUserAdverts(): Promise<MyAd[]> {
 
     try {
       apiData = JSON.parse(responseText)
-      console.log("📥 Raw API Response:", apiData)
-      console.log("📥 API Response Data Array:", apiData.data)
+      console.log("📥 API Response - Total ads:", apiData.data?.length || 0)
     } catch (e) {
       console.warn("⚠️ Could not parse response as JSON:", e)
       console.log("Response Body (raw):", responseText)
@@ -143,13 +140,8 @@ export async function getUserAdverts(): Promise<MyAd[]> {
       return []
     }
 
-    console.log(`📊 Processing ${apiData.data.length} adverts from API`)
-
     // Transform API data to match our MyAd interface
-    return apiData.data.map((advert: any, index: number) => {
-      console.log(`\n🔍 Processing Ad #${index + 1} (ID: ${advert.id}):`)
-      console.log("📋 Full advert object:", JSON.stringify(advert, null, 2))
-
+    return apiData.data.map((advert: any) => {
       // Add null checks and default values
       const minAmount = Number(advert.minimum_order_amount) || 0
       const maxAmount = Number(advert.maximum_order_amount) || 0
@@ -160,48 +152,20 @@ export async function getUserAdverts(): Promise<MyAd[]> {
       // Determine status based on is_active flag
       const status: "Active" | "Inactive" = isActive ? "Active" : "Inactive"
 
-      // Debug payment methods processing with more detail
-      console.log("💳 Payment Methods Analysis:")
-      console.log("  - Raw payment_methods field:", advert.payment_methods)
-      console.log("  - Type of payment_methods:", typeof advert.payment_methods)
-      console.log("  - Is Array:", Array.isArray(advert.payment_methods))
-      console.log("  - Is null/undefined:", advert.payment_methods == null)
-      console.log("  - Length:", advert.payment_methods?.length)
-      console.log("  - JSON stringified:", JSON.stringify(advert.payment_methods))
+      // Debug payment methods processing
+      console.log(
+        `🔍 Ad ${advert.id} - Raw payment_methods:`,
+        advert.payment_methods,
+        `(${typeof advert.payment_methods})`,
+      )
 
-      // Ensure payment methods is always an array with more detailed processing
+      // Ensure payment methods is always an array
       let paymentMethods: string[] = []
-
-      if (advert.payment_methods == null) {
-        console.log("  ❌ payment_methods is null or undefined")
-      } else if (!Array.isArray(advert.payment_methods)) {
-        console.log("  ❌ payment_methods is not an array, type:", typeof advert.payment_methods)
-        console.log("  📝 Attempting to convert to array...")
-        // Try to handle case where it might be a string or other format
-        if (typeof advert.payment_methods === "string") {
-          try {
-            const parsed = JSON.parse(advert.payment_methods)
-            if (Array.isArray(parsed)) {
-              paymentMethods = parsed.filter((method: any) => method && typeof method === "string")
-              console.log("  ✅ Successfully parsed string to array:", paymentMethods)
-            }
-          } catch (e) {
-            console.log("  ❌ Failed to parse payment_methods string")
-          }
-        }
+      if (advert.payment_methods && Array.isArray(advert.payment_methods)) {
+        paymentMethods = advert.payment_methods.filter((method: any) => method && typeof method === "string")
+        console.log(`✅ Ad ${advert.id} - Processed payment methods:`, paymentMethods)
       } else {
-        console.log("  ✅ payment_methods is an array with length:", advert.payment_methods.length)
-        console.log("  📝 Individual items:")
-        advert.payment_methods.forEach((method: any, i: number) => {
-          console.log(`    [${i}]: "${method}" (type: ${typeof method})`)
-        })
-
-        paymentMethods = advert.payment_methods.filter((method: any) => {
-          const isValid = method && typeof method === "string"
-          console.log(`    Filtering "${method}": ${isValid ? "✅ valid" : "❌ invalid"}`)
-          return isValid
-        })
-        console.log("  🎯 Final filtered payment methods:", paymentMethods)
+        console.log(`❌ Ad ${advert.id} - Invalid payment_methods format`)
       }
 
       const transformedAd = {
@@ -228,12 +192,7 @@ export async function getUserAdverts(): Promise<MyAd[]> {
         updatedAt: new Date(advert.created_at || Date.now()).toISOString(),
       }
 
-      console.log(`✅ Transformed Ad ${advert.id}:`)
-      console.log("  - ID:", transformedAd.id)
-      console.log("  - Type:", transformedAd.type)
-      console.log("  - Status:", transformedAd.status)
-      console.log("  - Final paymentMethods:", transformedAd.paymentMethods)
-      console.log("  - PaymentMethods length:", transformedAd.paymentMethods.length)
+      console.log(`🎯 Ad ${advert.id} - Final paymentMethods:`, transformedAd.paymentMethods)
 
       return transformedAd
     })

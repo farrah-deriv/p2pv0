@@ -50,8 +50,10 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     adId: "",
   })
 
-  console.log("MyAdsTable received ads:", ads)
-  console.log("First ad payment methods:", ads[0]?.paymentMethods)
+  console.log("🎯 MyAdsTable received ads:", ads.length)
+  ads.forEach((ad, index) => {
+    console.log(`📋 Ad ${index + 1} (${ad.id}) payment methods:`, ad.paymentMethods)
+  })
 
   const formatLimits = (limits: Ad["limits"]) => {
     if (typeof limits === "string") {
@@ -62,7 +64,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
 
   // Format payment methods with visual indicators
   const formatPaymentMethods = (methods: string[]) => {
-    console.log("Processing payment methods:", methods, "Type:", typeof methods, "IsArray:", Array.isArray(methods))
+    console.log("🔄 Formatting payment methods:", methods, "Type:", typeof methods, "IsArray:", Array.isArray(methods))
 
     if (!methods || methods.length === 0) {
       return <span className="text-gray-400 text-sm italic">No payment methods</span>
@@ -262,8 +264,6 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
           </TableHeader>
           <TableBody>
             {ads.map((ad, index) => {
-              console.log(`Ad ${ad.id} payment methods:`, ad.paymentMethods)
-
               return (
                 <TableRow key={index} className={cn("border-b", ad.status === "Inactive" ? "opacity-60" : "")}>
                   <TableCell className="py-4">
