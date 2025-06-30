@@ -212,12 +212,6 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
                 Ad ID
               </TableHead>
               <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
-                Rate (USD 1)
-              </TableHead>
-              <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
-                Limits
-              </TableHead>
-              <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
                 Available amount
               </TableHead>
               <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
@@ -234,14 +228,16 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
               <TableRow key={index} className={cn("border-b", ad.status === "Inactive" ? "opacity-60" : "")}>
                 <TableCell className="py-4">
                   <div>
-                    <span className={cn("font-medium", ad.type === "Buy" ? "text-buy" : "text-sell")}>{ad.type}</span>
-                    <span className="text-gray-900"> {ad.id}</span>
+                    <div className="mb-1">
+                      <span className={cn("font-medium", ad.type === "Buy" ? "text-buy" : "text-sell")}>{ad.type}</span>
+                      <span className="text-gray-900"> {ad.id}</span>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      <div>Rate: {ad.rate.value}</div>
+                      <div>Limits: {formatLimits(ad.limits)}</div>
+                    </div>
                   </div>
                 </TableCell>
-                <TableCell className="py-4">
-                  <div className="font-medium">{ad.rate.value}</div>
-                </TableCell>
-                <TableCell className="py-4">{formatLimits(ad.limits)}</TableCell>
                 <TableCell className="py-4">
                   <div className="mb-1">
                     {ad.available.currency} {ad.available.current || 0} / {ad.available.total || 0}
