@@ -1,77 +1,31 @@
-import { clsx, type ClassValue } from "clsx"
+import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-interface AvailablePaymentMethod {
-  id: number
-  method: string
-  display_name: string
-  type: string
-  fields: Record<
-    string,
-    {
-      display_name: string
-      required: boolean
-      value?: string
-    }
-  >
-}
-
-interface PaymentMethodField {
-  name: string
-  label: string
-  type: string
-  required: boolean
-}
-
-export function getPaymentMethodFields(
-  method: string,
-  availablePaymentMethods: AvailablePaymentMethod[],
-): PaymentMethodField[] {
-  const paymentMethod = availablePaymentMethods.find((pm) => pm.method === method)
-  if (!paymentMethod) return []
-
-  return Object.entries(paymentMethod.fields)
-    .filter(([key]) => key !== "instructions")
-    .map(([key, field]) => ({
-      name: key,
-      label: field.display_name,
-      type: "text",
-      required: field.required,
-    }))
-}
-
-export function getPaymentMethodIcon(type: string): string {
-  return type === "ewallet" ? "/icons/ewallet-icon.png" : "/icons/bank-transfer-icon.png"
-}
-
-export const maskAccountNumber = (accountNumber: string): string => {
-  if (!accountNumber || accountNumber.length <= 4) {
-    return accountNumber
-  }
-  const lastFour = accountNumber.slice(-4)
-  const maskedPart = "".padStart(accountNumber.length - 4, "*")
-
-  return maskedPart + lastFour
-}
-
-// Function to convert snake_case to Title Case
-export const formatPaymentMethodName = (method: string): string => {
+// Format payment method name from snake_case to Title Case
+export function formatPaymentMethodName(method: string): string {
   return method
     .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ")
 }
 
-// Function to get payment method color based on type
-export const getPaymentMethodColor = (method: string): string => {
-  const lowerMethod = method.toLowerCase()
-  if (lowerMethod.includes("bank") || lowerMethod === "bank_transfer") {
-    return "#008832"
-  } else {
-    return "#377CFC"
+// Get color for payment method indicator
+export function getPaymentMethodColor(method: string): string {
+  if (method.toLowerCase().includes("bank")) {
+    return "#008832" // Green for bank transfers
   }
+  return "#377CFC" // Blue for all others
+}
+
+// Format payment methods for display (keeping for backward compatibility)
+export function formatPaymentMethods(methods: string[]): string {
+  if (!methods || methods.length === 0) {
+    return "No payment methods"
+  }
+
+  return methods.map((method) => formatPaymentMethodName(method)).join(", ")
 }
