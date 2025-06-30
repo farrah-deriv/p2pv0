@@ -55,7 +55,17 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
                     : "bg-blue-400"
               }`}
             ></span>
-            <span className="text-sm">{formatPaymentMethodName(method)}</span>
+            <span
+              className="text-gray-900"
+              style={{
+                fontSize: "12px",
+                fontStyle: "normal",
+                fontWeight: 400,
+                lineHeight: "20px",
+              }}
+            >
+              {formatPaymentMethodName(method)}
+            </span>
           </div>
         ))}
       </div>

@@ -58,11 +58,15 @@ export const maskAccountNumber = (accountNumber: string): string => {
   return maskedPart + lastFour
 }
 
-export function formatPaymentMethodName(method: string): string {
-  if (!method) return method
+/**
+ * Convert snake_case payment method names to proper case
+ * @param methodName - The snake_case method name (e.g., "apple_pay")
+ * @returns Formatted method name (e.g., "Apple Pay")
+ */
+export function formatPaymentMethodName(methodName: string): string {
+  if (!methodName) return ""
 
-  // Convert snake_case to proper case
-  return method
+  return methodName
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ")
