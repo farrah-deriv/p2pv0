@@ -7,11 +7,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from "@/components/ui/button"
 import { deleteAd, activateAd, updateAd } from "@/services/api/api-my-ads"
 
-interface Ad {
+// Updated interface to match the actual API response
+interface ApiAd {
   id: number
+  created_at: number
   type: "buy" | "sell"
   minimum_order_amount: string
   maximum_order_amount: string
+  actual_maximum_order_amount: string
+  is_orderable: boolean
   available_amount: string
   account_currency: string
   payment_currency: string
@@ -19,6 +23,13 @@ interface Ad {
   exchange_rate_type: string
   description: string
   is_active: boolean
+  open_order_amount: string
+  open_order_count: number
+  completed_order_amount: string
+  completed_order_count: number
+  order_expiry_period: number
+  available_countries: null | string[]
+  favourites_only: boolean
   payment_methods: string[]
   user: {
     id: number
@@ -33,7 +44,7 @@ interface Ad {
 }
 
 interface MyAdsTableProps {
-  ads: Ad[]
+  ads: ApiAd[]
   onAdDeleted?: (status?: string) => void
 }
 
@@ -61,12 +72,12 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
   const [isTogglingStatus, setIsTogglingStatus] = useState(false)
 
   // Format limits to display as a string
-  const formatLimits = (ad: Ad) => {
+  const formatLimits = (ad: ApiAd) => {
     return `${ad.account_currency} ${ad.minimum_order_amount} - ${ad.maximum_order_amount}`
   }
 
   // Format rate display
-  const formatRate = (ad: Ad) => {
+  const formatRate = (ad: ApiAd) => {
     return {
       value: `${ad.payment_currency} ${ad.exchange_rate.toFixed(4)}`,
       percentage: "0.1%", // This might need to be calculated based on market rate
@@ -74,7 +85,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
   }
 
   // Format available amount
-  const formatAvailable = (ad: Ad) => {
+  const formatAvailable = (ad: ApiAd) => {
     const current = Number.parseFloat(ad.available_amount)
     const total = Number.parseFloat(ad.maximum_order_amount)
     return {
@@ -85,6 +96,8 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
 
   // Format payment methods with visual indicators
   const formatPaymentMethods = (methods: string[]) => {
+    console.log("Payment methods received:", methods) // Debug log
+
     if (!methods || methods.length === 0) {
       return <span className="text-gray-400 text-sm italic">No payment methods</span>
     }
@@ -110,7 +123,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     }
   }
 
-  const handleEdit = (ad: Ad) => {
+  const handleEdit = (ad: ApiAd) => {
     // Store the ad data in localStorage for the edit flow
     localStorage.setItem(
       "editAdData",
@@ -132,7 +145,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     // Add share functionality
   }
 
-  const handleToggleStatus = async (ad: Ad) => {
+  const handleToggleStatus = async (ad: ApiAd) => {
     try {
       setIsTogglingStatus(true)
       console.log(
@@ -156,7 +169,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
             available_amount: Number.parseFloat(ad.available_amount),
             exchange_rate: ad.exchange_rate,
             exchange_rate_type: ad.exchange_rate_type,
-            order_expiry_period: 15,
+            order_expiry_period: ad.order_expiry_period,
             description: ad.description,
             payment_method_names: ad.payment_methods,
           })
@@ -175,7 +188,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
           available_amount: Number.parseFloat(ad.available_amount),
           exchange_rate: ad.exchange_rate,
           exchange_rate_type: ad.exchange_rate_type,
-          order_expiry_period: 15,
+          order_expiry_period: ad.order_expiry_period,
           description: ad.description,
           payment_method_names: ad.payment_methods,
         })
@@ -231,6 +244,8 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
     )
   }
 
+  console.log("Ads data:", ads) // Debug log to see the actual data structure
+
   // Update the table container styles
   return (
     <div className="h-full">
@@ -251,8 +266,10 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
             const rate = formatRate(ad)
             const available = formatAvailable(ad)
 
+            console.log(`Ad ${ad.id} payment_methods:`, ad.payment_methods) // Debug log for each ad
+
             return (
-              <tr key={index} className={`border-b ${!ad.is_active ? "grayscale" : ""}`}>
+              <tr key={ad.id} className={`border-b ${!ad.is_active ? "grayscale" : ""}`}>
                 <td className="py-4">
                   <div className={`font-medium ${ad.type === "buy" ? "text-green-600" : "text-red-600"}`}>
                     {ad.type.charAt(0).toUpperCase() + ad.type.slice(1)}
@@ -272,7 +289,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
                     <div
                       className="h-full bg-black rounded-full"
                       style={{
-                        width: `${available.total ? ((available.current || 0) / available.total) * 100 : 0}%`,
+                        width: `${available.total ? Math.max(0, ((available.current || 0) / available.total) * 100) : 0}%`,
                       }}
                     ></div>
                   </div>
