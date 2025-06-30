@@ -47,18 +47,9 @@ const formatPaymentMethodName = (method: string): string => {
 const getPaymentMethodColor = (method: string): string => {
   const lowerMethod = method.toLowerCase()
   if (lowerMethod.includes("bank") || lowerMethod === "bank_transfer") {
-    return "bg-green-500"
-  } else if (
-    lowerMethod.includes("wallet") ||
-    lowerMethod.includes("pay") ||
-    lowerMethod === "alipay" ||
-    lowerMethod === "apple_pay"
-  ) {
-    return "bg-blue-500"
-  } else if (lowerMethod === "airtel") {
-    return "bg-red-500"
+    return "#008832"
   } else {
-    return "bg-gray-500"
+    return "#377CFC"
   }
 }
 
@@ -85,7 +76,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
       <div className="flex flex-wrap gap-2">
         {methods.slice(0, 3).map((method, index) => (
           <div key={index} className="flex items-center">
-            <div className={`h-2 w-2 rounded-full mr-2 ${getPaymentMethodColor(method)}`} />
+            <div className="h-2 w-2 rounded-full mr-2" style={{ backgroundColor: getPaymentMethodColor(method) }} />
             <span className="text-sm">{formatPaymentMethodName(method)}</span>
           </div>
         ))}

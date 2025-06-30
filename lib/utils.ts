@@ -70,17 +70,8 @@ export const formatPaymentMethodName = (method: string): string => {
 export const getPaymentMethodColor = (method: string): string => {
   const lowerMethod = method.toLowerCase()
   if (lowerMethod.includes("bank") || lowerMethod === "bank_transfer") {
-    return "bg-green-500"
-  } else if (
-    lowerMethod.includes("wallet") ||
-    lowerMethod.includes("pay") ||
-    lowerMethod === "alipay" ||
-    lowerMethod === "apple_pay"
-  ) {
-    return "bg-blue-500"
-  } else if (lowerMethod === "airtel") {
-    return "bg-red-500"
+    return "#008832"
   } else {
-    return "bg-gray-500"
+    return "#377CFC"
   }
 }
