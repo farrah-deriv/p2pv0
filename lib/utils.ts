@@ -48,10 +48,12 @@ export function getPaymentMethodIcon(type: string): string {
   return type === "ewallet" ? "/icons/ewallet-icon.png" : "/icons/bank-transfer-icon.png"
 }
 
-export const maskAccountNumber = (accountNumber: string): string => {
-  if (!accountNumber || accountNumber.length <= 4) {
-    return accountNumber
+export const maskAccountNumber = (accountNumber: string | null | undefined): string => {
+  // Handle non-string inputs
+  if (!accountNumber || typeof accountNumber !== "string" || accountNumber.length <= 4) {
+    return accountNumber || ""
   }
+
   const lastFour = accountNumber.slice(-4)
   const maskedPart = "".padStart(accountNumber.length - 4, "*")
 
