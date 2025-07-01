@@ -79,12 +79,31 @@ export default function PaymentMethodsTab() {
       let data
 
       try {
-        data = JSON.parse(responseText)
+        data = responseText ? JSON.parse(responseText) : { data: [] }
       } catch (e) {
+        console.error("Failed to parse response:", responseText)
         data = { data: [] }
       }
 
-      const methodsData = data.data || []
+      // More robust data extraction with proper type checking
+      let methodsData = []
+
+      if (data && typeof data === "object") {
+        if (Array.isArray(data.data)) {
+          methodsData = data.data
+        } else if (Array.isArray(data)) {
+          methodsData = data
+        } else {
+          console.warn("Unexpected response format:", data)
+          methodsData = []
+        }
+      }
+
+      // Ensure methodsData is always an array before processing
+      if (!Array.isArray(methodsData)) {
+        console.error("methodsData is not an array:", methodsData)
+        methodsData = []
+      }
 
       const transformedMethods = methodsData.map((method: any) => {
         const methodType = method.method || ""
@@ -117,6 +136,7 @@ export default function PaymentMethodsTab() {
 
       setPaymentMethods(transformedMethods)
     } catch (error) {
+      console.error("Error in fetchPaymentMethods:", error)
       setError(error instanceof Error ? error.message : "Failed to load payment methods")
     } finally {
       setIsLoading(false)
