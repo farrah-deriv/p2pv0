@@ -55,18 +55,18 @@ export default function PaymentMethodsTab() {
   })
   const [isEditing, setIsEditing] = useState(false)
 
-  // Simple function to extract the actual value from nested structures
+  // Simple function to get the actual value from field
   const getDisplayValue = (details: Record<string, any>, fieldKey: string): string => {
     const field = details?.[fieldKey]
-    if (!field?.value) return ""
+    if (!field) return ""
 
-    let value = field.value
-    // Keep extracting until we get a primitive value
-    while (typeof value === "object" && value.value !== undefined) {
-      value = value.value
-    }
+    // If value is string, return it directly
+    if (typeof field.value === "string") return field.value
 
-    return String(value || "")
+    // If value is object with nested value, return that
+    if (field.value?.value) return String(field.value.value)
+
+    return ""
   }
 
   const fetchPaymentMethods = useCallback(async () => {
@@ -101,8 +101,6 @@ export default function PaymentMethodsTab() {
       const methodsData = Array.isArray(data.data) ? data.data : []
 
       const transformedMethods = methodsData.map((method: any) => {
-        const methodType = method.method || ""
-
         let category: "bank_transfer" | "e_wallet" | "other" = "other"
 
         if (method.type === "bank") {
@@ -112,12 +110,11 @@ export default function PaymentMethodsTab() {
         }
 
         const instructions = getDisplayValue(method.fields, "instructions")
-        const name = method.display_name || methodType.charAt(0).toUpperCase() + methodType.slice(1)
 
         return {
           id: String(method.id || ""),
-          name: name,
-          type: methodType,
+          name: method.display_name || "",
+          type: method.method || "",
           category: category,
           details: method.fields || {},
           instructions: instructions,
@@ -351,7 +348,7 @@ export default function PaymentMethodsTab() {
                       <div className="flex items-start gap-3 flex-1 min-w-0">
                         {getBankIcon()}
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-lg">Bank Transfer</div>
+                          <div className="font-medium text-lg">{method.name}</div>
                           <StatusIndicator variant="neutral" size="sm" className="truncate">
                             {accountValue ? maskAccountNumber(accountValue) : `ID: ${method.id}`}
                           </StatusIndicator>
