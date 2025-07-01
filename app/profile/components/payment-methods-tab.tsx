@@ -55,24 +55,6 @@ export default function PaymentMethodsTab() {
   })
   const [isEditing, setIsEditing] = useState(false)
 
-  // Get account value based on method type
-  const getDisplayValue = (details: Record<string, any>, fieldKey: string, methodType: string): string => {
-    const field = details?.[fieldKey]
-    if (!field?.value) return ""
-
-    switch (methodType) {
-      case "ewallet":
-        // E-wallets: direct string value
-        return field.value || ""
-      case "bank":
-        // Bank transfers: nested object with value property
-        return field.value?.value || ""
-      default:
-        // Fallback for unknown types
-        return typeof field.value === "string" ? field.value : field.value?.value || ""
-    }
-  }
-
   const fetchPaymentMethods = useCallback(async () => {
     try {
       setIsLoading(true)
@@ -102,9 +84,11 @@ export default function PaymentMethodsTab() {
         data = { data: [] }
       }
 
-      const methodsData = Array.isArray(data.data) ? data.data : []
+      const methodsData = data.data || []
 
       const transformedMethods = methodsData.map((method: any) => {
+        const methodType = method.method || ""
+
         let category: "bank_transfer" | "e_wallet" | "other" = "other"
 
         if (method.type === "bank") {
@@ -113,13 +97,17 @@ export default function PaymentMethodsTab() {
           category = "e_wallet"
         }
 
-        const instructions = getDisplayValue(method.fields, "instructions", method.type)
+        let instructions = ""
+        if (method.fields?.instructions?.value) {
+          instructions = method.fields.instructions.value
+        }
+
+        const name = method.display_name || methodType.charAt(0).toUpperCase() + methodType.slice(1)
 
         return {
           id: String(method.id || ""),
-          name: method.display_name || "",
-          type: method.method || "",
-          apiType: method.type, // Store the original API type
+          name: name,
+          type: methodType,
           category: category,
           details: method.fields || {},
           instructions: instructions,
@@ -344,49 +332,48 @@ export default function PaymentMethodsTab() {
         <h3 className="text-xl font-bold mb-4">Bank transfer</h3>
         {bankTransfers.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {bankTransfers.map((method) => {
-              const accountValue = getDisplayValue(method.details, "account", "bank")
-              return (
-                <Card key={method.id} variant="default" className="overflow-hidden">
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-start gap-3 flex-1 min-w-0">
-                        {getBankIcon()}
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-lg">{method.name}</div>
-                          <StatusIndicator variant="neutral" size="sm" className="truncate">
-                            {accountValue ? maskAccountNumber(accountValue) : `ID: ${method.id}`}
-                          </StatusIndicator>
-                        </div>
+            {bankTransfers.map((method) => (
+              <Card key={method.id} variant="default" className="overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      {getBankIcon()}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-lg">Bank Transfer</div>
+                        <StatusIndicator variant="neutral" size="sm" className="truncate">
+                          {method.details?.account?.value
+                            ? maskAccountNumber(method.details.account.value)
+                            : `ID: ${method.id}`}
+                        </StatusIndicator>
                       </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="p-1 h-auto w-auto flex-shrink-0 ml-2">
-                            <MoreVertical className="h-5 w-5 text-gray-500" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-[160px]">
-                          <DropdownMenuItem
-                            className="flex items-center gap-2 text-gray-700 focus:text-gray-700"
-                            onSelect={() => handleEditPaymentMethod(method)}
-                          >
-                            <Edit className="h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="flex items-center gap-2 text-destructive focus:text-destructive"
-                            onSelect={() => handleDeletePaymentMethod(method.id, method.name)}
-                          >
-                            <Trash className="h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="p-1 h-auto w-auto flex-shrink-0 ml-2">
+                          <MoreVertical className="h-5 w-5 text-gray-500" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-[160px]">
+                        <DropdownMenuItem
+                          className="flex items-center gap-2 text-gray-700 focus:text-gray-700"
+                          onSelect={() => handleEditPaymentMethod(method)}
+                        >
+                          <Edit className="h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="flex items-center gap-2 text-destructive focus:text-destructive"
+                          onSelect={() => handleDeletePaymentMethod(method.id, method.name)}
+                        >
+                          <Trash className="h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         ) : (
           <p className="text-gray-500 italic">No bank transfers are added at the moment</p>
@@ -397,49 +384,46 @@ export default function PaymentMethodsTab() {
         <h3 className="text-xl font-bold mb-4">E-wallets</h3>
         {eWallets.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {eWallets.map((method) => {
-              const accountValue = getDisplayValue(method.details, "account", "ewallet")
-              return (
-                <Card key={method.id} variant="default" className="overflow-hidden">
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-start gap-3 flex-1 min-w-0">
-                        {getEWalletIcon()}
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-lg">{method.name}</div>
-                          <StatusIndicator variant="neutral" size="sm" className="truncate">
-                            {accountValue ? maskAccountNumber(accountValue) : `ID: ${method.id}`}
-                          </StatusIndicator>
-                        </div>
+            {eWallets.map((method) => (
+              <Card key={method.id} variant="default" className="overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      {getEWalletIcon()}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-lg">{method.name}</div>
+                        <StatusIndicator variant="neutral" size="sm" className="truncate">
+                          {method.details?.account?.value || `ID: ${method.id}`}
+                        </StatusIndicator>
                       </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="p-1 h-auto w-auto flex-shrink-0 ml-2">
-                            <MoreVertical className="h-5 w-5 text-gray-500" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-[160px]">
-                          <DropdownMenuItem
-                            className="flex items-center gap-2 text-gray-700 focus:text-gray-700"
-                            onSelect={() => handleEditPaymentMethod(method)}
-                          >
-                            <Edit className="h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="flex items-center gap-2 text-destructive focus:text-destructive"
-                            onSelect={() => handleDeletePaymentMethod(method.id, method.name)}
-                          >
-                            <Trash className="h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="p-1 h-auto w-auto flex-shrink-0 ml-2">
+                          <MoreVertical className="h-5 w-5 text-gray-500" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-[160px]">
+                        <DropdownMenuItem
+                          className="flex items-center gap-2 text-gray-700 focus:text-gray-700"
+                          onSelect={() => handleEditPaymentMethod(method)}
+                        >
+                          <Edit className="h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="flex items-center gap-2 text-destructive focus:text-destructive"
+                          onSelect={() => handleDeletePaymentMethod(method.id, method.name)}
+                        >
+                          <Trash className="h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         ) : (
           <p className="text-gray-500 italic">No e-wallets are added at the moment</p>

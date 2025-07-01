@@ -47,18 +47,24 @@ export function getPaymentMethodFields(
 export function getPaymentMethodIcon(type: string): string {
   return type === "ewallet" ? "/icons/ewallet-icon.png" : "/icons/bank-transfer-icon.png"
 }
-
-export const maskAccountNumber = (accountNumber: string | any): string => {
+export const maskAccountNumber = (accountNumber: any): string => {
   if (!accountNumber) return ""
 
-  // Convert to string if it's not already
-  const accountStr = String(accountNumber)
+  // Extract nested value if object
+  let rawValue = accountNumber
+
+  if (typeof accountNumber === "object" && accountNumber !== null) {
+    if ("value" in accountNumber) {
+      rawValue = accountNumber.value
+    }
+  }
+
+  const accountStr = String(rawValue)
 
   if (accountStr.length <= 4) {
     return accountStr
   }
 
-  // Show last 4 digits with asterisks
   return "*".repeat(accountStr.length - 4) + accountStr.slice(-4)
 }
 
