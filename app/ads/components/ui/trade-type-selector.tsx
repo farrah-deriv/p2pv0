@@ -16,7 +16,7 @@ export function TradeTypeSelector({ value, onChange, isEditMode = false }: Trade
         className={`flex-1 flex items-center justify-center rounded-lg text-center font-medium transition-all h-8
           ${value === "buy" ? "bg-white shadow-sm my-1" : "bg-transparent text-gray-500 my-1"}`}
       >
-        I want to Buy
+        I want to buy
       </button>
       <button
         type="button"
