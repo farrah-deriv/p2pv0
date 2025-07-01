@@ -63,7 +63,8 @@ export const maskAccountNumber = (accountNumber: any): string => {
 
   if (accountStr.length <= 4) {
     return accountStr
-  
+  }
+
   return "*".repeat(accountStr.length - 4) + accountStr.slice(-4)
 }
 
