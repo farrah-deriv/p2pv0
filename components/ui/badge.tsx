@@ -14,10 +14,10 @@ const badgeVariants = cva(
         outline: "text-foreground",
         success: "border-transparent bg-success text-white hover:bg-success/80",
         "success-light":
-          "flex h-6 min-h-6 max-h-6 justify-center items-center rounded border-transparent bg-success-light text-xs font-bold leading-5 px-2.5 py-0.5",
+          "flex h-6 min-h-6 max-h-6 justify-center items-center rounded border-transparent bg-success-light text-xs font-bold leading-5 px-2.5 py-0.5 text-[#007A22]",
         error: "border-transparent bg-error text-white hover:bg-error/80",
         "error-light":
-          "flex h-6 min-h-6 max-h-6 justify-center items-center rounded border-transparent text-xs font-bold leading-5 px-2.5 py-0.5",
+          "flex h-6 min-h-6 max-h-6 justify-center items-center rounded border-transparent bg-[rgba(230,25,14,0.08)] text-xs font-bold leading-5 px-2.5 py-0.5 text-[#C40000]",
         warning: "border-transparent bg-warning-bg text-warning-icon hover:bg-warning-bg/80",
         buy: "border-transparent bg-buy text-white hover:bg-buy/80",
         sell: "border-transparent bg-sell text-white hover:bg-sell/80",
