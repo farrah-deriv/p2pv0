@@ -68,8 +68,7 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
       if (initialData.type) setType(initialData.type as "buy" | "sell")
       if (initialData.totalAmount !== undefined) setTotalAmount(initialData.totalAmount.toString())
       if (initialData.fixedRate !== undefined) setFixedRate(initialData.fixedRate.toString())
-      if (initialData.minAmount !== undefined) setMinAmount(initialData.minAmount.toString())
-      if (initialData.maxAmount !== undefined) setMaxAmount(initialData.maxAmount.toString())
+      if (initialData.minAmount !== undefined) setMaxAmount(initialData.maxAmount.toString())
       if (initialData.buySellCurrency) setBuySellCurrency(initialData.buySellCurrency)
       if (initialData.forCurrency) setForCurrency(initialData.forCurrency)
     }
@@ -249,16 +248,20 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
     setForCurrency(currency)
   }
 
-  const handleBuySellCurrencyOpen = () => {
-    if (isMobile) {
+  const handleBuySellCurrencyOpen = (open: boolean) => {
+    if (open && isMobile) {
       setIsBuySellCurrencySheetOpen(true)
+      return false // Prevent the default dropdown from opening
     }
+    return true
   }
 
-  const handleForCurrencyOpen = () => {
-    if (isMobile) {
+  const handleForCurrencyOpen = (open: boolean) => {
+    if (open && isMobile) {
       setIsForCurrencySheetOpen(true)
+      return false // Prevent the default dropdown from opening
     }
+    return true
   }
 
   return (
@@ -280,22 +283,20 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
                   onValueChange={handleBuySellCurrencyChange}
                   onOpenChange={(open) => {
                     if (open && isMobile) {
-                      handleBuySellCurrencyOpen()
+                      setIsBuySellCurrencySheetOpen(true)
                     }
                   }}
                 >
                   <SelectTrigger className="w-full h-14 rounded-lg">
-                    <SelectValue>{buySellCurrency}</SelectValue>
+                    <SelectValue placeholder="Select currency">{buySellCurrency}</SelectValue>
                   </SelectTrigger>
-                  {!isMobile && (
-                    <SelectContent>
-                      {currencies.map((currency) => (
-                        <SelectItem key={currency} value={currency}>
-                          {currency}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  )}
+                  <SelectContent>
+                    {currencies.map((currency) => (
+                      <SelectItem key={currency} value={currency}>
+                        {currency}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
               </div>
 
@@ -306,22 +307,20 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
                   onValueChange={handleForCurrencyChange}
                   onOpenChange={(open) => {
                     if (open && isMobile) {
-                      handleForCurrencyOpen()
+                      setIsForCurrencySheetOpen(true)
                     }
                   }}
                 >
                   <SelectTrigger className="w-full h-14 rounded-lg">
-                    <SelectValue>{forCurrency}</SelectValue>
+                    <SelectValue placeholder="Select currency">{forCurrency}</SelectValue>
                   </SelectTrigger>
-                  {!isMobile && (
-                    <SelectContent>
-                      {currencies.map((currency) => (
-                        <SelectItem key={currency} value={currency}>
-                          {currency}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  )}
+                  <SelectContent>
+                    {currencies.map((currency) => (
+                      <SelectItem key={currency} value={currency}>
+                        {currency}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
               </div>
             </div>
