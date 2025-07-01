@@ -237,7 +237,7 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
           <div
             key={index}
             className={cn(
-              "w-full h-[216px] border rounded p-4 flex flex-col gap-2",
+              "w-full h-[224px] border rounded p-4 flex flex-col gap-2",
               ad.status === "Inactive" ? "opacity-50" : "",
               index < ads.length - 1 ? "mb-4" : "",
             )}
