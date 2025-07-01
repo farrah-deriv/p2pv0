@@ -24,14 +24,19 @@ interface ValidationErrors {
 }
 
 export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDetailsFormProps) {
+  const currencies = ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
+
   // Initialize state with initialData values or defaults
   const [type, setType] = useState<"buy" | "sell">(initialData?.type || "buy")
   const [totalAmount, setTotalAmount] = useState(initialData?.totalAmount?.toString() || "")
   const [fixedRate, setFixedRate] = useState(initialData?.fixedRate?.toString() || "")
   const [minAmount, setMinAmount] = useState(initialData?.minAmount?.toString() || "")
   const [maxAmount, setMaxAmount] = useState(initialData?.maxAmount?.toString() || "")
-  const [buyCurrency, setBuyCurrency] = useState("BTC")
-  const [forCurrency, setForCurrency] = useState("USD")
+
+  // Use first element as default for currency selections
+  const [buyCurrency, setBuyCurrency] = useState(initialData?.buyCurrency || currencies[0])
+  const [forCurrency, setForCurrency] = useState(initialData?.forCurrency || currencies[0])
+
   const [formErrors, setFormErrors] = useState<ValidationErrors>({})
   const [touched, setTouched] = useState({
     totalAmount: false,
@@ -65,6 +70,8 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
       if (initialData.fixedRate !== undefined) setFixedRate(initialData.fixedRate.toString())
       if (initialData.minAmount !== undefined) setMinAmount(initialData.minAmount.toString())
       if (initialData.maxAmount !== undefined) setMaxAmount(initialData.maxAmount.toString())
+      if (initialData.buyCurrency) setBuyCurrency(initialData.buyCurrency)
+      if (initialData.forCurrency) setForCurrency(initialData.forCurrency)
     }
   }, [initialData])
 
@@ -189,6 +196,8 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
         fixedRate: Number.parseFloat(fixedRate) || 0,
         minAmount: Number.parseFloat(minAmount) || 0,
         maxAmount: Number.parseFloat(maxAmount) || 0,
+        buyCurrency,
+        forCurrency,
       }
 
       onNext(formData, combinedErrors)
@@ -202,6 +211,8 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
       fixedRate: Number.parseFloat(fixedRate) || 0,
       minAmount: Number.parseFloat(minAmount) || 0,
       maxAmount: Number.parseFloat(maxAmount) || 0,
+      buyCurrency,
+      forCurrency,
     }
 
     onNext(formData)
@@ -221,13 +232,22 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
           fixedRate: Number.parseFloat(fixedRate) || 0,
           minAmount: Number.parseFloat(minAmount) || 0,
           maxAmount: Number.parseFloat(maxAmount) || 0,
+          buyCurrency,
+          forCurrency,
         },
       },
     })
     document.dispatchEvent(event)
-  }, [totalAmount, fixedRate, minAmount, maxAmount, formErrors])
+  }, [totalAmount, fixedRate, minAmount, maxAmount, buyCurrency, forCurrency, formErrors])
 
-  const currencies = ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
+  // Common handlers for currency selection that work for both dropdown and bottom sheet
+  const handleBuyCurrencyChange = (currency: string) => {
+    setBuyCurrency(currency)
+  }
+
+  const handleForCurrencyChange = (currency: string) => {
+    setForCurrency(currency)
+  }
 
   const handleBuyCurrencyOpen = () => {
     if (isMobile) {
@@ -257,7 +277,7 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
                 </label>
                 <Select
                   value={buyCurrency}
-                  onValueChange={setBuyCurrency}
+                  onValueChange={handleBuyCurrencyChange}
                   onOpenChange={(open) => {
                     if (open && isMobile) {
                       handleBuyCurrencyOpen()
@@ -283,7 +303,7 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
                 <label className="block mb-2 text-black text-sm font-normal leading-5">For</label>
                 <Select
                   value={forCurrency}
-                  onValueChange={setForCurrency}
+                  onValueChange={handleForCurrencyChange}
                   onOpenChange={(open) => {
                     if (open && isMobile) {
                       handleForCurrencyOpen()
@@ -393,7 +413,7 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
         title={type === "buy" ? "Buy currency" : "Sell currency"}
         currencies={currencies}
         selectedCurrency={buyCurrency}
-        onSelectCurrency={setBuyCurrency}
+        onSelectCurrency={handleBuyCurrencyChange}
       />
 
       <CurrencyBottomSheet
@@ -402,7 +422,7 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
         title="For"
         currencies={currencies}
         selectedCurrency={forCurrency}
-        onSelectCurrency={setForCurrency}
+        onSelectCurrency={handleForCurrencyChange}
       />
     </div>
   )
