@@ -55,14 +55,22 @@ export default function PaymentMethodsTab() {
   })
   const [isEditing, setIsEditing] = useState(false)
 
-  // Get account value based on API structure
-  const getDisplayValue = (details: Record<string, any>, fieldKey: string): string => {
+  // Get account value based on method type
+  const getDisplayValue = (details: Record<string, any>, fieldKey: string, methodType: string): string => {
     const field = details?.[fieldKey]
     if (!field?.value) return ""
 
-    // E-wallets: direct string value
-    // Bank transfers: nested object with value property
-    return typeof field.value === "string" ? field.value : field.value.value || ""
+    switch (methodType) {
+      case "ewallet":
+        // E-wallets: direct string value
+        return field.value || ""
+      case "bank":
+        // Bank transfers: nested object with value property
+        return field.value?.value || ""
+      default:
+        // Fallback for unknown types
+        return typeof field.value === "string" ? field.value : field.value?.value || ""
+    }
   }
 
   const fetchPaymentMethods = useCallback(async () => {
@@ -105,12 +113,13 @@ export default function PaymentMethodsTab() {
           category = "e_wallet"
         }
 
-        const instructions = getDisplayValue(method.fields, "instructions")
+        const instructions = getDisplayValue(method.fields, "instructions", method.type)
 
         return {
           id: String(method.id || ""),
           name: method.display_name || "",
           type: method.method || "",
+          apiType: method.type, // Store the original API type
           category: category,
           details: method.fields || {},
           instructions: instructions,
@@ -336,7 +345,7 @@ export default function PaymentMethodsTab() {
         {bankTransfers.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {bankTransfers.map((method) => {
-              const accountValue = getDisplayValue(method.details, "account")
+              const accountValue = getDisplayValue(method.details, "account", "bank")
               return (
                 <Card key={method.id} variant="default" className="overflow-hidden">
                   <CardContent className="p-4">
@@ -389,7 +398,7 @@ export default function PaymentMethodsTab() {
         {eWallets.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {eWallets.map((method) => {
-              const accountValue = getDisplayValue(method.details, "account")
+              const accountValue = getDisplayValue(method.details, "account", "ewallet")
               return (
                 <Card key={method.id} variant="default" className="overflow-hidden">
                   <CardContent className="p-4">
