@@ -7,7 +7,7 @@ import { CurrencyInput } from "./ui/currency-input"
 import { RateInput } from "./ui/rate-input"
 import { TradeTypeSelector } from "./ui/trade-type-selector"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CurrencySelectionBottomSheet } from "./ui/currency-selection-bottom-sheet"
+import { CurrencyBottomSheet } from "./ui/currency-bottom-sheet"
 import { useIsMobile } from "@/hooks/use-mobile"
 
 interface AdDetailsFormProps {
@@ -229,13 +229,13 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
 
   const currencies = ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
 
-  const handleBuyCurrencyClick = () => {
+  const handleBuyCurrencyOpen = () => {
     if (isMobile) {
       setIsBuyCurrencySheetOpen(true)
     }
   }
 
-  const handleForCurrencyClick = () => {
+  const handleForCurrencyOpen = () => {
     if (isMobile) {
       setIsForCurrencySheetOpen(true)
     }
@@ -255,34 +255,19 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
                 <label className="block mb-2 text-black text-sm font-normal leading-5">
                   {type === "buy" ? "Buy currency" : "Sell currency"}
                 </label>
-                {isMobile ? (
-                  <button
-                    type="button"
-                    onClick={handleBuyCurrencyClick}
-                    className="w-full h-14 rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-between"
-                  >
-                    <span>{buyCurrency}</span>
-                    <svg
-                      width="15"
-                      height="15"
-                      viewBox="0 0 15 15"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 opacity-50"
-                    >
-                      <path
-                        d="m4.93179 5.43179c0.20081-0.20081 0.52632-0.20081 0.72713 0l2.34108 2.34108 2.34108-2.34108c0.20081-0.20081 0.52632-0.20081 0.72713 0s0.20081 0.52632 0 0.72713l-2.70455 2.70455c-0.20081 0.20081-0.52632 0.20081-0.72713 0l-2.70455-2.70455c-0.20081-0.20081-0.20081-0.52632 0-0.72713z"
-                        fill="currentColor"
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </button>
-                ) : (
-                  <Select value={buyCurrency} onValueChange={setBuyCurrency}>
-                    <SelectTrigger className="w-full h-14 rounded-lg">
-                      <SelectValue>{buyCurrency}</SelectValue>
-                    </SelectTrigger>
+                <Select
+                  value={buyCurrency}
+                  onValueChange={setBuyCurrency}
+                  onOpenChange={(open) => {
+                    if (open && isMobile) {
+                      handleBuyCurrencyOpen()
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-full h-14 rounded-lg">
+                    <SelectValue>{buyCurrency}</SelectValue>
+                  </SelectTrigger>
+                  {!isMobile && (
                     <SelectContent>
                       {currencies.map((currency) => (
                         <SelectItem key={currency} value={currency}>
@@ -290,40 +275,25 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
                         </SelectItem>
                       ))}
                     </SelectContent>
-                  </Select>
-                )}
+                  )}
+                </Select>
               </div>
 
               <div>
                 <label className="block mb-2 text-black text-sm font-normal leading-5">For</label>
-                {isMobile ? (
-                  <button
-                    type="button"
-                    onClick={handleForCurrencyClick}
-                    className="w-full h-14 rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-between"
-                  >
-                    <span>{forCurrency}</span>
-                    <svg
-                      width="15"
-                      height="15"
-                      viewBox="0 0 15 15"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 opacity-50"
-                    >
-                      <path
-                        d="m4.93179 5.43179c0.20081-0.20081 0.52632-0.20081 0.72713 0l2.34108 2.34108 2.34108-2.34108c0.20081-0.20081 0.52632-0.20081 0.72713 0s0.20081 0.52632 0 0.72713l-2.70455 2.70455c-0.20081 0.20081-0.52632 0.20081-0.72713 0l-2.70455-2.70455c-0.20081-0.20081-0.20081-0.52632 0-0.72713z"
-                        fill="currentColor"
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </button>
-                ) : (
-                  <Select value={forCurrency} onValueChange={setForCurrency}>
-                    <SelectTrigger className="w-full h-14 rounded-lg">
-                      <SelectValue>{forCurrency}</SelectValue>
-                    </SelectTrigger>
+                <Select
+                  value={forCurrency}
+                  onValueChange={setForCurrency}
+                  onOpenChange={(open) => {
+                    if (open && isMobile) {
+                      handleForCurrencyOpen()
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-full h-14 rounded-lg">
+                    <SelectValue>{forCurrency}</SelectValue>
+                  </SelectTrigger>
+                  {!isMobile && (
                     <SelectContent>
                       {currencies.map((currency) => (
                         <SelectItem key={currency} value={currency}>
@@ -331,8 +301,8 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
                         </SelectItem>
                       ))}
                     </SelectContent>
-                  </Select>
-                )}
+                  )}
+                </Select>
               </div>
             </div>
           </div>
@@ -417,7 +387,7 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
       </form>
 
       {/* Mobile Bottom Sheets */}
-      <CurrencySelectionBottomSheet
+      <CurrencyBottomSheet
         isOpen={isBuyCurrencySheetOpen}
         onClose={() => setIsBuyCurrencySheetOpen(false)}
         title={type === "buy" ? "Buy currency" : "Sell currency"}
@@ -426,7 +396,7 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
         onSelectCurrency={setBuyCurrency}
       />
 
-      <CurrencySelectionBottomSheet
+      <CurrencyBottomSheet
         isOpen={isForCurrencySheetOpen}
         onClose={() => setIsForCurrencySheetOpen(false)}
         title="For"
