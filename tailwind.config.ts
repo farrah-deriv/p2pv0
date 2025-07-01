@@ -131,10 +131,12 @@ const config: Config = {
           DEFAULT: "#267d36",
           icon: "#008832",
           bg: "#edfaf3",
+          text: "#007A22",
         },
         error: {
           light: "rgba(230, 25, 14, 0.08)",
           DEFAULT: "#c40000",
+          text: "#C40000",
         },
       },
       borderRadius: {
