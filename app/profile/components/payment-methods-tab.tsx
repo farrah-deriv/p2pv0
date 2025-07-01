@@ -55,21 +55,26 @@ export default function PaymentMethodsTab() {
   })
   const [isEditing, setIsEditing] = useState(false)
 
-  // Helper function to safely extract string values from potentially nested objects
-  const getDisplayValue = (details: Record<string, any>, key: string): string => {
-    const value = details?.[key]
-    if (!value) return ""
+  /**
+   * Safely extracts display value from payment method field
+   * Handles both simple string values and nested object structures
+   */
+  const getDisplayValue = (details: Record<string, any>, fieldKey: string): string => {
+    const field = details?.[fieldKey]
+    if (!field) return ""
 
-    // If it's already a string, return it
-    if (typeof value === "string") return value
-
-    // If it's an object with a 'value' property, extract that
-    if (typeof value === "object" && value.value) {
-      return typeof value.value === "string" ? value.value : String(value.value)
+    // Handle direct string value (e.g., Alipay case)
+    if (typeof field.value === "string") {
+      return field.value
     }
 
-    // Convert to string as fallback
-    return String(value)
+    // Handle nested object value (e.g., Bank Transfer case)
+    if (typeof field.value === "object" && field.value?.value) {
+      return String(field.value.value)
+    }
+
+    // Fallback to empty string
+    return ""
   }
 
   const fetchPaymentMethods = useCallback(async () => {
@@ -101,7 +106,7 @@ export default function PaymentMethodsTab() {
         data = { data: [] }
       }
 
-      const methodsData = data.data || []
+      const methodsData = Array.isArray(data.data) ? data.data : []
 
       const transformedMethods = methodsData.map((method: any) => {
         const methodType = method.method || ""
@@ -114,9 +119,10 @@ export default function PaymentMethodsTab() {
           category = "e_wallet"
         }
 
+        // Extract instructions safely
         let instructions = ""
-        if (method.fields?.instructions?.value) {
-          instructions = method.fields.instructions.value
+        if (method.fields?.instructions) {
+          instructions = getDisplayValue(method.fields, "instructions")
         }
 
         const name = method.display_name || methodType.charAt(0).toUpperCase() + methodType.slice(1)
