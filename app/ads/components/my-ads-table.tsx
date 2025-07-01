@@ -226,7 +226,7 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
         <Table>
           <TableHeader>
             <TableRow className="border-b">
-              <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal w-[15%]">
+              <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal w-[20%]">
                 Ad ID
               </TableHead>
               <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
