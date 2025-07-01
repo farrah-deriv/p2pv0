@@ -233,16 +233,7 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
             {/* Currency Selection Dropdowns */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
               <div>
-                <label
-                  className="block mb-2"
-                  style={{
-                    color: "black",
-                    fontSize: "14px",
-                    fontStyle: "normal",
-                    fontWeight: 400,
-                    lineHeight: "20px",
-                  }}
-                >
+                <label className="block mb-2 text-black text-sm font-normal leading-5">
                   {type === "buy" ? "Buy currency" : "Sell currency"}
                 </label>
                 <Select value={buyCurrency} onValueChange={setBuyCurrency}>
@@ -260,18 +251,7 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
               </div>
 
               <div>
-                <label
-                  className="block mb-2"
-                  style={{
-                    color: "black",
-                    fontSize: "14px",
-                    fontStyle: "normal",
-                    fontWeight: 400,
-                    lineHeight: "20px",
-                  }}
-                >
-                  For
-                </label>
+                <label className="block mb-2 text-black text-sm font-normal leading-5">For</label>
                 <Select value={forCurrency} onValueChange={setForCurrency}>
                   <SelectTrigger className="w-full h-14 rounded-lg">
                     <SelectValue>{forCurrency}</SelectValue>
