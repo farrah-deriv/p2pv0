@@ -299,9 +299,7 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
               {/* Available Row */}
               <div className="flex flex-col w-full mb-2">
                 <div className="text-neutral-10 text-xs font-normal leading-5 font-medium">
-                  <span className="text-neutral-10 text-xs font-normal leading-5">
-                    USD {ad.available.current || 0}
-                  </span>{" "}
+                  <span className="text-neutral-10 text-xs font-normal leading-5">USD {ad.available.current || 0}</span>{" "}
                   / {ad.available.total || 0}
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full w-full overflow-hidden mt-1">
