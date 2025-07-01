@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { MoreVertical, Pencil, Copy, Share2, Power, Trash2, Search } from "lucide-react"
@@ -333,7 +331,7 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
               </div>
 
               {/* Payment Methods Row - Updated to use StatusIndicator with dot */}
-              <div className="flex flex-wrap gap-2 text-black text-xs font-normal leading-5 text-left mb-2">
+              <div className="flex flex-wrap gap-2 text-black text-xs font-normal leading-5 text-left">
                 {ad.paymentMethods.map((method, i) => (
                   <StatusIndicator
                     key={i}
@@ -341,11 +339,6 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
                     withDot
                     size="sm"
                     className="mr-2 mb-1"
-                    style={
-                      {
-                        "--dot-color": method.toLowerCase().includes("bank") ? "#008832" : "#377CFC",
-                      } as React.CSSProperties
-                    }
                   >
                     {formatPaymentMethodName(method)}
                   </StatusIndicator>
