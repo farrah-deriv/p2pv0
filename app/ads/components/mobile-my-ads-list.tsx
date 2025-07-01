@@ -282,14 +282,14 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
                 {/* Rate and Limits */}
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold leading-5">Rate:</span>
+                    <span className="text-black text-xs font-bold leading-5">Rate:</span>
                     <div className="text-right">
                       {rate} <span className="text-green-600">{percentage}</span>
                     </div>
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold leading-5">Limits:</span>
+                    <span className="text-black text-xs font-bold leading-5">Limits:</span>
                     <span>{formatLimits(ad.limits)}</span>
                   </div>
                 </div>
