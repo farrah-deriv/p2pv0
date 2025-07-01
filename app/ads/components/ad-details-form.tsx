@@ -34,7 +34,7 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
   const [minAmount, setMinAmount] = useState(initialData?.minAmount?.toString() || "")
   const [maxAmount, setMaxAmount] = useState(initialData?.maxAmount?.toString() || "")
 
-  // Use first element as default for currency selections
+  // Use first element as default for currency selections - these are the SINGLE source of truth
   const [buySellCurrency, setBuySellCurrency] = useState(initialData?.buySellCurrency || currencies[0])
   const [forCurrency, setForCurrency] = useState(initialData?.forCurrency || currencies[0])
 
@@ -50,6 +50,11 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
   const [isBuySellCurrencySheetOpen, setIsBuySellCurrencySheetOpen] = useState(false)
   const [isForCurrencySheetOpen, setIsForCurrencySheetOpen] = useState(false)
   const isMobile = useIsMobile()
+
+  // Debug logging to track state changes
+  useEffect(() => {
+    console.log("Currency state changed:", { buySellCurrency, forCurrency, isMobile })
+  }, [buySellCurrency, forCurrency, isMobile])
 
   // Check if form is valid for enabling/disabling the Next button
   const isFormValid = () => {
@@ -76,10 +81,7 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
     }
   }, [initialData])
 
-  // Update the useEffect validation to ensure it works in edit mode
-  // by removing the touched.totalAmount condition for limit validations
-
-  // Replace the existing validation useEffect with this updated version:
+  // Validation useEffect
   useEffect(() => {
     const errors: ValidationErrors = {}
     const total = Number(totalAmount)
@@ -122,7 +124,6 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
       } else if (min <= 0) {
         errors.minAmount = "Minimum amount must be greater than 0"
       }
-      // Moved the total amount check outside of touched condition
     }
 
     // Check min against max regardless of which was touched
@@ -138,13 +139,12 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
       } else if (max <= 0) {
         errors.maxAmount = "Maximum amount must be greater than 0"
       }
-      // Moved the total amount check outside of touched condition
     }
 
     setFormErrors(errors)
   }, [totalAmount, fixedRate, minAmount, maxAmount, touched])
 
-  // Update the handleSubmit function to ensure validation works in edit mode
+  // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -219,6 +219,7 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
     onNext(formData)
   }
 
+  // Form validation change event
   useEffect(() => {
     // This will run whenever the form validation state changes
     const isValid = isFormValid()
@@ -241,13 +242,70 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
     document.dispatchEvent(event)
   }, [totalAmount, fixedRate, minAmount, maxAmount, buySellCurrency, forCurrency, formErrors])
 
-  // Common handlers for currency selection that work for both dropdown and bottom sheet
+  // SINGLE handlers for currency selection - used by BOTH desktop and mobile
   const handleBuySellCurrencyChange = (currency: string) => {
+    console.log("BuySell currency changed to:", currency)
     setBuySellCurrency(currency)
   }
 
   const handleForCurrencyChange = (currency: string) => {
+    console.log("For currency changed to:", currency)
     setForCurrency(currency)
+  }
+
+  // Render currency selector based on device type
+  const renderBuySellCurrencySelector = () => {
+    if (isMobile) {
+      return (
+        <MobileCurrencySelector
+          value={buySellCurrency}
+          onOpen={() => setIsBuySellCurrencySheetOpen(true)}
+          placeholder="Select currency"
+        />
+      )
+    }
+
+    return (
+      <Select value={buySellCurrency} onValueChange={handleBuySellCurrencyChange}>
+        <SelectTrigger className="w-full h-14 rounded-lg">
+          <SelectValue placeholder="Select currency" />
+        </SelectTrigger>
+        <SelectContent>
+          {currencies.map((currency) => (
+            <SelectItem key={currency} value={currency}>
+              {currency}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    )
+  }
+
+  const renderForCurrencySelector = () => {
+    if (isMobile) {
+      return (
+        <MobileCurrencySelector
+          value={forCurrency}
+          onOpen={() => setIsForCurrencySheetOpen(true)}
+          placeholder="Select currency"
+        />
+      )
+    }
+
+    return (
+      <Select value={forCurrency} onValueChange={handleForCurrencyChange}>
+        <SelectTrigger className="w-full h-14 rounded-lg">
+          <SelectValue placeholder="Select currency" />
+        </SelectTrigger>
+        <SelectContent>
+          {currencies.map((currency) => (
+            <SelectItem key={currency} value={currency}>
+              {currency}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    )
   }
 
   return (
@@ -258,57 +316,24 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
             <h3 className="text-base font-bold leading-6 tracking-normal mb-5">Select trade type</h3>
             <TradeTypeSelector value={type} onChange={setType} isEditMode={isEditMode} />
 
-            {/* Currency Selection Dropdowns */}
+            {/* Currency Selection - Using the same state for both desktop and mobile */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
               <div>
                 <label className="block mb-2 text-black text-sm font-normal leading-5">
                   {type === "buy" ? "Buy currency" : "Sell currency"}
                 </label>
-                {isMobile ? (
-                  <MobileCurrencySelector
-                    value={buySellCurrency}
-                    onOpen={() => setIsBuySellCurrencySheetOpen(true)}
-                    placeholder="Select currency"
-                  />
-                ) : (
-                  <Select value={buySellCurrency} onValueChange={handleBuySellCurrencyChange}>
-                    <SelectTrigger className="w-full h-14 rounded-lg">
-                      <SelectValue placeholder="Select currency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {currencies.map((currency) => (
-                        <SelectItem key={currency} value={currency}>
-                          {currency}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                {renderBuySellCurrencySelector()}
               </div>
 
               <div>
                 <label className="block mb-2 text-black text-sm font-normal leading-5">For</label>
-                {isMobile ? (
-                  <MobileCurrencySelector
-                    value={forCurrency}
-                    onOpen={() => setIsForCurrencySheetOpen(true)}
-                    placeholder="Select currency"
-                  />
-                ) : (
-                  <Select value={forCurrency} onValueChange={handleForCurrencyChange}>
-                    <SelectTrigger className="w-full h-14 rounded-lg">
-                      <SelectValue placeholder="Select currency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {currencies.map((currency) => (
-                        <SelectItem key={currency} value={currency}>
-                          {currency}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                {renderForCurrencySelector()}
               </div>
+            </div>
+
+            {/* Debug info - remove in production */}
+            <div className="mt-4 p-2 bg-gray-100 text-xs">
+              Debug: BuySell={buySellCurrency}, For={forCurrency}, Mobile={isMobile.toString()}
             </div>
           </div>
         )}
@@ -391,7 +416,7 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
         </div>
       </form>
 
-      {/* Mobile Bottom Sheets */}
+      {/* Mobile Bottom Sheets - Using the SAME state variables and handlers */}
       <CurrencyBottomSheet
         isOpen={isBuySellCurrencySheetOpen}
         onClose={() => setIsBuySellCurrencySheetOpen(false)}
