@@ -6,7 +6,9 @@ import type { AdFormData } from "../types"
 import { CurrencyInput } from "./ui/currency-input"
 import { RateInput } from "./ui/rate-input"
 import { TradeTypeSelector } from "./ui/trade-type-selector"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
+import { ChevronDown } from "lucide-react"
 
 interface AdDetailsFormProps {
   onNext: (data: Partial<AdFormData>, errors?: ValidationErrors) => void
@@ -228,54 +230,56 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
             <h3 className="text-base font-bold leading-6 tracking-normal mb-5">Select trade type</h3>
             <TradeTypeSelector value={type} onChange={setType} isEditMode={isEditMode} />
 
-            {/* Currency Selection Dropdowns */}
+            {/* Currency Selection Dropdowns using DropdownMenu */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Buy currency</label>
-                <Select value={buyCurrency} onValueChange={setBuyCurrency}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between bg-transparent">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">₿</span>
+                        </div>
+                        <span>{buyCurrency}</span>
+                      </div>
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-full">
+                    <DropdownMenuItem onClick={() => setBuyCurrency("BTC")}>
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
                           <span className="text-white text-xs font-bold">₿</span>
                         </div>
                         <span>BTC</span>
                       </div>
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="BTC">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">₿</span>
-                        </div>
-                        <span>BTC</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">For</label>
-                <Select value={forCurrency} onValueChange={setForCurrency}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between bg-transparent">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-4 bg-red-500 rounded-sm"></div>
+                        <span>{forCurrency}</span>
+                      </div>
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-full">
+                    <DropdownMenuItem onClick={() => setForCurrency("IDR")}>
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-4 bg-red-500 rounded-sm"></div>
                         <span>IDR</span>
                       </div>
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="IDR">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-4 bg-red-500 rounded-sm"></div>
-                        <span>IDR</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </div>
