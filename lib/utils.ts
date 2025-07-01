@@ -48,16 +48,18 @@ export function getPaymentMethodIcon(type: string): string {
   return type === "ewallet" ? "/icons/ewallet-icon.png" : "/icons/bank-transfer-icon.png"
 }
 
-export const maskAccountNumber = (accountNumber: string | null | undefined): string => {
-  // Handle non-string inputs
-  if (!accountNumber || typeof accountNumber !== "string" || accountNumber.length <= 4) {
-    return accountNumber || ""
+export const maskAccountNumber = (accountNumber: string | any): string => {
+  if (!accountNumber) return ""
+
+  // Convert to string if it's not already
+  const accountStr = String(accountNumber)
+
+  if (accountStr.length <= 4) {
+    return accountStr
   }
 
-  const lastFour = accountNumber.slice(-4)
-  const maskedPart = "".padStart(accountNumber.length - 4, "*")
-
-  return maskedPart + lastFour
+  // Show last 4 digits with asterisks
+  return "*".repeat(accountStr.length - 4) + accountStr.slice(-4)
 }
 
 /**
