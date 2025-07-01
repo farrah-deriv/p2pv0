@@ -49,10 +49,8 @@ export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
             <span
               className={`w-2 h-2 rounded-full mr-2 ${
                 method.toLowerCase().includes("bank") || method.toLowerCase().includes("transfer")
-                  ? "bg-green-600"
-                  : method.toLowerCase().includes("skrill")
-                    ? "bg-blue-500"
-                    : "bg-blue-400"
+                  ? "bg-payment-method-bank"
+                  : "bg-payment-method-other"
               }`}
             ></span>
             <span className="text-xs font-normal leading-5 text-gray-900">{formatPaymentMethodName(method)}</span>

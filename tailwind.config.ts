@@ -138,6 +138,10 @@ const config: Config = {
           DEFAULT: "#c40000",
           text: "#C40000",
         },
+        "payment-method": {
+          bank: "#008832",
+          other: "#377CFC",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
