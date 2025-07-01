@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { MoreVertical, Pencil, Copy, Share2, Power, Trash2, Search } from "lucide-react"
@@ -9,7 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { StatusIndicator } from "@/components/ui/status-indicator"
 import { deleteAd, updateAd } from "../api/api-ads"
 import type { Ad } from "../types"
-import { cn } from "@/lib/utils"
+import { cn, formatPaymentMethodName } from "@/lib/utils"
 import StatusModal from "./ui/status-modal"
 import { DeleteConfirmationDialog } from "./ui/delete-confirmation-dialog"
 
@@ -331,7 +333,7 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
               </div>
 
               {/* Payment Methods Row - Updated to use StatusIndicator with dot */}
-              <div className="flex flex-wrap gap-2 text-black text-xs font-normal leading-5 text-left">
+              <div className="flex flex-wrap gap-2 text-black text-xs font-normal leading-5 text-left mb-2">
                 {ad.paymentMethods.map((method, i) => (
                   <StatusIndicator
                     key={i}
@@ -339,8 +341,13 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
                     withDot
                     size="sm"
                     className="mr-2 mb-1"
+                    style={
+                      {
+                        "--dot-color": method.toLowerCase().includes("bank") ? "#008832" : "#377CFC",
+                      } as React.CSSProperties
+                    }
                   >
-                    {method}
+                    {formatPaymentMethodName(method)}
                   </StatusIndicator>
                 ))}
               </div>
