@@ -6,9 +6,7 @@ import type { AdFormData } from "../types"
 import { CurrencyInput } from "./ui/currency-input"
 import { RateInput } from "./ui/rate-input"
 import { TradeTypeSelector } from "./ui/trade-type-selector"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { ChevronDown } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface AdDetailsFormProps {
   onNext: (data: Partial<AdFormData>, errors?: ValidationErrors) => void
@@ -31,7 +29,7 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
   const [minAmount, setMinAmount] = useState(initialData?.minAmount?.toString() || "")
   const [maxAmount, setMaxAmount] = useState(initialData?.maxAmount?.toString() || "")
   const [buyCurrency, setBuyCurrency] = useState("BTC")
-  const [forCurrency, setForCurrency] = useState("IDR")
+  const [forCurrency, setForCurrency] = useState("USD")
   const [formErrors, setFormErrors] = useState<ValidationErrors>({})
   const [touched, setTouched] = useState({
     totalAmount: false,
@@ -222,6 +220,48 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
     document.dispatchEvent(event)
   }, [totalAmount, fixedRate, minAmount, maxAmount, formErrors])
 
+  // Currency options with icons
+  const getCurrencyIcon = (currency: string) => {
+    switch (currency) {
+      case "USD":
+        return (
+          <div className="w-6 h-4 bg-blue-500 rounded-sm flex items-center justify-center">
+            <span className="text-white text-xs font-bold">$</span>
+          </div>
+        )
+      case "BTC":
+        return (
+          <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
+            <span className="text-white text-xs font-bold">₿</span>
+          </div>
+        )
+      case "ETH":
+        return (
+          <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center">
+            <span className="text-white text-xs font-bold">Ξ</span>
+          </div>
+        )
+      case "LTC":
+        return (
+          <div className="w-6 h-6 rounded-full bg-gray-400 flex items-center justify-center">
+            <span className="text-white text-xs font-bold">Ł</span>
+          </div>
+        )
+      case "BRL":
+        return (
+          <div className="w-6 h-4 bg-green-500 rounded-sm flex items-center justify-center">
+            <span className="text-white text-xs font-bold">R$</span>
+          </div>
+        )
+      case "VND":
+        return <div className="w-6 h-4 bg-red-500 rounded-sm"></div>
+      default:
+        return <div className="w-6 h-4 bg-gray-300 rounded-sm"></div>
+    }
+  }
+
+  const currencies = ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
+
   return (
     <div className="max-w-[800px] mx-auto">
       <form id="ad-details-form" onSubmit={handleSubmit} className="space-y-10">
@@ -230,56 +270,54 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
             <h3 className="text-base font-bold leading-6 tracking-normal mb-5">Select trade type</h3>
             <TradeTypeSelector value={type} onChange={setType} isEditMode={isEditMode} />
 
-            {/* Currency Selection Dropdowns using DropdownMenu */}
+            {/* Currency Selection Dropdowns */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Buy currency</label>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full justify-between bg-transparent">
+                <Select value={buyCurrency} onValueChange={setBuyCurrency}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue>
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">₿</span>
-                        </div>
+                        {getCurrencyIcon(buyCurrency)}
                         <span>{buyCurrency}</span>
                       </div>
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-full">
-                    <DropdownMenuItem onClick={() => setBuyCurrency("BTC")}>
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">₿</span>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currencies.map((currency) => (
+                      <SelectItem key={currency} value={currency}>
+                        <div className="flex items-center gap-2">
+                          {getCurrencyIcon(currency)}
+                          <span>{currency}</span>
                         </div>
-                        <span>BTC</span>
-                      </div>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">For</label>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full justify-between bg-transparent">
+                <Select value={forCurrency} onValueChange={setForCurrency}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue>
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-4 bg-red-500 rounded-sm"></div>
+                        {getCurrencyIcon(forCurrency)}
                         <span>{forCurrency}</span>
                       </div>
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-full">
-                    <DropdownMenuItem onClick={() => setForCurrency("IDR")}>
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-4 bg-red-500 rounded-sm"></div>
-                        <span>IDR</span>
-                      </div>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currencies.map((currency) => (
+                      <SelectItem key={currency} value={currency}>
+                        <div className="flex items-center gap-2">
+                          {getCurrencyIcon(currency)}
+                          <span>{currency}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
