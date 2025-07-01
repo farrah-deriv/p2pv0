@@ -47,6 +47,7 @@ export function getPaymentMethodFields(
 export function getPaymentMethodIcon(type: string): string {
   return type === "ewallet" ? "/icons/ewallet-icon.png" : "/icons/bank-transfer-icon.png"
 }
+
 export const maskAccountNumber = (accountNumber: any): string => {
   if (!accountNumber) return ""
 
