@@ -235,7 +235,7 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Buy currency</label>
                 <Select value={buyCurrency} onValueChange={setBuyCurrency}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full h-14">
                     <SelectValue>{buyCurrency}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
@@ -251,7 +251,7 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">For</label>
                 <Select value={forCurrency} onValueChange={setForCurrency}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full h-14">
                     <SelectValue>{forCurrency}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
