@@ -8,6 +8,7 @@ import { RateInput } from "./ui/rate-input"
 import { TradeTypeSelector } from "./ui/trade-type-selector"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CurrencyBottomSheet } from "./ui/currency-bottom-sheet"
+import { MobileCurrencySelector } from "./ui/mobile-currency-selector"
 import { useIsMobile } from "@/hooks/use-mobile"
 
 interface AdDetailsFormProps {
@@ -68,7 +69,8 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
       if (initialData.type) setType(initialData.type as "buy" | "sell")
       if (initialData.totalAmount !== undefined) setTotalAmount(initialData.totalAmount.toString())
       if (initialData.fixedRate !== undefined) setFixedRate(initialData.fixedRate.toString())
-      if (initialData.minAmount !== undefined) setMaxAmount(initialData.maxAmount.toString())
+      if (initialData.minAmount !== undefined) setMinAmount(initialData.minAmount.toString())
+      if (initialData.maxAmount !== undefined) setMaxAmount(initialData.maxAmount.toString())
       if (initialData.buySellCurrency) setBuySellCurrency(initialData.buySellCurrency)
       if (initialData.forCurrency) setForCurrency(initialData.forCurrency)
     }
@@ -248,22 +250,6 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
     setForCurrency(currency)
   }
 
-  const handleBuySellCurrencyOpen = (open: boolean) => {
-    if (open && isMobile) {
-      setIsBuySellCurrencySheetOpen(true)
-      return false // Prevent the default dropdown from opening
-    }
-    return true
-  }
-
-  const handleForCurrencyOpen = (open: boolean) => {
-    if (open && isMobile) {
-      setIsForCurrencySheetOpen(true)
-      return false // Prevent the default dropdown from opening
-    }
-    return true
-  }
-
   return (
     <div className="max-w-[800px] mx-auto">
       <form id="ad-details-form" onSubmit={handleSubmit} className="space-y-10">
@@ -278,50 +264,50 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
                 <label className="block mb-2 text-black text-sm font-normal leading-5">
                   {type === "buy" ? "Buy currency" : "Sell currency"}
                 </label>
-                <Select
-                  value={buySellCurrency}
-                  onValueChange={handleBuySellCurrencyChange}
-                  onOpenChange={(open) => {
-                    if (open && isMobile) {
-                      setIsBuySellCurrencySheetOpen(true)
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-full h-14 rounded-lg">
-                    <SelectValue placeholder="Select currency">{buySellCurrency}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {currencies.map((currency) => (
-                      <SelectItem key={currency} value={currency}>
-                        {currency}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {isMobile ? (
+                  <MobileCurrencySelector
+                    value={buySellCurrency}
+                    onOpen={() => setIsBuySellCurrencySheetOpen(true)}
+                    placeholder="Select currency"
+                  />
+                ) : (
+                  <Select value={buySellCurrency} onValueChange={handleBuySellCurrencyChange}>
+                    <SelectTrigger className="w-full h-14 rounded-lg">
+                      <SelectValue placeholder="Select currency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {currencies.map((currency) => (
+                        <SelectItem key={currency} value={currency}>
+                          {currency}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
 
               <div>
                 <label className="block mb-2 text-black text-sm font-normal leading-5">For</label>
-                <Select
-                  value={forCurrency}
-                  onValueChange={handleForCurrencyChange}
-                  onOpenChange={(open) => {
-                    if (open && isMobile) {
-                      setIsForCurrencySheetOpen(true)
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-full h-14 rounded-lg">
-                    <SelectValue placeholder="Select currency">{forCurrency}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {currencies.map((currency) => (
-                      <SelectItem key={currency} value={currency}>
-                        {currency}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {isMobile ? (
+                  <MobileCurrencySelector
+                    value={forCurrency}
+                    onOpen={() => setIsForCurrencySheetOpen(true)}
+                    placeholder="Select currency"
+                  />
+                ) : (
+                  <Select value={forCurrency} onValueChange={handleForCurrencyChange}>
+                    <SelectTrigger className="w-full h-14 rounded-lg">
+                      <SelectValue placeholder="Select currency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {currencies.map((currency) => (
+                        <SelectItem key={currency} value={currency}>
+                          {currency}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             </div>
           </div>
