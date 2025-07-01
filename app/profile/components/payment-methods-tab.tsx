@@ -55,18 +55,14 @@ export default function PaymentMethodsTab() {
   })
   const [isEditing, setIsEditing] = useState(false)
 
-  // Simple function to get the actual value from field
+  // Get account value based on API structure
   const getDisplayValue = (details: Record<string, any>, fieldKey: string): string => {
     const field = details?.[fieldKey]
-    if (!field) return ""
+    if (!field?.value) return ""
 
-    // If value is string, return it directly
-    if (typeof field.value === "string") return field.value
-
-    // If value is object with nested value, return that
-    if (field.value?.value) return String(field.value.value)
-
-    return ""
+    // E-wallets: direct string value
+    // Bank transfers: nested object with value property
+    return typeof field.value === "string" ? field.value : field.value.value || ""
   }
 
   const fetchPaymentMethods = useCallback(async () => {
