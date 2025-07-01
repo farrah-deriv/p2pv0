@@ -231,7 +231,7 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
             </div>
 
             <div>
-              <h3 className="text-base font-medium mb-6">Order amount limit</h3>
+              <h3 className="text-base font-medium mb-6">Transaction limit</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm text-gray-500 mb-2 block">Minimum order amount</label>
