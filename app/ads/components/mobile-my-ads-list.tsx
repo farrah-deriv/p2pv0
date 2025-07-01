@@ -331,7 +331,7 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
               </div>
 
               {/* Payment Methods Row - Updated to use StatusIndicator with dot */}
-              <div className="flex flex-wrap gap-2 text-black text-xs font-normal leading-5 text-left">
+              <div className="flex flex-wrap gap-2 text-black text-xs font-normal leading-5 text-left mb-2">
                 {ad.paymentMethods.map((method, i) => (
                   <StatusIndicator
                     key={i}
