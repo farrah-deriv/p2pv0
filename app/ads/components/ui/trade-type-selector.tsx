@@ -8,7 +8,7 @@ interface TradeTypeSelectorProps {
 
 export function TradeTypeSelector({ value, onChange, isEditMode = false }: TradeTypeSelectorProps) {
   return (
-    <div className="flex bg-gray-50 rounded-lg w-full md:w-[250px] h-10 min-h-10 max-h-10 px-1 py-0">
+    <div className="flex bg-gray-50 rounded-lg w-full md:w-[270px] h-10 min-h-10 max-h-10 px-1 py-0">
       <button
         type="button"
         onClick={() => !isEditMode && onChange("buy")}
