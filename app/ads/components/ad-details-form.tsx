@@ -220,46 +220,6 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
     document.dispatchEvent(event)
   }, [totalAmount, fixedRate, minAmount, maxAmount, formErrors])
 
-  // Currency options with icons
-  const getCurrencyIcon = (currency: string) => {
-    switch (currency) {
-      case "USD":
-        return (
-          <div className="w-6 h-4 bg-blue-500 rounded-sm flex items-center justify-center">
-            <span className="text-white text-xs font-bold">$</span>
-          </div>
-        )
-      case "BTC":
-        return (
-          <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
-            <span className="text-white text-xs font-bold">₿</span>
-          </div>
-        )
-      case "ETH":
-        return (
-          <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center">
-            <span className="text-white text-xs font-bold">Ξ</span>
-          </div>
-        )
-      case "LTC":
-        return (
-          <div className="w-6 h-6 rounded-full bg-gray-400 flex items-center justify-center">
-            <span className="text-white text-xs font-bold">Ł</span>
-          </div>
-        )
-      case "BRL":
-        return (
-          <div className="w-6 h-4 bg-green-500 rounded-sm flex items-center justify-center">
-            <span className="text-white text-xs font-bold">R$</span>
-          </div>
-        )
-      case "VND":
-        return <div className="w-6 h-4 bg-red-500 rounded-sm"></div>
-      default:
-        return <div className="w-6 h-4 bg-gray-300 rounded-sm"></div>
-    }
-  }
-
   const currencies = ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
 
   return (
@@ -276,20 +236,12 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
                 <label className="block text-sm font-medium text-gray-700 mb-2">Buy currency</label>
                 <Select value={buyCurrency} onValueChange={setBuyCurrency}>
                   <SelectTrigger className="w-full">
-                    <SelectValue>
-                      <div className="flex items-center gap-2">
-                        {getCurrencyIcon(buyCurrency)}
-                        <span>{buyCurrency}</span>
-                      </div>
-                    </SelectValue>
+                    <SelectValue>{buyCurrency}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {currencies.map((currency) => (
                       <SelectItem key={currency} value={currency}>
-                        <div className="flex items-center gap-2">
-                          {getCurrencyIcon(currency)}
-                          <span>{currency}</span>
-                        </div>
+                        {currency}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -300,20 +252,12 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
                 <label className="block text-sm font-medium text-gray-700 mb-2">For</label>
                 <Select value={forCurrency} onValueChange={setForCurrency}>
                   <SelectTrigger className="w-full">
-                    <SelectValue>
-                      <div className="flex items-center gap-2">
-                        {getCurrencyIcon(forCurrency)}
-                        <span>{forCurrency}</span>
-                      </div>
-                    </SelectValue>
+                    <SelectValue>{forCurrency}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {currencies.map((currency) => (
                       <SelectItem key={currency} value={currency}>
-                        <div className="flex items-center gap-2">
-                          {getCurrencyIcon(currency)}
-                          <span>{currency}</span>
-                        </div>
+                        {currency}
                       </SelectItem>
                     ))}
                   </SelectContent>
