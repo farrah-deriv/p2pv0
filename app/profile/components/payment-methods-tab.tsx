@@ -55,26 +55,18 @@ export default function PaymentMethodsTab() {
   })
   const [isEditing, setIsEditing] = useState(false)
 
-  /**
-   * Safely extracts display value from payment method field
-   * Handles both simple string values and nested object structures
-   */
+  // Simple function to extract the actual value from nested structures
   const getDisplayValue = (details: Record<string, any>, fieldKey: string): string => {
     const field = details?.[fieldKey]
-    if (!field) return ""
+    if (!field?.value) return ""
 
-    // Handle direct string value (e.g., Alipay case)
-    if (typeof field.value === "string") {
-      return field.value
+    let value = field.value
+    // Keep extracting until we get a primitive value
+    while (typeof value === "object" && value.value !== undefined) {
+      value = value.value
     }
 
-    // Handle nested object value (e.g., Bank Transfer case)
-    if (typeof field.value === "object" && field.value?.value) {
-      return String(field.value.value)
-    }
-
-    // Fallback to empty string
-    return ""
+    return String(value || "")
   }
 
   const fetchPaymentMethods = useCallback(async () => {
@@ -119,12 +111,7 @@ export default function PaymentMethodsTab() {
           category = "e_wallet"
         }
 
-        // Extract instructions safely
-        let instructions = ""
-        if (method.fields?.instructions) {
-          instructions = getDisplayValue(method.fields, "instructions")
-        }
-
+        const instructions = getDisplayValue(method.fields, "instructions")
         const name = method.display_name || methodType.charAt(0).toUpperCase() + methodType.slice(1)
 
         return {
