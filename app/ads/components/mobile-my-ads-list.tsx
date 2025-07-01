@@ -283,11 +283,9 @@ export default function MobileMyAdsList({ ads, onAdDeleted }: MobileMyAdsListPro
             {/* Buy/Sell with ID row */}
             <div className="flex items-center justify-between">
               <div className="text-base font-bold">
-                {/* Updated to use StatusIndicator */}
-                <StatusIndicator variant={ad.type === "Buy" ? "buy" : "sell"}>
-                  {ad.type}
-                  <span className="text-black ml-1">USD</span>
-                </StatusIndicator>
+                {/* Updated to use Tailwind buy/sell colors */}
+                <span className={ad.type === "Buy" ? "text-buy" : "text-sell"}>{ad.type}</span>
+                <span className="text-black ml-1">USD</span>
               </div>
               <div className="text-neutral-7 text-xs font-normal">
                 {ad.type} {ad.id}

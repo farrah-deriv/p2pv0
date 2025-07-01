@@ -48,7 +48,7 @@ const config: Config = {
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         buy: {
-          DEFAULT: "#37B24D",
+          DEFAULT: "#29823B",
         },
         sell: {
           DEFAULT: "#DC2020",
