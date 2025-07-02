@@ -55,6 +55,7 @@ jobs:
                 project_name: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
                 branch_name: master
                 output_dir: out
+                directory: dist
                 cname_url: p2p.champion.trade
 
     send_slack_notification:

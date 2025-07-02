@@ -55,4 +55,5 @@ jobs:
                 project_name: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
                 branch_name: staging
                 output_dir: out
+                directory: dist
                 cname_url: staging-p2p.champion.trade
