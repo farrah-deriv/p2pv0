@@ -39,6 +39,14 @@ jobs:
             - name: Build
               run: npm run build
               env:
+                NEXT_PUBLIC_BASE_URL: ${{ vars.NEXT_PUBLIC_BASE_URL }}
+                NEXT_PUBLIC_CORE_URL: ${{ vars.NEXT_PUBLIC_CORE_URL }}
+                NEXT_PUBLIC_SOCKET_URL: ${{ vars.NEXT_PUBLIC_SOCKET_URL }}
+                NEXT_PUBLIC_CASHIER_URL: ${{ vars.NEXT_PUBLIC_CASHIER_URL }}
+                NEXT_PUBLIC_DATA_SOURCE: ${{ vars.NEXT_PUBLIC_DATA_SOURCE }}
+                NEXT_PUBLIC_BRANCH: ${{ vars.NEXT_PUBLIC_BRANCH }}
+                NEXT_PUBLIC_NOTIFICATION_APPLICATION_ID: ${{ vars.NEXT_PUBLIC_NOTIFICATION_APPLICATION_ID }}
+                NEXT_PUBLIC_NOTIFICATION_URL: ${{ vars.NEXT_PUBLIC_NOTIFICATION_URL }}
                 NODE_ENV: staging
 
             - name: Run tests for Eslint
