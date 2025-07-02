@@ -54,7 +54,7 @@ jobs:
                 CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                 project_name: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
                 branch_name: master
-                output_dir: dist
+                output_dir: out
                 cname_url: p2p.champion.trade
 
     send_slack_notification:
