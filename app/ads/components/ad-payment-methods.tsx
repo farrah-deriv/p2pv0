@@ -40,6 +40,7 @@ const AdPaymentMethods = () => {
                     setPaymentMethods(data.data || [])
                 }
             } catch (error) {
+                console.log(error);
                 // Silently fail - just show empty state
             } finally {
                 setIsLoading(false)

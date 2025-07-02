@@ -21,7 +21,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <Main children={children} />
+          <Main>{children}</Main>
         </ThemeProvider>
       </body>
     </html>

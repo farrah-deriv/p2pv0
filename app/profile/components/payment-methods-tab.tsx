@@ -80,7 +80,8 @@ export default function PaymentMethodsTab() {
 
       try {
         data = JSON.parse(responseText)
-      } catch (e) {
+      } catch (error) {
+        console.log(error);
         data = { data: [] }
       }
 
