@@ -271,7 +271,7 @@ export async function toggleAdStatus(
 }
 
 /**
- * Delete an advertisement
+ * Delete an advertisement - THIS USES DELETE METHOD, NOT PATCH
  */
 export async function deleteAd(id: string): Promise<{ success: boolean; errors?: any[] }> {
   try {
@@ -289,7 +289,7 @@ export async function deleteAd(id: string): Promise<{ success: boolean; errors?:
     console.groupEnd()
 
     const response = await fetch(url, {
-      method: "DELETE",
+      method: "DELETE", // THIS IS A DELETE REQUEST, NOT PATCH
       headers,
     })
 
@@ -498,6 +498,7 @@ export async function createAd(
 
 /**
  * Activate an advertisement (specific function for troubleshooting)
+ * THIS USES PATCH METHOD DIRECTLY, NOT CALLING updateAd
  */
 export async function activateAd(id: string): Promise<{ success: boolean; errors?: any[] }> {
   try {
@@ -563,7 +564,7 @@ export async function activateAd(id: string): Promise<{ success: boolean; errors
     // Wrap the payload in a "data" object as expected by the API
     const body = JSON.stringify({ data: payload })
     const response = await fetch(url, {
-      method: "PATCH",
+      method: "PATCH", // THIS IS A DIRECT PATCH REQUEST
       headers,
       body,
     })
