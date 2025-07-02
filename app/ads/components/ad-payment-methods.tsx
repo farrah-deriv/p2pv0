@@ -196,15 +196,13 @@ const AdPaymentMethods = () => {
 
             {/* Add Payment Method Button */}
             <Card
-              className="cursor-pointer transition-all duration-200 bg-gray-100 border-0 hover:shadow-md flex-shrink-0 w-64 md:w-auto border-dashed"
+              className="cursor-pointer transition-all duration-200 hover:shadow-md flex-shrink-0 w-64 md:w-auto border border-gray-300 bg-white"
               onClick={() => setShowAddPanel(true)}
             >
               <CardContent className="p-4 h-full flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gray-200 flex items-center justify-center">
-                    <Plus className="h-6 w-6 text-gray-500" />
-                  </div>
-                  <p className="text-sm font-medium text-gray-600">Add Payment Method</p>
+                  <Plus className="h-8 w-8 mx-auto mb-2 text-black" />
+                  <p className="text-sm font-medium text-black">Add payment method</p>
                 </div>
               </CardContent>
             </Card>
