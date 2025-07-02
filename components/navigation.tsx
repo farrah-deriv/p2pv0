@@ -2,8 +2,6 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { cn } from "@/lib/utils"
-import { usePathname } from "next/navigation"
 import { ArrowLeft, X } from "lucide-react"
 import BalanceInfoPopup from "@/components/balance-info-popup"
 
@@ -16,11 +14,9 @@ interface NavigationProps {
 
 export default function Navigation({
   isBackBtnVisible = true,
-  isVisible = true,
   redirectUrl = "/",
   title,
 }: NavigationProps) {
-  const pathname = usePathname()
   const [isBalanceInfoOpen, setIsBalanceInfoOpen] = useState(false)
 
   return (

@@ -39,6 +39,7 @@ async function fetchSubscriberHash() {
       subscriberId: subscriberData.subscriberId,
     }
   } catch (error) {
+    console.log(error);
     return null
   }
 }
