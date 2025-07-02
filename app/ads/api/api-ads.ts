@@ -498,7 +498,6 @@ export async function createAd(
 
 /**
  * Activate an advertisement (specific function for troubleshooting)
- * THIS USES PATCH METHOD DIRECTLY, NOT CALLING updateAd
  */
 export async function activateAd(id: string): Promise<{ success: boolean; errors?: any[] }> {
   try {
