@@ -1,26 +1,18 @@
-import { clsx, type ClassValue } from "clsx"
+import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-interface AvailablePaymentMethod {
-  id: number
+export interface AvailablePaymentMethod {
   method: string
   display_name: string
   type: string
-  fields: Record<
-    string,
-    {
-      display_name: string
-      required: boolean
-      value?: string
-    }
-  >
+  fields: Record<string, any>
 }
 
-interface PaymentMethodField {
+export interface PaymentMethodField {
   name: string
   label: string
   type: string
@@ -29,55 +21,42 @@ interface PaymentMethodField {
 
 export function getPaymentMethodFields(
   method: string,
-  availablePaymentMethods: AvailablePaymentMethod[],
+  availableMethods: AvailablePaymentMethod[],
 ): PaymentMethodField[] {
-  const paymentMethod = availablePaymentMethods.find((pm) => pm.method === method)
-  if (!paymentMethod) return []
+  const paymentMethod = availableMethods.find((m) => m.method === method)
+  if (!paymentMethod || !paymentMethod.fields) return []
 
-  return Object.entries(paymentMethod.fields)
-    .filter(([key]) => key !== "instructions")
-    .map(([key, field]) => ({
-      name: key,
-      label: field.display_name,
-      type: "text",
-      required: field.required,
-    }))
+  return Object.entries(paymentMethod.fields).map(([key, field]: [string, any]) => ({
+    name: key,
+    label: field.display_name || key,
+    type: field.type || "text",
+    required: field.required || false,
+  }))
 }
 
-export function getPaymentMethodIcon(type: string): string {
-  return type === "ewallet" ? "/icons/ewallet-icon.png" : "/icons/bank-transfer-icon.png"
-}
-
-export const maskAccountNumber = (accountNumber: any): string => {
-  if (!accountNumber) return ""
-
-  let rawValue = accountNumber
-
-  if (typeof accountNumber === "object" && accountNumber !== null) {
-    if ("value" in accountNumber) {
-      rawValue = accountNumber.value
-    }
+export function getPaymentMethodIcon(type: string): string | null {
+  const iconMap: Record<string, string> = {
+    bank: "/icons/bank-transfer-icon.png",
+    ewallet: "/icons/ewallet-icon.png",
   }
+  return iconMap[type] || null
+}
 
-  const accountStr = String(rawValue)
+export function maskAccountNumber(accountNumber: any): string {
+  // Convert to string if it's not already
+  const accountStr = String(accountNumber)
 
   if (accountStr.length <= 4) {
     return accountStr
   }
 
+  // Show last 4 digits with asterisks
   return "*".repeat(accountStr.length - 4) + accountStr.slice(-4)
 }
 
-/**
- * Convert snake_case payment method names to proper case
- * @param methodName - The snake_case method name (e.g., "apple_pay")
- * @returns Formatted method name (e.g., "Apple Pay")
- */
-export function formatPaymentMethodName(methodName: string): string {
-  if (!methodName) return ""
-
-  return methodName
+export function formatPaymentMethodName(name: string): string {
+  return name
     .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ")
 }
