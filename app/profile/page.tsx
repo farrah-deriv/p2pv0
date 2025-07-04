@@ -11,7 +11,7 @@ export default function ProfilePage() {
     username:"",
     rating: "Not rated yet",
     completionRate: "",
-    recommend_average_lifetime:"",
+    recommendedAverage:"",
     joinDate: "",
     realName: "",
     isVerified: {
