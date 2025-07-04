@@ -11,39 +11,39 @@ export async function getCurrencies(): Promise<string[]> {
 
     console.log("getCurrencies: Making API call to:", url)
     const response = await fetch(url, { headers })
-    console.log("getCurrencies: Response status:", response.status)
-    console.log("getCurrencies: Response ok:", response.ok)
+    console.log("getCurrencies: Response received:", response)
 
     if (!response.ok) {
+      console.log("getCurrencies: Response not ok, status:", response.status)
       throw new Error("Failed to fetch currencies from settings")
     }
 
     const responseText = await response.text()
-    console.log("getCurrencies: Raw response text:", responseText)
+    console.log("getCurrencies: Response text:", responseText)
     let apiData
 
     try {
       apiData = JSON.parse(responseText)
       console.log("getCurrencies: Parsed API data:", apiData)
     } catch (e) {
+      console.log("getCurrencies: Failed to parse JSON, using fallback currencies")
       // Fallback to default currencies if API response is invalid
-      console.log("getCurrencies: Failed to parse JSON response, using fallback currencies")
       return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
     }
 
     // Extract currencies from API response
     // TODO: Update this based on actual API response structure
     if (apiData && apiData.currencies && Array.isArray(apiData.currencies)) {
-      console.log("getCurrencies: Found currencies in API response:", apiData.currencies)
+      console.log("getCurrencies: Found currencies in response:", apiData.currencies)
       return apiData.currencies
     }
 
+    console.log("getCurrencies: No currencies found in expected structure, using fallback")
     // Fallback to default currencies if API doesn't return expected structure
-    console.log("getCurrencies: API response doesn't contain expected currencies structure, using fallback")
     return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
   } catch (error) {
-    // Fallback to default currencies if API call fails
     console.log("getCurrencies: Error occurred:", error)
+    // Fallback to default currencies if API call fails
     return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
   }
 }
