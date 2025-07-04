@@ -7,7 +7,7 @@ import PaymentDetailsForm from "../components/payment-details-form"
 import StatusModal from "../components/ui/status-modal"
 import StatusBottomSheet from "../components/ui/status-bottom-sheet"
 import type { AdFormData, StatusModalState } from "../types"
-import { createAd, updateAd } from "../api/api-ads"
+import { createAd, updateAd, getCurrencies } from "../api/api-ads"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
 import { X, ArrowLeft } from "lucide-react"
@@ -99,10 +99,14 @@ export default function CreateAdPage() {
   }
 
   useEffect(() => {
-    const loadEditData = async () => {
-      if (isEditMode) {
-        try {
-          setIsLoading(true)
+    const loadInitialData = async () => {
+      try {
+        setIsLoading(true)
+
+        // Load currencies
+        await getCurrencies()
+
+        if (isEditMode) {
           const editData = localStorage.getItem("editAdData")
           if (editData) {
             const parsedData = JSON.parse(editData)
@@ -165,17 +169,15 @@ export default function CreateAdPage() {
             setFormData(formattedData)
             formDataRef.current = formattedData
           }
-        } catch (error) {
-          console.log(error)
-        } finally {
-          setIsLoading(false)
         }
-      } else {
+      } catch (error) {
+        console.log(error)
+      } finally {
         setIsLoading(false)
       }
     }
 
-    loadEditData()
+    loadInitialData()
   }, [isEditMode])
 
   useEffect(() => {
