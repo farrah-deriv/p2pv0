@@ -28,7 +28,8 @@ export async function getUserPaymentMethods(): Promise<PaymentMethod[]> {
       throw new Error(`Error fetching payment methods: ${response.statusText}`)
     }
 
-    return await response.json()
+    const result = await response.json()
+    return result.data || []
   } catch (error) {
     throw error
   }
@@ -67,9 +68,7 @@ export async function addPaymentMethod(method: string, fields: Record<string, an
     let responseData: any
     try {
       responseData = responseText ? JSON.parse(responseText) : { success: response.ok }
-    } catch (error) {
-      console.log(error);
-
+    } catch (e) {
       return {
         success: false,
         errors: [{ code: "parse_error", message: "Failed to parse server response" }],
@@ -109,11 +108,13 @@ export async function addPaymentMethod(method: string, fields: Record<string, an
 
 export async function updatePaymentMethod(id: string, fields: Record<string, any>): Promise<PaymentMethodResponse> {
   try {
+    const { method_type, ...cleanFields } = fields
+
     const finalFields: Record<string, any> = {}
 
-    Object.keys(fields).forEach((key) => {
-      if (fields[key] && typeof fields[key] === "string") {
-        finalFields[key] = fields[key]
+    Object.keys(cleanFields).forEach((key) => {
+      if (cleanFields[key] && typeof cleanFields[key] === "string") {
+        finalFields[key] = cleanFields[key]
       }
     })
 
@@ -137,9 +138,7 @@ export async function updatePaymentMethod(id: string, fields: Record<string, any
     let responseData: any
     try {
       responseData = responseText ? JSON.parse(responseText) : { success: response.ok }
-    } catch (error) {
-      console.log(error);
-
+    } catch (e) {
       return {
         success: false,
         errors: [{ code: "parse_error", message: "Failed to parse server response" }],
@@ -205,8 +204,6 @@ export async function deletePaymentMethod(id: string): Promise<PaymentMethodResp
         const errorData = JSON.parse(errorText)
         return { success: false, errors: errorData.errors }
       } catch (error) {
-        console.log(error);
-
         return { success: false, errors: [{ code: "api_error", message: response.statusText }] }
       }
     }

@@ -2,11 +2,14 @@
 
 import Link from "next/link"
 import Image from "next/image"
+import { usePathname } from "next/navigation"
 import { USER } from "@/lib/local-variables"
 import { Avatar } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 
 export default function Sidebar() {
+  const pathname = usePathname()
+
   const navItems = [
     { name: "Home", href: "https://hub.deriv.com/tradershub", icon: "/icons/home-icon.png" },
     { name: "Trade", href: "https://hub.deriv.com/tradershub/cfds", icon: "/icons/trade-icon.svg" },

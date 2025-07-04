@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { AlertCircle, Clock } from "lucide-react"
+import Navigation from "@/components/navigation"
 import { Button } from "@/components/ui/button"
 import { OrdersAPI } from "@/services/api"
 import type { Order } from "@/services/api/api-orders"
@@ -264,7 +265,7 @@ export default function OrdersPage() {
   return (
     <div className="flex flex-col h-full px-4">
       <div className="flex-shrink-0">
-
+  
         <div className="mb-6">
           <Tabs defaultValue={activeTab} onValueChange={(value) => setActiveTab(value as "active" | "past")}>
             <TabsList>

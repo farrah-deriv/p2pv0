@@ -12,6 +12,7 @@ interface StatusModalProps {
   adId?: string
   adType?: string
   actionButtonText?: string
+  isUpdate?: boolean
 }
 
 export default function StatusModal({
@@ -23,8 +24,8 @@ export default function StatusModal({
   adId,
   adType,
   actionButtonText = "OK",
+  isUpdate = false,
 }: StatusModalProps) {
-  // Common modal styles
   const modalStyles = {
     width: "512px",
     minWidth: "512px",
@@ -37,7 +38,6 @@ export default function StatusModal({
     <AlertDialog open={true} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <AlertDialogContent className="p-0 overflow-hidden border-none" style={modalStyles}>
         <div className="relative p-6">
-          {/* Top section with icon and close button */}
           <div className="flex justify-center mb-12">
             <div
               className={`${
@@ -60,7 +60,6 @@ export default function StatusModal({
             </button>
           </div>
 
-          {/* Content section - left aligned */}
           <div className="mb-12">
             <h2
               className="font-bold mb-6"
@@ -85,7 +84,9 @@ export default function StatusModal({
                     fontWeight: 400,
                   }}
                 >
-                  You've successfully created Ad{adType && adId ? ` (${adType} ${adId})` : "."}
+                  {isUpdate
+                    ? `You've successfully updated Ad${adType && adId ? ` (${adType} ${adId})` : "."}`
+                    : `You've successfully created Ad${adType && adId ? ` (${adType} ${adId})` : "."}`}
                 </p>
 
                 <p
@@ -131,8 +132,7 @@ export default function StatusModal({
             )}
           </div>
 
-          {/* Button at the bottom - using Button component with style override */}
-          <Button onClick={onClose} variant="cyan" size="pill-lg" className="w-full font-bold">
+          <Button onClick={onClose} variant="default" className="w-full h-14">
             {actionButtonText}
           </Button>
         </div>

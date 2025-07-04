@@ -16,6 +16,7 @@ interface StatusBottomSheetProps {
   adId?: string
   adType?: string
   actionButtonText?: string
+  isUpdate?: boolean
 }
 
 export default function StatusBottomSheet({
@@ -28,13 +29,13 @@ export default function StatusBottomSheet({
   adId,
   adType,
   actionButtonText = "OK",
+  isUpdate = false,
 }: StatusBottomSheetProps) {
   const [startY, setStartY] = useState(0)
   const [currentY, setCurrentY] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const bottomSheetRef = useRef<HTMLDivElement>(null)
 
-  // Handle touch events for dragging
   const handleTouchStart = (e: React.TouchEvent) => {
     setStartY(e.touches[0].clientY)
     setIsDragging(true)
@@ -48,7 +49,6 @@ export default function StatusBottomSheet({
 
   const handleTouchEnd = () => {
     if (isDragging) {
-      // If dragged down more than 100px, close the sheet
       if (currentY - startY > 100) {
         onClose()
       }
@@ -56,7 +56,6 @@ export default function StatusBottomSheet({
     }
   }
 
-  // Calculate transform style based on drag position
   const getTransformStyle = () => {
     if (isDragging && currentY > startY) {
       return { transform: `translateY(${currentY - startY}px)` }
@@ -64,7 +63,6 @@ export default function StatusBottomSheet({
     return {}
   }
 
-  // Lock body scroll when bottom sheet is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden"
@@ -89,35 +87,33 @@ export default function StatusBottomSheet({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Drag handle */}
         <div className="w-full flex justify-center pt-4 pb-2">
           <div className="w-10 h-1 bg-gray-300 rounded-full"></div>
         </div>
 
         <div className="px-6 pb-8">
-          {/* Icon */}
           <div className="flex justify-center mb-8 mt-4">
             <div
               className={`${
-                type === "success" ? "bg-success-bg" : "bg-warning-bg"
+                type === "success" ? "bg-[#EDFAF3]" : "bg-[#FFF8E7]"
               } rounded-full p-4 flex items-center justify-center w-[72px] h-[72px]`}
             >
               {type === "success" ? (
-                <CheckCircle className="h-10 w-10 text-success-icon" />
+                <CheckCircle className="h-10 w-10 text-[#008832]" />
               ) : (
-                <AlertCircle className="h-10 w-10 text-warning-icon" />
+                <AlertCircle className="h-10 w-10 text-[#F59E0B]" />
               )}
             </div>
           </div>
 
-          {/* Title */}
           <h2 className="mb-6 font-bold text-lg leading-7">{title}</h2>
 
-          {/* Content */}
           {type === "success" && (
             <>
               <p className="mb-6 font-normal text-base leading-6">
-                You've successfully created Ad{adType && adId ? ` (${adType} ${adId})` : "."}
+                {isUpdate
+                  ? `You've successfully updated Ad${adType && adId ? ` (${adType} ${adId})` : "."}`
+                  : `You've successfully created Ad${adType && adId ? ` (${adType} ${adId})` : "."}`}
               </p>
               <p className="font-normal text-base leading-6">{message}</p>
             </>
@@ -127,9 +123,8 @@ export default function StatusBottomSheet({
 
           {subMessage && <p className="mt-6 font-normal text-base leading-6">{subMessage}</p>}
 
-          {/* Button - Updated to use Button with cyan variant and pill-lg size */}
           <div className="mt-12">
-            <Button onClick={onClose} variant="cyan" size="pill-lg" className="w-full font-bold">
+            <Button onClick={onClose} variant="default" className="w-full h-14">
               {actionButtonText}
             </Button>
           </div>

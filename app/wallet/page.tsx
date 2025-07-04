@@ -1,3 +1,4 @@
+import Navigation from "@/components/navigation"
 import WalletBalance from "./components/wallet-balance"
 
 export default function WalletPage() {

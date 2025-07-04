@@ -13,7 +13,6 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
 import { StatusBanner } from "@/components/ui/status-banner"
 
-// Update imports to use the new component locations
 import StatusModal from "./components/ui/status-modal"
 import StatusBottomSheet from "./components/ui/status-bottom-sheet"
 
@@ -31,11 +30,20 @@ export default function AdsPage() {
     id: "",
   })
   const [showDeletedBanner, setShowDeletedBanner] = useState(false)
-  const [showUpdatedBanner, setShowUpdatedBanner] = useState(false)
+
+  const [updateModal, setUpdateModal] = useState<{
+    show: boolean
+    type: string
+    id: string
+  }>({
+    show: false,
+    type: "",
+    id: "",
+  })
+
   const isMobile = useIsMobile()
   const router = useRouter()
 
-  // Add error modal state
   const [errorModal, setErrorModal] = useState({
     show: false,
     title: "Error",
@@ -49,13 +57,13 @@ export default function AdsPage() {
       console.log(`Fetching adverts for user ID: ${USER.id}`)
       const userAdverts = await getUserAdverts()
       console.log("User adverts response:", userAdverts)
+
       setAds(userAdverts)
     } catch (err) {
       console.error("Error fetching ads:", err)
       setError("Failed to load ads. Please try again later.")
       setAds([])
 
-      // Show error modal
       setErrorModal({
         show: true,
         title: "Error Loading Ads",
@@ -94,10 +102,12 @@ export default function AdsPage() {
 
         const updateDataStr = localStorage.getItem("adUpdateSuccess")
         if (updateDataStr) {
-          setShowUpdatedBanner(true)
-          setTimeout(() => {
-            setShowUpdatedBanner(false)
-          }, 3000)
+          const updateData = JSON.parse(updateDataStr) as SuccessData
+          setUpdateModal({
+            show: true,
+            type: updateData.type,
+            id: updateData.id,
+          })
           localStorage.removeItem("adUpdateSuccess")
         }
       } catch (err) {
@@ -114,25 +124,22 @@ export default function AdsPage() {
     setSuccessModal((prev) => ({ ...prev, show: false }))
   }
 
+  const handleCloseUpdateModal = () => {
+    setUpdateModal((prev) => ({ ...prev, show: false }))
+  }
+
   const handleCloseErrorModal = () => {
     setErrorModal((prev) => ({ ...prev, show: false }))
   }
 
   return (
     <div className="flex flex-col h-screen">
-
-
       {showDeletedBanner && (
         <StatusBanner variant="success" message="Ad deleted" onClose={() => setShowDeletedBanner(false)} />
       )}
 
-      {showUpdatedBanner && (
-        <StatusBanner variant="success" message="Ad updated successfully" onClose={() => setShowUpdatedBanner(false)} />
-      )}
-
       <div className="flex-none container mx-auto pr-4">
         <MyAdsHeader hasAds={ads.length > 0} />
-        {/* Only show button here on desktop */}
         {ads.length > 0 && !isMobile && (
           <Button
             onClick={() => router.push("/ads/create")}
@@ -146,7 +153,6 @@ export default function AdsPage() {
         )}
       </div>
 
-      {/* Floating button for mobile view */}
       {ads.length > 0 && isMobile && (
         <div className="fixed bottom-20 right-4 z-10">
           <Button
@@ -161,7 +167,6 @@ export default function AdsPage() {
         </div>
       )}
 
-      {/* Content area with fixed table header and scrollable body */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden container mx-auto p-0">
         {loading ? (
           <div className="text-center py-8">
@@ -171,33 +176,9 @@ export default function AdsPage() {
         ) : error ? (
           <div className="text-center py-8 text-red-500">{error}</div>
         ) : isMobile ? (
-          <MobileMyAdsList
-            ads={ads.map((ad) => ({
-              id: ad.id,
-              type: ad.type,
-              rate: ad.rate,
-              limits: `${ad.limits.currency} ${ad.limits.min} - ${ad.limits.max}`,
-              available: ad.available,
-              paymentMethods: ad.paymentMethods,
-              status: ad.status,
-              description: ad.description || "",
-            }))}
-            onAdDeleted={handleAdUpdated}
-          />
+          <MobileMyAdsList ads={ads} onAdDeleted={handleAdUpdated} />
         ) : (
-          <MyAdsTable
-            ads={ads.map((ad) => ({
-              id: ad.id,
-              type: ad.type,
-              rate: ad.rate,
-              limits: `${ad.limits.currency} ${ad.limits.min} - ${ad.limits.max}`,
-              available: ad.available,
-              paymentMethods: ad.paymentMethods,
-              status: ad.status,
-              description: ad.description || "", // Make sure to include the description
-            }))}
-            onAdDeleted={handleAdUpdated}
-          />
+          <MyAdsTable ads={ads} onAdDeleted={handleAdUpdated} />
         )}
       </div>
 
@@ -205,8 +186,11 @@ export default function AdsPage() {
         <StatusModal
           type="success"
           title="Ad created"
-          message="You've successfully created Ad. If your ad doesn't receive an order within 3 days, it will be deactivated."
+          message="If your ad doesn't receive an order within 3 days, it will be deactivated."
           onClose={handleCloseSuccessModal}
+          adType={successModal.type}
+          adId={successModal.id}
+          isUpdate={false}
         />
       )}
 
@@ -219,6 +203,32 @@ export default function AdsPage() {
           message="If your ad doesn't receive an order within 3 days, it will be deactivated."
           adType={successModal.type}
           adId={successModal.id}
+          isUpdate={false}
+        />
+      )}
+
+      {updateModal.show && !isMobile && (
+        <StatusModal
+          type="success"
+          title="Ad updated"
+          message="Your changes have been saved and are now live."
+          onClose={handleCloseUpdateModal}
+          adType={updateModal.type}
+          adId={updateModal.id}
+          isUpdate={true}
+        />
+      )}
+
+      {updateModal.show && isMobile && (
+        <StatusBottomSheet
+          isOpen={updateModal.show}
+          onClose={handleCloseUpdateModal}
+          type="success"
+          title="Ad updated"
+          message="Your changes have been saved and are now live."
+          adType={updateModal.type}
+          adId={updateModal.id}
+          isUpdate={true}
         />
       )}
 

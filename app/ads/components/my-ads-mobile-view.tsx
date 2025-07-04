@@ -44,7 +44,6 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
     try {
       setIsTogglingStatus(true)
 
-      // Extract rate value
       let exchangeRate = 0
       if (ad.rate && ad.rate.value) {
         const rateMatch = ad.rate.value.match(/([A-Z]+)\s+(\d+(?:\.\d+)?)/)
@@ -53,10 +52,8 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
         }
       }
 
-      // Set the new status (opposite of current)
       const isListed = ad.status !== "Active"
 
-      // Get min/max amounts
       let minAmount = 0
       let maxAmount = 0
 
@@ -71,7 +68,6 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
         maxAmount = ad.limits.max
       }
 
-      // Update the ad
       const updateResult = await updateAd(ad.id, {
         is_active: isListed,
         minimum_order_amount: minAmount,
@@ -92,7 +88,6 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
         onAdDeleted()
       }
     } catch (error) {
-      console.error("Failed to toggle status:", error)
       setErrorModal({
         show: true,
         title: `Failed to ${ad.status === "Active" ? "Deactivate" : "Activate"} Ad`,
@@ -125,7 +120,6 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
 
       setDeleteConfirmModal({ show: false, adId: "" })
     } catch (error) {
-      console.error("Failed to delete ad:", error)
       setErrorModal({
         show: true,
         title: "Failed to Delete Ad",
@@ -144,7 +138,6 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
     setErrorModal({ show: false, title: "", message: "" })
   }
 
-  // Format rate with percentage
   const formatRate = (rateValue: string): { rate: string; percentage: string } => {
     if (!rateValue) return { rate: "USD 1.00 = IDR 0.00", percentage: "(+0.2%)" }
 
@@ -164,7 +157,6 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
     return { rate: rateValue, percentage: "(+0.2%)" }
   }
 
-  // Format limits
   const formatLimits = (limits: MyAd["limits"]): string => {
     if (typeof limits === "string") {
       return limits
@@ -202,7 +194,6 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
 
           return (
             <div key={ad.id} className={`border border-gray-200 rounded-lg bg-white ${!isActive ? "opacity-60" : ""}`}>
-              {/* Header with status badge and menu */}
               <div className="flex justify-between items-center p-4">
                 <div
                   className={`px-4 py-1.5 rounded-full ${isActive ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}
@@ -240,9 +231,7 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
                 </DropdownMenu>
               </div>
 
-              {/* Content */}
               <div className="px-4 pb-4">
-                {/* Title and ID */}
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-2xl font-bold">
                     <span className={ad.type === "Buy" ? "text-green-600" : "text-red-600"}>{ad.type}</span>{" "}
@@ -253,7 +242,6 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
                   </span>
                 </div>
 
-                {/* Available Amount */}
                 <div className="mb-4">
                   <div className="text-base mb-1">
                     USD {ad.available.current} / {ad.available.total}
@@ -268,7 +256,6 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
                   </div>
                 </div>
 
-                {/* Rate and Limits */}
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between items-center">
                     <span className="text-black font-medium">Rate:</span>
@@ -283,17 +270,13 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
                   </div>
                 </div>
 
-                {/* Payment Methods */}
                 <div className="flex flex-wrap gap-4">
                   {ad.paymentMethods.map((method, index) => (
                     <div key={index} className="flex items-center">
                       <span
-                        className={`w-3 h-3 rounded-full mr-2 ${method.toLowerCase() === "bank transfer"
-                          ? "bg-green-600"
-                          : method.toLowerCase() === "skrill"
-                            ? "bg-blue-500"
-                            : "bg-blue-400"
-                          }`}
+                        className={`w-3 h-3 rounded-full mr-2 ${
+                          method.toLowerCase() === "bank transfer" ? "bg-green-600" : "bg-blue-500"
+                        }`}
                       ></span>
                       <span>{method}</span>
                     </div>
@@ -305,7 +288,6 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
         })}
       </div>
 
-      {/* Delete Confirmation Modal */}
       <DeleteConfirmationDialog
         open={deleteConfirmModal.show}
         title="Delete ad?"
@@ -315,7 +297,6 @@ export default function MyAdsMobileView({ ads, onAdDeleted }: MyAdsMobileViewPro
         onCancel={cancelDelete}
       />
 
-      {/* Error Modal */}
       {errorModal.show && (
         <StatusModal
           type="error"

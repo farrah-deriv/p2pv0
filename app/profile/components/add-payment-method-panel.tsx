@@ -64,7 +64,6 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
           setAvailablePaymentMethods(response)
         }
       } catch (error) {
-        console.log(error);
       } finally {
         setIsLoadingMethods(false)
       }
@@ -184,10 +183,11 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
                   type="button"
                   variant="outline"
                   onClick={() => setSelectedMethod(paymentMethod.method)}
-                  className={`w-full p-4 justify-start gap-3 h-auto rounded-lg border ${selectedMethod === paymentMethod.method
+                  className={`w-full p-4 justify-start gap-3 h-auto rounded-lg border ${
+                    selectedMethod === paymentMethod.method
                       ? "border-blue-500 bg-blue-50"
                       : "border-gray-200 hover:border-gray-300"
-                    }`}
+                  }`}
                 >
                   <Image
                     src={getPaymentMethodIcon(paymentMethod.type) || "/placeholder.svg"}

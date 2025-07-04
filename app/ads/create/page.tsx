@@ -13,12 +13,53 @@ import { Button } from "@/components/ui/button"
 import { X, ArrowLeft } from "lucide-react"
 import { ProgressSteps } from "../components/ui/progress-steps"
 
+const getPageTitle = (isEditMode: boolean, adType?: string) => {
+  if (isEditMode && adType) {
+    return `Edit ${adType === "sell" ? "Sell" : "Buy"} ad`
+  }
+  return "Create new ad"
+}
+
+const getButtonText = (isEditMode: boolean, isSubmitting: boolean, currentStep: number) => {
+  if (isSubmitting) {
+    return isEditMode ? "Saving..." : "Creating..."
+  }
+
+  if (currentStep === 0) {
+    return "Next"
+  }
+
+  return isEditMode ? "Save Details" : "Create Ad"
+}
+
+const getErrorTitle = (isEditMode: boolean) => {
+  return isEditMode ? "Failed to update ad" : "Failed to create ad"
+}
+
+const getActionButtonText = (isEditMode: boolean) => {
+  return isEditMode ? "Update ad" : "Create ad"
+}
+
 export default function CreateAdPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const isEditMode = searchParams.get("mode") === "edit"
-  const adId = searchParams.get("id")
   const isMobile = useIsMobile()
+
+  const [localEditMode, setLocalEditMode] = useState<boolean>(false)
+  const [localAdId, setLocalAdId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const mode = searchParams.get("mode")
+    const id = searchParams.get("id")
+
+    if (mode === "edit" && id) {
+      setLocalEditMode(true)
+      setLocalAdId(id)
+    }
+  }, [searchParams])
+
+  const isEditMode = localEditMode
+  const adId = localAdId
 
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState<Partial<AdFormData>>({})
@@ -105,7 +146,7 @@ export default function CreateAdPage() {
                   .filter((id: number) => !isNaN(id))
 
                 if (typeof window !== "undefined") {
-                  ; (window as any).adPaymentMethodIds = paymentMethodIds
+                  ;(window as any).adPaymentMethodIds = paymentMethodIds
                 }
               }
             }
@@ -125,7 +166,7 @@ export default function CreateAdPage() {
             formDataRef.current = formattedData
           }
         } catch (error) {
-          console.log(error);
+          console.log(error)
         } finally {
           setIsLoading(false)
         }
@@ -156,6 +197,7 @@ export default function CreateAdPage() {
       setAdFormValid(e.detail.isValid)
       if (e.detail.isValid) {
         const updatedData = { ...formData, ...e.detail.formData }
+        setFormData(updatedData)
         formDataRef.current = updatedData
       }
     }
@@ -164,6 +206,7 @@ export default function CreateAdPage() {
       setPaymentFormValid(e.detail.isValid)
       if (e.detail.isValid) {
         const updatedData = { ...formData, ...e.detail.formData }
+        setFormData(updatedData)
         formDataRef.current = updatedData
       }
     }
@@ -200,7 +243,9 @@ export default function CreateAdPage() {
         if (updateDataStr) {
           localStorage.removeItem("adUpdateSuccess")
         }
-      } catch { }
+      } catch (error) {
+        console.log(error)
+      }
     }
 
     checkForSuccessData()
@@ -298,7 +343,14 @@ export default function CreateAdPage() {
         }
 
         localStorage.removeItem("editAdData")
-        localStorage.setItem("adUpdateSuccess", JSON.stringify({ success: true }))
+
+        setStatusModal({
+          show: true,
+          type: "success",
+          title: "Ad updated",
+          message: "Your ad has been updated successfully.",
+        })
+
         router.push("/ads")
       } else {
         const payload = {
@@ -337,10 +389,10 @@ export default function CreateAdPage() {
       }
     } catch (error) {
       let errorInfo = {
-        title: isEditMode ? "Failed to update ad" : "Failed to create ad",
+        title: getErrorTitle(isEditMode),
         message: "Please try again.",
         type: "error" as "error" | "warning",
-        actionButtonText: "Update ad",
+        actionButtonText: getActionButtonText(isEditMode),
       }
 
       if (error instanceof Error) {
@@ -350,7 +402,7 @@ export default function CreateAdPage() {
             message:
               "You have another active ad with the same rate for this currency pair and order type. Set a different rate.",
             type: "warning",
-            actionButtonText: "Update ad",
+            actionButtonText: getActionButtonText(isEditMode),
           }
         } else if (error.name === "AdvertOrderRangeOverlap") {
           errorInfo = {
@@ -358,7 +410,7 @@ export default function CreateAdPage() {
             message:
               "Change the minimum and/or maximum order limit for this ad. The range between these limits must not overlap with another active ad you created for this currency pair and order type.",
             type: "warning",
-            actionButtonText: "Update ad",
+            actionButtonText: getActionButtonText(isEditMode),
           }
         } else if (error.name === "AdvertLimitReached" || error.message === "ad_limit_reached") {
           errorInfo = {
@@ -366,28 +418,28 @@ export default function CreateAdPage() {
             message:
               "You can have only 3 active ads for this currency pair and order type. Delete one to create a new ad.",
             type: "error",
-            actionButtonText: "Update ad",
+            actionButtonText: getActionButtonText(isEditMode),
           }
         } else if (error.name === "InsufficientBalance") {
           errorInfo = {
             title: "Insufficient balance",
             message: "You don't have enough balance to create this ad.",
             type: "error",
-            actionButtonText: "Update ad",
+            actionButtonText: getActionButtonText(isEditMode),
           }
         } else if (error.name === "InvalidExchangeRate" || error.name === "InvalidOrderAmount") {
           errorInfo = {
             title: "Invalid values",
             message: error.message || "Please check your input values.",
             type: "error",
-            actionButtonText: "Update ad",
+            actionButtonText: getActionButtonText(isEditMode),
           }
         } else if (error.name === "AdvertTotalAmountExceeded") {
           errorInfo = {
             title: "Amount exceeds balance",
             message: "The total amount exceeds your available balance. Please enter a smaller amount.",
             type: "error",
-            actionButtonText: "Update ad",
+            actionButtonText: getActionButtonText(isEditMode),
           }
         } else {
           errorInfo.message = error.message || errorInfo.message
@@ -510,7 +562,7 @@ export default function CreateAdPage() {
           </button>
         )}
         <div className="absolute left-1/2 transform -translate-x-1/2 font-bold text-[18px] leading-[28px] tracking-[0%]">
-          {isEditMode ? `Edit ${formData.type === "sell" ? "Sell" : "Buy"} ad` : "Create new ad"}
+          {getPageTitle(isEditMode, formData.type)}
         </div>
         <button onClick={handleClose} className="text-gray-700 hover:text-gray-900 p-2">
           <X className="h-6 w-6" />
@@ -544,18 +596,7 @@ export default function CreateAdPage() {
         <div className="fixed bottom-0 left-0 w-full bg-white mt-4 py-4 mb-16 md:mb-0 border-t border-gray-200">
           <div className="mx-6">
             <Button onClick={handleButtonClick} disabled={isButtonDisabled} className="w-full">
-              {isSubmitting ? (
-                <div className="flex items-center gap-2">
-                  <span>{isEditMode ? "Saving..." : "Creating..."}</span>
-                  <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                </div>
-              ) : currentStep === 0 ? (
-                "Next"
-              ) : isEditMode ? (
-                "Save Changes"
-              ) : (
-                "Create Ad"
-              )}
+              {getButtonText(isEditMode, isSubmitting, currentStep)}
             </Button>
           </div>
         </div>
@@ -565,18 +606,7 @@ export default function CreateAdPage() {
 
       <div className="hidden md:flex justify-end mt-8">
         <Button onClick={handleButtonClick} disabled={isButtonDisabled}>
-          {isSubmitting ? (
-            <div className="flex flex-col items-center gap-1">
-              <span>{isEditMode ? "Saving..." : "Creating..."}</span>
-              <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : currentStep === 0 ? (
-            "Next"
-          ) : isEditMode ? (
-            "Save Changes"
-          ) : (
-            "Create Ad"
-          )}
+          {getButtonText(isEditMode, isSubmitting, currentStep)}
         </Button>
       </div>
 
@@ -609,3 +639,5 @@ export default function CreateAdPage() {
     </div>
   )
 }
+// TODO: To be replaced with data from the API.
+const currencies = ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]

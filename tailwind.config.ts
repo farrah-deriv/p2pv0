@@ -46,16 +46,17 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Custom colors
         success: {
           light: "rgba(0, 136, 50, 0.08)",
           DEFAULT: "#267d36",
           icon: "#008832",
           bg: "#edfaf3",
+          text: "#007A22",
         },
         error: {
           light: "rgba(230, 25, 14, 0.08)",
           DEFAULT: "#c40000",
+          text: "#C40000",
         },
         buy: {
           DEFAULT: "#29823b",
@@ -102,11 +103,9 @@ const config: Config = {
         teal: {
           700: "#00CCCC",
         },
-        // Add the custom gray color
         "custom-gray": {
           DEFAULT: "#F5F5F5",
         },
-        // Additional colors for status indicators
         info: {
           light: "rgba(55, 124, 252, 0.1)",
           DEFAULT: "#377cfc",
@@ -138,13 +137,16 @@ const config: Config = {
           bg: "#fee2e2",
         },
         "default-button-text": "#002A33",
+        "payment-method": {
+          bank: "#008832",
+          other: "#377CFC",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
-      // Add custom font sizes
       fontSize: {
         xs: ["0.75rem", { lineHeight: "1rem" }],
         sm: ["0.875rem", { lineHeight: "1.25rem" }],
@@ -155,14 +157,12 @@ const config: Config = {
         "3xl": ["1.875rem", { lineHeight: "2.25rem" }],
         "4xl": ["2.25rem", { lineHeight: "2.5rem" }],
       },
-      // Add custom spacing
       spacing: {
         0.5: "0.125rem",
         1.5: "0.375rem",
         2.5: "0.625rem",
         3.5: "0.875rem",
       },
-      // Add custom box shadows
       boxShadow: {
         sm: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
         DEFAULT: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
@@ -173,7 +173,6 @@ const config: Config = {
         inner: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)",
         none: "none",
       },
-      // Add custom animations
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
@@ -190,7 +189,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 }
 
 export default config

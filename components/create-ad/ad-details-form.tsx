@@ -21,7 +21,6 @@ interface ValidationErrors {
 }
 
 export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode }: AdDetailsFormProps) {
-  // Initialize state with initialData values or defaults
   const [type, setType] = useState<"buy" | "sell">(initialData?.type || "buy")
   const [totalAmount, setTotalAmount] = useState(initialData?.totalAmount?.toString() || "")
   const [fixedRate, setFixedRate] = useState(initialData?.fixedRate?.toString() || "")
@@ -35,7 +34,6 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
     maxAmount: false,
   })
 
-  // Check if form is valid for enabling/disabling the Next button
   const isFormValid = () => {
     const hasValues = totalAmount && fixedRate && minAmount && maxAmount
     const hasNoErrors = Object.keys(formErrors).length === 0
@@ -43,7 +41,6 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
     return allFieldsValid
   }
 
-  // Update state when initialData changes (important for edit mode)
   useEffect(() => {
     if (initialData) {
       if (initialData.type) setType(initialData.type as "buy" | "sell")
@@ -54,7 +51,6 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
     }
   }, [initialData])
 
-  // Validate form when values change
   useEffect(() => {
     const errors: ValidationErrors = {}
     const total = Number(totalAmount)
@@ -62,7 +58,6 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
     const max = Number(maxAmount)
     const rate = Number(fixedRate)
 
-    // Only validate fields that have been touched
     if (touched.totalAmount) {
       if (!totalAmount) {
         errors.totalAmount = "Total amount is required"
@@ -107,7 +102,6 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Mark all fields as touched to show any errors
     setTouched({
       totalAmount: true,
       fixedRate: true,
@@ -115,13 +109,10 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
       maxAmount: true,
     })
 
-    // Check for validation errors
     if (!isFormValid()) {
-      console.error("Form has validation errors:", formErrors)
       return
     }
 
-    // Convert string values to numbers
     const formData = {
       type,
       totalAmount: Number.parseFloat(totalAmount) || 0,
@@ -163,7 +154,7 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                     />
                     <div
                       className={`h-6 w-6 rounded-full border-2 transition-colors
-                      ${type === "buy" ? "border-red-500" : "border-gray-200"}`}
+                     ${type === "buy" ? "border-red-500" : "border-gray-200"}`}
                     />
                   </div>
                   <span className="text-lg">Buy USD</span>
@@ -180,7 +171,7 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
                     />
                     <div
                       className={`h-6 w-6 rounded-full border-2 transition-colors
-                      ${type === "sell" ? "border-red-500" : "border-gray-200"}`}
+                     ${type === "sell" ? "border-red-500" : "border-gray-200"}`}
                     />
                   </div>
                   <span className="text-lg">Sell USD</span>
@@ -231,7 +222,7 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
             </div>
 
             <div>
-              <h3 className="text-base font-medium mb-6">Order amount limit</h3>
+              <h3 className="text-base font-medium mb-6">Transaction limit</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm text-gray-500 mb-2 block">Minimum order amount</label>
@@ -273,7 +264,6 @@ export default function AdDetailsForm({ onNext, onClose, initialData, isEditMode
         </div>
       </form>
 
-      {/* Fixed positioned button at bottom right - using a plain HTML button with direct styling */}
       <div className="fixed bottom-6 right-6">
         <button
           type="button"
