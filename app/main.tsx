@@ -26,7 +26,7 @@ export default function Main({
     const fetchSessionData = async () => {
       try {
         const response = await AuthAPI.getSession()
-        if (response.errors && !isPublic) {
+        if (!response.errors && !isPublic) {
           setIsHeaderVisible(false)
           router.push("/login")
         } else {
