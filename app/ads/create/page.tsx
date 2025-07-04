@@ -103,7 +103,7 @@ export default function CreateAdPage() {
       try {
         setIsLoading(true)
 
-        await getCurrencies()
+
 
         if (isEditMode) {
           const editData = localStorage.getItem("editAdData")
