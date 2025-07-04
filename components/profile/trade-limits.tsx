@@ -12,7 +12,7 @@ interface TradeLimitsProps {
   }
   balance?: number
   isLoading?: boolean
-  userData?: any // Add userData prop to accept the API response
+  userData?: any
 }
 
 export default function TradeLimits({
@@ -20,7 +20,7 @@ export default function TradeLimits({
   sellLimit,
   balance = 0,
   isLoading = false,
-  userData, // Accept userData from parent component
+  userData, 
 }: TradeLimitsProps) {
   // Use API data if available, otherwise fall back to props
   const userBalance = userData?.balances?.USD ?? balance
