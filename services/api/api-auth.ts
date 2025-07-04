@@ -17,7 +17,7 @@ export interface VerificationRequest {
 
 export interface VerificationResponse {
   access_token?: string
-  errors?: []
+  errors?: string[]
   user?: {
     id: string
     email?: string
@@ -87,14 +87,18 @@ export async function getSession(): Promise<VerificationResponse> {
     })
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      return {
+        errors: ["User not authenticated."]
+      }
     }
 
     const result = await response.json()
     return result
   } catch (error) {
     console.error(error)
-    throw new Error("User not authenticated.")
+    return {
+      errors: ["User not authenticated."]
+    }
   }
 }
 
