@@ -123,15 +123,14 @@ export default function ProfilePage() {
             realName={userData.realName}
             isVerified={userData.isVerified}
           />
-          <StatsTabs stats={userData.stats} />
-        </div>
-
-        <div className="md:w-[40%] h-full flex flex-col gap-6 order-2">
+          <div className="flex flex-col gap-6 order-2">
           <TradeLimits
-            buyLimit={userData.tradeLimits.buy}
-            sellLimit={userData.tradeLimits.sell}
-            balance={userData.balance}
-          />
+              buyLimit={userData.tradeLimits.buy}
+              sellLimit={userData.tradeLimits.sell}
+              balance={userData.balance}
+            />
+          </div>
+          <StatsTabs stats={userData.stats} />
         </div>
       </div>
     </div>
