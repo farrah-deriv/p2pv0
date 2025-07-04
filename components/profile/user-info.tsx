@@ -49,15 +49,13 @@ export default function UserInfo({
         <div className="flex-1">
           <h2 className="text-xl font-bold">{nickname}</h2>
           <div className="flex items-center mt-1 text-sm">
-            {rating && (
+            {rating && rating > 0 && (
               <div className="flex items-center">
                 <Star className="h-4 w-4 text-warning-icon mr-1" />
                 <span className="text-slate-600">{rating}</span>
               </div>
             )}
-
             {rating && completionRate && <div className="mx-4 h-4 w-px bg-slate-300"></div>}
-
             {completionRate && (
               <div className="flex items-center text-slate-600">
                 <Check className="h-4 w-4 text-primary mr-1" />
@@ -65,14 +63,8 @@ export default function UserInfo({
                 <Info className="h-4 w-4 ml-1 text-slate-400" />
               </div>
             )}
-
             {completionRate && joinDate && <div className="mx-4 h-4 w-px bg-slate-300"></div>}
-
             {joinDate && <div className="text-slate-600">{joinDate}</div>}
-
-            {joinDate && blockedCount > 0 && <div className="mx-4 h-4 w-px bg-slate-300"></div>}
-
-            {blockedCount > 0 && <div className="text-slate-600">Blocked by: {blockedCount}</div>}
           </div>
           <div className="flex flex-wrap gap-2 mt-3">
             {isVerified.id && (
