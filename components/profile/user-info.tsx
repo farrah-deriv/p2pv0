@@ -38,7 +38,7 @@ export default function UserInfo({
     } catch (error) {
       console.error("Error accessing user data:", error)
     }
-  }, [username, rating, completionRate, joinDate, blockedCount, realName, isVerified])
+  }, [username, rating, recommendedAverage, joinDate, blockedCount, realName, isVerified])
 
   return (
     <div className="mb-8 w-fit max-w-3xl">
@@ -52,7 +52,7 @@ export default function UserInfo({
             {rating && (
               <div className="flex items-center">
                 <Image src="/icons/custom-star-icon.png" alt="Star rating" width={16} height={16} className="mr-1" />
-                {rating > 0 ? <span className="text-slate-600">{rating}</span> : <span className="text-slate-600">Not rated yet</span>}
+                {parseFloat(rating) > 0 ? <span className="text-slate-600">{rating}</span> : <span className="text-slate-600">Not rated yet</span>}
               </div>
               <div className="mx-4 h-4 w-px bg-slate-300"></div>
             )}
