@@ -50,14 +50,14 @@ export default function UserInfo({
           <h2 className="text-xl font-bold">{nickname}</h2>
           <div className="flex items-center mt-1 text-sm">
             {rating && (
-              <div className="flex items-center">
+              <div><div className="flex items-center">
                 <Image src="/icons/custom-star-icon.png" alt="Star rating" width={16} height={16} className="mr-1" />
                 {parseFloat(rating) > 0 ? <span className="text-slate-600">{rating}</span> : <span className="text-slate-600">Not rated yet</span>}
               </div>
-              <div className="mx-4 h-4 w-px bg-slate-300"></div>
+              <div className="mx-4 h-4 w-px bg-slate-300"></div></div>
             )}
             {recommendedAverage && (
-              <div className="flex items-center text-slate-600">
+              <div><div className="flex items-center text-slate-600">
                 <Image
                   src="/icons/custom-check-icon.png"
                   alt="Recommended"
@@ -67,7 +67,7 @@ export default function UserInfo({
                 />
                 <span>{recommendedAverage} (Recommended)</span>
               </div>
-              <div className="mx-4 h-4 w-px bg-slate-300"></div>
+              <div className="mx-4 h-4 w-px bg-slate-300"></div></div>
             )}
             {joinDate && <div className="text-slate-600">{joinDate}</div>}
           </div>
