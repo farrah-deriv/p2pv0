@@ -33,7 +33,7 @@ export const API = {
     transactions: "/transactions",
     userFavourites: "/user-favourites",
     userBlocks: "/user-blocks",
-    settings: "/api:iD2pm9AZ/settings",
+    settings:"/settings",
   },
 }
 
