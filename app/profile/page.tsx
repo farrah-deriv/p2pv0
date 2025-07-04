@@ -124,11 +124,11 @@ export default function ProfilePage() {
             isVerified={userData.isVerified}
           />
           <div className="flex flex-col gap-6 order-2">
-          <TradeLimits
-              buyLimit={userData.tradeLimits.buy}
-              sellLimit={userData.tradeLimits.sell}
-              balance={userData.balance}
-            />
+            <TradeLimits
+                buyLimit={userData.tradeLimits.buy}
+                sellLimit={userData.tradeLimits.sell}
+                balance={userData.balance}
+              />
           </div>
           <StatsTabs stats={userData.stats} />
         </div>
