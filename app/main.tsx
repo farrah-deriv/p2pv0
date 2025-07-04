@@ -43,7 +43,7 @@ export default function Main({
       <div className="hidden md:flex p-6 h-screen overflow-hidden m-auto max-w-[1232px]">
         {isHeaderVisible && <Sidebar />}
         <div className="flex-1">{isHeaderVisible && <Header />}
-          <div className="container mx-auto p-4">{children}</div>
+          <div className="container mx-auto p-4 h-[calc(100%-2rem)]">{children}</div>
         </div>
       </div>
       <div className="md:hidden container mx-auto p-4 flex flex-col h-screen overflow-hidden">
