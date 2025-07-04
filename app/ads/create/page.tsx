@@ -529,31 +529,31 @@ export default function CreateAdPage() {
   return (
     <div className="max-w-[600px] mx-auto py-6 mt-8 progress-steps-container overflow-auto h-full pb-24 px-4 md:px-0">
       <style jsx global>{`
-       input::placeholder {
-         font-weight: 400;
-         font-size: 16px;
-         line-height: 24px;
-         letter-spacing: 0%;
-       }
-       textarea::placeholder {
-         font-weight: 400;
-         font-size: 16px;
-         line-height: 24px;
-         letter-spacing: 0%;
-       }
-       .progress-steps-container .absolute.top-5 {
-         top: 12px;
-       }
-     `}</style>
+        input::placeholder {
+          font-weight: 400;
+          font-size: 16px;
+          line-height: 24px;
+          letter-spacing: 0%;
+        }
+        textarea::placeholder {
+          font-weight: 400;
+          font-size: 16px;
+          line-height: 24px;
+          letter-spacing: 0%;
+        }
+        .progress-steps-container .absolute.top-5 {
+          top: 12px;
+        }
+      `}</style>
       <style jsx>{`
- :global(body),
- :global(html),
- :global(#__next),
- :global(main),
- :global(.container) {
-   overflow-y: auto !important;
-   height: auto !important;
- }
+  :global(body),
+  :global(html),
+  :global(#__next),
+  :global(main),
+  :global(.container) {
+    overflow-y: auto !important;
+    height: auto !important;
+  }
 `}</style>
       <div
         className={`flex ${currentStep === 0 ? "justify-end" : "justify-between"} mb-7 md:mt-8 sticky top-0 z-10 bg-white py-1 relative items-center border-b md:border-b-0 -mx-4 px-4 md:mx-0 md:px-0 border-gray-200`}
