@@ -116,6 +116,7 @@ export async function logout(): Promise<void> {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
+    window.location.href = "/"
   } catch (error) {
     console.error(error)
     throw new Error("User not authenticated.")
