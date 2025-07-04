@@ -3,43 +3,44 @@ import type { APIAdvert, MyAd, AdFilters, CreateAdPayload, CreateAdResponse } fr
 
 export async function getCurrencies(): Promise<string[]> {
   try {
-    const url = `${API.baseUrl}${API.endpoints.settings}`
+    const url = `${API.baseUrl}${API.endpoints.settings}`;
     const headers = {
       ...AUTH.getAuthHeader(),
       "X-Data-Source": "live",
-    }
+    };
 
-    const response = await fetch(url, { headers })
+    const response = await fetch(url, { headers });
 
-    console.log("get settings api response:"+ response.text())
+    const responseText = await response.text();
+    console.log("get settings api response:", responseText);
 
     if (!response.ok) {
-      throw new Error("Failed to fetch currencies from settings")
+      throw new Error("Failed to fetch currencies from settings");
     }
 
-    const responseText = await response.text()
-    let apiData
+    let apiData;
 
     try {
-      apiData = JSON.parse(responseText)
+      apiData = JSON.parse(responseText);
     } catch (e) {
       // Fallback to default currencies if API response is invalid
-      return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
+      return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"];
     }
 
     // Extract currencies from API response
     // TODO: Update this based on actual API response structure
     if (apiData && apiData.currencies && Array.isArray(apiData.currencies)) {
-      return apiData.currencies
+      return apiData.currencies;
     }
 
     // Fallback to default currencies if API doesn't return expected structure
-    return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
+    return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"];
   } catch (error) {
     // Fallback to default currencies if API call fails
-    return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
+    return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"];
   }
 }
+
 
 export async function getUserAdverts(): Promise<MyAd[]> {
   try {
