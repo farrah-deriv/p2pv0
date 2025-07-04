@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Star, Check, Info } from "lucide-react"
+import { Check } from "lucide-react"
 import { USER } from "@/lib/local-variables"
+import Image from "next/image"
 
 interface UserInfoProps {
   username: string
@@ -51,7 +52,7 @@ export default function UserInfo({
           <div className="flex items-center mt-1 text-sm">
             {rating && rating > 0 && (
               <div className="flex items-center">
-                <Star className="h-4 w-4 text-warning-icon mr-1" />
+                <Image src="/icons/custom-star-icon.png" alt="Star rating" width={16} height={16} className="mr-1" />
                 <span className="text-slate-600">{rating}</span>
               </div>
             )}
