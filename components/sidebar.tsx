@@ -8,9 +8,9 @@ import { cn } from "@/lib/utils"
 
 export default function Sidebar() {
   const navItems = [
-    { name: "Home", href: "https://hub.deriv.com/tradershub", icon: "/icons/home-icon.png" },
-    { name: "Trade", href: "https://hub.deriv.com/tradershub/cfds", icon: "/icons/trade-icon.svg" },
-    { name: "Wallets", href: "https://hub.deriv.com/tradershub/wallets", icon: "/icons/wallet-icon.svg" },
+    { name: "Home", href: "https://app.champion.trade/champion", icon: "/icons/home-icon.png" },
+    { name: "Trade", href: "https://app.champion.trade/trade", icon: "/icons/trade-icon.svg" },
+    { name: "Wallets", href: "https://app.champion.trade/champion", icon: "/icons/wallet-icon.svg" },
     { name: "P2P", href: "/", icon: "/icons/p2p-icon.svg" },
   ]
 

@@ -42,18 +42,18 @@ export default function Main({
   }, [pathname, router])
 
   if (pathname === "/login") {
-    return <div className="container mx-auto">{children}</div>
+    return <div className="container mx-auto overflow-hidden max-w-[1232px]">{children}</div>
   }
 
   return (
     <>
-      <div className="hidden md:flex p-6 min-h-screen">
+      <div className="hidden md:flex p-6 h-screen overflow-hidden m-auto max-w-[1232px]">
         {isHeaderVisible && <Sidebar />}
         <div className="flex-1">{isHeaderVisible && <Header />}
           <div className="container mx-auto p-4">{children}</div>
         </div>
       </div>
-      <div className="md:hidden container mx-auto p-4 flex flex-col h-screen overflow-hidden">
+      <div className="md:hidden container mx-auto p-4 h-[calc(100%-2rem)]">
         {isHeaderVisible && <Header className="flex-shrink-0" />}
         <main className="flex-1 overflow-hidden">{children}</main>
         <MobileFooterNav className="flex-shrink-0" />

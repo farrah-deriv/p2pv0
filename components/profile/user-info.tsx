@@ -9,7 +9,6 @@ interface UserInfoProps {
   rating: string
   completionRate: string
   joinDate: string
-  blockedCount: number
   realName: string
   isVerified: {
     id: boolean
@@ -24,7 +23,6 @@ export default function UserInfo({
   rating,
   completionRate,
   joinDate,
-  blockedCount,
   realName,
   isVerified,
 }: UserInfoProps) {
@@ -38,7 +36,7 @@ export default function UserInfo({
     } catch (error) {
       console.error("Error accessing user data:", error)
     }
-  }, [username, rating, completionRate, joinDate, blockedCount, realName, isVerified])
+  }, [username, rating, completionRate, joinDate, realName, isVerified])
 
   return (
     <div className="mb-8 w-fit max-w-3xl">
@@ -69,10 +67,6 @@ export default function UserInfo({
             {completionRate && joinDate && <div className="mx-4 h-4 w-px bg-slate-300"></div>}
 
             {joinDate && <div className="text-slate-600">{joinDate}</div>}
-
-            {joinDate && blockedCount > 0 && <div className="mx-4 h-4 w-px bg-slate-300"></div>}
-
-            {blockedCount > 0 && <div className="text-slate-600">Blocked by: {blockedCount}</div>}
           </div>
           <div className="flex flex-wrap gap-2 mt-3">
             {isVerified.id && (

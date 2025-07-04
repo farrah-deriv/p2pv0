@@ -8,11 +8,10 @@ import { USER, API, AUTH } from "@/lib/local-variables"
 
 export default function ProfilePage() {
   const [userData, setUserData] = useState({
-    username: "John_doe",
+    username: "",
     rating: "Not rated yet",
     completionRate: "",
-    joinDate: "Joined today",
-    blockedCount: 2,
+    joinDate: "",
     realName: "",
     balance: "",
     isVerified: {
@@ -22,7 +21,7 @@ export default function ProfilePage() {
     },
     businessHours: {
       isOpen: true,
-      availability: "available 24/7",
+      availability: "",
     },
     tradeLimits: {
       buy: {
@@ -120,7 +119,6 @@ export default function ProfilePage() {
             rating={userData.rating}
             completionRate={userData.completionRate}
             joinDate={userData.joinDate}
-            blockedCount={userData.blockedCount}
             realName={userData.realName}
             isVerified={userData.isVerified}
           />
