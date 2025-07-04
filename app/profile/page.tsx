@@ -82,7 +82,7 @@ export default function ProfilePage() {
             username: data.nickname || prevData.username,
             rating: data.rating_average_lifetime !== null ? `${data.rating_average_lifetime}/5` : "Not rated yet",
             completionRate: `${data.completion_average_30day || 0}%`,
-            recommendedAverage: data.recommend_average_lifetime
+            recommendedAverage: data.recommend_average_lifetime,
             joinDate: joinDateString,
             tradeLimits: {
               buy: {
