@@ -5,7 +5,6 @@ let SOCKET_TOKEN = null
 
 if (typeof window !== "undefined") {
   USER_DATA = JSON.parse(localStorage.getItem("user_data") ?? "{}")
-  USER_TOKEN = localStorage.getItem("auth_token") ?? ""
   USER_ID = localStorage.getItem("user_id") ?? ""
   SOCKET_TOKEN = localStorage.getItem("socket_token") ?? ""
 }

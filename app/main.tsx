@@ -3,11 +3,12 @@
 import type React from "react"
 
 import { useEffect, useState } from "react"
-import "./globals.css"
 import { usePathname, useRouter } from "next/navigation"
 import MobileFooterNav from "@/components/mobile-footer-nav"
 import Header from "@/components/header"
 import Sidebar from "@/components/sidebar"
+import * as AuthAPI from "@/services/api/api-auth"
+import "./globals.css"
 
 export default function Main({
   children,
@@ -20,15 +21,15 @@ export default function Main({
 
   useEffect(() => {
     const PUBLIC_ROUTES = ["/login"]
-    const token = localStorage.getItem("auth_token")
+    const sessionData = AuthAPI.getSession();
     const isPublic = PUBLIC_ROUTES.includes(pathname)
 
-    if (!token && !isPublic) {
+    if (sessionData && !isPublic) {
       setIsHeaderVisible(false)
       router.push("/login")
     }
 
-    if (token) {
+    if (sessionData) {
       setIsHeaderVisible(true)
       router.push(pathname)
     }

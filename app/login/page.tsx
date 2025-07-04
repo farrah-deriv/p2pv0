@@ -59,12 +59,8 @@ export default function LoginPage() {
 
       const response = await AuthAPI.verifyCode(verificationData);
 
-      if (response.access_token) {
-        localStorage.setItem("auth_token", response.access_token)
-
+      if (response) {
         await AuthAPI.fetchUserIdAndStore()
-        await AuthAPI.getSocketToken(response.access_token)
-
         window.location.href = "/"
 
       } else {
