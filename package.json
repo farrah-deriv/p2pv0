@@ -1,5 +1,5 @@
 {
-  "name": "p2p-trading-platform",
+  "name": "my-v0-project",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@eslint/eslintrc": "latest",
-    "@hookform/resolvers": "^3.3.4",
+    "@hookform/resolvers": "^3.9.1",
     "@novu/nextjs": "latest",
     "@radix-ui/react-accordion": "latest",
     "@radix-ui/react-alert-dialog": "latest",
@@ -39,23 +39,21 @@
     "@radix-ui/react-toggle": "latest",
     "@radix-ui/react-toggle-group": "latest",
     "@radix-ui/react-tooltip": "latest",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "latest",
-    "date-fns": "^3.3.1",
+    "date-fns": "4.1.0",
     "embla-carousel-react": "latest",
     "input-otp": "latest",
     "lodash": "latest",
     "lucide-react": "^0.454.0",
-    "next": "14.2.16",
+    "next": "15.2.4",
     "next-themes": "latest",
     "path": "latest",
-    "react": "^18",
+    "react": "^19",
     "react-day-picker": "latest",
-    "react-dom": "^18",
+    "react-dom": "^19",
     "react-hook-form": "latest",
     "react-resizable-panels": "latest",
     "recharts": "latest",
@@ -64,17 +62,14 @@
     "tailwindcss-animate": "^1.0.7",
     "url": "latest",
     "vaul": "latest",
-    "zod": "^3.22.4"
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "autoprefixer": "^10.0.1",
-    "eslint": "^8",
-    "eslint-config-next": "14.1.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "postcss": "^8.5",
-    "tailwindcss": "^3.3.0",
+    "tailwindcss": "^3.4.17",
     "typescript": "^5"
   }
 }
