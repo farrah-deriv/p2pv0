@@ -14,7 +14,8 @@ export async function getCurrencies(): Promise<string[]> {
   } catch (error) {
     console.log("Error fetching currencies:", error);
   }
-
+  
+  // TODO: Returning a default array for now until the API response structure is finalised and we have required data
   return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"];
 }
 
