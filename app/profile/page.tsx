@@ -112,27 +112,23 @@ export default function ProfilePage() {
 
   return (
     <div className="px-4 md:px-4">
-      <div className="flex flex-col md:flex-row gap-6 h-full">
-        <div className="flex-1 order-1">
-          <UserInfo
-            username={userData.username}
-            rating={userData.rating}
-            completionRate={userData.completionRate}
-            joinDate={userData.joinDate}
-            blockedCount={userData.blockedCount}
-            realName={userData.realName}
-            isVerified={userData.isVerified}
-          />
-          <div className="flex flex-col gap-6 order-2">
-            <TradeLimits
-                buyLimit={userData.tradeLimits.buy}
-                sellLimit={userData.tradeLimits.sell}
-                balance={userData.balance}
-            />
-          </div>
-          <StatsTabs stats={userData.stats} />
-        </div>
+      <UserInfo
+        username={userData.username}
+        rating={userData.rating}
+        completionRate={userData.completionRate}
+        joinDate={userData.joinDate}
+        blockedCount={userData.blockedCount}
+        realName={userData.realName}
+        isVerified={userData.isVerified}
+      />
+      <div className="flex flex-col gap-6 order-2">
+        <TradeLimits
+          buyLimit={userData.tradeLimits.buy}
+          sellLimit={userData.tradeLimits.sell}
+          balance={userData.balance}
+        />
       </div>
+      <StatsTabs stats={userData.stats} />
     </div>
   )
 }
