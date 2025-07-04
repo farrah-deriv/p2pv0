@@ -21,7 +21,7 @@ export default function TradeLimits({ buyLimit, sellLimit }: TradeLimitsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg font-semibold">Daily limits</CardTitle>
+        <CardTitle className="text-lg font-semibold">Daily trade limit</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
