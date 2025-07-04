@@ -7,7 +7,7 @@ import Image from "next/image"
 interface UserInfoProps {
   username: string
   rating: string
-  completionRate: string
+  recommendedAverage: string
   joinDate: string
   blockedCount: number
   realName: string
@@ -22,7 +22,7 @@ interface UserInfoProps {
 export default function UserInfo({
   username,
   rating,
-  completionRate,
+  recommendedAverage,
   joinDate,
   blockedCount,
   realName,
