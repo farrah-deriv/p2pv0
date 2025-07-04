@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Plus, X } from "lucide-react"
 import { PaymentMethodBottomSheet } from "./payment-method-bottom-sheet"
 import { getUserPaymentMethods } from "@/app/profile/api/api-payment-methods"
-import { getPaymentMethodIcon, getCategoryDisplayName } from "@/lib/utils"
+import { getPaymentMethodIcon, getCategoryDisplayName, getMethodDisplayDetails } from "@/lib/utils"
 
 interface PaymentMethod {
   id: number
@@ -45,27 +45,6 @@ export function AdPaymentMethods({ selectedMethods, onMethodsChange }: AdPayment
   useEffect(() => {
     fetchPaymentMethods()
   }, [])
-
-  const getMethodDisplayDetails = (method: PaymentMethod) => {
-    if (method.type === "bank") {
-      const account = method.fields.account?.value || ""
-      const bankName = method.fields.bank_name?.value || "Bank Transfer"
-      const maskedAccount = account ? account.slice(0, 6) + "****" + account.slice(-4) : "****"
-
-      return {
-        primary: maskedAccount,
-        secondary: bankName,
-      }
-    } else {
-      const account = method.fields.account?.value || ""
-      const displayValue = account || method.display_name
-
-      return {
-        primary: displayValue,
-        secondary: method.display_name,
-      }
-    }
-  }
 
   const handleMethodToggle = (methodId: number) => {
     if (selectedMethods.includes(methodId)) {
