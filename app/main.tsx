@@ -21,18 +21,26 @@ export default function Main({
 
   useEffect(() => {
     const PUBLIC_ROUTES = ["/login"]
-    const sessionData = AuthAPI.getSession();
     const isPublic = PUBLIC_ROUTES.includes(pathname)
 
-    if (sessionData && !isPublic) {
-      setIsHeaderVisible(false)
-      router.push("/login")
-    }
+    const fetchSessionData = async () => {
+      try {
+        const response = await AuthAPI.getSession()
+        if (response && !isPublic) {
+          setIsHeaderVisible(false)
+          router.push("/login")
+        }
 
-    if (sessionData) {
-      setIsHeaderVisible(true)
-      router.push(pathname)
-    }
+        if (response) {
+          setIsHeaderVisible(true)
+          router.push(pathname)
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchSessionData();
   }, [pathname, router])
 
   if (pathname === "/login") {
