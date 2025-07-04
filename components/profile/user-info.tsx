@@ -49,23 +49,23 @@ export default function UserInfo({
         <div className="flex-1">
           <h2 className="text-xl font-bold">{nickname}</h2>
           <div className="flex items-center mt-1 text-sm">
-            {rating && rating > 0 && (
+            {rating && (
               <div className="flex items-center">
                 <Image src="/icons/custom-star-icon.png" alt="Star rating" width={16} height={16} className="mr-1" />
-                <span className="text-slate-600">{rating}</span>
+                {rating > 0 ? <span className="text-slate-600">{rating}</span> : <span className="text-slate-600">Not rated yet</span>}
               </div>
             )}
             {rating && completionRate && <div className="mx-4 h-4 w-px bg-slate-300"></div>}
-            {completionRate && (
+            {recommend_average_lifetime && (
               <div className="flex items-center text-slate-600">
                 <Image
                   src="/icons/custom-check-icon.png"
-                  alt="Completion rate"
+                  alt="Recommended"
                   width={16}
                   height={16}
                   className="mr-1"
                 />
-                <span>{completionRate}</span>
+                <span>{recommend_average_lifetime} (Recommended)</span>
               </div>
             )}
             {completionRate && joinDate && <div className="mx-4 h-4 w-px bg-slate-300"></div>}
