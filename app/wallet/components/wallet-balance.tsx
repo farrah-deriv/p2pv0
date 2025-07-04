@@ -37,6 +37,7 @@ export default function WalletBalance({ className }: WalletBalanceProps) {
       const url = `${API.baseUrl}/users/${userId}`
 
       const response = await fetch(url, {
+        credentials: "include",
         headers: {
           ...AUTH.getAuthHeader(),
           accept: "application/json",
