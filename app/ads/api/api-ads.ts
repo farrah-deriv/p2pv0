@@ -1,6 +1,11 @@
 import { USER, API, AUTH } from "@/lib/local-variables"
 import type { APIAdvert, MyAd, AdFilters, CreateAdPayload, CreateAdResponse } from "../types"
 
+export async function getCurrencies(): Promise<string[]> {
+  // TODO: Replace with actual API call
+  return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
+}
+
 export async function getUserAdverts(): Promise<MyAd[]> {
   try {
     const userId = USER.id
@@ -448,6 +453,7 @@ export async function activateAd(id: string): Promise<{ success: boolean; errors
 }
 
 export const AdsAPI = {
+  getCurrencies,
   getUserAdverts,
   getMyAds,
   toggleAdStatus,

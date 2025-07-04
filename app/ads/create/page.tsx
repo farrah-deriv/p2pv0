@@ -639,5 +639,3 @@ export default function CreateAdPage() {
     </div>
   )
 }
-// TODO: To be replaced with data from the API.
-const currencies = ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]

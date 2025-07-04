@@ -7,6 +7,7 @@ import { CurrencyInput } from "./ui/currency-input"
 import { RateInput } from "./ui/rate-input"
 import { TradeTypeSelector } from "./ui/trade-type-selector"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { getCurrencies } from "../api/api-ads"
 
 interface AdDetailsFormProps {
   onNext: (data: Partial<AdFormData>, errors?: ValidationErrors) => void
@@ -29,6 +30,7 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
   const [maxAmount, setMaxAmount] = useState(initialData?.maxAmount?.toString() || "")
   const [buyCurrency, setBuyCurrency] = useState("USD")
   const [forCurrency, setForCurrency] = useState("USD")
+  const [currencies, setCurrencies] = useState<string[]>([])
   const [formErrors, setFormErrors] = useState<ValidationErrors>({})
   const [touched, setTouched] = useState({
     totalAmount: false,
@@ -42,6 +44,14 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
     const hasNoErrors = Object.keys(formErrors).length === 0
     return hasValues && hasNoErrors
   }
+
+  useEffect(() => {
+    const loadCurrencies = async () => {
+      const currencyList = await getCurrencies()
+      setCurrencies(currencyList)
+    }
+    loadCurrencies()
+  }, [])
 
   useEffect(() => {
     if (initialData) {
@@ -184,8 +194,6 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
     })
     document.dispatchEvent(event)
   }, [type, totalAmount, fixedRate, minAmount, maxAmount, formErrors])
-
-  const currencies = ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
 
   return (
     <div className="max-w-[800px] mx-auto">
