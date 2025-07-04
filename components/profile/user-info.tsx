@@ -54,9 +54,9 @@ export default function UserInfo({
                 <Image src="/icons/custom-star-icon.png" alt="Star rating" width={16} height={16} className="mr-1" />
                 {rating > 0 ? <span className="text-slate-600">{rating}</span> : <span className="text-slate-600">Not rated yet</span>}
               </div>
+              <div className="mx-4 h-4 w-px bg-slate-300"></div>
             )}
-            {rating && completionRate && <div className="mx-4 h-4 w-px bg-slate-300"></div>}
-            {recommend_average_lifetime && (
+            {recommendedAverage && (
               <div className="flex items-center text-slate-600">
                 <Image
                   src="/icons/custom-check-icon.png"
@@ -65,10 +65,10 @@ export default function UserInfo({
                   height={16}
                   className="mr-1"
                 />
-                <span>{recommend_average_lifetime} (Recommended)</span>
+                <span>{recommendedAverage} (Recommended)</span>
               </div>
+              <div className="mx-4 h-4 w-px bg-slate-300"></div>
             )}
-            {completionRate && joinDate && <div className="mx-4 h-4 w-px bg-slate-300"></div>}
             {joinDate && <div className="text-slate-600">{joinDate}</div>}
           </div>
           <div className="flex flex-wrap gap-2 mt-3">
