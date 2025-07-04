@@ -103,7 +103,6 @@ export default function CreateAdPage() {
       try {
         setIsLoading(true)
 
-        // Load currencies
         await getCurrencies()
 
         if (isEditMode) {
