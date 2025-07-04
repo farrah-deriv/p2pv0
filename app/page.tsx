@@ -147,7 +147,7 @@ export default function BuySellPage() {
                 onValueChange={setSelectedPaymentMethod}
                 disabled={isLoadingPaymentMethods}
               >
-                <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectTrigger className="w-full sm:w-[300px]">
                   <SelectValue placeholder={isLoadingPaymentMethods ? "Loading..." : "Payment method"} />
                 </SelectTrigger>
                 <SelectContent>
@@ -162,7 +162,7 @@ export default function BuySellPage() {
             </div>
             <div className="hidden md:block">
               <Select defaultValue="exchange_rate" onValueChange={setSortBy}>
-                <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectTrigger className="w-full sm:w-[300px]">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -175,7 +175,7 @@ export default function BuySellPage() {
             <div className="relative filter-dropdown-container flex-shrink-0">
               <button
                 onClick={() => setIsFilterPopupOpen(!isFilterPopupOpen)}
-                className="h-10 px-3 py-2 md:w-[150px] flex items-center justify-between rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:border-[#000000] active:border-[#000000] disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-10 px-3 py-2 md:w-auto flex items-center justify-between rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:border-[#000000] active:border-[#000000] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span className="text-sm hidden md:inline">Filter by</span>
                 <Image
