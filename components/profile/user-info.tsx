@@ -61,6 +61,13 @@ export default function UserInfo({
               <div className="flex items-center text-slate-600">
                 <Check className="h-4 w-4 text-primary mr-1" />
                 <span>{completionRate}</span>
+                <Image
+                  src="/icons/custom-verification-icon.png"
+                  alt="Verification info"
+                  width={16}
+                  height={16}
+                  className="ml-1"
+                />
               </div>
             )}
             {completionRate && joinDate && <div className="mx-4 h-4 w-px bg-slate-300"></div>}
