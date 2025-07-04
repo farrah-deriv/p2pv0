@@ -68,6 +68,7 @@ export default function PaymentMethodsTab() {
       }
       const response = await fetch(url, {
         headers,
+        credentials: "include",
         cache: "no-store",
       })
 

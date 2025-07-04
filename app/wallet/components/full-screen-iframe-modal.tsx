@@ -50,6 +50,7 @@ export default function FullScreenIframeModal({ isOpen, onClose, operation = "DE
       try {
         const response = await fetch(WALLETS.cashierUrl, {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
             "X-Branch": "staging",

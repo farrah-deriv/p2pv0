@@ -32,6 +32,7 @@ const AdPaymentMethods = () => {
 
                 const response = await fetch(url, {
                     headers,
+                    credentials: "include",
                     cache: "no-store",
                 })
 

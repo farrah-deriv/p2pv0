@@ -72,7 +72,7 @@ export async function getOrders(filters?: OrderFilters): Promise<Order[]> {
       "Content-Type": "application/json",
     }
 
-    const response = await fetch(url, { headers })
+    const response = await fetch(url, { headers, credentials: "include" })
 
     if (!response.ok) {
       throw new Error(`Error fetching orders: ${response.statusText}`)
@@ -101,7 +101,7 @@ export async function getOrderById(id: string): Promise<Order> {
       "Content-Type": "application/json",
     }
 
-    const response = await fetch(url, { headers })
+    const response = await fetch(url, { headers, credentials: "include" })
 
     if (!response.ok) {
       throw new Error(`Error fetching order: ${response.statusText}`)
@@ -132,6 +132,7 @@ export async function markPaymentAsSent(orderId: string): Promise<{ success: boo
 
     const response = await fetch(url, {
       method: "POST",
+      credentials: "include",
       headers,
     })
 
@@ -164,6 +165,7 @@ export async function releasePayment(orderId: string): Promise<{ success: boolea
 
     const response = await fetch(url, {
       method: "POST",
+      credentials: "include",
       headers,
     })
 
@@ -196,6 +198,7 @@ export async function cancelOrder(orderId: string): Promise<{ success: boolean }
 
     const response = await fetch(url, {
       method: "POST",
+      credentials: "include",
       headers,
     })
 
@@ -229,6 +232,7 @@ export async function disputeOrder(orderId: string, reason: string): Promise<{ s
 
     const response = await fetch(url, {
       method: "POST",
+      credentials: "include",
       headers,
       body,
     })
@@ -270,6 +274,7 @@ export async function createOrder(advertId: number, amount: number, paymentMetho
 
     const response = await fetch(url, {
       method: "POST",
+      credentials: "include",
       headers,
       body,
     })
@@ -303,6 +308,7 @@ export async function payOrder(orderId: string): Promise<{ success: boolean }> {
 
     const response = await fetch(url, {
       method: "POST",
+      credentials: "include",
       headers,
     })
 
@@ -344,6 +350,7 @@ export async function reviewOrder(
 
     const response = await fetch(url, {
       method: "POST",
+      credentials: "include",
       headers,
       body,
     })
@@ -377,6 +384,7 @@ export async function completeOrder(orderId: string): Promise<{ success: boolean
 
     const response = await fetch(url, {
       method: "POST",
+      credentials: "include",
       headers,
     })
 
@@ -426,6 +434,7 @@ export async function sendChatMessage(
 
     const response = await fetch(url, {
       method: "POST",
+      credentials: "include",
       headers,
       body,
     })
