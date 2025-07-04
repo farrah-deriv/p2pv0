@@ -11,18 +11,24 @@ export async function getCurrencies(): Promise<string[]> {
 
     const response = await fetch(url, { headers })
 
-    console.log("get settings api response:"+ response)
+    console.log("get settings api response status:", response.status)
+    console.log("get settings api response ok:", response.ok)
+    console.log("get settings api response headers:", response.headers)
 
     if (!response.ok) {
       throw new Error("Failed to fetch currencies from settings")
     }
 
     const responseText = await response.text()
+    console.log("get settings api response text:", responseText)
+
     let apiData
 
     try {
       apiData = JSON.parse(responseText)
+      console.log("get settings api parsed data:", apiData)
     } catch (e) {
+      console.log("Failed to parse JSON response:", e)
       // Fallback to default currencies if API response is invalid
       return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
     }
@@ -30,12 +36,15 @@ export async function getCurrencies(): Promise<string[]> {
     // Extract currencies from API response
     // TODO: Update this based on actual API response structure
     if (apiData && apiData.currencies && Array.isArray(apiData.currencies)) {
+      console.log("Found currencies in response:", apiData.currencies)
       return apiData.currencies
     }
 
+    console.log("No currencies found in expected structure, using fallback")
     // Fallback to default currencies if API doesn't return expected structure
     return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
   } catch (error) {
+    console.log("Error in getCurrencies:", error)
     // Fallback to default currencies if API call fails
     return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
   }
