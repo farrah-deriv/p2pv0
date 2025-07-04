@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Check } from "lucide-react"
 import { USER } from "@/lib/local-variables"
 import Image from "next/image"
 
@@ -59,15 +58,14 @@ export default function UserInfo({
             {rating && completionRate && <div className="mx-4 h-4 w-px bg-slate-300"></div>}
             {completionRate && (
               <div className="flex items-center text-slate-600">
-                <Check className="h-4 w-4 text-primary mr-1" />
-                <span>{completionRate}</span>
                 <Image
-                  src="/icons/custom-verification-icon.png"
-                  alt="Verification info"
+                  src="/icons/custom-check-icon.png"
+                  alt="Completion rate"
                   width={16}
                   height={16}
-                  className="ml-1"
+                  className="mr-1"
                 />
+                <span>{completionRate}</span>
               </div>
             )}
             {completionRate && joinDate && <div className="mx-4 h-4 w-px bg-slate-300"></div>}
@@ -76,24 +74,24 @@ export default function UserInfo({
           <div className="flex flex-wrap gap-2 mt-3">
             {isVerified.id && (
               <div className="bg-success-bg text-success px-3 h-[24px] rounded-[4px] text-xs flex items-center">
-                <Check className="h-3 w-3 mr-1 text-success" />
+                <Image src="/icons/custom-check-icon.png" alt="Verified" width={12} height={12} className="mr-1" />
                 ID
               </div>
             )}
             {isVerified.address && (
               <div className="bg-success-bg text-success px-3 h-[24px] rounded-[4px] text-xs flex items-center">
-                <Check className="h-3 w-3 mr-1 text-success" />
+                <Image src="/icons/custom-check-icon.png" alt="Verified" width={12} height={12} className="mr-1" />
                 Address
               </div>
             )}
             {isVerified.phone && (
               <div className="bg-success-bg text-success px-3 h-[24px] rounded-[4px] text-xs flex items-center">
-                <Check className="h-3 w-3 mr-1 text-success" />
+                <Image src="/icons/custom-check-icon.png" alt="Verified" width={12} height={12} className="mr-1" />
                 Phone number
               </div>
             )}
             <div className="bg-success-bg text-success px-3 h-[24px] rounded-[4px] text-xs flex items-center">
-              <Check className="h-3 w-3 mr-1 text-success" />
+              <Image src="/icons/custom-check-icon.png" alt="Verified" width={12} height={12} className="mr-1" />
               Email
             </div>
           </div>
