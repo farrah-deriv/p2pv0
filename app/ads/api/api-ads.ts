@@ -2,8 +2,41 @@ import { USER, API, AUTH } from "@/lib/local-variables"
 import type { APIAdvert, MyAd, AdFilters, CreateAdPayload, CreateAdResponse } from "../types"
 
 export async function getCurrencies(): Promise<string[]> {
-  // TODO: Replace with actual API call
-  return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
+  try {
+    const url = `${API.baseUrl}${API.endpoints.settings}`
+    const headers = {
+      ...AUTH.getAuthHeader(),
+      "X-Data-Source": "live",
+    }
+
+    const response = await fetch(url, { headers })
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch currencies from settings")
+    }
+
+    const responseText = await response.text()
+    let apiData
+
+    try {
+      apiData = JSON.parse(responseText)
+    } catch (e) {
+      // Fallback to default currencies if API response is invalid
+      return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
+    }
+
+    // Extract currencies from API response
+    // TODO: Update this based on actual API response structure
+    if (apiData && apiData.currencies && Array.isArray(apiData.currencies)) {
+      return apiData.currencies
+    }
+
+    // Fallback to default currencies if API doesn't return expected structure
+    return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
+  } catch (error) {
+    // Fallback to default currencies if API call fails
+    return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
+  }
 }
 
 export async function getUserAdverts(): Promise<MyAd[]> {

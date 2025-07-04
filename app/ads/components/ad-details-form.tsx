@@ -1,49 +1,32 @@
 "use client"
 
-import type React from "react"
 import { useState, useEffect } from "react"
-import type { AdFormData } from "../types"
-import { CurrencyInput } from "./ui/currency-input"
-import { RateInput } from "./ui/rate-input"
-import { TradeTypeSelector } from "./ui/trade-type-selector"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getCurrencies } from "../api/api-ads"
 
 interface AdDetailsFormProps {
-  onNext: (data: Partial<AdFormData>, errors?: ValidationErrors) => void
-  initialData?: Partial<AdFormData>
+  type: "Buy" | "Sell"
+  onNext: (data: any) => void
+  onBack: () => void
+  initialData?: any
   isEditMode?: boolean
 }
 
-interface ValidationErrors {
-  totalAmount?: string
-  fixedRate?: string
-  minAmount?: string
-  maxAmount?: string
-}
-
-export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDetailsFormProps) {
-  const [type, setType] = useState<"buy" | "sell">(initialData?.type || "buy")
-  const [totalAmount, setTotalAmount] = useState(initialData?.totalAmount?.toString() || "")
-  const [fixedRate, setFixedRate] = useState(initialData?.fixedRate?.toString() || "")
-  const [minAmount, setMinAmount] = useState(initialData?.minAmount?.toString() || "")
-  const [maxAmount, setMaxAmount] = useState(initialData?.maxAmount?.toString() || "")
-  const [buyCurrency, setBuyCurrency] = useState("USD")
-  const [forCurrency, setForCurrency] = useState("USD")
+export default function AdDetailsForm({ type, onNext, onBack, initialData, isEditMode = false }: AdDetailsFormProps) {
   const [currencies, setCurrencies] = useState<string[]>([])
-  const [formErrors, setFormErrors] = useState<ValidationErrors>({})
-  const [touched, setTouched] = useState({
-    totalAmount: false,
-    fixedRate: false,
-    minAmount: false,
-    maxAmount: false,
-  })
-
-  const isFormValid = () => {
-    const hasValues = !!totalAmount && !!fixedRate && !!minAmount && !!maxAmount
-    const hasNoErrors = Object.keys(formErrors).length === 0
-    return hasValues && hasNoErrors
-  }
+  const [buyCurrency, setBuyCurrency] = useState(initialData?.buyCurrency || "USD")
+  const [sellCurrency, setSellCurrency] = useState(initialData?.sellCurrency || "USD")
+  const [totalAmount, setTotalAmount] = useState(initialData?.totalAmount || "")
+  const [fixedRate, setFixedRate] = useState(initialData?.fixedRate || "")
+  const [minAmount, setMinAmount] = useState(initialData?.minAmount || "")
+  const [maxAmount, setMaxAmount] = useState(initialData?.maxAmount || "")
+  const [instructions, setInstructions] = useState(initialData?.instructions || "")
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({})
 
   useEffect(() => {
     const loadCurrencies = async () => {
@@ -53,271 +36,181 @@ export default function AdDetailsForm({ onNext, initialData, isEditMode }: AdDet
     loadCurrencies()
   }, [])
 
-  useEffect(() => {
-    if (initialData) {
-      if (initialData.type) setType(initialData.type as "buy" | "sell")
-      if (initialData.totalAmount !== undefined) setTotalAmount(initialData.totalAmount.toString())
-      if (initialData.fixedRate !== undefined) setFixedRate(initialData.fixedRate.toString())
-      if (initialData.minAmount !== undefined) setMinAmount(initialData.minAmount.toString())
-      if (initialData.maxAmount !== undefined) setMaxAmount(initialData.maxAmount.toString())
-    }
-  }, [initialData])
+  const validateForm = () => {
+    const errors: { [key: string]: string } = {}
 
-  useEffect(() => {
-    const errors: ValidationErrors = {}
-    const total = Number(totalAmount)
-    const min = Number(minAmount)
-    const max = Number(maxAmount)
-    const rate = Number(fixedRate)
-
-    if (touched.totalAmount) {
-      if (!totalAmount) {
-        errors.totalAmount = "Total amount is required"
-      } else if (total <= 0) {
-        errors.totalAmount = "Total amount must be greater than 0"
-      }
+    if (!totalAmount || Number.parseFloat(totalAmount) <= 0) {
+      errors.totalAmount = "Total amount must be greater than 0"
     }
 
-    if (min > total) {
-      errors.minAmount = "Minimum amount must be less than total amount"
+    if (!fixedRate || Number.parseFloat(fixedRate) <= 0) {
+      errors.fixedRate = "Fixed rate must be greater than 0"
     }
 
-    if (max > total) {
-      errors.maxAmount = "Maximum amount must be less than total amount"
+    if (!minAmount || Number.parseFloat(minAmount) <= 0) {
+      errors.minAmount = "Minimum amount must be greater than 0"
     }
 
-    if (touched.fixedRate) {
-      if (!fixedRate) {
-        errors.fixedRate = "Rate is required"
-      } else if (rate <= 0) {
-        errors.fixedRate = "Rate must be greater than 0"
-      }
+    if (!maxAmount || Number.parseFloat(maxAmount) <= 0) {
+      errors.maxAmount = "Maximum amount must be greater than 0"
     }
 
-    if (touched.minAmount) {
-      if (!minAmount) {
-        errors.minAmount = "Minimum amount is required"
-      } else if (min <= 0) {
-        errors.minAmount = "Minimum amount must be greater than 0"
-      }
-    }
-
-    if (touched.minAmount && touched.maxAmount && min > max) {
-      errors.minAmount = "Minimum amount must be less than maximum amount"
+    if (Number.parseFloat(minAmount) >= Number.parseFloat(maxAmount)) {
       errors.maxAmount = "Maximum amount must be greater than minimum amount"
     }
 
-    if (touched.maxAmount) {
-      if (!maxAmount) {
-        errors.maxAmount = "Maximum amount is required"
-      } else if (max <= 0) {
-        errors.maxAmount = "Maximum amount must be greater than 0"
-      }
+    if (Number.parseFloat(maxAmount) > Number.parseFloat(totalAmount)) {
+      errors.maxAmount = "Maximum amount cannot exceed total amount"
+    }
+
+    if (buyCurrency === sellCurrency) {
+      errors.sellCurrency = "Buy and sell currencies must be different"
     }
 
     setFormErrors(errors)
-  }, [totalAmount, fixedRate, minAmount, maxAmount, touched])
+    return Object.keys(errors).length === 0
+  }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    setTouched({
-      totalAmount: true,
-      fixedRate: true,
-      minAmount: true,
-      maxAmount: true,
-    })
-
-    const total = Number(totalAmount)
-    const min = Number(minAmount)
-    const max = Number(maxAmount)
-
-    const additionalErrors: ValidationErrors = {}
-
-    if (min > total) {
-      additionalErrors.minAmount = "Minimum amount must be less than total amount"
-    }
-
-    if (max > total) {
-      additionalErrors.maxAmount = "Maximum amount must be less than total amount"
-    }
-
-    if (min > max) {
-      additionalErrors.minAmount = "Minimum amount must be less than maximum amount"
-      additionalErrors.maxAmount = "Maximum amount must be greater than minimum amount"
-    }
-
-    const combinedErrors = { ...formErrors, ...additionalErrors }
-
-    if (Object.keys(additionalErrors).length > 0) {
-      setFormErrors(combinedErrors)
-    }
-
-    if (!isFormValid() || Object.keys(additionalErrors).length > 0) {
+  const handleNext = () => {
+    if (validateForm()) {
       const formData = {
         type,
-        totalAmount: Number.parseFloat(totalAmount) || 0,
-        fixedRate: Number.parseFloat(fixedRate) || 0,
-        minAmount: Number.parseFloat(minAmount) || 0,
-        maxAmount: Number.parseFloat(maxAmount) || 0,
+        buyCurrency,
+        sellCurrency,
+        totalAmount: Number.parseFloat(totalAmount),
+        fixedRate: Number.parseFloat(fixedRate),
+        minAmount: Number.parseFloat(minAmount),
+        maxAmount: Number.parseFloat(maxAmount),
+        instructions,
       }
-
-      onNext(formData, combinedErrors)
-      return
+      onNext(formData)
     }
-
-    const formData = {
-      type,
-      totalAmount: Number.parseFloat(totalAmount) || 0,
-      fixedRate: Number.parseFloat(fixedRate) || 0,
-      minAmount: Number.parseFloat(minAmount) || 0,
-      maxAmount: Number.parseFloat(maxAmount) || 0,
-    }
-
-    onNext(formData)
   }
 
   useEffect(() => {
-    const isValid = isFormValid()
-    const event = new CustomEvent("adFormValidationChange", {
-      bubbles: true,
-      detail: {
-        isValid,
-        formData: {
-          type,
-          totalAmount: Number.parseFloat(totalAmount) || 0,
-          fixedRate: Number.parseFloat(fixedRate) || 0,
-          minAmount: Number.parseFloat(minAmount) || 0,
-          maxAmount: Number.parseFloat(maxAmount) || 0,
-        },
-      },
-    })
-    document.dispatchEvent(event)
+    if (totalAmount && fixedRate && minAmount && maxAmount) {
+      validateForm()
+    }
   }, [type, totalAmount, fixedRate, minAmount, maxAmount, formErrors])
 
   return (
-    <div className="max-w-[800px] mx-auto">
-      <form id="ad-details-form" onSubmit={handleSubmit} className="space-y-10">
-        {!isEditMode && (
-          <div>
-            <h3 className="text-base font-bold leading-6 tracking-normal mb-5">Select trade type</h3>
-            <TradeTypeSelector value={type} onChange={setType} isEditMode={isEditMode} />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-              <div>
-                <label className="block mb-2 text-black text-sm font-normal leading-5">
-                  {type === "buy" ? "Buy currency" : "Sell currency"}
-                </label>
-                <Select value={buyCurrency} onValueChange={setBuyCurrency}>
-                  <SelectTrigger className="w-full h-14 rounded-lg">
-                    <SelectValue>{buyCurrency}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {currencies.map((currency) => (
-                      <SelectItem key={currency} value={currency}>
-                        {currency}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="block mb-2 text-black text-sm font-normal leading-5">For</label>
-                <Select value={forCurrency} onValueChange={setForCurrency}>
-                  <SelectTrigger className="w-full h-14 rounded-lg">
-                    <SelectValue>{forCurrency}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {currencies.map((currency) => (
-                      <SelectItem key={currency} value={currency}>
-                        {currency}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader>
+        <CardTitle>
+          {isEditMode ? "Edit" : "Create"} {type} Ad - Details
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="buy-currency">I want to {type.toLowerCase()}</Label>
+            <Select value={buyCurrency} onValueChange={setBuyCurrency}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select currency" />
+              </SelectTrigger>
+              <SelectContent>
+                {currencies.map((currency) => (
+                  <SelectItem key={currency} value={currency}>
+                    {currency}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        )}
 
-        <div>
-          <h3 className="text-base font-bold leading-6 tracking-normal mb-5">Set amount and rate</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <CurrencyInput
-                label="Total amount"
-                value={totalAmount}
-                onValueChange={(value) => {
-                  setTotalAmount(value)
-                  setTouched((prev) => ({ ...prev, totalAmount: true }))
-                }}
-                onBlur={() => setTouched((prev) => ({ ...prev, totalAmount: true }))}
-                placeholder="0.00"
-                isEditMode={isEditMode}
-                error={touched.totalAmount && !!formErrors.totalAmount}
-              />
-              {touched.totalAmount && formErrors.totalAmount && (
-                <p className="text-destructive text-xs mt-1">{formErrors.totalAmount}</p>
-              )}
-            </div>
-
-            <div>
-              <RateInput
-                value={fixedRate}
-                onChange={(value) => {
-                  setFixedRate(value)
-                  setTouched((prev) => ({ ...prev, fixedRate: true }))
-                }}
-                onBlur={() => setTouched((prev) => ({ ...prev, fixedRate: true }))}
-                error={touched.fixedRate && !!formErrors.fixedRate}
-              />
-              {touched.fixedRate && formErrors.fixedRate && (
-                <p className="text-destructive text-xs mt-1">{formErrors.fixedRate}</p>
-              )}
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="sell-currency">For</Label>
+            <Select value={sellCurrency} onValueChange={setSellCurrency}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select currency" />
+              </SelectTrigger>
+              <SelectContent>
+                {currencies.map((currency) => (
+                  <SelectItem key={currency} value={currency}>
+                    {currency}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {formErrors.sellCurrency && <p className="text-sm text-red-500">{formErrors.sellCurrency}</p>}
           </div>
         </div>
 
-        <div>
-          <h3 className="text-base font-bold leading-6 tracking-normal mb-5">Transaction limit</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <CurrencyInput
-                label="Minimum order amount"
-                value={minAmount}
-                onValueChange={(value) => {
-                  setMinAmount(value)
-                  setTouched((prev) => ({ ...prev, minAmount: true }))
-                }}
-                onBlur={() => setTouched((prev) => ({ ...prev, minAmount: true }))}
-                placeholder="0.00"
-                error={touched.minAmount && !!formErrors.minAmount}
-              />
-              {touched.minAmount && formErrors.minAmount && (
-                <p className="text-destructive text-xs mt-1">{formErrors.minAmount}</p>
-              )}
-            </div>
+        <div className="space-y-2">
+          <Label htmlFor="total-amount">Total Amount ({buyCurrency})</Label>
+          <Input
+            id="total-amount"
+            type="number"
+            placeholder="Enter total amount"
+            value={totalAmount}
+            onChange={(e) => setTotalAmount(e.target.value)}
+            className={formErrors.totalAmount ? "border-red-500" : ""}
+          />
+          {formErrors.totalAmount && <p className="text-sm text-red-500">{formErrors.totalAmount}</p>}
+        </div>
 
-            <div>
-              <CurrencyInput
-                label="Maximum order amount"
-                value={maxAmount}
-                onValueChange={(value) => {
-                  setMaxAmount(value)
-                  setTouched((prev) => ({ ...prev, maxAmount: true }))
-                }}
-                onBlur={() => setTouched((prev) => ({ ...prev, maxAmount: true }))}
-                placeholder="0.00"
-                error={touched.maxAmount && !!formErrors.maxAmount}
-              />
-              {touched.maxAmount && formErrors.maxAmount && (
-                <p className="text-destructive text-xs mt-1">{formErrors.maxAmount}</p>
-              )}
-            </div>
+        <div className="space-y-2">
+          <Label htmlFor="fixed-rate">
+            Fixed Rate (1 {buyCurrency} = ? {sellCurrency})
+          </Label>
+          <Input
+            id="fixed-rate"
+            type="number"
+            step="0.0001"
+            placeholder="Enter fixed rate"
+            value={fixedRate}
+            onChange={(e) => setFixedRate(e.target.value)}
+            className={formErrors.fixedRate ? "border-red-500" : ""}
+          />
+          {formErrors.fixedRate && <p className="text-sm text-red-500">{formErrors.fixedRate}</p>}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="min-amount">Minimum Order ({sellCurrency})</Label>
+            <Input
+              id="min-amount"
+              type="number"
+              placeholder="Enter minimum amount"
+              value={minAmount}
+              onChange={(e) => setMinAmount(e.target.value)}
+              className={formErrors.minAmount ? "border-red-500" : ""}
+            />
+            {formErrors.minAmount && <p className="text-sm text-red-500">{formErrors.minAmount}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="max-amount">Maximum Order ({sellCurrency})</Label>
+            <Input
+              id="max-amount"
+              type="number"
+              placeholder="Enter maximum amount"
+              value={maxAmount}
+              onChange={(e) => setMaxAmount(e.target.value)}
+              className={formErrors.maxAmount ? "border-red-500" : ""}
+            />
+            {formErrors.maxAmount && <p className="text-sm text-red-500">{formErrors.maxAmount}</p>}
           </div>
         </div>
-      </form>
-    </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="instructions">Instructions (Optional)</Label>
+          <Textarea
+            id="instructions"
+            placeholder="Enter any special instructions for buyers/sellers..."
+            value={instructions}
+            onChange={(e) => setInstructions(e.target.value)}
+            rows={4}
+          />
+        </div>
+
+        <div className="flex justify-between pt-4">
+          <Button variant="outline" onClick={onBack}>
+            Back
+          </Button>
+          <Button onClick={handleNext}>Next</Button>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
