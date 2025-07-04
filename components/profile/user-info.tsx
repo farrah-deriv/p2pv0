@@ -60,7 +60,6 @@ export default function UserInfo({
               <div className="flex items-center text-slate-600">
                 <Check className="h-4 w-4 text-primary mr-1" />
                 <span>{completionRate}</span>
-                <Info className="h-4 w-4 ml-1 text-slate-400" />
               </div>
             )}
             {completionRate && joinDate && <div className="mx-4 h-4 w-px bg-slate-300"></div>}
