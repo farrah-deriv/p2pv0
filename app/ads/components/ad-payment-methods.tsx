@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { CustomShimmer } from "@/app/profile/components/ui/custom-shimmer"
 import AddPaymentMethodPanel from "@/app/profile/components/add-payment-method-panel"
 import { addPaymentMethod, getUserPaymentMethods } from "@/app/profile/api/api-payment-methods"
-import { getPaymentMethodIcon, getCategoryDisplayName } from "@/lib/utils"
+import { getPaymentMethodIcon, getCategoryDisplayName, getMethodDisplayDetails } from "@/lib/utils"
 import Image from "next/image"
 
 interface PaymentMethod {
@@ -52,27 +52,6 @@ const AdPaymentMethods = () => {
 
     const newSelection = checked ? [...selectedMethods, methodId] : selectedMethods.filter((id) => id !== methodId)
     setSelectedMethods(newSelection)
-  }
-
-  const getMethodDisplayDetails = (method: PaymentMethod) => {
-    if (method.type === "bank") {
-      const account = method.fields.account?.value || ""
-      const bankName = method.fields.bank_name?.value || "Bank Transfer"
-      const maskedAccount = account ? account.slice(0, 6) + "****" + account.slice(-4) : "****"
-
-      return {
-        primary: maskedAccount,
-        secondary: bankName,
-      }
-    } else {
-      const account = method.fields.account?.value || ""
-      const displayValue = account || method.display_name
-
-      return {
-        primary: displayValue,
-        secondary: method.display_name,
-      }
-    }
   }
 
   const handleAddPaymentMethod = async (method: string, fields: Record<string, string>) => {

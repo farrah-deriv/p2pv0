@@ -87,3 +87,28 @@ export function formatPaymentMethodName(methodName: string): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ")
 }
+
+export function getMethodDisplayDetails(method: {
+  type: string
+  fields: Record<string, any>
+  display_name: string
+}) {
+  if (method.type === "bank") {
+    const account = method.fields.account?.value || ""
+    const bankName = method.fields.bank_name?.value || "Bank Transfer"
+    const maskedAccount = account ? account.slice(0, 6) + "****" + account.slice(-4) : "****"
+
+    return {
+      primary: maskedAccount,
+      secondary: bankName,
+    }
+  } else {
+    const account = method.fields.account?.value || ""
+    const displayValue = account || method.display_name
+
+    return {
+      primary: displayValue,
+      secondary: method.display_name,
+    }
+  }
+}
