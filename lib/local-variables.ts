@@ -1,5 +1,4 @@
 let USER_DATA = null
-let USER_TOKEN = null
 let USER_ID = null
 let SOCKET_TOKEN = null
 
@@ -12,7 +11,6 @@ if (typeof window !== "undefined") {
 export const USER = {
   id: USER_ID,
   nickname: USER_DATA?.nickname,
-  token: USER_TOKEN,
   socketToken: SOCKET_TOKEN,
 }
 
@@ -55,11 +53,9 @@ export const APP_SETTINGS = {
 
 export const AUTH = {
   getAuthHeader: () => ({
-    Authorization: `Bearer ${USER.token}`,
     "X-Data-Source": process.env.NEXT_PUBLIC_DATA_SOURCE,
     "X-Branch": process.env.NEXT_PUBLIC_BRANCH,
   }),
-  isAuthenticated: () => !!USER.token,
 }
 
 export const NOTIFICATIONS = {
