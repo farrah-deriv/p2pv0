@@ -28,7 +28,7 @@ export default function TradeLimits({ buyLimit, sellLimit }: TradeLimitsProps) {
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Buy</span>
             <span className="text-sm font-medium">
-              {buyLimit.current.toLocaleString()} / {buyLimit.max.toLocaleString()} USD
+              USD {buyLimit.current.toLocaleString()} / {buyLimit.max.toLocaleString()}
             </span>
           </div>
           <Progress value={buyPercentage} className="h-2" />
@@ -38,7 +38,7 @@ export default function TradeLimits({ buyLimit, sellLimit }: TradeLimitsProps) {
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Sell</span>
             <span className="text-sm font-medium">
-              {sellLimit.current.toLocaleString()} / {sellLimit.max.toLocaleString()} USD
+              USD {sellLimit.current.toLocaleString()} / {sellLimit.max.toLocaleString()}
             </span>
           </div>
           <Progress value={sellPercentage} className="h-2" />
