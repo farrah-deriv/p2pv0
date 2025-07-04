@@ -68,6 +68,7 @@ export default function BuySellPage() {
         type: activeTab,
         currency: currency,
         paymentMethod: selectedPaymentMethod || undefined,
+        nickname: query !== null ? query : searchQuery,
         sortBy: sortBy,
       }
 
