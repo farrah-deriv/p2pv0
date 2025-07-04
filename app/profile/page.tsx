@@ -128,7 +128,7 @@ export default function ProfilePage() {
                 buyLimit={userData.tradeLimits.buy}
                 sellLimit={userData.tradeLimits.sell}
                 balance={userData.balance}
-              />
+            />
           </div>
           <StatsTabs stats={userData.stats} />
         </div>
