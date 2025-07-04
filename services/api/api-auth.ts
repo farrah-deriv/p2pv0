@@ -78,7 +78,7 @@ export async function verifyCode(verificationData: VerificationRequest): Promise
 /**
  * Check if user is authenticated
  */
-export async function getSession(): boolean {
+export async function getSession(): Promise<VerificationResponse> {
   try {
     const response = await fetch(`${API.coreUrl}/session`, {
       method: "GET",
