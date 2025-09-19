@@ -82,4 +82,4 @@ jobs:
                 branch_name: staging
                 output_dir: .vercel/output/static
                 directory: dist
-                cname_url: staging-p2p.champion.trade
+                cname_url: staging-dp2p.deriv.com
