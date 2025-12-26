@@ -80,7 +80,11 @@ export default function Main({
           setIsHeaderVisible(false)
           window.location.href = getLoginUrl(userData?.signup === "v1")
         } else if (isAuthenticated) {
-          await AuthAPI.fetchUserIdAndStore()
+          const userIdResult = await AuthAPI.fetchUserIdAndStore()
+
+          if (abortController.signal.aborted || !isMountedRef.current) {
+            return
+          }
 
           try {
             const onboardingStatus = await AuthAPI.getOnboardingStatus()
