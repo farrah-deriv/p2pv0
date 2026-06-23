@@ -211,6 +211,7 @@ export function getStatusBadgeStyle(status: string, isBuyer: boolean): string {
     case "disputed":
       return "bg-red-100 text-red-700"
     case "timed_out":
+    case "refunded":
       return "bg-slate-100 text-slate-800"
     default:
       return "bg-blue-50 text-blue-100"

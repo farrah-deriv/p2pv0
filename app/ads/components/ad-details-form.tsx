@@ -180,10 +180,20 @@ export default function AdDetailsForm({
     const unsubscribe = subscribe((data: any) => {
       if (data.options?.channel === `exchange_rates/${buyCurrency}`) {
         if (data.payload?.[forCurrency]?.rate) {
-          setMarketPrice(data.payload[forCurrency].rate)
+          if (data.payload[forCurrency].status === "stale") {
+            setMarketPrice(null)
+            setPriceType("fixed")
+          } else {
+            setMarketPrice(data.payload[forCurrency].rate)
+          }
         } else if (data.action === "event") {
           if (data.payload?.data[forCurrency]?.rate) {
-            setMarketPrice(data.payload.data[forCurrency].rate)
+            if (data.payload.data[forCurrency].status === "stale") {
+              setMarketPrice(null)
+              setPriceType("fixed")
+            } else {
+              setMarketPrice(data.payload.data[forCurrency].rate)
+            }
           }
         } else {
           setMarketPrice(null)
