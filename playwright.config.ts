@@ -102,7 +102,8 @@ export default defineConfig({
       use: {
         ...devices['Pixel 7'],
         viewport: { width: 412, height: 915 },
-        userAgent: `${devices["Pixel 7"].userAgent} Playwright-Agent/deriv/1.9`,
+        // userAgent: `${devices["Pixel 7"].userAgent} Playwright-Agent/deriv/1.9`,
+        userAgent: 'Playwright-Agent/deriv/1.9',
       },
     },
   ],
