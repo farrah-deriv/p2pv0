@@ -1,11 +1,7 @@
 
-name: Claude Code Assistant
+name: Claude Code Review
 
 on:
-  pull_request:
-    types: [opened, synchronize]
-    branches:
-      - main
   issue_comment:
     types: [created]
   pull_request_review_comment:
@@ -14,21 +10,19 @@ on:
     types: [submitted]
 
 jobs:
-  claude-assistant:
-    # Run automatically on PRs targeting main, or when @claude is mentioned
+  review:
+    # Run when @claude is mentioned in comments/reviews
     if: |
-      github.event_name == 'pull_request' ||
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude') && github.event.issue.pull_request) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude'))
     runs-on: ubuntu-latest
-    
     permissions:
       contents: read
       pull-requests: write
       issues: write
-      id-token: write
       actions: read
+      checks: write
 
     steps:
       - name: Checkout repository
@@ -36,25 +30,45 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Run Claude Code Action
-        uses: anthropics/claude-code-action@8a1c4371755898f67cd97006ba7c97702d5fc4bf
-        timeout-minutes: 60
+      - name: Claude Code Review
+        uses: anthropics/claude-code-action@edd85d61533cbba7b57ed0ca4af1750b1fdfd3c4
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          track_progress: true
-          prompt: |
-              REPO: ${{ github.repository }}
-              PR NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          show_full_output: true
+          claude_args: |
+            --max-turns 30
+            --model claude-sonnet-4-6
+            --system-prompt "You are a Next.js and TypeScript expert reviewing code for the Deriv P2P Web App — a Next.js 15 App Router + React 19 application. The stack is TypeScript (strict), Tailwind CSS, Radix UI primitives in components/ui/, React Query v5 for server state, Zustand for client state, react-hook-form + Zod for forms, and a custom useTranslations hook for i18n.
 
-              Please review this pull request with a focus on:
-              - Correctness, regressions, and edge cases
-              - Code quality & readability (React + TypeScript best practices)
-              - Performance (render cost, memoization, effects)
-              - Security (XSS, auth flows, secrets)
-              - Tests (coverage for new logic)
+            MANDATORY FIRST STEPS — read this file before reviewing any code:
+            1. CLAUDE.md — project conventions, patterns, UI rules, and architecture
 
-              Output:
-              - Inline comments for specific issues
-              - A summary comment with high/medium/low priority items
-              - Concrete fix suggestions and quick patches where safe
+            KEY INSTANT-REJECT CRITERIA:
+            - Hardcoded user-facing strings instead of t('namespace.key') via useTranslations
+            - New string added to en.json but NOT added to all other locale files (bn, de, es, fr, it, ko, pl, pt, ru, sw, vi)
+            - Hardcoded colors (hex literals, CSS color names) instead of Tailwind design tokens from tailwind.config.ts
+            - Raw HTML <button>, <input>, <dialog>, or custom modals when a components/ui/ Radix primitive exists
+            - Direct fetch/axios calls bypassing services/api/ layer
+            - Duplicating server state in Zustand instead of React Query
+            - Touching pnpm-lock.yaml or pnpm-workspace.yaml without a corresponding package.json change
+            - Secrets or credentials committed in any form
+
+            ALSO REVIEW FOR:
+            - React Query: queryKey uniqueness, staleTime set appropriately, mutations invalidate relevant queries
+            - Zustand: selector functions used (not full store subscriptions) to minimise re-renders
+            - WebSocket: subscriptions filter on data.options.channel before reading payload; useEffect cleanup disposes subscriptions
+            - Forms: react-hook-form + Zod schema; no uncontrolled inputs; error messages use t() keys
+            - Auth (Ory Kratos): GET flow → POST with flowId pattern; session token via X-Session-Token header
+            - Routing: useRouter/usePathname/useSearchParams from next/navigation (not window.location); router.replace() to clean deep-link params after consuming
+            - TypeScript: no 'any'; explicit return types on exported functions; discriminated unions for state
+            - Accessibility: interactive controls have aria-* attributes; decorative icons have alt='' + aria-hidden='true'
+            - Performance: useMemo/useCallback only where measurably needed; avoid inline object/array literals as props that cause unnecessary re-renders
+            - Tests: new logic has a corresponding test in __tests__/ mirroring the source path
+
+            RESPONSE FORMAT — group findings by severity:
+            🚫 REJECT — instant-reject violations (must fix before merge)
+            ⚠️ WARNING — should fix (quality/maintainability)
+            💡 SUGGESTION — nice to have
+
+            For each issue: filename:line_number → what is wrong → what to do instead."
