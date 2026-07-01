@@ -73,7 +73,6 @@
     "noPaymentMethodsFound": "Nessun metodo di pagamento trovato",
     "orderTimeLimit": "Limite di tempo dell'ordine",
     "orderTimeLimitPlaceholder": "Gli ordini devono essere completati in",
-    "orderTimeLimitTooltip": "Gli ordini scadranno se non vengono completati entro questo periodo.",
     "paymentMethodRemoveOpenOrderMessage": "Questo annuncio ha un ordine aperto. Potrai modificare i metodi di pagamento una volta completato.",
     "paymentMethodRemoveOpenOrderTitle": "Impossibile rimuovere il metodo di pagamento",
     "priceType": "Tipo di prezzo",
@@ -121,11 +120,13 @@
     "joinedMoreThan30Days": "30 giorni",
     "joinedMoreThan60Days": "60 giorni",
     "completionRateMoreThan": "Tasso di completamento superiore a",
-    "completionRateMoreThanHelperSeller": "Quanti ordini del venditore vengono completati con successo.",
-    "completionRateMoreThanHelperBuyer": "Quanti ordini dell'acquirente vengono completati con successo.",
+    "completionRateMoreThanHelperSeller": "Quale percentuale del totale degli ordini del venditore è stata completata negli ultimi 30 giorni?",
+    "completionRateMoreThanHelperBuyer": "Quale percentuale del totale degli ordini dell'acquirente è stata completata negli ultimi 30 giorni?",
     "completionRate50Percent": "50%",
     "completionRate70Percent": "70%",
-    "completionRate90Percent": "90%"
+    "completionRate90Percent": "90%",
+    "orderTimeLimitHelperSeller": "Quanto tempo hanno i venditori per completare l'ordine dopo averlo avviato.",
+    "orderTimeLimitHelperBuyer": "Quanto tempo hanno gli acquirenti per completare l'ordine dopo averlo avviato."
   },
   "advertiser": {
     "addToClosedGroup": "Aggiungi al gruppo chiuso",
@@ -1029,6 +1030,8 @@
     "rate": "Tasso",
     "saveImage": "Salva immagine",
     "shareAdTitle": "Condividi annuncio",
+    "adLinkLabel": "Link del tuo annuncio",
+    "copyButton": "Copia",
     "shareImage": "Condividi l'immagine",
     "shareMessage": "Ciao! Vorrei scambiare {currency} presso {rate} su Deriv P2P. Se sei interessato, dai un'occhiata al mio annuncio {url}. Grazie!",
     "shareTelegramMessage": "Ciao! Vorrei scambiare {currency} presso {rate} su Deriv P2P. Se sei interessato, dai un'occhiata al mio annuncio. Grazie!",

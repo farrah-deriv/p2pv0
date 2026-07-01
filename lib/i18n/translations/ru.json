@@ -83,7 +83,6 @@
     "noPaymentMethodsFound": "Способы оплаты не найдены",
     "orderTimeLimit": "Временной лимит заказа",
     "orderTimeLimitPlaceholder": "Заказы должны быть выполнены в",
-    "orderTimeLimitTooltip": "Заказы истекут, если они не будут завершены в течение этого времени.",
     "paymentMethodRemoveOpenOrderMessage": "По этому объявлению есть открытый заказ. Вы сможете редактировать способы оплаты после его завершения.",
     "paymentMethodRemoveOpenOrderTitle": "Не удается удалить способ оплаты",
     "postAd": "Разместить объявление",
@@ -137,11 +136,13 @@
     "joinedMoreThan30Days": "30 дней",
     "joinedMoreThan60Days": "60 дней",
     "completionRateMoreThan": "Процент завершения более",
-    "completionRateMoreThanHelperSeller": "Сколько заказов продавца успешно завершается.",
-    "completionRateMoreThanHelperBuyer": "Сколько заказов покупателя успешно завершается.",
+    "completionRateMoreThanHelperSeller": "Какой процент всех заказов продавца был завершён за последние 30 дней?",
+    "completionRateMoreThanHelperBuyer": "Какой процент всех заказов покупателя был завершён за последние 30 дней?",
     "completionRate50Percent": "50%",
     "completionRate70Percent": "70%",
-    "completionRate90Percent": "90%"
+    "completionRate90Percent": "90%",
+    "orderTimeLimitHelperSeller": "Сколько времени у продавцов на завершение заказа после его начала.",
+    "orderTimeLimitHelperBuyer": "Сколько времени у покупателей на завершение заказа после его начала."
   },
   "advertiser": {
     "addToClosedGroup": "Добавить в закрытую группу",
@@ -1043,6 +1044,8 @@
     "rate": "Курс",
     "saveImage": "Сохранить изображение",
     "shareAdTitle": "Поделиться объявлением",
+    "adLinkLabel": "Ссылка на ваше объявление",
+    "copyButton": "Копировать",
     "shareImage": "Поделиться изображением",
     "shareMessage": "Привет! Я хочу обменять {currency} по курсу {rate} на Deriv P2P. Если вам интересно, посмотрите мое объявление {url}. Спасибо!",
     "shareTelegramMessage": "Привет! Я хочу обменять {currency} по курсу {rate} на Deriv P2P. Если вам интересно, посмотрите мое объявление. Спасибо!",

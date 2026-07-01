@@ -83,7 +83,6 @@
     "noPaymentMethodsFound": "Keine Zahlungsmethoden gefunden",
     "orderTimeLimit": "Bestellzeitlimit",
     "orderTimeLimitPlaceholder": "Bestellungen müssen in abgeschlossen werden",
-    "orderTimeLimitTooltip": "Bestellungen verfallen, wenn sie nicht innerhalb dieses Zeitrahmens abgeschlossen werden.",
     "paymentMethodRemoveOpenOrderMessage": "Diese Anzeige hat eine offene Bestellung. Sie können die Zahlungsmethoden bearbeiten, sobald sie abgeschlossen ist.",
     "paymentMethodRemoveOpenOrderTitle": "Zahlungsmethode kann nicht entfernt werden",
     "postAd": "Anzeige veröffentlichen",
@@ -137,11 +136,13 @@
     "joinedMoreThan30Days": "30 Tage",
     "joinedMoreThan60Days": "60 Tage",
     "completionRateMoreThan": "Abschlussrate mehr als",
-    "completionRateMoreThanHelperSeller": "Wie viele Bestellungen des Verkäufers erfolgreich abgeschlossen werden.",
-    "completionRateMoreThanHelperBuyer": "Wie viele Bestellungen des Käufers erfolgreich abgeschlossen werden.",
+    "completionRateMoreThanHelperSeller": "Wie viel Prozent der gesamten Bestellungen des Verkäufers wurden in den letzten 30 Tagen abgeschlossen?",
+    "completionRateMoreThanHelperBuyer": "Wie viel Prozent der gesamten Bestellungen des Käufers wurden in den letzten 30 Tagen abgeschlossen?",
     "completionRate50Percent": "50%",
     "completionRate70Percent": "70%",
-    "completionRate90Percent": "90%"
+    "completionRate90Percent": "90%",
+    "orderTimeLimitHelperSeller": "Wie lange Verkäufer Zeit haben, die Bestellung nach Start abzuschließen.",
+    "orderTimeLimitHelperBuyer": "Wie lange Käufer Zeit haben, die Bestellung nach Start abzuschließen."
   },
   "advertiser": {
     "addToClosedGroup": "Zu geschlossener Gruppe hinzufügen",
@@ -1038,6 +1039,8 @@
     "rate": "Kurs",
     "saveImage": "Bild speichern",
     "shareAdTitle": "Anzeige teilen",
+    "adLinkLabel": "Dein Anzeigenlink",
+    "copyButton": "Kopieren",
     "shareImage": "Bild teilen",
     "shareMessage": "Hallo! Ich möchte {currency} zu {rate} auf Deriv P2P tauschen. Wenn Sie interessiert sind, schauen Sie sich meine Anzeige an {url}. Danke!",
     "shareTelegramMessage": "Hallo! Ich möchte {currency} zu {rate} auf Deriv P2P tauschen. Wenn Sie interessiert sind, schauen Sie sich meine Anzeige an. Danke!",

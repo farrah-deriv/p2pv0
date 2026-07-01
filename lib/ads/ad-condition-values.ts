@@ -76,3 +76,13 @@ export function isJoinedDaysAny(days: number | null | undefined): boolean {
 export function isCompletionRateAny(rate: number | null | undefined): boolean {
   return rate == null
 }
+
+/** Edit PATCH: BE treats `0` as **Any**; `null` omits the field and leaves the old value. */
+export function minimumJoinedDaysForEditPatch(value: number | null | undefined): number {
+  return value ?? 0
+}
+
+/** Edit PATCH: BE treats `0` as **Any**; `null` omits the field and leaves the old value. */
+export function minimumCompletionRateForEditPatch(value: number | null | undefined): number {
+  return value ?? 0
+}

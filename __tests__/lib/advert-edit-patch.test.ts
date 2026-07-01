@@ -102,6 +102,19 @@ describe("buildAdvertEditPatch", () => {
     expect(patch.minimum_completion_rate_30day).toBe(70)
   })
 
+  it("sends 0 when user clears ad conditions to Any", () => {
+    const original = snapshot({
+      minimumJoinedDays: 30,
+      minimumCompletionRate30Day: 70,
+    })
+    const current = snapshot()
+
+    const patch = buildAdvertEditPatch(original, current)
+
+    expect(patch[MINIMUM_JOIN_DAYS_API_KEY]).toBe(0)
+    expect(patch.minimum_completion_rate_30day).toBe(0)
+  })
+
   it("includes payment_method_names only when buy methods changed", () => {
     const original = snapshot({ paymentMethodNames: ["bank_transfer"] })
     const current = snapshot({
@@ -153,8 +166,17 @@ describe("finalizeAdvertEditPatch", () => {
     const patch = finalizeAdvertEditPatch({}, null, 70)
 
     expect(patch).toEqual({
-      minimum_join_days: null,
+      minimum_join_days: 0,
       minimum_completion_rate_30day: 70,
+    })
+  })
+
+  it("maps Any (null) to 0 for both ad condition fields", () => {
+    const patch = finalizeAdvertEditPatch({}, null, null)
+
+    expect(patch).toEqual({
+      minimum_join_days: 0,
+      minimum_completion_rate_30day: 0,
     })
   })
 })

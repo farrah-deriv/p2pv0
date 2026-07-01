@@ -1,6 +1,8 @@
 import type { AdFormData } from "@/app/ads/types"
 import {
   MINIMUM_JOIN_DAYS_API_KEY,
+  minimumCompletionRateForEditPatch,
+  minimumJoinedDaysForEditPatch,
   normalizeMinimumCompletionRateForEditPrefill,
   normalizeMinimumJoinedDaysForEditPrefill,
 } from "@/lib/ads/ad-condition-values"
@@ -175,7 +177,9 @@ export function buildAdvertEditPatch(
   }
 
   if (current.minimumJoinedDays !== original.minimumJoinedDays) {
-    patch[MINIMUM_JOIN_DAYS_API_KEY] = current.minimumJoinedDays
+    patch[MINIMUM_JOIN_DAYS_API_KEY] = minimumJoinedDaysForEditPatch(
+      current.minimumJoinedDays,
+    )
   }
 
   if (
@@ -184,7 +188,9 @@ export function buildAdvertEditPatch(
       original.minimumCompletionRate30Day,
     )
   ) {
-    patch.minimum_completion_rate_30day = current.minimumCompletionRate30Day
+    patch.minimum_completion_rate_30day = minimumCompletionRateForEditPatch(
+      current.minimumCompletionRate30Day,
+    )
   }
 
   if (original.minimumTradeBand != null) {
@@ -228,8 +234,9 @@ export function finalizeAdvertEditPatch(
 ): Record<string, unknown> {
   return {
     ...patch,
-    [MINIMUM_JOIN_DAYS_API_KEY]: minimumJoinedDays,
-    minimum_completion_rate_30day: minimumCompletionRate30Day,
+    [MINIMUM_JOIN_DAYS_API_KEY]: minimumJoinedDaysForEditPatch(minimumJoinedDays),
+    minimum_completion_rate_30day:
+      minimumCompletionRateForEditPatch(minimumCompletionRate30Day),
   }
 }
 

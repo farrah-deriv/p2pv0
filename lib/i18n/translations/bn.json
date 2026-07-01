@@ -77,7 +77,6 @@
     "noPaymentMethodsFound": "কোন পেমেন্ট পদ্ধতি পাওয়া যায়নি",
     "orderTimeLimit": "অর্ডার সময় সীমা",
     "orderTimeLimitPlaceholder": "অর্ডার সম্পূর্ণ করতে হবে",
-    "orderTimeLimitTooltip": "যদি অর্ডারগুলি এই সময়সীমার মধ্যে সম্পূর্ণ না হয় তবে তারা মেয়াদ শেষ হয়ে যাবে।",
     "paymentMethodRemoveOpenOrderMessage": "এই বিজ্ঞাপনে একটি খোলা অর্ডার রয়েছে। অর্ডারটি সম্পন্ন হলে আপনি পেমেন্ট পদ্ধতি সম্পাদনা করতে পারবেন।",
     "paymentMethodRemoveOpenOrderTitle": "পেমেন্ট পদ্ধতি সরানো যাচ্ছে না",
     "postAd": "বিজ্ঞাপন পোস্ট করুন",
@@ -130,11 +129,13 @@
     "joinedMoreThan30Days": "30 দিন",
     "joinedMoreThan60Days": "60 দিন",
     "completionRateMoreThan": "সমাপ্তির হার এর বেশি",
-    "completionRateMoreThanHelperSeller": "বিক্রেতার কতগুলো অর্ডার সফলভাবে সম্পন্ন হয়।",
-    "completionRateMoreThanHelperBuyer": "ক্রেতার কতগুলো অর্ডার সফলভাবে সম্পন্ন হয়।",
+    "completionRateMoreThanHelperSeller": "গত ৩০ দিনে বিক্রেতার মোট অর্ডারের কত শতাংশ সম্পন্ন হয়েছে?",
+    "completionRateMoreThanHelperBuyer": "গত ৩০ দিনে ক্রেতার মোট অর্ডারের কত শতাংশ সম্পন্ন হয়েছে?",
     "completionRate50Percent": "50%",
     "completionRate70Percent": "70%",
-    "completionRate90Percent": "90%"
+    "completionRate90Percent": "90%",
+    "orderTimeLimitHelperSeller": "অর্ডার শুরুর পর বিক্রেতার কাছে অর্ডার সম্পূর্ণ করার সময়।",
+    "orderTimeLimitHelperBuyer": "অর্ডার শুরুর পর ক্রেতার কাছে অর্ডার সম্পূর্ণ করার সময়।"
   },
   "advertiser": {
     "addToClosedGroup": "ক্লোজড গ্রুপে যোগ করুন",
@@ -1020,6 +1021,8 @@
     "rate": "রেট",
     "saveImage": "ছবি সংরক্ষণ করুন",
     "shareAdTitle": "বিজ্ঞাপন শেয়ার করুন",
+    "adLinkLabel": "আপনার বিজ্ঞাপন লিঙ্ক",
+    "copyButton": "কপি",
     "shareImage": "ছবি শেয়ার করুন",
     "shareMessage": "হাই! আমি Deriv P2P-তে {currency} {rate}-এ বিনিময় করতে চাই। আগ্রহী হলে, আমার বিজ্ঞাপন দেখুন {url}। ধন্যবাদ!",
     "shareTelegramMessage": "হাই! আমি Deriv P2P-তে {currency} {rate}-এ বিনিময় করতে চাই। আগ্রহী হলে, আমার বিজ্ঞাপন দেখুন। ধন্যবাদ!",

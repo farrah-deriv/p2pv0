@@ -847,7 +847,11 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
                               />
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p className="text-white text-start">{t("adForm.orderTimeLimitTooltip")}</p>
+                              <p className="text-white text-start">
+                                {formData.type === "sell"
+                                  ? t("adForm.orderTimeLimitHelperBuyer")
+                                  : t("adForm.orderTimeLimitHelperSeller")}
+                              </p>
                               <TooltipArrow className="fill-black" />
                             </TooltipContent>
                           </Tooltip>

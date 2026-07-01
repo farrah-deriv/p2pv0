@@ -73,7 +73,6 @@
     "noPaymentMethodsFound": "لم يتم العثور على طرق دفع",
     "orderTimeLimit": "الحد الزمني للطلب",
     "orderTimeLimitPlaceholder": "يجب إكمال الطلبات في",
-    "orderTimeLimitTooltip": "ستنتهي صلاحية الطلبات إذا لم يتم إكمالها خلال هذا الإطار الزمني.",
     "paymentMethodRemoveOpenOrderMessage": "هذا الإعلان له طلب مفتوح. ستتمكن من تعديل طرق الدفع بمجرد اكتماله.",
     "paymentMethodRemoveOpenOrderTitle": "لا يمكن إزالة طريقة الدفع",
     "priceType": "نوع السعر",
@@ -121,11 +120,13 @@
     "joinedMoreThan30Days": "30 يومًا",
     "joinedMoreThan60Days": "60 يومًا",
     "completionRateMoreThan": "معدل الإكمال أكثر من",
-    "completionRateMoreThanHelperSeller": "نسبة طلبات البائع التي تُكمل بنجاح.",
-    "completionRateMoreThanHelperBuyer": "نسبة طلبات المشتري التي تُكمل بنجاح.",
+    "completionRateMoreThanHelperSeller": "ما النسبة المئوية من إجمالي طلبات البائع التي اكتملت خلال الثلاثين يومًا الماضية؟",
+    "completionRateMoreThanHelperBuyer": "ما النسبة المئوية من إجمالي طلبات المشتري التي اكتملت خلال الثلاثين يومًا الماضية؟",
     "completionRate50Percent": "50%",
     "completionRate70Percent": "70%",
-    "completionRate90Percent": "90%"
+    "completionRate90Percent": "90%",
+    "orderTimeLimitHelperSeller": "المدة المتاحة للبائع لإكمال الطلب بعد بدءه.",
+    "orderTimeLimitHelperBuyer": "المدة المتاحة للمشتري لإكمال الطلب بعد بدءه."
   },
   "advertiser": {
     "addToClosedGroup": "أضف إلى المجموعة المغلقة",
@@ -1011,6 +1012,8 @@
     "rate": "معدل",
     "saveImage": "حفظ الصورة",
     "shareAdTitle": "مشاركة الإعلان",
+    "adLinkLabel": "رابط إعلانك",
+    "copyButton": "نسخ",
     "shareImage": "مشاركة الصورة",
     "shareMessage": "مرحباً! أريد تبادل {currency} بسعر {rate} على Deriv P2P. إذا كنت مهتماً، تحقق من إعلاني {url}. شكراً!",
     "shareTelegramMessage": "مرحباً! أريد تبادل {currency} بسعر {rate} على Deriv P2P. إذا كنت مهتماً، تحقق من إعلاني. شكراً!",

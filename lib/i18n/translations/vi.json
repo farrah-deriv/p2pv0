@@ -84,7 +84,6 @@
     "noPaymentMethodsFound": "Không tìm thấy phương thức thanh toán",
     "orderTimeLimit": "Giới hạn thời gian đơn hàng",
     "orderTimeLimitPlaceholder": "Đơn đặt hàng phải được hoàn thành trong",
-    "orderTimeLimitTooltip": "Đơn hàng sẽ hết hạn nếu không được hoàn thành trong khung thời gian này.",
     "paymentMethodRemoveOpenOrderMessage": "Quảng cáo này có một đơn hàng đang mở. Bạn sẽ có thể chỉnh sửa phương thức thanh toán sau khi đơn hàng hoàn tất.",
     "paymentMethodRemoveOpenOrderTitle": "Không thể xóa phương thức thanh toán",
     "postAd": "Đăng quảng cáo",
@@ -138,11 +137,13 @@
     "joinedMoreThan30Days": "30 ngày",
     "joinedMoreThan60Days": "60 ngày",
     "completionRateMoreThan": "Tỷ lệ hoàn thành hơn",
-    "completionRateMoreThanHelperSeller": "Bao nhiêu đơn hàng của người bán được hoàn thành thành công.",
-    "completionRateMoreThanHelperBuyer": "Bao nhiêu đơn hàng của người mua được hoàn thành thành công.",
+    "completionRateMoreThanHelperSeller": "Có bao nhiêu phần trăm tổng số đơn hàng của người bán đã được hoàn thành trong 30 ngày qua?",
+    "completionRateMoreThanHelperBuyer": "Có bao nhiêu phần trăm tổng số đơn hàng của người mua đã được hoàn thành trong 30 ngày qua?",
     "completionRate50Percent": "50%",
     "completionRate70Percent": "70%",
-    "completionRate90Percent": "90%"
+    "completionRate90Percent": "90%",
+    "orderTimeLimitHelperSeller": "Thời gian người bán phải hoàn tất đơn hàng sau khi bắt đầu.",
+    "orderTimeLimitHelperBuyer": "Thời gian người mua phải hoàn tất đơn hàng sau khi bắt đầu."
   },
   "advertiser": {
     "addToClosedGroup": "Thêm vào nhóm đóng",
@@ -1055,6 +1056,8 @@
     "rate": "Tỷ giá",
     "saveImage": "Lưu hình ảnh",
     "shareAdTitle": "Chia sẻ quảng cáo",
+    "adLinkLabel": "Liên kết quảng cáo của bạn",
+    "copyButton": "Sao chép",
     "shareImage": "Chia sẻ hình ảnh",
     "shareMessage": "Xin chào! Tôi muốn trao đổi {currency} với tỷ giá {rate} trên Deriv P2P. Nếu bạn quan tâm, hãy xem quảng cáo của tôi {url}. Cảm ơn!",
     "shareTelegramMessage": "Xin chào! Tôi muốn trao đổi {currency} với tỷ giá {rate} trên Deriv P2P. Nếu bạn quan tâm, hãy xem quảng cáo của tôi. Cảm ơn!",

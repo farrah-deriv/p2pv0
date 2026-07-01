@@ -73,7 +73,6 @@
     "noPaymentMethodsFound": "결제 수단을 찾을 수 없습니다.",
     "orderTimeLimit": "주문 기한",
     "orderTimeLimitPlaceholder": "주문은 다음 시간 내에 완료되어야 합니다.",
-    "orderTimeLimitTooltip": "이 기간 내에 주문이 완료되지 않으면 주문이 만료됩니다.",
     "paymentMethodRemoveOpenOrderMessage": "이 광고에는 공개 주문이 있습니다. 완료되면 결제 수단을 수정할 수 있습니다.",
     "paymentMethodRemoveOpenOrderTitle": "결제 수단을 삭제할 수 없습니다.",
     "priceType": "가격 유형",
@@ -121,11 +120,13 @@
     "joinedMoreThan30Days": "30일",
     "joinedMoreThan60Days": "60일",
     "completionRateMoreThan": "완료율",
-    "completionRateMoreThanHelperSeller": "판매자 주문 중 성공적으로 완료된 비율입니다.",
-    "completionRateMoreThanHelperBuyer": "구매자 주문 중 성공적으로 완료된 비율입니다.",
+    "completionRateMoreThanHelperSeller": "지난 30일 동안 판매자의 전체 주문 중 몇 퍼센트가 완료되었나요?",
+    "completionRateMoreThanHelperBuyer": "지난 30일 동안 구매자의 전체 주문 중 몇 퍼센트가 완료되었나요?",
     "completionRate50Percent": "50%",
     "completionRate70Percent": "70%",
-    "completionRate90Percent": "90%"
+    "completionRate90Percent": "90%",
+    "orderTimeLimitHelperSeller": "판매자가 주문을 시작한 후 주문을 완료해야 하는 시간입니다.",
+    "orderTimeLimitHelperBuyer": "구매자가 주문을 시작한 후 주문을 완료해야 하는 시간입니다."
   },
   "advertiser": {
     "addToClosedGroup": "비공개 그룹에 추가",
@@ -1060,6 +1061,8 @@
     "rate": "환율",
     "saveImage": "이미지 저장",
     "shareAdTitle": "광고 공유",
+    "adLinkLabel": "내 광고 링크",
+    "copyButton": "복사",
     "shareImage": "이미지 공유",
     "shareMessage": "안녕하세요! Deriv P2P에서 {currency}를 {rate}에 교환하고 싶습니다. 관심 있으시면 제 광고 {url}를 확인해 주세요. 감사합니다!",
     "shareTelegramMessage": "안녕하세요! Deriv P2P에서 {currency}를 {rate}에 교환하고 싶습니다. 관심 있으시면 제 광고를 확인해 주세요. 감사합니다!",

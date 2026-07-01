@@ -75,8 +75,6 @@ export default function CountrySelection({ countries, selectedCountries, onCount
     return `${t("common.selectedCount")} (${selectedCountries.length})`
   }
 
-  const hasValue = true // Always show the floating label
-
   const CountryList = () => (
     <div className="space-y-4">
       <div className="relative">
@@ -148,20 +146,12 @@ export default function CountrySelection({ countries, selectedCountries, onCount
           <DrawerTrigger asChild>
             <Button
               variant="outline"
-              className={cn(
-                "w-full h-[56px] max-h-none justify-start rounded-lg bg-transparent border-input hover:bg-transparent focus:border-black font-normal ps-4 pe-12 [&>svg]:hidden",
-                hasValue ? "pt-6 pb-2" : "py-4",
-              )}
+              className="w-full h-[56px] max-h-none justify-start rounded-lg bg-transparent border-input hover:bg-transparent focus:border-black font-normal ps-4 pe-12 py-4 [&>svg]:hidden"
               onClick={() => setIsOpen(true)}
             >
               <span className="text-start text-base text-grayscale-600">{getDisplayText()}</span>
             </Button>
           </DrawerTrigger>
-          {hasValue && (
-            <label className="absolute start-[14px] top-2 text-[12px] font-normal text-grayscale-600 pointer-events-none bg-white px-1">
-              {t("common.countrySelection")}
-            </label>
-          )}
           <div className="absolute end-4 top-1/2 -translate-y-1/2 pointer-events-none">
             <Image
               src="/icons/chevron-down.png"
@@ -191,20 +181,12 @@ export default function CountrySelection({ countries, selectedCountries, onCount
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className={cn(
-              "w-full h-[56px] max-h-none justify-start rounded-lg bg-transparent border-input hover:bg-transparent focus:border-black font-normal ps-4 pe-12 [&>svg]:hidden",
-              hasValue ? "pt-6 pb-2" : "py-4",
-            )}
+            className="w-full h-[56px] max-h-none justify-start rounded-lg bg-transparent border-input hover:bg-transparent focus:border-black font-normal ps-4 pe-12 py-4 [&>svg]:hidden"
             onClick={() => setIsOpen(!isOpen)}
           >
             <span className="text-start text-base text-grayscale-600">{getDisplayText()}</span>
           </Button>
         </PopoverTrigger>
-        {hasValue && (
-          <label className="absolute start-[14px] top-2 text-[12px] font-normal text-grayscale-600 pointer-events-none bg-white px-1">
-            {t("common.countrySelection")}
-          </label>
-        )}
         <div className="absolute end-4 top-1/2 -translate-y-1/2 pointer-events-none">
           <Image
             src="/icons/chevron-down.png"

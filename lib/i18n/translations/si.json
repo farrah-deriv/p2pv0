@@ -73,7 +73,6 @@
     "noPaymentMethodsFound": "ගෙවීමේ ක්‍රම හමු නොවීය",
     "orderTimeLimit": "ඇණවුම් කාල සීමාව",
     "orderTimeLimitPlaceholder": "ඇණවුම් සම්පූර්ණ කළ යුතුය",
-    "orderTimeLimitTooltip": "මෙම කාල රාමුව තුළ ඇණවුම් සම්පූර්ණ නොකළහොත් ඒවා කල් ඉකුත් වේ.",
     "paymentMethodRemoveOpenOrderMessage": "මෙම දැන්වීම විවෘත ඇණවුමක් ඇත. එය සම්පූර්ණ වූ පසු ඔබට ගෙවීම් ක්‍රම සංස්කරණය කිරීමට හැකි වනු ඇත.",
     "paymentMethodRemoveOpenOrderTitle": "ගෙවීමේ ක්‍රමය ඉවත් කළ නොහැක",
     "priceType": "මිල වර්ගය",
@@ -121,11 +120,13 @@
     "joinedMoreThan30Days": "30 දින",
     "joinedMoreThan60Days": "60 දින",
     "completionRateMoreThan": "සම්පූර්ණ කිරීමේ අනුපාතය වැඩි",
-    "completionRateMoreThanHelperSeller": "විකුණුම්කරුගේ ඇණවුම් කීයක් සාර්ථකව සම්පූර්ණ වේද.",
-    "completionRateMoreThanHelperBuyer": "මිලදී ගන්නාගේ ඇණවුම් කීයක් සාර්ථකව සම්පූර්ණ වේද.",
+    "completionRateMoreThanHelperSeller": "පසුගිය 30 දින තුළ විකුණුම්කරුගේ මුළු ඇණවුම්වලින් කොටස් කීයක් සම්පූර්ණ කරන ලද්දේද?",
+    "completionRateMoreThanHelperBuyer": "පසුගිය 30 දින තුළ මිලදී ගන්නාගේ මුළු ඇණවුම්වලින් කොටස් කීයක් සම්පූර්ණ කරන ලද්දේද?",
     "completionRate50Percent": "50%",
     "completionRate70Percent": "70%",
-    "completionRate90Percent": "90%"
+    "completionRate90Percent": "90%",
+    "orderTimeLimitHelperSeller": "ඇණවුම ආරම්භ කිරීමෙන් පසු විකුණුම්කරුට ඇණවුම සම්පූර්ණ කිරීමට ඇති කාලය.",
+    "orderTimeLimitHelperBuyer": "ඇණවුම ආරම්භ කිරීමෙන් පසු මිලදී ගන්නාට ඇණවුම සම්පූර්ණ කිරීමට ඇති කාලය."
   },
   "advertiser": {
     "addToClosedGroup": "සංවෘත කණ්ඩායමට එක් කරන්න",
@@ -1011,6 +1012,8 @@
     "rate": "අගය කරන්න",
     "saveImage": "රූපය සුරකින්න",
     "shareAdTitle": "දැන්වීම බෙදා ගන්න",
+    "adLinkLabel": "ඔබේ දැන්වීම් සබැඳිය",
+    "copyButton": "පිටපත්",
     "shareImage": "රූපය බෙදාගන්න",
     "shareMessage": "හායි! මම හුවමාරු කර ගැනීමට කැමතියි{currency}දී{rate}__TOKEN90__ මත. ඔබ කැමති නම්, මගේ දැන්වීම බලන්න{url}. ස්තුතියි!",
     "shareTelegramMessage": "හායි! මම හුවමාරු කර ගැනීමට කැමතියි{currency}දී{rate}__TOKEN90__ මත. ඔබ කැමති නම්, මගේ දැන්වීම බලන්න. ස්තුතියි!",

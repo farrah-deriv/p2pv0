@@ -73,7 +73,6 @@
     "noPaymentMethodsFound": "Hakuna njia za malipo zilizopatikana",
     "orderTimeLimit": "Muda wa kuagiza",
     "orderTimeLimitPlaceholder": "Maagizo lazima yakamilishwe ndani",
-    "orderTimeLimitTooltip": "Muda wa maagizo yatakwisha ikiwa hayatakamilika ndani ya muda uliowekwa.",
     "paymentMethodRemoveOpenOrderMessage": "Tangazo hili lina agizo lililo wazi. Utaweza kubadilisha njia za kulipa pindi tu itakapokamilika.",
     "paymentMethodRemoveOpenOrderTitle": "Imeshindwa kuondoa njia ya kulipa",
     "priceType": "Aina ya bei",
@@ -121,11 +120,13 @@
     "joinedMoreThan30Days": "Siku 30",
     "joinedMoreThan60Days": "Siku 60",
     "completionRateMoreThan": "Kiwango cha ukamilishaji zaidi ya",
-    "completionRateMoreThanHelperSeller": "Ni maagizo mangapi ya muuzaji yanakamilika kwa mafanikio.",
-    "completionRateMoreThanHelperBuyer": "Ni maagizo mangapi ya mnunuzi yanakamilika kwa mafanikio.",
+    "completionRateMoreThanHelperSeller": "Ni asilimia ngapi ya jumla ya maagizo ya muuzaji yaliyokamilika katika siku 30 zilizopita?",
+    "completionRateMoreThanHelperBuyer": "Ni asilimia ngapi ya jumla ya maagizo ya mnunuzi yaliyokamilika katika siku 30 zilizopita?",
     "completionRate50Percent": "50%",
     "completionRate70Percent": "70%",
-    "completionRate90Percent": "90%"
+    "completionRate90Percent": "90%",
+    "orderTimeLimitHelperSeller": "Muda ambao wauzaji wanapaswa kukamilisha agizo baada ya kulianza.",
+    "orderTimeLimitHelperBuyer": "Muda ambao wanunuzi wanapaswa kukamilisha agizo baada ya kulianza."
   },
   "advertiser": {
     "addToClosedGroup": "Ongeza kwa kikundi kilichofungwa",
@@ -1019,6 +1020,8 @@
     "rate": "Kiwango",
     "saveImage": "Hifadhi picha",
     "shareAdTitle": "Shiriki tangazo",
+    "adLinkLabel": "Kiungo cha tangazo lako",
+    "copyButton": "Nakili",
     "shareImage": "Shiriki picha",
     "shareMessage": "Habari! Ningependa kubadilisha {currency} kwa {rate} kwenye Deriv P2P. Ikiwa una nia, angalia tangazo langu {url}. Asante!",
     "shareTelegramMessage": "Habari! Ningependa kubadilisha {currency} kwa {rate} kwenye Deriv P2P. Ikiwa una nia, angalia tangazo langu. Asante!",

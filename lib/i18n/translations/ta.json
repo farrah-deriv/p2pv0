@@ -73,7 +73,6 @@
     "noPaymentMethodsFound": "கட்டண முறைகள் எதுவும் இல்லை",
     "orderTimeLimit": "ஆர்டர் நேர வரம்பு",
     "orderTimeLimitPlaceholder": "ஆர்டர்கள் பூர்த்தி செய்யப்பட வேண்டும்",
-    "orderTimeLimitTooltip": "இந்தக் காலக்கெடுவிற்குள் ஆர்டர்கள் முடிக்கப்படாவிட்டால் அவை காலாவதியாகிவிடும்.",
     "paymentMethodRemoveOpenOrderMessage": "இந்த விளம்பரம் திறந்த வரிசையைக் கொண்டுள்ளது. பணம் செலுத்தும் முறைகள் முடிந்ததும் அதைத் திருத்த முடியும்.",
     "paymentMethodRemoveOpenOrderTitle": "கட்டண முறையை அகற்ற முடியாது",
     "priceType": "விலை வகை",
@@ -121,11 +120,13 @@
     "joinedMoreThan30Days": "30 நாட்கள்",
     "joinedMoreThan60Days": "60 நாட்கள்",
     "completionRateMoreThan": "முடிவு விகிதம் இதற்கும் மேல்",
-    "completionRateMoreThanHelperSeller": "விற்பனையாளரின் எத்தனை ஆர்டர்கள் வெற்றிகரமாக முடிகின்றன.",
-    "completionRateMoreThanHelperBuyer": "வாங்குபவரின் எத்தனை ஆர்டர்கள் வெற்றிகரமாக முடிகின்றன.",
+    "completionRateMoreThanHelperSeller": "கடந்த 30 நாட்களில் விற்பனையாளரின் மொத்த ஆர்டர்களில் எத்தனை சதவீதம் முடிக்கப்பட்டன?",
+    "completionRateMoreThanHelperBuyer": "கடந்த 30 நாட்களில் வாங்குபவரின் மொத்த ஆர்டர்களில் எத்தனை சதவீதம் முடிக்கப்பட்டன?",
     "completionRate50Percent": "50%",
     "completionRate70Percent": "70%",
-    "completionRate90Percent": "90%"
+    "completionRate90Percent": "90%",
+    "orderTimeLimitHelperSeller": "ஆர்டரைத் தொடங்கிய பிறகு விற்பனையாளர் ஆர்டரை முடிக்க வேண்டிய நேரம்.",
+    "orderTimeLimitHelperBuyer": "ஆர்டரைத் தொடங்கிய பிறகு வாங்குபவர் ஆர்டரை முடிக்க வேண்டிய நேரம்."
   },
   "advertiser": {
     "addToClosedGroup": "மூடிய குழுவில் சேர்க்கவும்",
@@ -1011,6 +1012,8 @@
     "rate": "மதிப்பிடவும்",
     "saveImage": "படத்தை சேமிக்கவும்",
     "shareAdTitle": "விளம்பரத்தைப் பகிரவும்",
+    "adLinkLabel": "உங்கள் விளம்பர இணைப்பு",
+    "copyButton": "நகலெடு",
     "shareImage": "படத்தைப் பகிரவும்",
     "shareMessage": "ஹாய்! நான் பரிமாற்றம் செய்ய விரும்புகிறேன்{currency}மணிக்கு{rate}__TOKEN90__ இல். நீங்கள் ஆர்வமாக இருந்தால், எனது விளம்பரத்தைப் பாருங்கள்{url}. நன்றி!",
     "shareTelegramMessage": "ஹாய்! நான் பரிமாற்றம் செய்ய விரும்புகிறேன்{currency}மணிக்கு{rate}__TOKEN90__ இல். நீங்கள் ஆர்வமாக இருந்தால், எனது விளம்பரத்தைப் பாருங்கள். நன்றி!",

@@ -73,7 +73,6 @@
     "noPaymentMethodsFound": "未找到付款方式",
     "orderTimeLimit": "訂單時限",
     "orderTimeLimitPlaceholder": "訂單必須在",
-    "orderTimeLimitTooltip": "如果在此時間範圍內未完成，訂單將過期。",
     "paymentMethodRemoveOpenOrderMessage": "該廣告有未結訂單。完成後您將能夠編輯付款方式。",
     "paymentMethodRemoveOpenOrderTitle": "無法刪除付款方式",
     "priceType": "價格類型",
@@ -121,11 +120,13 @@
     "joinedMoreThan30Days": "30 天",
     "joinedMoreThan60Days": "60 天",
     "completionRateMoreThan": "完成率超過",
-    "completionRateMoreThanHelperSeller": "賣家訂單成功完成的比例。",
-    "completionRateMoreThanHelperBuyer": "買家訂單成功完成的比例。",
+    "completionRateMoreThanHelperSeller": "過去30天內，賣家的總訂單中有多少百分比已完成？",
+    "completionRateMoreThanHelperBuyer": "過去30天內，買家的總訂單中有多少百分比已完成？",
     "completionRate50Percent": "50%",
     "completionRate70Percent": "70%",
-    "completionRate90Percent": "90%"
+    "completionRate90Percent": "90%",
+    "orderTimeLimitHelperSeller": "賣家開始訂單後必須完成訂單的時間。",
+    "orderTimeLimitHelperBuyer": "買家開始訂單後必須完成訂單的時間。"
   },
   "advertiser": {
     "addToClosedGroup": "新增到封閉組",
@@ -1011,6 +1012,8 @@
     "rate": "率",
     "saveImage": "儲存影像",
     "shareAdTitle": "分享廣告",
+    "adLinkLabel": "你的廣告連結",
+    "copyButton": "複製",
     "shareImage": "分享圖片",
     "shareMessage": "嗨！我想交換{currency}在{rate}在 __TOKEN90__ 上。有興趣的話可以看看我的廣告{url}。謝謝！",
     "shareTelegramMessage": "嗨！我想交換{currency}在{rate}在 __TOKEN90__ 上。如果您有興趣，請查看我的廣告。謝謝！",

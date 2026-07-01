@@ -73,7 +73,6 @@
     "noPaymentMethodsFound": "Nie znaleziono metod płatności",
     "orderTimeLimit": "Limit czasu zamówienia",
     "orderTimeLimitPlaceholder": "Zamówienia należy zrealizować w",
-    "orderTimeLimitTooltip": "Zamówienia wygasają, jeśli nie zostaną zrealizowane w tym terminie.",
     "paymentMethodRemoveOpenOrderMessage": "To ogłoszenie ma otwarte zamówienie. Po zakończeniu będziesz mieć możliwość edytowania metod płatności.",
     "paymentMethodRemoveOpenOrderTitle": "Nie można usunąć formy płatności",
     "priceType": "Rodzaj ceny",
@@ -121,11 +120,13 @@
     "joinedMoreThan30Days": "30 dni",
     "joinedMoreThan60Days": "60 dni",
     "completionRateMoreThan": "Wskaźnik ukończenia powyżej",
-    "completionRateMoreThanHelperSeller": "Ile zamówień sprzedawcy kończy się pomyślnie.",
-    "completionRateMoreThanHelperBuyer": "Ile zamówień kupującego kończy się pomyślnie.",
+    "completionRateMoreThanHelperSeller": "Jaki procent wszystkich zamówień sprzedawcy został zrealizowany w ciągu ostatnich 30 dni?",
+    "completionRateMoreThanHelperBuyer": "Jaki procent wszystkich zamówień kupującego został zrealizowany w ciągu ostatnich 30 dni?",
     "completionRate50Percent": "50%",
     "completionRate70Percent": "70%",
-    "completionRate90Percent": "90%"
+    "completionRate90Percent": "90%",
+    "orderTimeLimitHelperSeller": "Ile czasu mają sprzedawcy na dokończenie zamówienia po jego rozpoczęciu.",
+    "orderTimeLimitHelperBuyer": "Ile czasu mają kupujący na dokończenie zamówienia po jego rozpoczęciu."
   },
   "advertiser": {
     "addToClosedGroup": "Dodaj do zamkniętej grupy",
@@ -1023,6 +1024,8 @@
     "rate": "Kurs",
     "saveImage": "Zapisz obraz",
     "shareAdTitle": "Udostępnij reklamę",
+    "adLinkLabel": "Link do Twojego ogłoszenia",
+    "copyButton": "Kopiuj",
     "shareImage": "Udostępnij obraz",
     "shareMessage": "Cześć! Chciałbym wymienić {currency} na {rate} na Deriv P2P. Jeśli jesteś zainteresowany sprawdź moje ogłoszenie {url}. Dzięki!",
     "shareTelegramMessage": "Cześć! Chciałbym wymienić {currency} na {rate} na Deriv P2P. Jeśli jesteś zainteresowany, sprawdź moje ogłoszenie. Dzięki!",

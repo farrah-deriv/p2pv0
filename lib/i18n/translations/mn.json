@@ -73,7 +73,6 @@
     "noPaymentMethodsFound": "Төлбөрийн хэрэгсэл олдсонгүй",
     "orderTimeLimit": "Захиалгын хугацаа",
     "orderTimeLimitPlaceholder": "Захиалгыг бөглөсөн байх ёстой",
-    "orderTimeLimitTooltip": "Захиалгын хугацаа нь энэ хугацаанд дуусаагүй тохиолдолд дуусгавар болно.",
     "paymentMethodRemoveOpenOrderMessage": "Энэ зар нээлттэй захиалгатай байна. Та төлбөрийн хэрэгслийг дуусгасны дараа засах боломжтой болно.",
     "paymentMethodRemoveOpenOrderTitle": "Төлбөрийн хэрэгслийг устгах боломжгүй",
     "priceType": "Үнийн төрөл",
@@ -121,11 +120,13 @@
     "joinedMoreThan30Days": "30 хоног",
     "joinedMoreThan60Days": "60 хоног",
     "completionRateMoreThan": "Дуусгах хувь",
-    "completionRateMoreThanHelperSeller": "Борлуулагчийн захиалга хэдэн нь амжилттай дуусдаг.",
-    "completionRateMoreThanHelperBuyer": "Худалдан авагчийн захиалга хэдэн нь амжилттай дуусдаг.",
+    "completionRateMoreThanHelperSeller": "Сүүлийн 30 хоногт борлуулагчийн нийт захиалгаас хэдэн хувь нь дууссан бэ?",
+    "completionRateMoreThanHelperBuyer": "Сүүлийн 30 хоногт худалдан авагчийн нийт захиалгаас хэдэн хувь нь дууссан бэ?",
     "completionRate50Percent": "50%",
     "completionRate70Percent": "70%",
-    "completionRate90Percent": "90%"
+    "completionRate90Percent": "90%",
+    "orderTimeLimitHelperSeller": "Захиалгыг эхлүүлсний дараа борлуулагчид захиалгыг дуусгах хугацаа.",
+    "orderTimeLimitHelperBuyer": "Захиалгыг эхлүүлсний дараа худалдан авагчид захиалгыг дуусгах хугацаа."
   },
   "advertiser": {
     "addToClosedGroup": "Хаалттай бүлэгт нэмэх",
@@ -1011,6 +1012,8 @@
     "rate": "Үнэлгээ",
     "saveImage": "Зургийг хадгалах",
     "shareAdTitle": "Зар хуваалцах",
+    "adLinkLabel": "Таны зарын холбоос",
+    "copyButton": "Хуулах",
     "shareImage": "Зураг хуваалцах",
     "shareMessage": "Сайн уу! Би солилцох хүсэлтэй байна{currency}цагт{rate}__TOKEN90__ дээр. Хэрэв та сонирхож байвал миний зарыг үзээрэй{url}. Баярлалаа!",
     "shareTelegramMessage": "Сайн уу! Би солилцох хүсэлтэй байна{currency}цагт{rate}__TOKEN90__ дээр. Хэрэв та сонирхож байвал миний зарыг үзээрэй. Баярлалаа!",

@@ -76,7 +76,6 @@
     "noPaymentMethodsYet": "Sem método de pagamento",
     "orderTimeLimit": "Limite de tempo do pedido",
     "orderTimeLimitPlaceholder": "Os pedidos devem ser concluídos em",
-    "orderTimeLimitTooltip": "Os pedidos expirarão se não forem concluídos dentro deste prazo.",
     "paymentMethodRemoveOpenOrderMessage": "Este anúncio tem um pedido em aberto. Você poderá editar as formas de pagamento assim que estiver concluído.",
     "paymentMethodRemoveOpenOrderTitle": "Não é possível remover a forma de pagamento",
     "priceType": "Tipo de preço",
@@ -125,11 +124,13 @@
     "joinedMoreThan30Days": "30 dias",
     "joinedMoreThan60Days": "60 dias",
     "completionRateMoreThan": "Taxa de conclusão superior a",
-    "completionRateMoreThanHelperSeller": "Quantos pedidos do vendedor são concluídos com sucesso.",
-    "completionRateMoreThanHelperBuyer": "Quantos pedidos do comprador são concluídos com sucesso.",
+    "completionRateMoreThanHelperSeller": "Que percentagem do total de pedidos do vendedor foi concluída nos últimos 30 dias?",
+    "completionRateMoreThanHelperBuyer": "Que percentagem do total de pedidos do comprador foi concluída nos últimos 30 dias?",
     "completionRate50Percent": "50%",
     "completionRate70Percent": "70%",
-    "completionRate90Percent": "90%"
+    "completionRate90Percent": "90%",
+    "orderTimeLimitHelperSeller": "Quanto tempo os vendedores têm para concluir o pedido após iniciá-lo.",
+    "orderTimeLimitHelperBuyer": "Quanto tempo os compradores têm para concluir o pedido após iniciá-lo."
   },
   "advertiser": {
     "addToClosedGroup": "Adicionar ao grupo fechado",
@@ -1033,6 +1034,8 @@
     "rate": "Taxa",
     "saveImage": "Salvar imagem",
     "shareAdTitle": "Compartilhar anúncio",
+    "adLinkLabel": "Link do seu anúncio",
+    "copyButton": "Copiar",
     "shareImage": "Compartilhar imagem",
     "shareMessage": "Olá! Gostaria de trocar {currency} em {rate} em Deriv P2P. Se você estiver interessado, confira meu anúncio {url}. Obrigado!",
     "shareTelegramMessage": "Olá! Gostaria de trocar {currency} em {rate} em Deriv P2P. Se você estiver interessado, confira meu anúncio. Obrigado!",
