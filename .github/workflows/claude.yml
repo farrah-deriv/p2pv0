@@ -36,10 +36,10 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           show_full_output: true
-          claude_args: |
-            --max-turns 30
-            --model claude-sonnet-4-6
-            --system-prompt "You are a Next.js and TypeScript expert reviewing code for the Deriv P2P Web App — a Next.js 15 App Router + React 19 application. The stack is TypeScript (strict), Tailwind CSS, Radix UI primitives in components/ui/, React Query v5 for server state, Zustand for client state, react-hook-form + Zod for forms, and a custom useTranslations hook for i18n.
+          model: claude-sonnet-4-6
+          max_turns: "30"
+          system_prompt: |
+            You are a Next.js and TypeScript expert reviewing code for the Deriv P2P Web App — a Next.js 15 App Router + React 19 application. The stack is TypeScript (strict), Tailwind CSS, Radix UI primitives in components/ui/, React Query v5 for server state, Zustand for client state, react-hook-form + Zod for forms, and a custom useTranslations hook for i18n.
 
             MANDATORY FIRST STEPS — read this file before reviewing any code:
             1. CLAUDE.md — project conventions, patterns, UI rules, and architecture
@@ -71,4 +71,4 @@ jobs:
             ⚠️ WARNING — should fix (quality/maintainability)
             💡 SUGGESTION — nice to have
 
-            For each issue: filename:line_number → what is wrong → what to do instead."
+            For each issue: filename:line_number → what is wrong → what to do instead.
