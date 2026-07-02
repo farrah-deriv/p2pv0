@@ -421,7 +421,7 @@ export default function Sidebar({ className }: SidebarProps) {
             )
           })}
         </ul>
-        {!userData?.feedback_exist && !isDisabled && (
+        {!userData?.feedback_exist && !isDisabled && userId && verificationStatus?.phone_verified && !isPoiExpired && !isPoaExpired && (
           <button
             data-testid="sidebar-btn-feedback"
             onClick={() => setShowFeedbackDialog(true)}

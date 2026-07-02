@@ -98,15 +98,21 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
 
   const showClosedGroupTab = IS_CLOSED_GROUP_ENABLED
 
+  const isVerifiedP2PUser = !!(userId && verificationStatus?.phone_verified && !isPoiExpired && !isPoaExpired)
+
   const tabs = [
     { id: "stats", label: t("profile.stats") },
     { id: "payment", label: t("profile.paymentMethods") },
-    { id: "follows", label: t("profile.follows") },
-    ...(showClosedGroupTab
-      ? [{ id: "closed-group", label: t("profile.closedGroup") }]
+    ...(isVerifiedP2PUser
+      ? [
+          { id: "follows", label: t("profile.follows") },
+          ...(showClosedGroupTab
+            ? [{ id: "closed-group", label: t("profile.closedGroup") }]
+            : []),
+          { id: "blocked", label: t("profile.blocked") },
+          { id: "counterparties", label: t("profile.counterparties") },
+        ]
       : []),
-    { id: "blocked", label: t("profile.blocked") },
-    { id: "counterparties", label: t("profile.counterparties") },
   ]
 
   const handleAddPaymentMethod = async (method: string, fields: Record<string, string>) => {
@@ -269,6 +275,8 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                 )}
               </div>
             )}
+            {isVerifiedP2PUser && (
+            <>
             <Divider className="ms-[60px]" />
             <div className="font-bold text-[18px] mx-6 mt-6">{t("profile.settings")}</div>
             <div
@@ -425,6 +433,8 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                 </div>
               </div>
             )}
+            </>
+            )}
             <Divider className="ms-[60px]" />
             <div className="font-bold text-[18px] mx-6 mt-6">{t("profile.support")}</div>
             <div
@@ -445,7 +455,7 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                 className={cn("justify-self-end", RTL_MIRROR_ICON)}
               />
             </div>
-            {!userData?.feedback_exist && (
+            {!userData?.feedback_exist && isVerifiedP2PUser && (
               <>
                 <Divider className="ms-[60px]" />
                 <div
