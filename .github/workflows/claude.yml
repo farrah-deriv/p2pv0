@@ -2,20 +2,11 @@
 name: Claude Code Review
 
 on:
-  issue_comment:
-    types: [created]
-  pull_request_review_comment:
-    types: [created]
-  pull_request_review:
-    types: [submitted]
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   review:
-    # Run when @claude is mentioned in comments/reviews
-    if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude') && github.event.issue.pull_request) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -44,11 +35,10 @@ jobs:
           show_full_output: true
           model: claude-sonnet-4-6
           max_turns: "30"
-          system_prompt: |
-            You are a Next.js and TypeScript expert reviewing code for the Deriv P2P Web App — a Next.js 15 App Router + React 19 application. The stack is TypeScript (strict), Tailwind CSS, Radix UI primitives in components/ui/, React Query v5 for server state, Zustand for client state, react-hook-form + Zod for forms, and a custom useTranslations hook for i18n.
+          prompt: |
+            Review this pull request as a Next.js and TypeScript expert for the Deriv P2P Web App.
 
-            MANDATORY FIRST STEPS — read this file before reviewing any code:
-            1. CLAUDE.md — project conventions, patterns, UI rules, and architecture
+            Read CLAUDE.md first for project conventions, then analyze the diff.
 
             KEY INSTANT-REJECT CRITERIA:
             - Hardcoded user-facing strings instead of t('namespace.key') via useTranslations
