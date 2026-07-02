@@ -741,3 +741,10 @@ export const getLoginUrl = (isV1Signup = false) => {
 
 /** Whether the closed group feature is enabled. Set NEXT_PUBLIC_IS_CLOSED_GROUP_ENABLED=1 in GitHub Secrets to enable. */
 export const IS_CLOSED_GROUP_ENABLED = process.env.NEXT_PUBLIC_IS_CLOSED_GROUP_ENABLED === "1"
+
+/**
+ * Whether the new ad conditions (Joined more than / Completion rate more than) are enabled.
+ * When OFF, the legacy minimum tier band selector is shown instead.
+ * Set NEXT_PUBLIC_IS_AD_CONDITIONS_ENABLED=1 in GitHub Secrets to enable.
+ */
+export const IS_AD_CONDITIONS_ENABLED = process.env.NEXT_PUBLIC_IS_AD_CONDITIONS_ENABLED === "1"
