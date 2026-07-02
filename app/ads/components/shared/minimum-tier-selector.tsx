@@ -119,6 +119,8 @@ export default function MinimumTierSelector({
   const selectedOption = TIER_OPTIONS.find((option) => option.value === value) ?? TIER_OPTIONS[0]
   const triggerLabel =
     adType === "sell" ? t("adForm.minimumBuyerTier") : t("adForm.minimumSellerTier")
+  const allTiersDescriptionKey =
+    adType === "sell" ? "adForm.tierAllTiersDescriptionBuyers" : "adForm.tierAllTiersDescriptionSellers"
 
   const handleSelect = (next: MinimumTradeBand) => {
     onValueChange(next)
@@ -147,7 +149,11 @@ export default function MinimumTierSelector({
       {TIER_OPTIONS.map((option) => (
         <TierRow
           key={option.value ?? "all"}
-          option={option}
+          option={
+            option.value === null
+              ? { ...option, descriptionKey: allTiersDescriptionKey }
+              : option
+          }
           isSelected={option.value === value}
           onSelect={() => handleSelect(option.value)}
           t={t}
