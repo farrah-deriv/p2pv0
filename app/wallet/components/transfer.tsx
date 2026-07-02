@@ -15,7 +15,7 @@ import {
 } from "@/services/api/api-wallets"
 import { currencyLogoMapper, formatAmountWithDecimals } from "@/lib/utils"
 import { useCurrencies, queryKeys } from "@/hooks/use-api-queries"
-import { queryClient } from "@/lib/react-query-client"
+import { getQueryClient } from "@/lib/react-query-client"
 import WalletDisplay from "./wallet-display"
 import ChooseCurrencyStep from "./choose-currency-step"
 import TransactionDetails from "./transaction-details"
@@ -127,6 +127,7 @@ type CurrencyToggleType = "source" | "destination"
 export default function Transfer({ currencySelected, onClose, stepVal = "enterAmount" }: TransferProps) {
   const { t } = useTranslations()
   const { track } = useTrackers()
+  const queryClient = getQueryClient()
   const { data: currenciesResponse, isLoading: isCurrenciesLoading } = useCurrencies()
 
   const [step, setStep] = useState<TransferStep>(stepVal)

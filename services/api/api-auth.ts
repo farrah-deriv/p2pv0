@@ -2,7 +2,7 @@ import { useUserDataStore } from "@/stores/user-data-store"
 import { useP2PMaintenanceStore } from "@/stores/p2p-maintenance-store"
 import { p2pFetch } from "./p2p-fetch"
 import { useMarketFilterStore } from "@/stores/market-filter-store"
-import { queryClient } from "@/lib/react-query-client"
+import { getQueryClient } from "@/lib/react-query-client"
 import { queryKeys } from "@/hooks/use-api-queries"
 import { getCoreUrl } from "@/lib/get-core-url"
 import { getOryUrl } from "@/lib/get-ory-url"
@@ -323,11 +323,12 @@ export async function fetchUserIdAndStore(): Promise<void> {
 
     // Get settings from React Query cache first, then fetch if needed
     // This ensures we reuse cached data from useSettings hook when available
-    let settings: any | undefined = queryClient.getQueryData(queryKeys.auth.settings())
+    const qc = getQueryClient()
+    let settings: any | undefined = qc.getQueryData(queryKeys.auth.settings())
 
     if (!settings) {
       try {
-        settings = await queryClient.fetchQuery({
+        settings = await qc.fetchQuery({
           queryKey: queryKeys.auth.settings(),
           queryFn: () => getSettings(),
           staleTime: 1000 * 60 * 30, // Match useSettings staleTime

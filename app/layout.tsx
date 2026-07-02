@@ -18,6 +18,7 @@ import Script from "next/script"
 import { ReactQueryProvider } from "@/components/providers/react-query-provider"
 
 export const runtime = "edge"
+export const dynamic = "force-dynamic"
 
 const inter = Inter({ subsets: ["latin"] })
 
