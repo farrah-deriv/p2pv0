@@ -1,0 +1,4 @@
+[submodule "playwright/e2e-tests-core"]
+	path = playwright/e2e-tests-core
+	url = https://github.com/deriv-core/e2e-tests-core.git
+	branch = master

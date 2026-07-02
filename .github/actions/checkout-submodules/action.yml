@@ -1,0 +1,35 @@
+name: Checkout submodules
+description: >-
+  Mint a short-lived GitHub App installation token and fetch the private
+  playwright/e2e-tests-core submodule (deriv-core/e2e-tests-core). Requires
+  the repository to already be checked out. Tokens are read-only and expire
+  automatically.
+
+inputs:
+  app-id:
+    description: GitHub App ID (org secret CLIENT_ID_GHAPP)
+    required: true
+  private-key:
+    description: GitHub App private key PEM (org secret PRIVATE_KEY_GHAPP)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Mint token for deriv-core
+      id: dc-token
+      uses: actions/create-github-app-token@v1
+      with:
+        app-id: ${{ inputs.app-id }}
+        private-key: ${{ inputs.private-key }}
+        owner: deriv-core
+        repositories: |
+          e2e-tests-core
+        permission-contents: read
+
+    - name: Checkout submodules
+      shell: bash
+      run: |
+        git config --global url."https://x-access-token:${{ steps.dc-token.outputs.token }}@github.com/deriv-core/".insteadOf "https://github.com/deriv-core/"
+        git submodule sync --recursive
+        git submodule update --init --recursive --remote
