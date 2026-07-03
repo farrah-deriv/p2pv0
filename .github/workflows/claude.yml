@@ -7,7 +7,8 @@ on:
 
 jobs:
   review:
-    runs-on: ubuntu-latest
+    runs-on:
+      group: github_claude_code_reviewer
     permissions:
       contents: read
       pull-requests: write
