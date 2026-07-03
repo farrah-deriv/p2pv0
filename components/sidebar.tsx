@@ -268,7 +268,7 @@ export default function Sidebar({ className }: SidebarProps) {
 
   return (
     <div data-testid="sidebar-container" className={cn("w-[295px] flex flex-col border-e border-slate-200 me-[8px]", className)}>
-      <div className="flex flex-row justify-between items-center gap-4 p-4 pt-0">
+      <div className="flex flex-row justify-between items-center gap-4 p-4 pt-6">
         <Image src="/icons/deriv-p2p.png" alt={t("common.derivLogo")} width={128} height={24} />
         {userId && (
           <div
@@ -434,7 +434,7 @@ export default function Sidebar({ className }: SidebarProps) {
           </button>
         )}
       </nav>
-      <div className="p-4">
+      <div className="p-4 pb-6">
         <a
           className="flex items-center justify-between gap-3 rounded-md py-2 text-sm transition-colors"
           href={homeProfileUrl}

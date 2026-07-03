@@ -187,9 +187,9 @@ export default function Main({
     return (
       <>
         <P2PAnnouncementController />
-        <div className="hidden md:flex p-6 h-screen overflow-hidden m-auto relative max-w-[1232px]">
+        <div className="hidden md:flex px-6 h-screen overflow-hidden m-auto relative max-w-[1232px]">
           {isHeaderVisible && <Sidebar className="hidden md:flex" />}
-          <div className="flex-1">
+          <div className="flex-1 py-6">
             <div className="container mx-auto px-3">
               <P2PAccessRemoved />
             </div>
@@ -220,9 +220,9 @@ export default function Main({
       )}
       <P2PMaintenanceController />
       <P2PAnnouncementController />
-      <div className="hidden md:flex p-6 h-screen overflow-hidden m-auto relative max-w-[1232px]">
+      <div className="hidden md:flex px-6 h-screen overflow-hidden m-auto relative max-w-[1232px]">
         {isHeaderVisible && <Sidebar className="hidden md:flex" />}
-        <div className="flex-1">
+        <div className="flex-1 py-6">
           <div className="container mx-auto">
             {showMaintenanceBanner && (
               <div className="relative z-0 md:-mb-8 md:px-3">

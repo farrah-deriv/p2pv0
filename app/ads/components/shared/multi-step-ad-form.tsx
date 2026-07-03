@@ -253,11 +253,18 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
             data.minimum_completion_rate_30day != null
               ? Number(data.minimum_completion_rate_30day)
               : null
+          // When ad conditions is enabled and the API returned explicit condition values,
+          // use them directly instead of deferring to the legacy trade band gating.
+          const bandForPrefill =
+            IS_AD_CONDITIONS_ENABLED &&
+            (joinedDaysFromApi != null || completionRateFromApi != null)
+              ? null
+              : apiBand
           setMinimumJoinedDays(
-            normalizeMinimumJoinedDaysForEditPrefill(joinedDaysFromApi, apiBand),
+            normalizeMinimumJoinedDaysForEditPrefill(joinedDaysFromApi, bandForPrefill),
           )
           setMinimumCompletionRate30Day(
-            normalizeMinimumCompletionRateForEditPrefill(completionRateFromApi, apiBand),
+            normalizeMinimumCompletionRateForEditPrefill(completionRateFromApi, bandForPrefill),
           )
 
           if (!IS_AD_CONDITIONS_ENABLED) {
