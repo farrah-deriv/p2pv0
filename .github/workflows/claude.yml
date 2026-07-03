@@ -32,14 +32,23 @@ jobs:
           DISABLE_NON_ESSENTIAL_MODEL_CALLS: "1"
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          allowed_bots: "*"
+          track_progress: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
           show_full_output: true
-          model: claude-sonnet-4-6
-          max_turns: "30"
+          claude_args: "--model claude-sonnet-4-6"
           prompt: |
             Review this pull request as a Next.js and TypeScript expert for the Deriv P2P Web App.
 
-            Read CLAUDE.md first for project conventions, then analyze the diff.
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Please review this pull request with a focus on:
+            - Correctness, regressions, and edge cases
+            - Code quality & readability (React + TypeScript best practices)
+            - Performance (render cost, memoization, effects)
+            - Security (XSS, auth flows, secrets)
+            - Tests (coverage for new logic)
 
             KEY INSTANT-REJECT CRITERIA:
             - Hardcoded user-facing strings instead of t('namespace.key') via useTranslations
