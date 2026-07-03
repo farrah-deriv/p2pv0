@@ -1168,6 +1168,7 @@
     "exceedsBalance": "Le montant ne peut pas dépasser le solde disponible {amount} {currency}.",
     "external": "Externe",
     "failed": "Échoué",
+    "cancelled": "Annulé",
     "from": "De",
     "gettingStartedWithP2P": "Démarrer avec P2P",
     "gotIt": "Compris",

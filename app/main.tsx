@@ -235,8 +235,11 @@ export default function Main({
       </div>
       <div className="md:hidden flex flex-col h-dvh overflow-hidden">
         {showMaintenanceBanner && <P2PSystemMaintenanceBanner embeddedInDarkHeader />}
-{isHeaderVisible && <Header className="flex-shrink-0" />}
-        <main className={cn("flex-1 overflow-hidden", !pathname.startsWith("/profile") && "pb-20")}>{children}</main>
+        {isHeaderVisible && !pathname.startsWith("/profile") && <Header className="flex-shrink-0" />}
+        <main className={cn("flex-1", pathname.startsWith("/profile") ? "overflow-y-auto" : "overflow-hidden pb-20")}>
+          {isHeaderVisible && pathname.startsWith("/profile") && <Header />}
+          {children}
+        </main>
         {!pathname.startsWith("/profile") && <MobileFooterNav className="flex-shrink-0" />}
       </div>
     </WebSocketProvider>

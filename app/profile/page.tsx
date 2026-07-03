@@ -120,9 +120,9 @@ export default function ProfilePage() {
   return (
     <>
       {showKycPopup && <div data-testid="profile-alert-kyc" aria-hidden="true" className="hidden" />}
-      <div className="md:px-3 overflow-x-hidden overflow-y-auto h-full">
-        <div className="flex flex-col md:flex-row gap-6 h-full">
-          <div className="flex-1 order-1 h-full">
+      <div className="md:px-3 overflow-x-hidden md:overflow-y-auto md:h-full">
+        <div className="flex flex-col md:flex-row gap-6 md:h-full">
+          <div className="flex-1 order-1 md:h-full">
             <UserInfo
               username={userData?.username}
               email={userEmail}

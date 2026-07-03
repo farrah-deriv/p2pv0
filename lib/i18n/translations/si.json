@@ -1152,6 +1152,7 @@
     "exceedsBalance": "මුදල පවතින ශේෂය {amount} {currency} ඉක්මවිය නොහැක.",
     "external": "බාහිර",
     "failed": "අසාර්ථකයි",
+    "cancelled": "අවලංගු කරන ලදී",
     "from": "සිට",
     "gettingStartedWithP2P": "P2P සමඟ ආරම්භ කිරීම",
     "gotIt": "තේරුනා",

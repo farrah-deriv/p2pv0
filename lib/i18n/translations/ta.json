@@ -1152,6 +1152,7 @@
     "exceedsBalance": "கிடைக்கும் இருப்புத் தொகை {amount} {currency} ஐ விட அதிகமாக இருக்கக்கூடாது.",
     "external": "வெளி",
     "failed": "தோல்வியடைந்தது",
+    "cancelled": "ரத்து செய்யப்பட்டது",
     "from": "இருந்து",
     "gettingStartedWithP2P": "P2P உடன் தொடங்குதல்",
     "gotIt": "கிடைத்தது",

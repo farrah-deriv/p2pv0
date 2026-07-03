@@ -1152,6 +1152,7 @@
     "exceedsBalance": "لا يمكن أن يتجاوز المبلغ الرصيد المتاح {amount} {currency}.",
     "external": "خارجي",
     "failed": "فشل",
+    "cancelled": "ملغى",
     "from": "من",
     "gettingStartedWithP2P": "البدء مع P2P",
     "gotIt": "حصلت عليه",

@@ -1161,6 +1161,7 @@
     "exceedsBalance": "পরিমাণ উপলব্ধ ব্যালেন্স {amount} {currency} অতিক্রম করতে পারবে না।",
     "external": "বাহ্যিক",
     "failed": "ব্যর্থ",
+    "cancelled": "বাতিল",
     "from": "থেকে",
     "gettingStartedWithP2P": "P2P দিয়ে শুরু করা",
     "gotIt": "বুঝেছি",

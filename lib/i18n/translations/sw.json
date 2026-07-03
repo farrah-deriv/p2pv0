@@ -1160,6 +1160,7 @@
     "exceedsBalance": "Kiasi hakiwezi kuzidi salio linalopatikana {amount} {currency}.",
     "external": "Nje",
     "failed": "Imeshindwa",
+    "cancelled": "Imeghairiwa",
     "from": "Kutoka",
     "gettingStartedWithP2P": "Kuanza na P2P",
     "gotIt": "Sawa",

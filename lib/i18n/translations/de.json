@@ -1179,6 +1179,7 @@
     "exceedsBalance": "Der Betrag darf das verfügbare Guthaben von {amount} {currency} nicht überschreiten.",
     "external": "Extern",
     "failed": "Fehlgeschlagen",
+    "cancelled": "Storniert",
     "from": "Von",
     "gettingStartedWithP2P": "Erste Schritte mit P2P",
     "gotIt": "Verstanden",

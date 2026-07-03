@@ -1152,6 +1152,7 @@
     "exceedsBalance": "Дүн нь боломжтой үлдэгдэл {amount} {currency} хэтэрч болохгүй.",
     "external": "Гадаад",
     "failed": "Амжилтгүй",
+    "cancelled": "Цуцлагдсан",
     "from": "-аас",
     "gettingStartedWithP2P": "P2P-г ашиглаж эхэлж байна",
     "gotIt": "Ойлголоо",

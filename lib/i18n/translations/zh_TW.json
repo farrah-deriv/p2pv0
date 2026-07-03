@@ -1152,6 +1152,7 @@
     "exceedsBalance": "金額不能超過可用餘額 {amount} {currency}。",
     "external": "外部",
     "failed": "失敗",
+    "cancelled": "已取消",
     "from": "來自",
     "gettingStartedWithP2P": "開始使用 P2P",
     "gotIt": "明白了",

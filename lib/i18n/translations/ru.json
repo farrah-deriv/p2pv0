@@ -1184,6 +1184,7 @@
     "exceedsBalance": "Сумма не может превышать доступный баланс {amount} {currency}.",
     "external": "Внешний",
     "failed": "Неудачно",
+    "cancelled": "Отменено",
     "from": "От",
     "gettingStartedWithP2P": "Начало работы с P2P",
     "gotIt": "Понятно",

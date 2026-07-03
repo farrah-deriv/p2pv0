@@ -156,8 +156,11 @@ export default function TransactionDetails({ transaction, onClose }: Transaction
       case "completed":
         return { text: t("wallet.success"), color: "text-success-text" }
       case "pending":
+        return { text: t("wallet.pending"), color: "text-pending-text-secondary" }
       case "processing":
         return { text: t("wallet.processing"), color: "text-pending-text-secondary" }
+      case "reverted":
+        return { text: t("wallet.cancelled"), color: "text-error-text" }
       default:
         return { text: status, color: "text-slate-1200" }
     }

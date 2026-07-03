@@ -633,6 +633,7 @@
     "processing": "Processing",
     "pending": "Pending",
     "failed": "Failed",
+    "cancelled": "Cancelled",
     "walletName": "{currency} Wallet",
     "external": "External",
     "chooseCurrency": "Choose currency",

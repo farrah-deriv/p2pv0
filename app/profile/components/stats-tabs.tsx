@@ -73,7 +73,7 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
   // Use React Query hook for adding payment methods
   const addPaymentMethod = useAddPaymentMethod()
 
-  const helpCentreUrl = getHelpCentreUrl(locale)
+  const helpCentreUrl = `${getHelpCentreUrl(locale)}/help-centre/deriv-p2p`
 
   useEffect(() => {
     setSelectedTab(activeTab)

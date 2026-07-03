@@ -1201,6 +1201,7 @@
     "exceedsBalance": "금액은 사용 가능한 잔액 {amount} {currency}을 초과할 수 없습니다.",
     "external": "외부",
     "failed": "실패",
+    "cancelled": "취소됨",
     "from": "출처",
     "gettingStartedWithP2P": "P2P 시작하기",
     "gotIt": "확인했습니다",

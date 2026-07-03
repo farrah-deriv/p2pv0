@@ -1196,6 +1196,7 @@
     "exceedsBalance": "Số tiền không được vượt quá số dư khả dụng {amount} {currency}.",
     "external": "Bên ngoài",
     "failed": "Thất bại",
+    "cancelled": "Đã hủy",
     "from": "Từ",
     "gettingStartedWithP2P": "Bắt đầu với P2P",
     "gotIt": "Đã hiểu",

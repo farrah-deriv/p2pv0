@@ -482,7 +482,7 @@ export default function BuySellPage() {
 
   return (
     <>
-      <div className="flex flex-col h-screen overflow-hidden">
+      <div className="flex flex-col h-full md:h-screen overflow-hidden">
         <div className="flex-shrink-0 flex-grow-0 sticky top-0 z-4 bg-background px-3">
           <div className="mb-4 md:mb-6 md:flex md:flex-col justify-between gap-4">
             {/* Desktop only — maintenance + mobile balance banners live in main.tsx. */}

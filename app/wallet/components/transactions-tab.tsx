@@ -7,6 +7,7 @@ import TransactionDetails from "./transaction-details"
 import { formatAppDate } from "@/lib/format-date"
 import { formatAmountWithDecimals } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { useTranslations } from "@/lib/i18n/use-translations"
 
 interface Transaction {
@@ -87,6 +88,17 @@ export default function TransactionsTab({
     }
 
     return formatAppDate(date, locale, { day: "numeric", month: "long", year: "numeric" })
+  }
+
+  const getStatusBadge = (status: string) => {
+    const s = status?.toLowerCase()
+    if (s === "pending") {
+      return <Badge variant="pending-secondary">{t("wallet.pending")}</Badge>
+    }
+    if (s === "reverted") {
+      return <Badge variant="error-secondary">{t("wallet.cancelled")}</Badge>
+    }
+    return null
   }
 
   const getTransactionType = (transaction: Transaction) => {
@@ -266,9 +278,7 @@ export default function TransactionsTab({
                               {formatAmountWithDecimals(transaction.metadata.transaction_net_amount)}{" "}
                               {transaction.metadata.transaction_currency}
                             </div>
-                            <div data-testid={`wallet-text-tx-date-${transaction.transaction_id}`} className="text-xs text-grayscale-text-muted">
-                              {formatDate(transaction.timestamp)}
-                            </div>
+                            {getStatusBadge(transaction.metadata.transaction_status)}
                           </div>
                         </div>
 
