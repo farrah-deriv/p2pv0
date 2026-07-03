@@ -253,18 +253,11 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
             data.minimum_completion_rate_30day != null
               ? Number(data.minimum_completion_rate_30day)
               : null
-          // When ad conditions is enabled and the API returned explicit condition values,
-          // use them directly instead of deferring to the legacy trade band gating.
-          const bandForPrefill =
-            IS_AD_CONDITIONS_ENABLED &&
-            (joinedDaysFromApi != null || completionRateFromApi != null)
-              ? null
-              : apiBand
           setMinimumJoinedDays(
-            normalizeMinimumJoinedDaysForEditPrefill(joinedDaysFromApi, bandForPrefill),
+            normalizeMinimumJoinedDaysForEditPrefill(joinedDaysFromApi, apiBand),
           )
           setMinimumCompletionRate30Day(
-            normalizeMinimumCompletionRateForEditPrefill(completionRateFromApi, bandForPrefill),
+            normalizeMinimumCompletionRateForEditPrefill(completionRateFromApi, apiBand),
           )
 
           if (!IS_AD_CONDITIONS_ENABLED) {
@@ -493,12 +486,12 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
         is_private: isPrivate,
         ...(IS_AD_CONDITIONS_ENABLED
           ? {
-              minimum_join_days: minimumJoinedDays,
-              minimum_completion_rate_30day: minimumCompletionRate30Day,
-            }
+            minimum_join_days: minimumJoinedDays,
+            minimum_completion_rate_30day: minimumCompletionRate30Day,
+          }
           : {
-              minimum_trade_band: minimumTradeBand,
-            }),
+            minimum_trade_band: minimumTradeBand,
+          }),
         ...(finalData.type === "buy"
           ? { payment_method_names: finalData.paymentMethods || [] }
           : { payment_method_ids: selectedPaymentMethodIdsForSubmit }),
@@ -695,7 +688,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
       AdvertPaymentMethodRemoveOpenOrder: {
         title: t("adForm.paymentMethodRemoveOpenOrderTitle"),
         type: "error",
-        onConfirm: () => {},
+        onConfirm: () => { },
       },
     }
 
@@ -1076,8 +1069,8 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
                         <div className="flex gap-1 items-center mb-4">
                           <h3 className="text-base font-normal leading-6 tracking-normal text-start">
                             {formData.type === "sell"
-                                ? t("adForm.minimumTierBuyer")
-                                : t("adForm.minimumTierSeller")}
+                              ? t("adForm.minimumTierBuyer")
+                              : t("adForm.minimumTierSeller")}
                           </h3>
                           <TooltipProvider>
                             <Tooltip>
@@ -1149,8 +1142,8 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
                         currentStep === 0
                           ? "ad-form-btn-next-step1"
                           : currentStep === 1
-                          ? "ad-form-btn-next-step2"
-                          : "ad-form-btn-submit"
+                            ? "ad-form-btn-next-step2"
+                            : "ad-form-btn-submit"
                       }
                     >
                       {isSubmitting ? (
@@ -1172,8 +1165,8 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
                         currentStep === 0
                           ? "ad-form-btn-next-step1"
                           : currentStep === 1
-                          ? "ad-form-btn-next-step2"
-                          : "ad-form-btn-submit"
+                            ? "ad-form-btn-next-step2"
+                            : "ad-form-btn-submit"
                       }
                     >
                       {isSubmitting ? (
