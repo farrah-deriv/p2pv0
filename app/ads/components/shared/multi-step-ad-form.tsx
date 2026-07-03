@@ -551,7 +551,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
         // Include tier band if it changed
         const normalizedCurrentBand = normalizeTradeBandForComparison(minimumTradeBand)
         if (normalizedCurrentBand !== originalEditSnapshot.minimumTradeBand) {
-          patch.minimum_trade_band = minimumTradeBand ?? null
+          patch.minimum_trade_band = minimumTradeBand ?? "bronze"
         }
       } else {
         const current = buildCurrentEditState(finalData, {
