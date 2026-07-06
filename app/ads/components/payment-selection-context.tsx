@@ -3,23 +3,24 @@
 import { createContext, useContext, useState, type ReactNode } from "react"
 
 interface PaymentSelectionContextType {
-    selectedPaymentMethodIds: number[]
-    setSelectedPaymentMethodIds: (ids: number[]) => void
-    togglePaymentMethod: (id: number) => void
+    selectedPaymentMethodIds: string[]
+    setSelectedPaymentMethodIds: (ids: string[]) => void
+    togglePaymentMethod: (id: string | number) => void
 }
 
 const PaymentSelectionContext = createContext<PaymentSelectionContextType | undefined>(undefined)
 
 export function PaymentSelectionProvider({ children }: { children: ReactNode }) {
-    const [selectedPaymentMethodIds, setSelectedPaymentMethodIds] = useState<number[]>([])
+    const [selectedPaymentMethodIds, setSelectedPaymentMethodIds] = useState<string[]>([])
 
-    const togglePaymentMethod = (id: number) => {
+    const togglePaymentMethod = (id: string | number) => {
+        const normalizedId = String(id)
         setSelectedPaymentMethodIds((prev) => {
-            const isSelected = prev.includes(id)
+            const isSelected = prev.includes(normalizedId)
             if (isSelected) {
-                return prev.filter((methodId) => methodId !== id)
+                return prev.filter((methodId) => methodId !== normalizedId)
             } else if (prev.length < 3) {
-                return [...prev, id]
+                return [...prev, normalizedId]
             }
             return prev
         })

@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect, useMemo, useRef } from "react"
+import { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Alert } from "@/components/ui/alert"
 import { InfoCircleIcon } from "@/components/icons/info-circle"
@@ -22,7 +22,7 @@ import { useTranslations } from "@/lib/i18n/use-translations"
 import { ExchangeRateDisplay } from "@/components/exchange-rate-display"
 import { ALERT_INLINE_FLEX, ALERT_INLINE_TEXT } from "@/lib/rtl"
 import { useWebSocketContext } from "@/contexts/websocket-context"
-import { useAddPaymentMethod, useUserPaymentMethods, queryKeys } from "@/hooks/use-api-queries"
+import { useAddPaymentMethod, useUserPaymentMethods, queryKeys, type PaymentMethodError } from "@/hooks/use-api-queries"
 import { useQueryClient } from "@tanstack/react-query"
 import RateChangeConfirmation from "./rate-change-confirmation"
 import AdUpdatedConfirmation from "./ad-updated-confirmation"
@@ -30,6 +30,17 @@ import { useTrackers } from "@/analytics/useTrackers"
 import { mapOrderError } from "@/lib/orders/order-error-mapper"
 import { createOrderErrorDispatcher } from "@/lib/orders/order-error-dispatcher"
 import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
+import {
+  appendSelectedPaymentMethodId,
+  filterPaymentMethodsForAdvert,
+  formatPaymentMethodAccountLine,
+  getCreatedPaymentMethodId,
+  isPaymentMethodIdSelected,
+  mergeCreatedPaymentMethodIntoList,
+  normalizePaymentMethodId,
+  resolveSelectedUserPaymentMethodIds,
+  sortPaymentMethodsSelectedFirst,
+} from "@/lib/payment-methods/payment-method-selection-utils"
 
 interface OrderSidebarProps {
   isOpen: boolean
@@ -81,19 +92,38 @@ const PaymentSelectionContent = ({
   handleAddPaymentMethodClick,
   sellerPaymentMethods,
   onAddPaymentMethodWithType,
+}: {
+  userPaymentMethods: PaymentMethod[]
+  tempSelectedPaymentMethods: string[]
+  hideAlert: () => void
+  setSelectedPaymentMethods: (methods: string[]) => void
+  setTempSelectedPaymentMethods: (methods: string[]) => void
+  handleAddPaymentMethodClick: () => void
+  sellerPaymentMethods: SellerPaymentMethod[]
+  onAddPaymentMethodWithType?: (methodType: string) => void
 }) => {
   const { t } = useTranslations()
   const [selectedPMs, setSelectedPMs] = useState(tempSelectedPaymentMethods)
+  const [openStateSelection] = useState(tempSelectedPaymentMethods)
 
-  const handlePaymentMethodToggle = (methodId: string) => {
+  useEffect(() => {
+    setSelectedPMs(tempSelectedPaymentMethods)
+  }, [tempSelectedPaymentMethods])
+
+  const sortedPaymentMethods = useMemo(
+    () => sortPaymentMethodsSelectedFirst(userPaymentMethods, openStateSelection),
+    [userPaymentMethods, openStateSelection],
+  )
+
+  const handlePaymentMethodToggle = (methodId: string | number) => {
     setSelectedPMs((prev) => {
-      const newSelection = prev.includes(methodId)
-        ? prev.filter((id) => id !== methodId)
-        : prev.length < 3
-          ? [...prev, methodId]
-          : prev
-
-      return newSelection
+      if (isPaymentMethodIdSelected(prev, methodId)) {
+        return prev.filter((id) => !isPaymentMethodIdSelected([id], methodId))
+      }
+      if (prev.length < 3) {
+        return [...prev, normalizePaymentMethodId(methodId)]
+      }
+      return prev
     })
   }
 
@@ -102,10 +132,23 @@ const PaymentSelectionContent = ({
     onAddPaymentMethodWithType?.(method.method)
   }
 
+  const getAccountValue = (method: PaymentMethod) => {
+    const account = method.fields?.account
+    if (typeof account === "object" && account !== null && "value" in account) {
+      return String(account.value ?? "")
+    }
+    return account != null ? String(account) : undefined
+  }
+
   return (
-    <div data-testid="order-sidebar-modal-payment-methods" className="flex flex-col h-full overflow-y-auto">
-      <div className="flex-1 space-y-4 overflow-y-auto md:max-h-[30vh]">
-        {userPaymentMethods.length > 0 && <div className="text-[#000000B8]">{t("paymentMethod.selectUpTo3")}</div>}
+    <div
+      data-testid="order-sidebar-modal-payment-methods"
+      className="flex flex-col flex-1 min-h-0 h-full"
+    >
+      {userPaymentMethods.length > 0 && (
+        <div className="shrink-0 pb-4 text-grayscale-600">{t("paymentMethod.selectUpTo3")}</div>
+      )}
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-4">
         {userPaymentMethods.length === 0 ? (
           <div className="pb-4 space-y-4">
             <div>
@@ -113,9 +156,9 @@ const PaymentSelectionContent = ({
             </div>
             {sellerPaymentMethods && sellerPaymentMethods.length > 0 && (
               <div className="space-y-3">
-                {sellerPaymentMethods.map((method, index) => (
+                {sellerPaymentMethods.map((method) => (
                   <div
-                    key={index}
+                    key={method.method}
                     onClick={() => handleAcceptedMethodClick(method)}
                     className="border border-grayscale-200 rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
                   >
@@ -131,43 +174,49 @@ const PaymentSelectionContent = ({
             )}
           </div>
         ) : (
-          userPaymentMethods.map((method) => (
+          sortedPaymentMethods.map((method) => {
+            const methodId = normalizePaymentMethodId(method.id)
+            const isSelected = isPaymentMethodIdSelected(selectedPMs, methodId)
+            const isDisabled = !isSelected && selectedPMs.length >= 3
+
+            return (
             <div
-              key={method.id}
-              className={`bg-grayscale-500 rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-color ${selectedPMs?.includes(method.id) ? "border border-black" : ""
-                } ${!selectedPMs?.includes(method.id) && selectedPMs?.length >= 3
+              key={methodId}
+              className={`bg-grayscale-500 rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-color ${isSelected ? "border border-black" : ""
+                } ${isDisabled
                   ? "opacity-30 cursor-not-allowed hover:bg-white"
                   : ""
                 }`}
               onClick={() => {
-                if (!(!selectedPMs?.includes(method.id) && selectedPMs?.length >= 3)) {
-                  handlePaymentMethodToggle(method.id)
+                if (!isDisabled) {
+                  handlePaymentMethodToggle(methodId)
                 }
               }}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center mb-[6px] gap-2">
-                    <div
-                      className={`h-2 w-2 rounded-full me-2 ${method.type === "bank" ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"
-                        }`}
-                    />
-                    <div className="flex- flex-col">
-                      <span className="text-base text-slate-1200">{getCategoryDisplayName(method.type, t)}</span>
-                      <div className="font-normal text-grayscale-text-muted text-xs">{`${formatPaymentMethodName(method.display_name, t)} - ${method.fields.account.value}`}</div>
-                    </div>
+              <div className="flex items-center justify-between gap-3 min-w-0">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div
+                    className={`h-2 w-2 shrink-0 rounded-full ${method.type === "bank" ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"
+                      }`}
+                  />
+                  <div className="min-w-0 flex flex-col">
+                    <span className="text-base text-slate-1200">{getCategoryDisplayName(method.type, t)}</span>
+                    <span className="text-base text-grayscale-text-muted truncate">
+                      {formatPaymentMethodAccountLine(method.display_name, getAccountValue(method), t)}
+                    </span>
                   </div>
                 </div>
                 <Checkbox
-                  data-testid={`order-sidebar-checkbox-payment-${method.id}`}
-                  checked={selectedPMs?.includes(method.id)}
-                  onCheckedChange={() => handlePaymentMethodToggle(method.id)}
-                  disabled={!selectedPMs?.includes(method.id) && selectedPMs?.length >= 3}
-                  className="border-neutral-7 data-[state=checked]:bg-black data-[state=checked]:border-black w-[20px] h-[20px] rounded-sm border-[2px] disabled:opacity-30 disabled:cursor-not-allowed pointer-events-none"
+                  data-testid={`order-sidebar-checkbox-payment-${methodId}`}
+                  checked={isSelected}
+                  onCheckedChange={() => handlePaymentMethodToggle(methodId)}
+                  disabled={isDisabled}
+                  className="shrink-0 border-neutral-7 data-[state=checked]:bg-black data-[state=checked]:border-black w-[20px] h-[20px] rounded-sm border-[2px] disabled:opacity-30 disabled:cursor-not-allowed pointer-events-none"
                 />
               </div>
             </div>
-          ))
+            )
+          })
         )}
 
         {userPaymentMethods.length > 0 && (
@@ -187,18 +236,24 @@ const PaymentSelectionContent = ({
           </div>
         )}
       </div>
-      <Button
-        data-testid="order-sidebar-btn-confirm-payment"
-        className="w-full mt-12"
-        disabled={selectedPMs.length === 0}
-        onClick={() => {
-          setSelectedPaymentMethods(selectedPMs)
-          setTempSelectedPaymentMethods(selectedPMs)
-          hideAlert()
-        }}
-      >
-        {t("common.confirm")}
-      </Button>
+      <div className="shrink-0 pt-4 pb-6">
+        <Button
+          data-testid="order-sidebar-btn-confirm-payment"
+          className="w-full"
+          disabled={selectedPMs.length === 0}
+          onClick={() => {
+            const confirmedSelection = resolveSelectedUserPaymentMethodIds(
+              selectedPMs,
+              userPaymentMethods,
+            )
+            setSelectedPaymentMethods(confirmedSelection)
+            setTempSelectedPaymentMethods(confirmedSelection)
+            hideAlert()
+          }}
+        >
+          {t("common.confirm")}
+        </Button>
+      </div>
     </div>
   )
 }
@@ -357,28 +412,53 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
     if (!amount) setTotalAmount(0)
   }, [amount, localAd, orderType, p2pBalance, t, marketRate])
 
-  const handleShowPaymentSelection = () => {
-    track("ek_select_payment_method_markets_advert_sheet")
-    showAlert({
-      title: t("paymentMethod.title"),
-      description: (
-        <PaymentSelectionContent
-          userPaymentMethods={userPaymentMethods}
-          tempSelectedPaymentMethods={tempSelectedPaymentMethods}
-          setSelectedPaymentMethods={setSelectedPaymentMethods}
-          hideAlert={hideAlert}
-          handleAddPaymentMethodClick={handleAddPaymentMethodClick}
-          setTempSelectedPaymentMethods={setTempSelectedPaymentMethods}
-          sellerPaymentMethods={sellerPaymentMethods}
-          onAddPaymentMethodWithType={handleAddPaymentMethodWithType}
-        />
-      ),
-    })
-  }
-
-  const handleAddPaymentMethodWithType = (methodType: string) => {
+  const handleAddPaymentMethodWithType = useCallback((methodType: string) => {
     setSelectedPaymentMethodType(methodType)
     setShowAddPaymentPanel(true)
+  }, [])
+
+  const handleAddPaymentMethodClick = useCallback(() => {
+    setShowAddPaymentPanel(true)
+    hideAlert()
+  }, [hideAlert])
+
+  const openPaymentSelection = useCallback(
+    (selectionOverride?: string[], methodsOverride?: PaymentMethod[]) => {
+      const currentSelection = selectionOverride ?? tempSelectedPaymentMethods
+      const methodsForSheet = methodsOverride ?? userPaymentMethods
+
+      track("ek_select_payment_method_markets_advert_sheet")
+      showAlert({
+        title: t("paymentMethod.title"),
+        content: (
+          <PaymentSelectionContent
+            userPaymentMethods={methodsForSheet}
+            tempSelectedPaymentMethods={currentSelection}
+            setSelectedPaymentMethods={setSelectedPaymentMethods}
+            hideAlert={hideAlert}
+            handleAddPaymentMethodClick={handleAddPaymentMethodClick}
+            setTempSelectedPaymentMethods={setTempSelectedPaymentMethods}
+            sellerPaymentMethods={sellerPaymentMethods}
+            onAddPaymentMethodWithType={handleAddPaymentMethodWithType}
+          />
+        ),
+      })
+    },
+    [
+      handleAddPaymentMethodClick,
+      handleAddPaymentMethodWithType,
+      hideAlert,
+      sellerPaymentMethods,
+      showAlert,
+      t,
+      tempSelectedPaymentMethods,
+      track,
+      userPaymentMethods,
+    ],
+  )
+
+  const handleShowPaymentSelection = () => {
+    openPaymentSelection()
   }
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -547,11 +627,45 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
 
   const handleAddPaymentMethod = async (method: string, fields: Record<string, string>) => {
     try {
-      await addPaymentMethod.mutateAsync({ method, fields })
+      const result = await addPaymentMethod.mutateAsync({ method, fields })
 
       setShowAddPaymentPanel(false)
-    } catch (error: any) {
-      if (error.errors?.[0]?.code === "PaymentMethodDuplicate") {
+
+      await queryClient.refetchQueries({ queryKey: queryKeys.auth.userPaymentMethods() })
+
+      const created = result.data as PaymentMethod | undefined
+      const createdId = getCreatedPaymentMethodId(created)
+      const acceptedMethods = localAd?.payment_methods
+
+      const refetchedMethods =
+        queryClient.getQueryData<{ data: PaymentMethod[] }>(queryKeys.auth.userPaymentMethods())
+          ?.data ?? []
+
+      const refetchedCompatible = filterPaymentMethodsForAdvert(refetchedMethods, acceptedMethods)
+      const baseList = refetchedCompatible.length > 0 ? refetchedCompatible : userPaymentMethods
+
+      const nextUserPaymentMethods = mergeCreatedPaymentMethodIntoList(
+        baseList,
+        created,
+        acceptedMethods,
+      )
+
+      setUserPaymentMethods(nextUserPaymentMethods)
+
+      let nextSelection = tempSelectedPaymentMethods
+
+      if (createdId) {
+        nextSelection = appendSelectedPaymentMethodId(tempSelectedPaymentMethods, createdId)
+        setSelectedPaymentMethods(nextSelection)
+        setTempSelectedPaymentMethods(nextSelection)
+      }
+
+      openPaymentSelection(nextSelection, nextUserPaymentMethods)
+    } catch (err) {
+      const error = err as PaymentMethodError
+      const errorCode = error?.errors?.[0]?.code
+
+      if (errorCode === "PaymentMethodDuplicate") {
         showAlert(
           createPaymentMethodDuplicateAlertConfig(t, {
             onManage: () => {
@@ -573,15 +687,12 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
     }
   }
 
-  const handleAddPaymentMethodClick = () => {
-    setShowAddPaymentPanel(true)
-    hideAlert()
-  }
-
   const getSelectedPaymentMethodsText = () => {
     if (selectedPaymentMethods.length === 0) return t("order.receivePaymentTo")
     if (selectedPaymentMethods.length === 1) {
-      const method = userPaymentMethods.find((m) => m.id === selectedPaymentMethods[0])
+      const method = userPaymentMethods.find((m) =>
+        normalizePaymentMethodId(m.id) === normalizePaymentMethodId(selectedPaymentMethods[0]),
+      )
       return method ? `${method.display_name}` : t("order.receivePaymentTo")
     }
     return t("order.selected") + ` (${selectedPaymentMethods.length})`
@@ -772,18 +883,20 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
                   </div>
                 </div>
 
-                <div className="border-t border-[#E9ECEF] m-4 mb-0 pt-4 text-sm flex justify-between items-start gap-4">
-                  <h3 className="text-grayscale-text-muted shrink-0">
+                <div className="border-t border-[#E9ECEF] m-4 mb-0 pt-4 text-sm">
+                  <h3 className="text-grayscale-text-muted mb-2 text-start">
                     {isBuy ? t("order.buyersPaymentMethods") : t("order.sellersPaymentMethods")}
                   </h3>
-                  <div className="flex flex-wrap gap-4 justify-end shrink-0">
-                    {localAd.payment_methods?.map((method, index) => (
-                      <div key={index} className="flex items-center">
+                  <div className="flex flex-col gap-2">
+                    {localAd.payment_methods?.map((method) => (
+                      <div key={method} className="flex items-center min-w-0">
                         <div
-                          className={`h-2 w-2 rounded-full me-2 ${method.toLowerCase().includes("bank") ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"
+                          className={`h-2 w-2 shrink-0 rounded-full me-2 ${method.toLowerCase().includes("bank") ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"
                             }`}
                         />
-                        <span className="text-slate-1200">{formatPaymentMethodName(method, t)}</span>
+                        <span className="text-slate-1200 text-start truncate">
+                          {formatPaymentMethodName(method, t)}
+                        </span>
                       </div>
                     ))}
                   </div>

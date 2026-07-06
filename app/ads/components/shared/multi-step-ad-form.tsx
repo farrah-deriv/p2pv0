@@ -46,6 +46,7 @@ import {
   normalizeTradeBandForComparison,
   type AdvertEditSnapshot,
 } from "@/lib/ads/advert-edit-patch"
+import { toNumericPaymentMethodIds } from "@/lib/payment-methods/payment-method-selection-utils"
 
 interface MultiStepAdFormProps {
   mode: "create" | "edit"
@@ -193,23 +194,24 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
           let paymentMethodNames: string[] = []
           let paymentMethodIds: number[] = []
 
-          if (data.payment_methods && Array.isArray(data.payment_methods)) {
-            if (data.type === "buy") {
-              paymentMethodNames = data.payment_methods.map((methodName: string) => {
-                if (methodName.includes("_") || methodName === methodName.toLowerCase()) {
-                  return methodName
-                }
-                return convertToSnakeCase(methodName)
-              })
+          if (data.type === "buy" && data.payment_methods && Array.isArray(data.payment_methods)) {
+            paymentMethodNames = data.payment_methods.map((methodName: string) => {
+              if (methodName.includes("_") || methodName === methodName.toLowerCase()) {
+                return methodName
+              }
+              return convertToSnakeCase(methodName)
+            })
 
-              setSelectedPaymentMethodIds(paymentMethodNames)
-            } else {
-              paymentMethodIds = data.payment_method_ids
-                .map((id: any) => Number(id))
-                .filter((id: number) => !isNaN(id))
+            setSelectedPaymentMethodIds(paymentMethodNames)
+          } else if (data.type === "sell") {
+            // Mirrors mobile prefillFromAdvert: sell ads use payment_method_ids only.
+            paymentMethodIds = Array.isArray(data.payment_method_ids)
+              ? data.payment_method_ids
+                  .map((id: unknown) => Number(id))
+                  .filter((id: number) => !Number.isNaN(id))
+              : []
 
-              setSelectedPaymentMethodIds(paymentMethodIds)
-            }
+            setSelectedPaymentMethodIds(paymentMethodIds.map(String))
           }
 
           const formattedData = {
@@ -494,7 +496,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
           }),
         ...(finalData.type === "buy"
           ? { payment_method_names: finalData.paymentMethods || [] }
-          : { payment_method_ids: selectedPaymentMethodIdsForSubmit }),
+          : { payment_method_ids: toNumericPaymentMethodIds(selectedPaymentMethodIdsForSubmit) }),
       }
 
       createAdMutation.mutate(payload, {
@@ -880,16 +882,13 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
                   />
                 ) : currentStep === 1 ? (
                   <PaymentDetailsForm
-                    onBack={() => setCurrentStep(0)}
-                    onClose={handleClose}
                     initialData={formData}
-                    setFormData={setFormData}
-                    isSubmitting={isSubmitting}
-                    isEditMode={mode === "edit"}
                     onBottomSheetOpenChange={handleBottomSheetOpenChange}
                     userPaymentMethods={userPaymentMethods}
                     availablePaymentMethods={availablePaymentMethods}
-                    onRefetchPaymentMethods={refetchUserPaymentMethods}
+                    onRefetchPaymentMethods={async () => {
+                      await refetchUserPaymentMethods()
+                    }}
                   />
                 ) : (
                   <div className="space-y-6">

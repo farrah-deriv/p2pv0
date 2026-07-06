@@ -13,6 +13,7 @@ import { useAddPaymentMethod, useUserPaymentMethods, type PaymentMethodError } f
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useRouter } from "next/navigation"
 import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
+import { isPaymentMethodIdSelected, normalizePaymentMethodId } from "@/lib/payment-methods/payment-method-selection-utils"
 
 interface PaymentMethod {
   id: number
@@ -46,7 +47,7 @@ const AdPaymentMethods = () => {
       return
     }
 
-    togglePaymentMethod(methodId)
+    togglePaymentMethod(normalizePaymentMethodId(methodId))
   }
 
   const handleAddPaymentMethod = async (method: string, fields: Record<string, string>) => {
@@ -120,7 +121,7 @@ const AdPaymentMethods = () => {
         <div className="md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
           <div className="flex gap-4 overflow-x-auto pb-2 md:contents">
             {paymentMethods.map((method) => {
-              const isSelected = selectedPaymentMethodIds.includes(method.id)
+              const isSelected = isPaymentMethodIdSelected(selectedPaymentMethodIds, method.id)
               const displayDetails = getMethodDisplayDetails(method)
               const isMaxReached = selectedPaymentMethodIds.length >= 3
               const isDisabled = isMaxReached && !isSelected
