@@ -24,6 +24,8 @@ import { useTranslations } from "@/lib/i18n/use-translations"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAddPaymentMethod, type PaymentMethodError } from "@/hooks/use-api-queries"
 import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
+import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
+import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
 import { useTrackers } from "@/analytics/useTrackers"
 import { FeedbackDialog } from "@/components/feedback/feedback-dialog"
 
@@ -139,6 +141,20 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
         showAlert(
           createPaymentMethodDuplicateAlertConfig(t, {
             onManage: () => {
+              hideAlert()
+              setShowAddPaymentPanel(false)
+            },
+          }),
+        )
+        return
+      }
+
+      if (errorCode === "PaymentMethodInvalidFieldValue") {
+        showAlert(
+          createPaymentMethodInvalidFieldValueAlertConfig(t, {
+            fieldValue: resolvePaymentMethodAccountFieldValue(fields, t),
+            onEdit: () => hideAlert(),
+            onCancel: () => {
               hideAlert()
               setShowAddPaymentPanel(false)
             },

@@ -40,6 +40,7 @@ import { localeToBcp47 } from "@/lib/i18n/config"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import InfoCircleIcon from "@/public/icons/info-circle-bold.svg"
 import { useTrackers } from "@/analytics/useTrackers"
+import { shouldDisableChatAttachments } from "@/lib/orders/order-chat-gating"
 
 export default function OrderDetailsPage() {
   const { t, locale } = useTranslations()
@@ -469,6 +470,108 @@ export default function OrderDetailsPage() {
         : "buyer"
   const isBuyer = counterpartyLabel === t("orderDetails.seller")
 
+  const renderOrderActionButtons = (isMobileFooter: boolean) => {
+    if (!order) return null
+
+    const footerWrapperClass = isMobileFooter
+      ? "flex flex-col-reverse gap-2 w-full"
+      : undefined
+
+    return (
+      <>
+        {((order.type === "buy" && order.status === "pending_payment" && order.user.id == userId) ||
+          (order.type === "sell" && order.status === "pending_payment" && order.advert.user.id == userId)) && (
+          <div
+            className={cn(
+              isMobileFooter
+                ? footerWrapperClass
+                : "py-4 flex flex-col-reverse md:flex-row gap-2 md:gap-4 sticky bottom-0 bg-white md:static md:bg-transparent",
+            )}
+          >
+            <Button variant="outline" className="flex-1 bg-transparent" onClick={handleCancelOrder} data-testid="order-details-btn-cancel">
+              {t("orderDetails.cancelOrder")}
+            </Button>
+            <Button className="flex-1" onClick={handleShowPaymentConfirmation} data-testid="order-details-btn-paid">
+              {t("orderDetails.ivePaid")}
+            </Button>
+          </div>
+        )}
+        {((order.type === "buy" &&
+          (order.status === "pending_release" || order.status === "timed_out" || order.status === "disputed") &&
+          order.advert.user.id == userId) ||
+          (order.type === "sell" &&
+            (order.status === "pending_release" || order.status === "timed_out" || order.status === "disputed") &&
+            order.user.id == userId)) && (
+          <div
+            className={cn(
+              isMobileFooter ? "w-full" : "md:pl-4 pt-4 flex gap-4 md:float-right sticky bottom-0 bg-white md:static md:bg-transparent",
+            )}
+          >
+            <Button className="flex-1 w-full" onClick={handlePaymentReceived} disabled={isConfirmLoading} data-testid="order-details-btn-received">
+              {isConfirmLoading ? (
+                <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
+              ) : (
+                t("orderDetails.iveReceivedPayment")
+              )}
+            </Button>
+          </div>
+        )}
+        {order.status === "completed" && order.is_reviewable && !order.disputed_at && !isMobileFooter && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 p-[16px] bg-blue-50 rounded-2xl mt-[24px]">
+              <div className="flex-shrink-0">
+                <Image src="/icons/info-custom.png" alt={t("common.info")} width={24} height={24} />
+              </div>
+              <p className="text-sm text-grayscale-100">
+                {t("orderDetails.ratingDeadline", {
+                  deadline: formatRatingDeadline(order.order_review_expires_at),
+                })}
+              </p>
+            </div>
+            <div className="pt-2 flex justify-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  track("ek_rate_transaction_order_details")
+                  setShowRatingSidebar(true)
+                }}
+                className="flex-auto md:flex-none"
+              >
+                {t("orderDetails.rateTransaction")}
+              </Button>
+            </div>
+          </div>
+        )}
+        {order.status === "timed_out" && !isMobileFooter && (
+          <div className="py-4 flex justify-end flex-auto md:flex-none">
+            <Button
+              variant="outline"
+              onClick={() => {
+                track("ek_make_complaint_order_details")
+                setShowComplaintForm(true)
+              }}
+              className="flex-auto md:flex-1"
+            >
+              {t("orderDetails.complain")}
+            </Button>
+          </div>
+        )}
+      </>
+    )
+  }
+
+  const hasStickyMobileOrderActions =
+    isMobile &&
+    order &&
+    (((order.type === "buy" && order.status === "pending_payment" && order.user.id == userId) ||
+      (order.type === "sell" && order.status === "pending_payment" && order.advert.user.id == userId)) ||
+      ((order.type === "buy" &&
+        (order.status === "pending_release" || order.status === "timed_out" || order.status === "disputed") &&
+        order.advert.user.id == userId) ||
+        (order.type === "sell" &&
+          (order.status === "pending_release" || order.status === "timed_out" || order.status === "disputed") &&
+          order.user.id == userId)))
+
   if (isMobile && showChat && order) {
     const counterpartyOnlineStatus =
       order?.advert.user.id == userId ? order?.user?.is_online : order?.advert?.user?.is_online
@@ -476,27 +579,28 @@ export default function OrderDetailsPage() {
       order?.advert.user.id == userId ? order?.user?.last_online_at : order?.advert?.user?.last_online_at
 
     return (
-      <div className="relative h-[calc(100vh-64px)] md:mb-[64px] flex flex-col">
-        <div className="flex-1 h-full">
-          <OrderChat
-            orderId={orderId}
-            counterpartyName={counterpartyNickname || "User"}
-            counterpartyInitial={(counterpartyNickname || "U")[0].toUpperCase()}
-            isClosed={["cancelled", "completed", "refunded"].includes(order?.status)}
-            counterpartyOnlineStatus={counterpartyOnlineStatus}
-            counterpartyLastOnlineAt={counterpartyLastOnlineAt}
-            onNavigateToOrderDetails={() => {
-              setShowChat(false)
-              setIsChatVisible(false)
-            }}
-          />
-        </div>
+      <div className="flex flex-col flex-1 min-h-0 h-full w-full">
+        <OrderChat
+          orderId={orderId}
+          order={order}
+          counterpartyName={counterpartyNickname || "User"}
+          counterpartyInitial={(counterpartyNickname || "U")[0].toUpperCase()}
+          isClosed={["cancelled", "completed", "refunded"].includes(order?.status)}
+          isAttachmentUploadDisabled={shouldDisableChatAttachments(order, userId)}
+          counterpartyOnlineStatus={counterpartyOnlineStatus}
+          counterpartyLastOnlineAt={counterpartyLastOnlineAt}
+          onNavigateToOrderDetails={() => {
+            setShowChat(false)
+            setIsChatVisible(false)
+          }}
+          onOpenProofOfTransfer={() => setShowPaymentConfirmation(true)}
+        />
       </div>
     )
   }
 
   return (
-    <div className="lg:absolute inset-x-0 top-6 bottom-0 bg-white overflow-y-auto h-[calc(100%+80px)] md:h-full">
+    <div className="lg:absolute inset-x-0 top-6 bottom-0 bg-white flex flex-col flex-1 min-h-0 h-full overflow-hidden md:overflow-y-auto">
       {order?.type && (
         <Navigation
           isBackBtnVisible={false}
@@ -505,7 +609,8 @@ export default function OrderDetailsPage() {
           redirectUrl={"/orders"}
         />
       )}
-      <div className="container mx-auto px-[24px] mt-4 pb-6">
+      <div className="flex flex-col flex-1 min-h-0 overflow-hidden md:overflow-y-auto">
+      <div className={cn("container mx-auto px-[24px] mt-4 pb-6 md:pb-6", isMobile && !isLoading && order && "flex flex-col flex-1 min-h-0 overflow-hidden mt-0 pb-0 px-0")}>
         {isLoading ? (
           <div className="flex flex-row gap-6">
             <div className="w-full lg:w-1/2 rounded-lg">
@@ -554,12 +659,13 @@ export default function OrderDetailsPage() {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col">
-            <div className="flex flex-row gap-6">
-              <div className="w-full lg:w-1/2 rounded-lg">
+          <div className={cn("flex flex-col", isMobile && "flex-1 min-h-0")}>
+            <div className={cn("flex flex-row gap-6", isMobile && "flex-1 min-h-0")}>
+              <div className={cn("w-full lg:w-1/2 rounded-lg", isMobile && "flex flex-col flex-1 min-h-0 overflow-hidden")}>
                 <div
                   className={cn(
-                    `${getStatusBadgeStyle(order.status, isBuyer)} p-4 flex justify-between items-center rounded-none lg:rounded-lg mb-[24px] mt-[-16px] lg:mt-[0] mx-[-24px] lg:mx-[0]`,
+                    `${getStatusBadgeStyle(order.status, isBuyer)} p-4 flex justify-between items-center rounded-none lg:rounded-lg mb-[24px] mt-[-16px] lg:mt-[0] z-10`,
+                    isMobile ? "mx-0 flex-shrink-0 mb-0 mt-0" : "mx-[-24px] lg:mx-[0] sticky top-0",
                     order.status === "pending_release" && isBuyer && isMobile ? "flex-col items-start" :
                       order.status === "pending_payment" || order.status === "pending_release"
                         ? "justify-between"
@@ -598,6 +704,7 @@ export default function OrderDetailsPage() {
                     </div>
                   )}
                 </div>
+                <div className={cn(isMobile && "flex-1 min-h-0 overflow-y-auto px-[24px] pt-6 pb-4")}>
                 {(order.status === "timed_out" || (order.status === "refunded" && order.disputed_at)) && !isBuyer && (
                   <Alert variant="info" className="flex items-center gap-2 mb-[24px]">
                     <InfoCircleIcon className="h-6 w-6 flex-shrink-0 [&>path]:fill-current" aria-hidden="true" />
@@ -699,42 +806,9 @@ export default function OrderDetailsPage() {
                   </div>
                 )}
 
-                {((order.type === "buy" && order.status === "pending_payment" && order.user.id == userId) ||
-                  (order.type === "sell" && order.status === "pending_payment" && order.advert.user.id == userId)) && (
-                    <div className="py-8 flex flex-col-reverse md:flex-row gap-2 md:gap-4">
-                      <Button variant="outline" className="flex-1 bg-transparent" onClick={handleCancelOrder} data-testid="order-details-btn-cancel">
-                        {t("orderDetails.cancelOrder")}
-                      </Button>
-                      <Button className="flex-1" onClick={handleShowPaymentConfirmation} data-testid="order-details-btn-paid">
-                        {t("orderDetails.ivePaid")}
-                      </Button>
-                    </div>
-                  )}
-                {((order.type === "buy" &&
-                  (order.status === "pending_release" || order.status === "timed_out" || order.status === "disputed") &&
-                  order.advert.user.id == userId) ||
-                  (order.type === "sell" &&
-                    (order.status === "pending_release" ||
-                      order.status === "timed_out" ||
-                      order.status === "disputed") &&
-                    order.user.id == userId)) && (
-                    <div className="md:pl-4 pt-4 flex gap-4 md:float-right">
-                      <Button
-                        className="flex-1"
-                        onClick={handlePaymentReceived}
-                        disabled={isConfirmLoading}
-                        data-testid="order-details-btn-received"
-                      >
-                        {isConfirmLoading ? (
-                          <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
-                        ) : (
-                          t("orderDetails.iveReceivedPayment")
-                        )}
-                      </Button>
-                    </div>
-                  )}
+                <div className="hidden md:block">{renderOrderActionButtons(false)}</div>
                 {order.status === "completed" && order.is_reviewable && !order.disputed_at && (
-                  <div className="space-y-4">
+                  <div className="space-y-4 md:hidden">
                     <div className="flex items-center gap-2 p-[16px] bg-blue-50 rounded-2xl mt-[24px]">
                       <div className="flex-shrink-0">
                         <Image src="/icons/info-custom.png" alt={t("common.info")} width={24} height={24} />
@@ -775,7 +849,7 @@ export default function OrderDetailsPage() {
                   </div>
                 )}
                 {order.status === "timed_out" && (
-                  <div className="py-4 flex justify-end flex-auto md:flex-none">
+                  <div className="py-4 flex justify-end flex-auto md:flex-none md:hidden">
                     <Button
                       variant="outline"
                       onClick={() => {
@@ -789,26 +863,36 @@ export default function OrderDetailsPage() {
                     </Button>
                   </div>
                 )}
+                </div>
+                {hasStickyMobileOrderActions && (
+                  <div className="flex-shrink-0 border-t border-grayscale-200 bg-white px-6 py-4">
+                    {renderOrderActionButtons(true)}
+                  </div>
+                )}
               </div>
               <div className="hidden lg:block w-full lg:w-1/2 border rounded-lg overflow-hidden flex flex-col h-[600px]">
 
                 <OrderChat
                   orderId={orderId}
+                  order={order}
                   counterpartyName={counterpartyNickname || "User"}
                   counterpartyInitial={(counterpartyNickname || "U")[0].toUpperCase()}
                   isClosed={["cancelled", "completed", "refunded"].includes(order?.status)}
+                  isAttachmentUploadDisabled={shouldDisableChatAttachments(order, userId)}
                   counterpartyOnlineStatus={
                     order?.advert.user.id == userId ? order?.user?.is_online : order?.advert?.user?.is_online
                   }
                   counterpartyLastOnlineAt={
                     order?.advert.user.id == userId ? order?.user?.last_online_at : order?.advert?.user?.last_online_at
                   }
+                  onOpenProofOfTransfer={() => setShowPaymentConfirmation(true)}
                 />
 
               </div>
             </div>
           </div>
         )}
+      </div>
       </div>
 
       <ComplaintForm

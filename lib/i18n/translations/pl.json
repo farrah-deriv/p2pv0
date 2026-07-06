@@ -219,8 +219,8 @@
     "errorPromotionalContent": "Treści promocyjne i reklamy są niedozwolone.",
     "errorSensitiveDataRequests": "Twoja wiadomość wymaga dodatkowej recenzji. Proszę czekaj, aż połączymy Cię ze specjalistą.",
     "fileTooLargeDescription": "Załączniki muszą mieć 5 MB lub mniej. Skompresuj plik lub wyślij mniejszy.",
-    "errorAttachmentRejected": "Załącznik nie został wysłany. Udostępniaj tylko wiadomości związane z tym zamówieniem.",
-    "errorAttachmentLimitReached": "Załącznik nie został wysłany: osiągnięto maksymalną liczbę załączników.",
+    "errorAttachmentRejected": "Nie można wysłać tego pliku. Użyj innego pliku.",
+    "errorAttachmentLimitReached": "Osiągnąłeś maksymalną liczbę załączników.",
     "fileTooLargeTitle": "Plik jest za duży",
     "justNow": "właśnie teraz",
     "messageNotSent": "Wiadomość nie wysłana: {error}",
@@ -231,7 +231,17 @@
     "seenHoursAgo": "{hours} godzina{plural} temu",
     "seenMinutesAgo": "{minutes} minuta{plural} temu",
     "send": "Wyślij",
-    "typeMessage": "Wpisz wiadomość..."
+    "typeMessage": "Wpisz wiadomość...",
+    "oneItemAtATimeTitle": "Jeden przedmiot na raz",
+    "oneItemAtATimeDescription": "Wyślij wiadomość i załącznik osobno, a nie w tym samym żądaniu.",
+    "imageBlocked": "Obraz zablokowany",
+    "attachmentsRemaining": "Pozostałe załączniki: {count}",
+    "attachmentUploadRequiresPot": "Opłać to zlecenie i prześlij dowód przelewu, zanim prześlesz inne załączniki.",
+    "pendingPotSubmissionTitle": "Potwierdź płatność",
+    "pendingPotSubmissionDescription": "Najpierw opłać to zlecenie i prześlij dowód przelewu, zanim prześlesz inne załączniki.",
+    "submitDocument": "Prześlij dowód przelewu",
+    "later": "Później",
+    "attachFile": "Dołącz plik"
   },
   "common": {
     "add": "Dodaj",
@@ -715,7 +725,12 @@
     "withdrawalLimitDescription": "Zweryfikuj swoje konto, aby dokonywać kolejnych wypłat.",
     "withdrawalLimitTitle": "Osiągnięto limit wypłat",
     "youPay": "Płacisz",
-    "youReceive": "Otrzymujesz"
+    "youReceive": "Otrzymujesz",
+    "browseAds": "Przeglądaj ogłoszenia",
+    "notEligibleYetTitle": "Jeszcze nie kwalifikujesz się",
+    "notEligibleYetMessage": "Twoje konto nie było aktywne wystarczająco długo, aby handlować z tym sprzedawcą. Przeglądaj inne ogłoszenia, aby kontynuować.",
+    "completionRateTooLowTitle": "Wskaźnik ukończenia zbyt niski",
+    "completionRateTooLowMessage": "Twój wskaźnik ukończenia jest zbyt niski, aby handlować z tym sprzedawcą. Ukończ inne zlecenia, aby go podnieść."
   },
   "orderDetails": {
     "amount": "Kwota",
@@ -773,13 +788,22 @@
     "checkPreviousOrders": "Sprawdź poprzednie zamówienia",
     "confirm": "Potwierdź",
     "confirmPayment": "Potwierdź płatność",
+    "fraudWarningStart": "Niezgodność kwoty, odbiorcy lub daty zostanie odrzucona. Jeśli Twój rachunek jest fałszywy lub zmieniony, Twoje konto tak będzie",
+    "fraudWarningBold": "zamknięte na stałe",
+    "fraudWarningEnd": "a środki wróciły do ​​kupującego.",
+    "amountLabel": "Kwota",
+    "recipientLabel": "Odbiorca",
+    "receiptMustShow": "Twój rachunek musi być widoczny",
+    "checklistRecipient": "Odbiorca:",
+    "checklistAmount": "Dokładna ilość:",
+    "checklistDate": "Data transakcji w ciągu ostatniej godziny",
+    "checklistSender": "Nazwa nadawcy odpowiada Twojemu zweryfikowanemu identyfikatorowi",
+    "confirmGenuineCheckbox": "Potwierdzam, że ta płatność jest autentyczna. Jeśli przedstawię fałszywy dowód, moje konto zostanie trwale zamknięte.",
     "confirmPaymentReceived": "Potwierdź otrzymaną płatność",
     "date": "Data",
     "didntReceiveCode": "Nie otrzymałeś kodu?",
-    "ensurePayment": "Upewnij się, że zapłaciłeś {amount} {currency} na rzecz {name} i prześlij pokwitowanie jako dowód płatności.",
     "fileTooLarge": "Plik musi mieć 5 MB lub mniej.",
     "fileTypes": "JPEG, JPG, PNG, PDF (do 5MB)",
-    "fraudWarning": "Dostarczenie fałszywych dokumentów będzie skutkować trwałym banem.",
     "gotIt": "Rozumiem",
     "id": "ID",
     "incorrectCode": "Nieprawidłowy kod. Pozostało Ci {attempts} próba{plural}.",
@@ -813,7 +837,8 @@
     "attachmentRejected": "Nie można było wysłać tego pliku. Użyj innego pliku.",
     "attachmentRejectedTitle": "Plik nie został zaakceptowany",
     "attachmentLimitReachedTitle": "Osiągnięto limit załączników",
-    "attachmentLimitReached": "Osiągnięto maksymalną liczbę załączników."
+    "attachmentLimitReached": "Osiągnięto maksymalną liczbę załączników.",
+    "removeFile": "Usuń plik"
   },
   "p2pAccess": {
     "description": "Nie możesz już korzystać ze swojego konta Deriv P2P. Sprawdź swój e-mail, aby uzyskać więcej szczegółów. Aby uzyskać pomoc, skontaktuj się z nami za pośrednictwem czatu na żywo.",
@@ -878,7 +903,11 @@
     "selectUpTo3": "Wybierz do 3",
     "sellerAccepts": "Sprzedawca akceptuje",
     "title": "Metoda płatności",
-    "unableToAdd": "Nie można dodać metody płatności"
+    "unableToAdd": "Nie można dodać metody płatności",
+    "invalidFieldValueTitle": "Nieprawidłowy {fieldValue}",
+    "invalidFieldValueDescription": "Wprowadź prawidłowy {fieldValue}, aby dodać tę metodę płatności.",
+    "editDetails": "Edytuj szczegóły",
+    "fieldFallback": "numer rachunku"
   },
   "paymentMethodFields": {
     "account": "Konto",

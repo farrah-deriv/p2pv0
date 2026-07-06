@@ -12,6 +12,8 @@ export enum OrderErrorAction {
   VerifyAccount = "verifyAccount",
   CompleteAssessment = "completeAssessment",
   GoBack = "goBack",
+  /** Navigate to Markets page when P2P is disabled mid-session. Non-dismissible. */
+  GoToMarkets = "goToMarkets",
 }
 
 export interface OrderErrorMessage {

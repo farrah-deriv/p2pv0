@@ -224,8 +224,8 @@
     "errorPromotionalContent": "প্রচারমূলক সামগ্রী এবং বিজ্ঞাপন অনুমোদিত নয়।",
     "errorSensitiveDataRequests": "আপনার বার্তার অতিরিক্ত পর্যালোচনা প্রয়োজন। অনুগ্রহ করে অপেক্ষা করুন যখন আমরা আপনাকে একজন বিশেষজ্ঞের সাথে সংযুক্ত করি।",
     "fileTooLargeDescription": "সংযুক্তিগুলি ৫ MB বা তার কম হতে হবে। ফাইলটি সংকুচিত করুন বা একটি ছোট ফাইল পাঠান।",
-    "errorAttachmentRejected": "সংযুক্তি পাঠানো হয়নি। অনুগ্রহ করে শুধুমাত্র এই অর্ডারের সাথে প্রাসঙ্গিক বার্তা শেয়ার করুন।",
-    "errorAttachmentLimitReached": "সংযুক্তি পাঠানো হয়নি: আপনি সংযুক্তির সর্বোচ্চ সীমায় পৌঁছে গেছেন।",
+    "errorAttachmentRejected": "এই ফাইলটি পাঠানো যায়নি। একটি ভিন্ন ফাইল ব্যবহার করুন.",
+    "errorAttachmentLimitReached": "আপনি সংযুক্তির সর্বাধিক সংখ্যায় পৌঁছেছেন৷",
     "fileTooLargeTitle": "ফাইলটি অনেক বড়",
     "justNow": "এইমাত্র",
     "messageNotSent": "বার্তা পাঠানো হয়নি: {error}",
@@ -236,7 +236,17 @@
     "seenHoursAgo": "{hours} ঘন্টা{plural} আগে",
     "seenMinutesAgo": "{minutes} মিনিট{plural} আগে",
     "send": "পাঠান",
-    "typeMessage": "একটি বার্তা টাইপ করুন..."
+    "typeMessage": "একটি বার্তা টাইপ করুন...",
+    "oneItemAtATimeTitle": "এক সময়ে একটি আইটেম",
+    "oneItemAtATimeDescription": "আপনার বার্তা এবং সংযুক্তি আলাদাভাবে পাঠান, একই অনুরোধে নয়।",
+    "imageBlocked": "ছবি অবরুদ্ধ",
+    "attachmentsRemaining": "বাকি সংযুক্তি: {count}",
+    "attachmentUploadRequiresPot": "অন্যান্য সংযুক্তি আপলোড করার আগে এই অর্ডারের জন্য পেমেন্ট করুন এবং ট্রান্সফারের প্রমাণ আপলোড করুন।",
+    "pendingPotSubmissionTitle": "আপনার পেমেন্ট নিশ্চিত করুন",
+    "pendingPotSubmissionDescription": "অন্যান্য সংযুক্তি আপলোড করার আগে প্রথমে এই অর্ডারের জন্য পেমেন্ট করুন এবং ট্রান্সফারের প্রমাণ আপলোড করুন।",
+    "submitDocument": "ট্রান্সফারের প্রমাণ আপলোড করুন",
+    "later": "পরে",
+    "attachFile": "ফাইল সংযুক্ত করুন"
   },
   "common": {
     "add": "যোগ করুন",
@@ -712,7 +722,12 @@
     "withdrawalLimitDescription": "আরও উত্তোলন করতে আপনার অ্যাকাউন্ট যাচাই করুন।",
     "withdrawalLimitTitle": "উত্তোলন সীমা পৌঁছেছে",
     "youPay": "আপনি প্রদান করবেন",
-    "youReceive": "আপনি পাবেন"
+    "youReceive": "আপনি পাবেন",
+    "browseAds": "বিজ্ঞাপন ব্রাউজ করুন",
+    "notEligibleYetTitle": "এখনও যোগ্য নন",
+    "notEligibleYetMessage": "এই বিক্রেতার সাথে লেনদেন করার জন্য আপনার অ্যাকাউন্ট যথেষ্ট সময় ধরে সক্রিয় ছিল না। চালিয়ে যেতে অন্যান্য বিজ্ঞাপন ব্রাউজ করুন।",
+    "completionRateTooLowTitle": "সমাপন হার খুব কম",
+    "completionRateTooLowMessage": "এই বিক্রেতার সাথে লেনদেন করার জন্য আপনার সমাপন হার খুব কম। আপনার হার বাড়াতে অন্যান্য অর্ডার সম্পূর্ণ করুন।"
   },
   "orderDetails": {
     "amount": "পরিমাণ",
@@ -770,10 +785,20 @@
     "checkPreviousOrders": "পূর্ববর্তী অর্ডার পরীক্ষা করুন",
     "confirm": "নিশ্চিত করুন",
     "confirmPayment": "আপনার পেমেন্ট নিশ্চিত করুন",
+    "fraudWarningStart": "পরিমাণ, প্রাপক, বা তারিখের অমিল প্রত্যাখ্যান করা হবে। আপনার রসিদ জাল বা সম্পাদনা করা হলে, আপনার অ্যাকাউন্ট হবে",
+    "fraudWarningBold": "স্থায়ীভাবে বন্ধ",
+    "fraudWarningEnd": "এবং তহবিল ক্রেতার কাছে ফিরে গেছে।",
+    "amountLabel": "পরিমাণ",
+    "recipientLabel": "প্রাপক",
+    "receiptMustShow": "আপনার রসিদ অবশ্যই দেখাতে হবে",
+    "checklistRecipient": "প্রাপক:",
+    "checklistAmount": "সঠিক পরিমাণ:",
+    "checklistDate": "শেষ ঘন্টার মধ্যে লেনদেনের তারিখ",
+    "checklistSender": "প্রেরকের নাম আপনার যাচাইকৃত আইডির সাথে মেলে",
+    "confirmGenuineCheckbox": "আমি নিশ্চিত করছি এই অর্থপ্রদান আসল। আমি মিথ্যা প্রমাণ জমা দিলে, আমার অ্যাকাউন্ট স্থায়ীভাবে বন্ধ হয়ে যাবে।",
     "confirmPaymentReceived": "পেমেন্ট পাওয়ার বিষয়টি নিশ্চিত করুন",
     "date": "তারিখ",
     "didntReceiveCode": "কোড পাননি?",
-    "ensurePayment": "নিশ্চিত করুন যে আপনি {amount} {currency} {name} প্রদান করেছেন এবং পেমেন্টের প্রমাণ হিসেবে রসিদ আপলোড করুন।",
     "fileTooLarge": "ফাইলটি ৫MB বা ছোট হতে হবে।",
     "fileTypes": "JPEG, JPG, PNG, PDF (৫MB পর্যন্ত)",
     "fraudWarning": "জালিয়াতি নথি প্রদান করলে স্থায়ী নিষেধাজ্ঞা হবে।",
@@ -810,7 +835,8 @@
     "attachmentRejected": "এই ফাইলটি পাঠানো যায়নি। অন্য একটি ফাইল ব্যবহার করুন।",
     "attachmentRejectedTitle": "ফাইল গ্রহণযোগ্য নয়",
     "attachmentLimitReachedTitle": "সংযুক্তির সীমা পৌঁছেছে",
-    "attachmentLimitReached": "আপনি সর্বোচ্চ সংখ্যক সংযুক্তিতে পৌঁছেছেন।"
+    "attachmentLimitReached": "আপনি সর্বোচ্চ সংখ্যক সংযুক্তিতে পৌঁছেছেন।",
+    "removeFile": "ফাইল সরান"
   },
   "p2pAccess": {
     "description": "আপনি আর আপনার Deriv P2P অ্যাকাউন্ট ব্যবহার করতে পারবেন না। আরো বিস্তারিত জানার জন্য আপনার ইমেল চেক করুন. সমর্থনের জন্য, লাইভ চ্যাটের মাধ্যমে আমাদের সাথে যোগাযোগ করুন।",
@@ -875,7 +901,11 @@
     "selectUpTo3": "৩টি পর্যন্ত নির্বাচন করুন",
     "sellerAccepts": "বিক্রেতা গ্রহণ করে",
     "title": "পেমেন্ট পদ্ধতি",
-    "unableToAdd": "পেমেন্ট পদ্ধতি যোগ করা সম্ভব নয়"
+    "unableToAdd": "পেমেন্ট পদ্ধতি যোগ করা সম্ভব নয়",
+    "invalidFieldValueTitle": "অবৈধ {fieldValue}",
+    "invalidFieldValueDescription": "এই পেমেন্ট পদ্ধতি যোগ করতে একটি বৈধ {fieldValue} লিখুন।",
+    "editDetails": "বিবরণ সম্পাদনা করুন",
+    "fieldFallback": "অ্যাকাউন্ট নম্বর"
   },
   "paymentMethodFields": {
     "account": "অ্যাকাউন্ট",

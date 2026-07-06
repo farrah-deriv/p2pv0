@@ -217,6 +217,7 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
 
       {isMobile ? (
         <Drawer open={isOpen} onOpenChange={(open) => {
+          if (!open && config.preventOutsideClose) return
           setIsOpen(open)
           if (!open) config.onClose?.()
         }}>
@@ -244,6 +245,8 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
                 "!w-[min(880px,95vw)] !max-w-[880px] !p-0 overflow-hidden rounded-3xl border-0",
               config.contentClassName,
             )}
+            onEscapeKeyDown={config.preventOutsideClose ? (e) => e.preventDefault() : undefined}
+            onInteractOutside={config.preventOutsideClose ? (e) => e.preventDefault() : undefined}
           >
             <AlertDialogDescription>{renderDesktopContent()}</AlertDialogDescription>
           </AlertDialogContent>

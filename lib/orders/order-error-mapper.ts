@@ -290,6 +290,26 @@ export function mapOrderError(
         secondaryAction: OrderErrorAction.Dismiss,
       }
 
+    case "OrderUserRegisteredDateInvalid":
+      return {
+        title: t("order.notEligibleYetTitle"),
+        message: t("order.notEligibleYetMessage"),
+        primaryCta: t("order.browseAds"),
+        primaryAction: OrderErrorAction.ViewOtherAds,
+        secondaryCta: t("order.goBack"),
+        secondaryAction: OrderErrorAction.GoBack,
+      }
+
+    case "OrderUserCompletionRateInvalid":
+      return {
+        title: t("order.completionRateTooLowTitle"),
+        message: t("order.completionRateTooLowMessage"),
+        primaryCta: t("order.browseAds"),
+        primaryAction: OrderErrorAction.ViewOtherAds,
+        secondaryCta: t("order.goBack"),
+        secondaryAction: OrderErrorAction.GoBack,
+      }
+
     case "OrderCreateFailRateSlippage":
     case "OrderFloatRateSlippage": {
       const pay = ctx.paymentCurrency ?? ""
@@ -410,10 +430,10 @@ export function mapOrderError(
       return {
         title: t("maintenance.errorTitle"),
         message: t("maintenance.errorMessage"),
-        primaryCta: t("order.openLiveChat"),
-        primaryAction: OrderErrorAction.OpenLiveChat,
-        secondaryCta: t("common.close"),
-        secondaryAction: OrderErrorAction.Dismiss,
+        primaryCta: t("navigation.backToHome"),
+        primaryAction: OrderErrorAction.GoToMarkets,
+        secondaryCta: t("order.openLiveChat"),
+        secondaryAction: OrderErrorAction.OpenLiveChat,
       }
 
     case "DuplicateRequestDetected":

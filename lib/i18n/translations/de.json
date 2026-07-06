@@ -240,8 +240,8 @@
     "errorPromotionalContent": "Werbeinhalte und Anzeigen sind nicht erlaubt.",
     "errorSensitiveDataRequests": "Ihre Nachricht erfordert eine zusätzliche Überprüfung. Bitte warten Sie, während wir Sie mit einem Spezialisten verbinden.",
     "fileTooLargeDescription": "Anhänge müssen 5 MB oder kleiner sein. Komprimiere die Datei oder sende eine kleinere.",
-    "errorAttachmentRejected": "Anhang nicht gesendet. Bitte teilen Sie nur relevante Nachrichten zu dieser Bestellung.",
-    "errorAttachmentLimitReached": "Anhang nicht gesendet: Sie haben die maximale Anzahl an Anhängen erreicht.",
+    "errorAttachmentRejected": "Diese Datei konnte nicht gesendet werden. Verwenden Sie eine andere Datei.",
+    "errorAttachmentLimitReached": "Sie haben die maximale Anzahl an Anhängen erreicht.",
     "fileTooLargeTitle": "Datei zu groß",
     "justNow": "gerade eben",
     "messageNotSent": "Nachricht nicht gesendet: {error}",
@@ -252,7 +252,17 @@
     "seenHoursAgo": "vor {hours} Stunde{plural}",
     "seenMinutesAgo": "vor {minutes} Minute{plural}",
     "send": "Senden",
-    "typeMessage": "Nachricht eingeben..."
+    "typeMessage": "Nachricht eingeben...",
+    "oneItemAtATimeTitle": "Ein Artikel nach dem anderen",
+    "oneItemAtATimeDescription": "Senden Sie Ihre Nachricht und den Anhang separat, nicht in derselben Anfrage.",
+    "imageBlocked": "Bild blockiert",
+    "attachmentsRemaining": "Verbleibende Anhänge: {count}",
+    "attachmentUploadRequiresPot": "Bezahlen Sie diese Order und laden Sie einen Überweisungsnachweis hoch, bevor Sie andere Anhänge hochladen.",
+    "pendingPotSubmissionTitle": "Bestätigen Sie Ihre Zahlung",
+    "pendingPotSubmissionDescription": "Bezahlen Sie diese Order zuerst und laden Sie einen Überweisungsnachweis hoch, bevor Sie andere Anhänge hochladen.",
+    "submitDocument": "Überweisungsnachweis hochladen",
+    "later": "Später",
+    "attachFile": "Datei anhängen"
   },
   "common": {
     "add": "Hinzufügen",
@@ -730,7 +740,12 @@
     "withdrawalLimitDescription": "Verifiziere dein Konto, um mehr Auszahlungen vorzunehmen.",
     "withdrawalLimitTitle": "Auszahlungslimit erreicht",
     "youPay": "Sie zahlen",
-    "youReceive": "Sie erhalten"
+    "youReceive": "Sie erhalten",
+    "browseAds": "Anzeigen durchsuchen",
+    "notEligibleYetTitle": "Noch nicht berechtigt",
+    "notEligibleYetMessage": "Ihr Konto war nicht lange genug aktiv, um mit diesem Verkäufer zu handeln. Durchsuchen Sie andere Anzeigen, um fortzufahren.",
+    "completionRateTooLowTitle": "Abschlussrate zu niedrig",
+    "completionRateTooLowMessage": "Ihre Abschlussrate ist zu niedrig, um mit diesem Verkäufer zu handeln. Schließen Sie andere Aufträge ab, um Ihre Rate zu erhöhen."
   },
   "orderDetails": {
     "amount": "Betrag",
@@ -788,13 +803,22 @@
     "checkPreviousOrders": "Frühere Bestellungen prüfen",
     "confirm": "Bestätigen",
     "confirmPayment": "Bestätigen Sie Ihre Zahlung",
+    "fraudWarningStart": "Abweichungen in Bezug auf Betrag, Empfänger oder Datum werden abgelehnt. Wenn Ihre Quittung gefälscht oder manipuliert ist, ist dies Ihr Konto",
+    "fraudWarningBold": "dauerhaft geschlossen",
+    "fraudWarningEnd": "und das Geld wurde an den Käufer zurückgegeben.",
+    "amountLabel": "Menge",
+    "recipientLabel": "Empfänger",
+    "receiptMustShow": "Ihre Quittung muss vorliegen",
+    "checklistRecipient": "Empfänger:",
+    "checklistAmount": "Genauer Betrag:",
+    "checklistDate": "Transaktionsdatum innerhalb der letzten Stunde",
+    "checklistSender": "Der Absendername stimmt mit Ihrer verifizierten ID überein",
+    "confirmGenuineCheckbox": "Ich bestätige, dass diese Zahlung echt ist. Wenn ich einen falschen Nachweis vorlege, wird mein Konto dauerhaft geschlossen.",
     "confirmPaymentReceived": "Zahlungseingang bestätigen",
     "date": "Datum",
     "didntReceiveCode": "Haben Sie den Code nicht erhalten?",
-    "ensurePayment": "Stellen Sie sicher, dass Sie {amount} {currency} an {name} bezahlt haben und laden Sie die Quittung als Zahlungsnachweis hoch.",
     "fileTooLarge": "Die Datei darf maximal 5MB groß sein.",
     "fileTypes": "JPEG, JPG, PNG, PDF (bis zu 5MB)",
-    "fraudWarning": "Die Bereitstellung betrügerischer Dokumente führt zu einem dauerhaften Verbot.",
     "gotIt": "Verstanden",
     "id": "ID",
     "incorrectCode": "Falscher Code. Sie haben noch {attempts} Versuch{plural}.",
@@ -828,7 +852,8 @@
     "attachmentRejected": "Diese Datei konnte nicht gesendet werden. Verwenden Sie eine andere Datei.",
     "attachmentRejectedTitle": "Datei nicht akzeptiert",
     "attachmentLimitReachedTitle": "Anhangslimit erreicht",
-    "attachmentLimitReached": "Sie haben die maximale Anzahl an Anhängen erreicht."
+    "attachmentLimitReached": "Sie haben die maximale Anzahl an Anhängen erreicht.",
+    "removeFile": "Datei entfernen"
   },
   "p2pAccess": {
     "description": "Sie können Ihr Deriv P2P-Konto nicht mehr verwenden. Weitere Informationen finden Sie in Ihren E-Mails. Wenn Sie Unterstützung benötigen, kontaktieren Sie uns per Live-Chat.",
@@ -893,7 +918,11 @@
     "selectUpTo3": "Wählen Sie bis zu 3 aus",
     "sellerAccepts": "Der Verkäufer akzeptiert",
     "title": "Zahlungsmethode",
-    "unableToAdd": "Zahlungsmethode kann nicht hinzugefügt werden"
+    "unableToAdd": "Zahlungsmethode kann nicht hinzugefügt werden",
+    "invalidFieldValueTitle": "Ungültig: {fieldValue}",
+    "invalidFieldValueDescription": "Geben Sie eine gültige {fieldValue} ein, um diese Zahlungsmethode hinzuzufügen.",
+    "editDetails": "Details bearbeiten",
+    "fieldFallback": "Kontonummer"
   },
   "paymentMethodFields": {
     "account": "Konto",

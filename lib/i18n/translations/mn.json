@@ -215,8 +215,8 @@
     "errorPromotionalContent": "Сурталчилгааны агуулга, сурталчилгаа явуулахыг хориглоно.",
     "errorSensitiveDataRequests": "Таны мессеж нэмэлт хяналт шаардлагатай. Бид таныг мэргэжилтэнтэй холбох хүртэл түр хүлээнэ үү.",
     "fileTooLargeDescription": "Хавсралт нь 5 МБ ба түүнээс бага байх ёстой. Файлыг шахах эсвэл жижиг файлыг илгээнэ үү.",
-    "errorAttachmentRejected": "Хавсралт илгээгдсэнгүй. Зөвхөн энэ захиалагтай холбоотой мессежүүдийг хуваалцана уу.",
-    "errorAttachmentLimitReached": "Хавсралт илгээгдсэнгүй: Хавсралтын дээд хэмжээнд хүрлээ.",
+    "errorAttachmentRejected": "Энэ файлыг илгээж чадсангүй. Өөр файл ашиглана уу.",
+    "errorAttachmentLimitReached": "Та хавсралтын дээд хязгаарт хүрсэн байна.",
     "fileTooLargeTitle": "Файл хэт том байна",
     "justNow": "яг одоо",
     "messageNotSent": "Зурвас илгээгээгүй: {error}",
@@ -227,7 +227,17 @@
     "seenHoursAgo": "{hours} цагийн{plural} өмнө",
     "seenMinutesAgo": "{minutes} минутын{plural} өмнө",
     "send": "Илгээх",
-    "typeMessage": "Зурвас бичнэ үү..."
+    "typeMessage": "Зурвас бичнэ үү...",
+    "oneItemAtATimeTitle": "Нэг удаад нэг зүйл",
+    "oneItemAtATimeDescription": "Мессеж болон хавсралтыг нэг хүсэлтээр биш тусад нь илгээнэ үү.",
+    "imageBlocked": "Зургийг блоклосон",
+    "attachmentsRemaining": "Үлдсэн хавсралт: {count}",
+    "attachmentUploadRequiresPot": "Энэ захиалгыг төлж, шилжүүлгийн баримтыг байршуулсны дараа бусад хавсралтыг байршуулна уу.",
+    "pendingPotSubmissionTitle": "Төлбөрөө баталгаажуулна уу",
+    "pendingPotSubmissionDescription": "Бусад хавсралтыг байршуулахаас өмнө эхлээд энэ захиалгыг төлж, шилжүүлгийн баримтаа байршуулна уу.",
+    "submitDocument": "Шилжүүлгийн баримт байршуулах",
+    "later": "Дараа",
+    "attachFile": "Файл хавсаргах"
   },
   "common": {
     "add": "Нэмэх",
@@ -703,7 +713,12 @@
     "withdrawalLimitDescription": "Илүү их мөнгө авахын тулд дансаа баталгаажуулна уу.",
     "withdrawalLimitTitle": "Татан авалтын хязгаарт хүрсэн",
     "youPay": "Та төлнө",
-    "youReceive": "Та хүлээн авна"
+    "youReceive": "Та хүлээн авна",
+    "browseAds": "Зарууд үзэх",
+    "notEligibleYetTitle": "Одоогоор тохирохгүй",
+    "notEligibleYetMessage": "Таны данс энэ борлуулагчтай арилжаа хийхэд хангалттай хугацаанд идэвхтэй байгаагүй. Үргэлжлүүлэхийн тулд бусад зарыг үзнэ үү.",
+    "completionRateTooLowTitle": "Гүйцэтгэлийн хувь хэт бага",
+    "completionRateTooLowMessage": "Энэ борлуулагчтай арилжаа хийхэд таны гүйцэтгэлийн хувь хэт бага байна. Хувь нэмэгдүүлэхийн тулд бусад захиалгыг дуусгаарай."
   },
   "orderDetails": {
     "amount": "Дүн",
@@ -761,13 +776,22 @@
     "checkPreviousOrders": "Өмнөх захиалгыг шалгана уу",
     "confirm": "Баталгаажуулах",
     "confirmPayment": "Төлбөрөө баталгаажуулна уу",
+    "fraudWarningStart": "Хэмжээ, хүлээн авагч эсвэл огнооны зөрүүгээс татгалзах болно. Хэрэв таны баримт хуурамч эсвэл засварласан бол таны данс байх болно",
+    "fraudWarningBold": "бүрмөсөн хаагдсан",
+    "fraudWarningEnd": "Мөн хөрөнгийг худалдан авагчид буцааж өгсөн.",
+    "amountLabel": "Дүн",
+    "recipientLabel": "Хүлээн авагч",
+    "receiptMustShow": "Таны баримтыг харуулах ёстой",
+    "checklistRecipient": "Хүлээн авагч:",
+    "checklistAmount": "Яг хэмжээ:",
+    "checklistDate": "Сүүлийн нэг цагийн дотор гүйлгээ хийгдсэн огноо",
+    "checklistSender": "Илгээгчийн нэр таны баталгаажуулсан ID-тай таарч байна",
+    "confirmGenuineCheckbox": "Би энэ төлбөрийг жинхэнэ гэдгийг баталж байна. Хэрэв би худал нотлох баримт ирүүлбэл миний данс бүрмөсөн хаагдах болно.",
     "confirmPaymentReceived": "Төлбөрийг хүлээн авснаа баталгаажуулна уу",
     "date": "Огноо",
     "didntReceiveCode": "Кодоо хүлээж аваагүй юу?",
-    "ensurePayment": "Та {amount} {currency}-г {name}-д төлсөн эсэхээ шалгаад төлбөрийн баримтаа байршуулна уу.",
     "fileTooLarge": "Файл 5MB буюу түүнээс бага хэмжээтэй байх ёстой.",
     "fileTypes": "JPEG, JPG, PNG, PDF (5 МБ хүртэл)",
-    "fraudWarning": "Хуурамч бичиг баримт бүрдүүлбэл бүрмөсөн хориг тавина.",
     "gotIt": "Ойлголоо",
     "id": "ID",
     "incorrectCode": "Буруу код. Танд {attempts} оролдлого{plural} үлдсэн.",
@@ -801,7 +825,8 @@
     "attachmentRejected": "Энэ файлыг илгээх боломжгүй байна. Өөр файл ашиглана уу.",
     "attachmentRejectedTitle": "Файл хүлээн авагдсангүй",
     "attachmentLimitReachedTitle": "Хавсралтын хязгаарт хүрлээ",
-    "attachmentLimitReached": "Хавсралтын дээд тоонд хүрлээ."
+    "attachmentLimitReached": "Хавсралтын дээд тоонд хүрлээ.",
+    "removeFile": "Файл устгах"
   },
   "p2pAccess": {
     "description": "Та цаашид Deriv P2P бүртгэлээ ашиглах боломжгүй. Дэлгэрэнгүй мэдээллийг имэйл хаягаа шалгана уу. Тусламж авахыг хүсвэл бидэнтэй шууд чатаар холбогдоно уу.",
@@ -866,7 +891,11 @@
     "selectUpTo3": "3 хүртэл сонгоно уу",
     "sellerAccepts": "Худалдагч хүлээн зөвшөөрнө",
     "title": "Төлбөрийн арга",
-    "unableToAdd": "Төлбөрийн хэрэгсэл нэмэх боломжгүй"
+    "unableToAdd": "Төлбөрийн хэрэгсэл нэмэх боломжгүй",
+    "invalidFieldValueTitle": "Буруу {fieldValue}",
+    "invalidFieldValueDescription": "Энэ төлбөрийн арга нэмэхийн тулд зөв {fieldValue} оруулна уу.",
+    "editDetails": "Дэлгэрэнгүй засах",
+    "fieldFallback": "дансны дугаар"
   },
   "paymentMethodFields": {
     "account": "Данс",

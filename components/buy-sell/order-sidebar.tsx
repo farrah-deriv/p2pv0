@@ -29,7 +29,10 @@ import AdUpdatedConfirmation from "./ad-updated-confirmation"
 import { useTrackers } from "@/analytics/useTrackers"
 import { mapOrderError } from "@/lib/orders/order-error-mapper"
 import { createOrderErrorDispatcher } from "@/lib/orders/order-error-dispatcher"
+import { OrderErrorAction } from "@/lib/orders/order-error-actions"
 import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
+import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
+import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
 import {
   appendSelectedPaymentMethodId,
   filterPaymentMethodsForAdvert,
@@ -583,6 +586,8 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
             confirmText: err.primaryCta,
             cancelText: err.secondaryCta,
             type: "warning",
+            hideCloseButton: err.primaryAction === OrderErrorAction.GoToMarkets,
+            preventOutsideClose: err.primaryAction === OrderErrorAction.GoToMarkets,
             onConfirm: () => dispatch(err.primaryAction, { orderId: existingOrderId }),
             onCancel: err.secondaryAction
               ? () => dispatch(err.secondaryAction!, { orderId: existingOrderId })
@@ -672,6 +677,20 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
               hideAlert()
               setShowAddPaymentPanel(false)
               router.push("/profile?tab=payment")
+            },
+          }),
+        )
+        return
+      }
+
+      if (error.errors?.[0]?.code === "PaymentMethodInvalidFieldValue") {
+        showAlert(
+          createPaymentMethodInvalidFieldValueAlertConfig(t, {
+            fieldValue: resolvePaymentMethodAccountFieldValue(fields, t),
+            onEdit: () => hideAlert(),
+            onCancel: () => {
+              hideAlert()
+              setShowAddPaymentPanel(false)
             },
           }),
         )

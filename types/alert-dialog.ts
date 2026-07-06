@@ -14,6 +14,8 @@ export interface AlertDialogConfig {
   onCancel?: () => void
   onClose?: () => void
   hideCloseButton?: boolean
+  /** When true, Escape key and outside-click cannot close the dialog — user must use a CTA button. */
+  preventOutsideClose?: boolean
   testId?: string
   confirmTestId?: string
   cancelTestId?: string

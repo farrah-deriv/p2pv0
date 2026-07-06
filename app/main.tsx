@@ -9,19 +9,22 @@ import Sidebar from "@/components/sidebar"
 import { WebSocketProvider } from "@/contexts/websocket-context"
 import * as AuthAPI from "@/services/api/api-auth"
 import { useUserDataStore } from "@/stores/user-data-store"
+import { useChatVisibilityStore } from "@/stores/chat-visibility-store"
 import { useOnboardingStatus } from "@/hooks/use-api-queries"
 import { cn, getLoginUrl } from "@/lib/utils"
 import { P2PAccessRemoved } from "@/components/p2p-access-removed"
 import { LoadingIndicator } from "@/components/loading-indicator"
 import { IntercomProvider } from "@/components/intercom-provider"
 import { P2PAnnouncementController } from "@/components/p2p-announcement"
-
+import { P2PBalanceWarning } from "@/components/p2p-balance-warning"
 import { P2PSystemMaintenanceBanner } from "@/components/p2p-system-maintenance"
 import { P2PMaintenanceController } from "@/components/p2p-maintenance-controller"
-
-
+import { useOnboardingGate } from "@/hooks/use-onboarding-gate"
+import { useP2PBalanceWarning } from "@/hooks/use-p2p-balance-warning"
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import { shouldShowP2PMaintenanceBanner } from "@/lib/p2p-maintenance-constants"
+import { shouldShowMobileFooterNav } from "@/lib/mobile-footer-nav"
+import { useWalletViewStore } from "@/stores/wallet-view-store"
 import "./globals.css"
 
 export default function Main({
@@ -43,12 +46,21 @@ export default function Main({
   const { setIsWalletAccount } = useUserDataStore()
   const [isReady, setIsReady] = useState(false)
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
+  const { isChatVisible } = useChatVisibilityStore()
+  const { isTransactionListVisible } = useWalletViewStore()
+  const showMobileFooterNav = shouldShowMobileFooterNav(pathname, isChatVisible, isTransactionListVisible)
   const { data: onboardingStatus, isLoading: isOnboardingLoading } = useOnboardingStatus(
     isAuthenticated && !isMaintenanceActive,
   )
 
   const isDisabled = userData?.status === "disabled"
 
+  const balanceAmount = userData?.balances?.amount
+  const isV2User = userData?.signup === "v2"
+  const { isFullyOnboarded } = useOnboardingGate()
+  const { shouldShow: shouldShowBalanceWarning } = useP2PBalanceWarning(balanceAmount, isFullyOnboarded, isV2User)
+  const isMarketsPage = pathname === "/"
+  const showBalanceWarning = isMarketsPage && shouldShowBalanceWarning && !isMaintenanceActive
   const showMaintenanceBanner =
     isMaintenanceActive && shouldShowP2PMaintenanceBanner(pathname)
 
@@ -235,12 +247,20 @@ export default function Main({
       </div>
       <div className="md:hidden flex flex-col h-dvh overflow-hidden">
         {showMaintenanceBanner && <P2PSystemMaintenanceBanner embeddedInDarkHeader />}
+        {showBalanceWarning && <P2PBalanceWarning />}
         {isHeaderVisible && !pathname.startsWith("/profile") && <Header className="flex-shrink-0" />}
-        <main className={cn("flex-1", pathname.startsWith("/profile") ? "overflow-y-auto" : "overflow-hidden pb-20")}>
+        <main
+          className={cn(
+            "flex flex-col flex-1 min-h-0",
+            pathname.startsWith("/profile") ? "overflow-y-auto" : "overflow-hidden pb-20",
+          )}
+        >
           {isHeaderVisible && pathname.startsWith("/profile") && <Header />}
           {children}
         </main>
-        {!pathname.startsWith("/profile") && <MobileFooterNav className="flex-shrink-0" />}
+        {showMobileFooterNav && !pathname.startsWith("/profile") && (
+          <MobileFooterNav className="flex-shrink-0" />
+        )}
       </div>
     </WebSocketProvider>
   )

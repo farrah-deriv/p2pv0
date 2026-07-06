@@ -37,6 +37,7 @@ export interface Order {
   rating: number
   counterparty_name?: string
   disputed_at?: string
+  has_buyer_submitted_pot?: boolean
 }
 
 export interface OrderFilters {

@@ -215,8 +215,8 @@
     "errorPromotionalContent": "不允许出现促销内容和广告。",
     "errorSensitiveDataRequests": "您的消息需要额外审核。请稍候，我们正在为您联系专家。",
     "fileTooLargeDescription": "附件不得超过 5 MB。压缩文件或发送较小的文件。",
-    "errorAttachmentRejected": "附件未发送。请仅分享与此订单相关的消息。",
-    "errorAttachmentLimitReached": "附件未发送：您已达到附件的最大数量。",
+    "errorAttachmentRejected": "无法发送该文件。使用不同的文件。",
+    "errorAttachmentLimitReached": "您已达到最大附件数。",
     "fileTooLargeTitle": "文件太大",
     "justNow": "刚才",
     "messageNotSent": "消息未发送：{error}",
@@ -227,7 +227,17 @@
     "seenHoursAgo": "{hours} 小时{plural} 前",
     "seenMinutesAgo": "{minutes} 分钟{plural} 前",
     "send": "发送",
-    "typeMessage": "输入消息..."
+    "typeMessage": "输入消息...",
+    "oneItemAtATimeTitle": "一次一件物品",
+    "oneItemAtATimeDescription": "单独发送您的消息和附件，而不是在同一请求中发送。",
+    "imageBlocked": "图片被屏蔽",
+    "attachmentsRemaining": "剩余附件：{count}",
+    "attachmentUploadRequiresPot": "请先完成付款并上传转账凭证，然后再上传其他附件。",
+    "pendingPotSubmissionTitle": "确认您的付款",
+    "pendingPotSubmissionDescription": "请先完成此订单付款并上传转账凭证，然后再上传其他附件。",
+    "submitDocument": "上传转账凭证",
+    "later": "稍后",
+    "attachFile": "附加文件"
   },
   "common": {
     "add": "添加",
@@ -703,7 +713,12 @@
     "withdrawalLimitDescription": "验证您的帐户以进行更多提款。",
     "withdrawalLimitTitle": "提款限额已达",
     "youPay": "你付钱",
-    "youReceive": "您收到"
+    "youReceive": "您收到",
+    "browseAds": "浏览广告",
+    "notEligibleYetTitle": "暂不符合条件",
+    "notEligibleYetMessage": "您的账户活跃时间不足，无法与该卖家交易。请浏览其他广告继续。",
+    "completionRateTooLowTitle": "完成率过低",
+    "completionRateTooLowMessage": "您的完成率过低，无法与该卖家交易。请完成其他订单以提高完成率。"
   },
   "orderDetails": {
     "amount": "金额",
@@ -761,13 +776,22 @@
     "checkPreviousOrders": "检查之前的订单",
     "confirm": "确认",
     "confirmPayment": "确认您的付款",
+    "fraudWarningStart": "金额、收件人或日期不匹配的将被拒绝。如果您的收据是伪造的或经过编辑的，您的帐户将被",
+    "fraudWarningBold": "永久关闭",
+    "fraudWarningEnd": "并将资金返还给买方。",
+    "amountLabel": "数量",
+    "recipientLabel": "接受者",
+    "receiptMustShow": "您的收据必须显示",
+    "checklistRecipient": "接受者：",
+    "checklistAmount": "确切金额：",
+    "checklistDate": "最近一小时内的交易日期",
+    "checklistSender": "发件人姓名与您验证的 ID 相符",
+    "confirmGenuineCheckbox": "我确认这笔付款是真实的。如果我提交虚假证明，我的帐户将被永久关闭。",
     "confirmPaymentReceived": "确认收到付款",
     "date": "日期",
     "didntReceiveCode": "没有收到代码？",
-    "ensurePayment": "确保您已将 {amount} {currency} 支付给 {name} 并上传收据作为付款证明。",
     "fileTooLarge": "文件必须为 5MB 或更小。",
     "fileTypes": "JPEG、JPG、PNG、PDF（最大 5MB）",
-    "fraudWarning": "提供欺诈性文件将导致永久禁令。",
     "gotIt": "明白了",
     "id": "身份证号",
     "incorrectCode": "代码不正确。您还剩 {attempts} 尝试 {plural} 。",
@@ -801,7 +825,8 @@
     "attachmentRejected": "此文件无法发送。请使用其他文件。",
     "attachmentRejectedTitle": "文件不被接受",
     "attachmentLimitReachedTitle": "已达到附件限制",
-    "attachmentLimitReached": "您已达到最大附件数量。"
+    "attachmentLimitReached": "您已达到最大附件数量。",
+    "removeFile": "移除文件"
   },
   "p2pAccess": {
     "description": "您无法再使用您的 Deriv P2P 帐户。检查您的电子邮件以了解更多详细信息。如需支持，请通过实时聊天联系我们。",
@@ -866,7 +891,11 @@
     "selectUpTo3": "最多选择 3 个",
     "sellerAccepts": "卖家接受",
     "title": "付款方式",
-    "unableToAdd": "无法添加付款方式"
+    "unableToAdd": "无法添加付款方式",
+    "invalidFieldValueTitle": "{fieldValue}无效",
+    "invalidFieldValueDescription": "请输入有效的{fieldValue}以添加此支付方式。",
+    "editDetails": "编辑详情",
+    "fieldFallback": "帐号"
   },
   "paymentMethodFields": {
     "account": "账户",

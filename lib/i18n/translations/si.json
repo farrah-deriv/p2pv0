@@ -215,8 +215,8 @@
     "errorPromotionalContent": "ප්‍රවර්ධන අන්තර්ගතය සහ වෙළඳ දැන්වීම් වලට ඉඩ නොදේ.",
     "errorSensitiveDataRequests": "ඔබේ පණිවිඩයට අමතර සමාලෝචනයක් අවශ්‍යයි. අපි ඔබව විශේෂඥයෙකු සමඟ සම්බන්ධ කරන තෙක් කරුණාකර රැඳී සිටින්න.",
     "fileTooLargeDescription": "ඇමුණුම් 5 MB හෝ ඊට අඩු විය යුතුය. ගොනුව සම්පීඩනය කරන්න හෝ කුඩා එකක් යවන්න.",
-    "errorAttachmentRejected": "ඇමුණුම යවා නැත. කරුණාකර මෙම ඇණවුමට අදාළ පණිවිඩ පමණක් බෙදා ගන්න.",
-    "errorAttachmentLimitReached": "ඇමුණුම යවා නැත: ඔබ උපරිම ඇමුණුම් සීමාවට ළඟා වී ඇත.",
+    "errorAttachmentRejected": "මෙම ගොනුව යැවීමට නොහැකි විය. වෙනස් ගොනුවක් භාවිතා කරන්න.",
+    "errorAttachmentLimitReached": "ඔබ ඇමුණුම් උපරිම සංඛ්‍යාවට ළඟා වී ඇත.",
     "fileTooLargeTitle": "ගොනුව ඉතා විශාලයි",
     "justNow": "දැන්",
     "messageNotSent": "පණිවිඩය යවා නැත: {error}",
@@ -227,7 +227,17 @@
     "seenHoursAgo": "{hours} පැය{plural} පෙර",
     "seenMinutesAgo": "{minutes} විනාඩි{plural} පෙර",
     "send": "යවන්න",
-    "typeMessage": "පණිවිඩයක් ටයිප් කරන්න..."
+    "typeMessage": "පණිවිඩයක් ටයිප් කරන්න...",
+    "oneItemAtATimeTitle": "වරකට එක් අයිතමයක්",
+    "oneItemAtATimeDescription": "ඔබගේ පණිවිඩය සහ ඇමුණුම එකම ඉල්ලීමකින් නොව වෙන වෙනම යවන්න.",
+    "imageBlocked": "රූපය අවහිර කර ඇත",
+    "attachmentsRemaining": "ඇමුණුම් ඉතිරිව ඇත: {count}",
+    "attachmentUploadRequiresPot": "වෙනත් ඇමුණුම් උඩුගත කිරීමට පෙර, මෙම ඇණවුම සඳහා ගෙවීම් කර හා මාරුවේ සාක්ෂිය උඩුගත කරන්න.",
+    "pendingPotSubmissionTitle": "ඔබේ ගෙවීම තහවුරු කරන්න",
+    "pendingPotSubmissionDescription": "වෙනත් ඇමුණුම් උඩුගත කිරීමට පෙර, මෙම ඇණවුම සඳහා පළමුව ගෙවීම් කර හා මාරුවේ සාක්ෂිය උඩුගත කරන්න.",
+    "submitDocument": "මාරුවේ සාක්ෂිය උඩුගත කරන්න",
+    "later": "පසුව",
+    "attachFile": "ගොනුව ඇමුණුම"
   },
   "common": {
     "add": "එකතු කරන්න",
@@ -703,7 +713,12 @@
     "withdrawalLimitDescription": "තවත් මුදල් ආපසු ගැනීම් කිරීමට ඔබගේ ගිණුම තහවුරු කරන්න.",
     "withdrawalLimitTitle": "ආපසු ගැනීමේ සීමාව ළඟා විය",
     "youPay": "ඔබ ගෙවන්න",
-    "youReceive": "ඔබට ලැබේ"
+    "youReceive": "ඔබට ලැබේ",
+    "browseAds": "දැන්වීම් බලන්න",
+    "notEligibleYetTitle": "තවම සුදුසු නැත",
+    "notEligibleYetMessage": "මෙම විකුණුම්කරු සමඟ වෙළඳාම් කිරීමට ඔබගේ ගිණුම ප්‍රමාණවත් කාලයක් සක්‍රිය නොවී ඇත. ඉදිරියට යාමට වෙනත් දැන්වීම් බලන්න.",
+    "completionRateTooLowTitle": "සම්පූර්ණ කිරීමේ අනුපාතය ඉතා අඩුය",
+    "completionRateTooLowMessage": "මෙම විකුණුම්කරු සමඟ වෙළඳාම් කිරීමට ඔබගේ සම්පූර්ණ කිරීමේ අනුපාතය ඉතා අඩුය. ඔබගේ අනුපාතය වැඩි කිරීමට වෙනත් ඇණවුම් සම්පූර්ණ කරන්න."
   },
   "orderDetails": {
     "amount": "මුදල",
@@ -761,13 +776,22 @@
     "checkPreviousOrders": "පෙර ඇණවුම් පරීක්ෂා කරන්න",
     "confirm": "තහවුරු කරන්න",
     "confirmPayment": "ඔබේ ගෙවීම තහවුරු කරන්න",
+    "fraudWarningStart": "මුදල, ලබන්නා හෝ දිනයෙහි නොගැලපීම් ප්‍රතික්ෂේප කරනු ලැබේ. ඔබගේ රිසිට්පත ව්‍යාජ හෝ සංස්කරණය කර ඇත්නම්, ඔබගේ ගිණුම වනු ඇත",
+    "fraudWarningBold": "ස්ථිරව වසා ඇත",
+    "fraudWarningEnd": "සහ අරමුදල් ගැනුම්කරු වෙත ආපසු.",
+    "amountLabel": "මුදල",
+    "recipientLabel": "ලබන්නා",
+    "receiptMustShow": "ඔබගේ රිසිට්පත පෙන්විය යුතුය",
+    "checklistRecipient": "ලබන්නා:",
+    "checklistAmount": "නියම මුදල:",
+    "checklistDate": "අවසාන පැය තුළ ගනුදෙනු දිනය",
+    "checklistSender": "යවන්නාගේ නම ඔබගේ සත්‍යාපිත හැඳුනුම්පතට ගැලපේ",
+    "confirmGenuineCheckbox": "මෙම ගෙවීම සත්‍ය බව මම තහවුරු කරමි. මම බොරු සාක්ෂි ඉදිරිපත් කළහොත්, මගේ ගිණුම ස්ථිරවම වසා දමනු ඇත.",
     "confirmPaymentReceived": "ලැබුණු ගෙවීම තහවුරු කරන්න",
     "date": "දිනය",
     "didntReceiveCode": "කේතය ලැබුණේ නැද්ද?",
-    "ensurePayment": "ඔබ {amount} {currency} සිට {name} දක්වා ගෙවා ඇති බව සහතික කර ගෙන ගෙවීමේ සාක්ෂියක් ලෙස රිසිට්පත උඩුගත කරන්න.",
     "fileTooLarge": "ගොනුව 5MB හෝ කුඩා විය යුතුය.",
     "fileTypes": "JPEG, JPG, PNG, PDF (5MB දක්වා)",
-    "fraudWarning": "වංචනික ලේඛන සැපයීම ස්ථිර තහනමකට තුඩු දෙනු ඇත.",
     "gotIt": "තේරුනා",
     "id": "හැඳුනුම්පත",
     "incorrectCode": "වැරදි කේතය. ඔබට {attempts} උත්සාහයක්{plural} ඉතිරිව ඇත.",
@@ -801,7 +825,8 @@
     "attachmentRejected": "මෙම ගොනුව යැවිය නොහැකි විය. වෙනත් ගොනුවක් භාවිතා කරන්න.",
     "attachmentRejectedTitle": "ගොනුව පිළිගනු නොලැබේ",
     "attachmentLimitReachedTitle": "උපග්‍රන්ථ සීමාවට ළඟා විය",
-    "attachmentLimitReached": "ඔබ උපරිම උපග්‍රන්ථ සංඛ්‍යාවට ළඟා වී ඇත."
+    "attachmentLimitReached": "ඔබ උපරිම උපග්‍රන්ථ සංඛ්‍යාවට ළඟා වී ඇත.",
+    "removeFile": "ගොනුව ඉවත් කරන්න"
   },
   "p2pAccess": {
     "description": "ඔබට තවදුරටත් ඔබේ Deriv P2P ගිණුම භාවිත කළ නොහැක. වැඩි විස්තර සඳහා ඔබගේ විද්‍යුත් තැපෑල පරීක්ෂා කරන්න. සහාය සඳහා, සජීවී කතාබස් හරහා අප හා සම්බන්ධ වන්න.",
@@ -866,7 +891,11 @@
     "selectUpTo3": "3 දක්වා තෝරන්න",
     "sellerAccepts": "විකුණන්නා පිළිගනී",
     "title": "ගෙවීම් ක්රමය",
-    "unableToAdd": "ගෙවීමේ ක්‍රමය එක් කිරීමට නොහැක"
+    "unableToAdd": "ගෙවීමේ ක්‍රමය එක් කිරීමට නොහැක",
+    "invalidFieldValueTitle": "වලංගු නොවන {fieldValue}",
+    "invalidFieldValueDescription": "මෙම ගෙවීම් ක්‍රමය එක් කිරීමට වලංගු {fieldValue} එකක් ඇතුළත් කරන්න.",
+    "editDetails": "විස්තර සංස්කරණය කරන්න",
+    "fieldFallback": "ගිණුම් අංකය"
   },
   "paymentMethodFields": {
     "account": "ගිණුම",

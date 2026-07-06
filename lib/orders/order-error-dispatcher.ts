@@ -64,6 +64,11 @@ export function createOrderErrorDispatcher(deps: OrderErrorDispatcherDeps) {
         track("ek_complete_assessment_markets_advert_sheet")
         window.location.href = getHomeUrl(isV1Signup, "financialAssessment")
         return
+      case OrderErrorAction.GoToMarkets:
+        track("ek_go_to_markets_p2p_disabled_error")
+        handleClose()
+        router.push("/")
+        return
     }
   }
 }

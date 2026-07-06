@@ -215,8 +215,8 @@
     "errorPromotionalContent": "Maudhui ya tangazo na matangazo hayaruhusiwi.",
     "errorSensitiveDataRequests": "Ujumbe wako unahitaji ukaguzi wa ziada. Tafadhali subiri tunapokunganisha na mtaalamu.",
     "fileTooLargeDescription": "Viambatisho lazima viwe 5 MB au chini. Bana faili au tuma ndogo zaidi.",
-    "errorAttachmentRejected": "Kiambatisho hakikutumwa. Tafadhali shiriki ujumbe unaohusiana na agizo hili pekee.",
-    "errorAttachmentLimitReached": "Kiambatisho hakikutumwa: umefika kikomo cha juu cha viambatisho.",
+    "errorAttachmentRejected": "Faili hii haikuweza kutumwa. Tumia faili tofauti.",
+    "errorAttachmentLimitReached": "Umefikia idadi ya juu zaidi ya viambatisho.",
     "fileTooLargeTitle": "Faili ni kubwa sana",
     "justNow": "tu sasa",
     "messageNotSent": "Ujumbe haujatumwa: {error}",
@@ -227,7 +227,17 @@
     "seenHoursAgo": "{hours} saa{plural} iliyopita",
     "seenMinutesAgo": "{minutes} dakika{plural} iliyopita",
     "send": "Tuma",
-    "typeMessage": "Andika ujumbe..."
+    "typeMessage": "Andika ujumbe...",
+    "oneItemAtATimeTitle": "Kipengee kimoja kwa wakati mmoja",
+    "oneItemAtATimeDescription": "Tuma ujumbe wako na kiambatisho kando, si kwa ombi moja.",
+    "imageBlocked": "Picha imezuiwa",
+    "attachmentsRemaining": "Viambatisho vilivyosalia: {count}",
+    "attachmentUploadRequiresPot": "Lipa agizo hili na pakia uthibitisho wa uhamisho kabla ya kupakia viambatisho vingine.",
+    "pendingPotSubmissionTitle": "Thibitisha malipo yako",
+    "pendingPotSubmissionDescription": "Lipa agizo hili kwanza na pakia uthibitisho wa uhamisho kabla ya viambatisho vingine.",
+    "submitDocument": "Pakia uthibitisho wa uhamisho",
+    "later": "Baadaye",
+    "attachFile": "Ambatisha faili"
   },
   "common": {
     "add": "Ongeza",
@@ -711,7 +721,12 @@
     "withdrawalLimitDescription": "Thibitisha akaunti yako ili kufanya uondoaji zaidi.",
     "withdrawalLimitTitle": "Kikomo cha uondoaji kimefikiwa",
     "youPay": "Ulalipa",
-    "youReceive": "Utapokea"
+    "youReceive": "Utapokea",
+    "browseAds": "Vinjari matangazo",
+    "notEligibleYetTitle": "Bado hustahiki",
+    "notEligibleYetMessage": "Akaunti yako haijakuwa hai kwa muda wa kutosha kufanya biashara na muuzaji huyu. Vinjari matangazo mengine ili kuendelea.",
+    "completionRateTooLowTitle": "Kiwango cha ukamilifu ni cha chini sana",
+    "completionRateTooLowMessage": "Kiwango chako cha ukamilifu ni cha chini sana kufanya biashara na muuzaji huyu. Kamilisha maagizo mengine ili kuongeza kiwango chako."
   },
   "orderDetails": {
     "amount": "Kiasi",
@@ -769,13 +784,22 @@
     "checkPreviousOrders": "Angalia maagizo ya awali",
     "confirm": "Thibitisha",
     "confirmPayment": "Thibitisha malipo yako",
+    "fraudWarningStart": "Kiasi, mpokeaji au tarehe zisizolingana zitakataliwa. Ikiwa risiti yako ni ghushi au imehaririwa, akaunti yako itakuwa",
+    "fraudWarningBold": "imefungwa kabisa",
+    "fraudWarningEnd": "na fedha zilirudi kwa mnunuzi.",
+    "amountLabel": "Kiasi",
+    "recipientLabel": "Mpokeaji",
+    "receiptMustShow": "Risiti yako lazima ionyeshe",
+    "checklistRecipient": "Mpokeaji:",
+    "checklistAmount": "Kiasi halisi:",
+    "checklistDate": "Tarehe ya muamala ndani ya saa iliyopita",
+    "checklistSender": "Jina la mtumaji linalingana na kitambulisho chako kilichothibitishwa",
+    "confirmGenuineCheckbox": "I confirm this payment is genuine. Nikiwasilisha uthibitisho wa uwongo, akaunti yangu itafungwa kabisa.",
     "confirmPaymentReceived": "Thibitisha malipo yaliyopokelewa",
     "date": "Tarehe",
     "didntReceiveCode": "Hukupokea nambari ya kuthibitisha?",
-    "ensurePayment": "Hakikisha umelipa {amount} {currency} kwa {name} na upakie risiti kama uthibitisho wa malipo.",
     "fileTooLarge": "Faili lazima iwe 5MB au ndogo zaidi.",
     "fileTypes": "JPEG, JPG, PNG, PDF (hadi 5MB)",
-    "fraudWarning": "Kutoa hati za ulaghai kutasababisha marufuku ya kudumu.",
     "gotIt": "Nimepata",
     "id": "ID",
     "incorrectCode": "Msimbo usio sahihi. Umebakisha {attempts} jaribio{plural}.",
@@ -809,7 +833,8 @@
     "attachmentRejected": "Faili hii haikuweza kutumwa. Tumia faili tofauti.",
     "attachmentRejectedTitle": "Faili haikukubaliwa",
     "attachmentLimitReachedTitle": "Kikomo cha viambatisho kimefikiwa",
-    "attachmentLimitReached": "Umefika idadi ya juu zaidi ya viambatisho."
+    "attachmentLimitReached": "Umefika idadi ya juu zaidi ya viambatisho.",
+    "removeFile": "Ondoa faili"
   },
   "p2pAccess": {
     "description": "Huwezi tena kutumia Deriv P2P akaunti yako. Angalia barua pepe yako kwa maelezo zaidi. Kwa usaidizi, wasiliana nasi kupitia gumzo la moja kwa moja.",
@@ -874,7 +899,11 @@
     "selectUpTo3": "Chagua hadi 3",
     "sellerAccepts": "Muuzaji anakubali",
     "title": "Njia ya kulipa",
-    "unableToAdd": "Haiwezi kuongeza njia ya kulipa"
+    "unableToAdd": "Haiwezi kuongeza njia ya kulipa",
+    "invalidFieldValueTitle": "{fieldValue} si sahihi",
+    "invalidFieldValueDescription": "Weka {fieldValue} sahihi ili kuongeza njia hii ya malipo.",
+    "editDetails": "Hariri maelezo",
+    "fieldFallback": "namba ya akaunti"
   },
   "paymentMethodFields": {
     "account": "Akaunti",

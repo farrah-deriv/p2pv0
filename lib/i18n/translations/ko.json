@@ -215,8 +215,8 @@
     "errorPromotionalContent": "홍보 콘텐츠 및 광고는 허용되지 않습니다.",
     "errorSensitiveDataRequests": "메시지를 검토해야 합니다. 전문가와 연결될 때까지 기다려주세요.",
     "fileTooLargeDescription": "첨부 파일은 5MB 이하여야 합니다. 파일을 압축하거나 더 작은 파일을 보내세요.",
-    "errorAttachmentRejected": "첨부 파일이 전송되지 않았습니다. 이 주문과 관련된 메시지만 공유해 주세요.",
-    "errorAttachmentLimitReached": "첨부 파일이 전송되지 않았습니다: 최대 첨부 파일 수에 도달했습니다.",
+    "errorAttachmentRejected": "이 파일을 보낼 수 없습니다. 다른 파일을 사용하세요.",
+    "errorAttachmentLimitReached": "최대 첨부파일 수에 도달했습니다.",
     "fileTooLargeTitle": "파일이 너무 큽니다",
     "justNow": "방금 전",
     "messageNotSent": "메시지 전송 실패: {error}",
@@ -227,7 +227,17 @@
     "seenHoursAgo": "{hours}시간{plural} 전",
     "seenMinutesAgo": "{minutes}분{plural} 전",
     "send": "전송",
-    "typeMessage": "메시지를 입력하세요..."
+    "typeMessage": "메시지를 입력하세요...",
+    "oneItemAtATimeTitle": "한 번에 하나의 항목",
+    "oneItemAtATimeDescription": "동일한 요청이 아닌 메시지와 첨부 파일을 별도로 보내십시오.",
+    "imageBlocked": "이미지가 차단됨",
+    "attachmentsRemaining": "남은 첨부파일: {count}",
+    "attachmentUploadRequiresPot": "다른 첨부파일을 업로드하기 전에 주문 대금을 지불하고 이체 증명을 업로드하세요.",
+    "pendingPotSubmissionTitle": "결제 확인",
+    "pendingPotSubmissionDescription": "다른 첨부파일을 업로드하기 전에 먼저 주문 대금을 지불하고 이체 증명을 업로드하세요.",
+    "submitDocument": "이체 증명 업로드",
+    "later": "나중에",
+    "attachFile": "파일 첨부"
   },
   "common": {
     "add": "추가",
@@ -752,7 +762,12 @@
     "withdrawalLimitDescription": "더 많은 출금을 위해 계정을 인증하세요.",
     "withdrawalLimitTitle": "출금 한도 초과",
     "youPay": "지불 금액",
-    "youReceive": "받는 금액"
+    "youReceive": "받는 금액",
+    "browseAds": "광고 둘러보기",
+    "notEligibleYetTitle": "아직 자격 없음",
+    "notEligibleYetMessage": "이 판매자와 거래하기에는 계정 활동 기간이 충분하지 않습니다. 다른 광고를 둘러보세요.",
+    "completionRateTooLowTitle": "완료율이 너무 낮음",
+    "completionRateTooLowMessage": "이 판매자와 거래하기에는 완료율이 너무 낮습니다. 다른 주문을 완료해 완료율을 높이세요."
   },
   "orderDetails": {
     "amount": "금액",
@@ -810,13 +825,22 @@
     "checkPreviousOrders": "이전 주문 확인",
     "confirm": "확인",
     "confirmPayment": "결제 확인",
+    "fraudWarningStart": "금액, 수령인, 날짜가 일치하지 않는 경우 거부됩니다. 영수증이 위조되었거나 수정된 ​​경우 귀하의 계정은",
+    "fraudWarningBold": "영구 폐쇄됨",
+    "fraudWarningEnd": "그리고 자금은 구매자에게 반환됩니다.",
+    "amountLabel": "양",
+    "recipientLabel": "받는 사람",
+    "receiptMustShow": "영수증이 표시되어야 합니다.",
+    "checklistRecipient": "받는 사람:",
+    "checklistAmount": "정확한 금액:",
+    "checklistDate": "지난 1시간 이내의 거래 날짜",
+    "checklistSender": "보낸 사람 이름이 확인된 ID와 일치합니다.",
+    "confirmGenuineCheckbox": "이 결제가 진짜임을 확인합니다. 허위 증거를 제출하면 내 계정이 영구적으로 폐쇄됩니다.",
     "confirmPaymentReceived": "결제 완료 확인",
     "date": "날짜",
     "didntReceiveCode": "코드를 받지 못하셨나요?",
-    "ensurePayment": "{amount} {currency}을(를) {name}에 지불했는지 확인하고 지불 증거로 영수증을 업로드하세요.",
     "fileTooLarge": "파일은 5MB 이하여야 합니다.",
     "fileTypes": "JPEG, JPG, PNG, PDF(최대 5MB)",
-    "fraudWarning": "허위 서류를 제출할 경우 영구 이용 정지 조치가 취해집니다.",
     "gotIt": "확인했습니다",
     "id": "ID",
     "incorrectCode": "코드가 잘못되었습니다. {attempts} 시도{plural} 남았습니다.",
@@ -850,7 +874,8 @@
     "attachmentRejected": "이 파일을 보낼 수 없습니다. 다른 파일을 사용하세요.",
     "attachmentRejectedTitle": "파일이 허용되지 않음",
     "attachmentLimitReachedTitle": "첨부 파일 한도 도달",
-    "attachmentLimitReached": "최대 첨부 파일 수에 도달했습니다."
+    "attachmentLimitReached": "최대 첨부 파일 수에 도달했습니다.",
+    "removeFile": "파일 제거"
   },
   "p2pAccess": {
     "description": "더 이상 Deriv P2P 계정을 사용할 수 없습니다. 자세한 내용은 이메일을 확인하세요. 지원을 받으려면 실시간 채팅을 통해 문의하세요.",
@@ -915,7 +940,11 @@
     "selectUpTo3": "최대 3개 선택",
     "sellerAccepts": "판매자가 수락하는 방법",
     "title": "결제 방법",
-    "unableToAdd": "결제 방법을 추가할 수 없습니다"
+    "unableToAdd": "결제 방법을 추가할 수 없습니다",
+    "invalidFieldValueTitle": "잘못된 {fieldValue}",
+    "invalidFieldValueDescription": "이 결제 수단을 추가하려면 유효한 {fieldValue}를 입력하세요.",
+    "editDetails": "세부 정보 수정",
+    "fieldFallback": "계좌번호"
   },
   "paymentMethodFields": {
     "account": "계좌",

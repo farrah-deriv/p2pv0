@@ -108,6 +108,17 @@ describe("mapOrderError", () => {
       expect(result.primaryAction).toBe(OrderErrorAction.ViewOtherAds)
     })
 
+    it.each(["OrderUserRegisteredDateInvalid", "OrderUserCompletionRateInvalid"])(
+      "maps %s to Browse ads + Go back",
+      (code) => {
+        const result = mapOrderError(code, t)
+        expect(result.primaryAction).toBe(OrderErrorAction.ViewOtherAds)
+        expect(result.primaryCta).toBe("order.browseAds")
+        expect(result.secondaryAction).toBe(OrderErrorAction.GoBack)
+        expect(result.secondaryCta).toBe("order.goBack")
+      },
+    )
+
     it("maps OrderAdvertiserBlocked secondary to ManageBlocked", () => {
       const result = mapOrderError("OrderAdvertiserBlocked", t)
       expect(result.secondaryAction).toBe(OrderErrorAction.ManageBlocked)

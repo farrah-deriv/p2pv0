@@ -220,8 +220,8 @@
     "errorPromotionalContent": "Conteúdo promocional e anúncios não são permitidos.",
     "errorSensitiveDataRequests": "Sua mensagem requer revisão adicional. Por favor, aguarde enquanto conectamos você com um especialista.",
     "fileTooLargeDescription": "Os anexos devem ter 5 MB ou menos. Comprima o arquivo ou envie um menor.",
-    "errorAttachmentRejected": "Anexo não enviado. Por favor, partilhe apenas mensagens relevantes para esta encomenda.",
-    "errorAttachmentLimitReached": "Anexo não enviado: atingiu o número máximo de anexos.",
+    "errorAttachmentRejected": "Não foi possível enviar este arquivo. Use um arquivo diferente.",
+    "errorAttachmentLimitReached": "Você atingiu o número máximo de anexos.",
     "fileTooLargeTitle": "Arquivo muito grande",
     "justNow": "agora mesmo",
     "messageNotSent": "Mensagem não enviada: {error}",
@@ -232,7 +232,17 @@
     "seenHoursAgo": "{hours} hora{plural} atrás",
     "seenMinutesAgo": "{minutes} minuto{plural} atrás",
     "send": "Enviar",
-    "typeMessage": "Digite uma mensagem..."
+    "typeMessage": "Digite uma mensagem...",
+    "oneItemAtATimeTitle": "Um item de cada vez",
+    "oneItemAtATimeDescription": "Envie sua mensagem e anexo separadamente, não na mesma solicitação.",
+    "imageBlocked": "Imagem bloqueada",
+    "attachmentsRemaining": "Anexos restantes: {count}",
+    "attachmentUploadRequiresPot": "Pague este pedido e carregue o comprovativo de transferência antes de carregar outros anexos.",
+    "pendingPotSubmissionTitle": "Confirme seu pagamento",
+    "pendingPotSubmissionDescription": "Pague primeiro este pedido e carregue o comprovativo de transferência antes de outros anexos.",
+    "submitDocument": "Carregar comprovativo de transferência",
+    "later": "Mais tarde",
+    "attachFile": "Anexar arquivo"
   },
   "common": {
     "add": "Adicionar",
@@ -723,7 +733,12 @@
     "withdrawalLimitDescription": "Verifique sua conta para fazer mais saques.",
     "withdrawalLimitTitle": "Limite de saque atingido",
     "youPay": "Você paga",
-    "youReceive": "Você recebe"
+    "youReceive": "Você recebe",
+    "browseAds": "Explorar anúncios",
+    "notEligibleYetTitle": "Ainda não elegível",
+    "notEligibleYetMessage": "A sua conta não esteve ativa tempo suficiente para negociar com este vendedor. Explore outros anúncios para continuar.",
+    "completionRateTooLowTitle": "Taxa de conclusão demasiado baixa",
+    "completionRateTooLowMessage": "A sua taxa de conclusão é demasiado baixa para negociar com este vendedor. Conclua outras ordens para a aumentar."
   },
   "orderDetails": {
     "amount": "Valor",
@@ -781,13 +796,22 @@
     "checkPreviousOrders": "Verificar pedidos anteriores",
     "confirm": "Confirmar",
     "confirmPayment": "Confirme seu pagamento",
+    "fraudWarningStart": "Incompatibilidades de valor, destinatário ou data serão rejeitadas. Se o seu recibo for falso ou editado, sua conta será",
+    "fraudWarningBold": "permanentemente fechado",
+    "fraudWarningEnd": "e os fundos devolvidos ao comprador.",
+    "amountLabel": "Quantia",
+    "recipientLabel": "Destinatário",
+    "receiptMustShow": "Seu recibo deve mostrar",
+    "checklistRecipient": "Destinatário:",
+    "checklistAmount": "Quantidade exata:",
+    "checklistDate": "Data da transação na última hora",
+    "checklistSender": "O nome do remetente corresponde ao seu ID verificado",
+    "confirmGenuineCheckbox": "Confirmo que este pagamento é genuíno. Se eu enviar provas falsas, minha conta será encerrada permanentemente.",
     "confirmPaymentReceived": "Confirmar pagamento recebido",
     "date": "Data",
     "didntReceiveCode": "Não recebeu o código?",
-    "ensurePayment": "Certifique-se de ter pago {amount} {currency} para {name} e carregue o recibo como comprovante de pagamento.",
     "fileTooLarge": "O arquivo deve ter 5MB ou menos.",
     "fileTypes": "JPEG, JPG, PNG, PDF (até 5MB)",
-    "fraudWarning": "Fornecer documentos fraudulentos resultará em banimento permanente.",
     "gotIt": "Entendi",
     "id": "ID",
     "incorrectCode": "Código incorreto. Você ainda tem {attempts} tentativa{plural}.",
@@ -821,7 +845,8 @@
     "attachmentRejected": "Este arquivo não pôde ser enviado. Use um arquivo diferente.",
     "attachmentRejectedTitle": "Arquivo não aceito",
     "attachmentLimitReachedTitle": "Limite de anexos atingido",
-    "attachmentLimitReached": "Você atingiu o número máximo de anexos."
+    "attachmentLimitReached": "Você atingiu o número máximo de anexos.",
+    "removeFile": "Remover arquivo"
   },
   "p2pAccess": {
     "description": "Você não pode mais usar sua conta Deriv P2P. Verifique seu e-mail para mais detalhes. Para obter suporte, entre em contato conosco por chat ao vivo.",
@@ -886,7 +911,11 @@
     "selectUpTo3": "Selecione até 3",
     "sellerAccepts": "O vendedor aceita",
     "title": "Método de pagamento",
-    "unableToAdd": "Não foi possível adicionar método de pagamento"
+    "unableToAdd": "Não foi possível adicionar método de pagamento",
+    "invalidFieldValueTitle": "{fieldValue} inválido",
+    "invalidFieldValueDescription": "Introduza um {fieldValue} válido para adicionar este método de pagamento.",
+    "editDetails": "Editar detalhes",
+    "fieldFallback": "número da conta"
   },
   "paymentMethodFields": {
     "account": "Conta",

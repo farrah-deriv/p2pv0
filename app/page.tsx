@@ -666,7 +666,7 @@ export default function BuySellPage() {
             </div>
           </div>
         </div>
-        <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto pb-20 md:pb-4 scrollbar-hide px-3">
+        <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto pb-4 md:pb-4 scrollbar-hide px-3">
           {isMaintenanceActive ? (
             <div className="h-full">
               <EmptyState title={t("market.noAdsMaintenanceTitle")} route={null} />

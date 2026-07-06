@@ -251,8 +251,8 @@
     "errorPromotionalContent": "Nội dung quảng cáo và quảng bá không được phép.",
     "errorSensitiveDataRequests": "Tin nhắn của bạn cần được xem xét thêm. Vui lòng đợi trong khi chúng tôi kết nối bạn với chuyên gia.",
     "fileTooLargeDescription": "Tệp đính kèm phải là 5 MB hoặc nhỏ hơn. Nén tệp hoặc gửi tệp nhỏ hơn.",
-    "errorAttachmentRejected": "Tệp đính kèm không được gửi. Vui lòng chỉ chia sẻ các tin nhắn liên quan đến đơn hàng này.",
-    "errorAttachmentLimitReached": "Tệp đính kèm không được gửi: bạn đã đạt đến số lượng tệp đính kèm tối đa.",
+    "errorAttachmentRejected": "Không thể gửi tập tin này. Sử dụng một tập tin khác.",
+    "errorAttachmentLimitReached": "Bạn đã đạt đến số lượng tệp đính kèm tối đa.",
     "fileTooLargeTitle": "Tệp quá lớn",
     "justNow": "vừa xong",
     "messageNotSent": "Tin nhắn chưa được gửi: {error}",
@@ -263,7 +263,17 @@
     "seenHoursAgo": "{hours} giờ{plural} trước",
     "seenMinutesAgo": "{minutes} phút{plural} trước",
     "send": "Gửi",
-    "typeMessage": "Nhập tin nhắn..."
+    "typeMessage": "Nhập tin nhắn...",
+    "oneItemAtATimeTitle": "Một mục tại một thời điểm",
+    "oneItemAtATimeDescription": "Gửi tin nhắn và tệp đính kèm của bạn một cách riêng biệt, không theo cùng một yêu cầu.",
+    "imageBlocked": "Hình ảnh bị chặn",
+    "attachmentsRemaining": "Tệp đính kèm còn lại: {count}",
+    "attachmentUploadRequiresPot": "Hãy thanh toán đơn hàng và tải lên bằng chứng chuyển khoản trước khi tải lên tệp đính kèm khác.",
+    "pendingPotSubmissionTitle": "Xác nhận thanh toán của bạn",
+    "pendingPotSubmissionDescription": "Hãy thanh toán đơn hàng này trước và tải lên bằng chứng chuyển khoản trước các tệp đính kèm khác.",
+    "submitDocument": "Tải lên bằng chứng chuyển khoản",
+    "later": "Để sau",
+    "attachFile": "Đính kèm tệp"
   },
   "common": {
     "add": "Thêm",
@@ -747,7 +757,12 @@
     "withdrawalLimitTitle": "Đã đạt giới hạn rút tiền",
     "youPay": "Bạn thanh toán",
     "youReceive": "Bạn nhận được",
-    "youSend": "Bạn gửi"
+    "youSend": "Bạn gửi",
+    "browseAds": "Duyệt tin đăng",
+    "notEligibleYetTitle": "Chưa đủ điều kiện",
+    "notEligibleYetMessage": "Tài khoản của bạn chưa hoạt động đủ lâu để giao dịch với người bán này. Duyệt tin đăng khác để tiếp tục.",
+    "completionRateTooLowTitle": "Tỷ lệ hoàn thành quá thấp",
+    "completionRateTooLowMessage": "Tỷ lệ hoàn thành của bạn quá thấp để giao dịch với người bán này. Hoàn thành các lệnh khác để cải thiện tỷ lệ."
   },
   "orderDetails": {
     "amount": "Số tiền",
@@ -805,13 +820,22 @@
     "checkPreviousOrders": "Kiểm tra đơn hàng trước đó",
     "confirm": "Xác nhận",
     "confirmPayment": "Xác nhận thanh toán của bạn",
+    "fraudWarningStart": "Không khớp về số lượng, người nhận hoặc ngày sẽ bị từ chối. Nếu biên lai của bạn là giả hoặc bị chỉnh sửa, tài khoản của bạn sẽ bị",
+    "fraudWarningBold": "đóng cửa vĩnh viễn",
+    "fraudWarningEnd": "và tiền được trả lại cho người mua.",
+    "amountLabel": "Số lượng",
+    "recipientLabel": "Người nhận",
+    "receiptMustShow": "Biên nhận của bạn phải hiển thị",
+    "checklistRecipient": "Người nhận:",
+    "checklistAmount": "Số tiền chính xác:",
+    "checklistDate": "Ngày giao dịch trong vòng một giờ qua",
+    "checklistSender": "Tên người gửi khớp với ID đã xác minh của bạn",
+    "confirmGenuineCheckbox": "Tôi xác nhận khoản thanh toán này là có thật. Nếu tôi gửi bằng chứng sai, tài khoản của tôi sẽ bị đóng vĩnh viễn.",
     "confirmPaymentReceived": "Xác nhận đã nhận thanh toán",
     "date": "Ngày",
     "didntReceiveCode": "Không nhận được mã?",
-    "ensurePayment": "Đảm bảo bạn đã thanh toán {amount} {currency} cho {name} và tải lên biên lai làm bằng chứng thanh toán.",
     "fileTooLarge": "Tệp phải có kích thước 5MB hoặc nhỏ hơn.",
     "fileTypes": "JPEG, JPG, PNG, PDF (tối đa 5MB)",
-    "fraudWarning": "Cung cấp tài liệu giả mạo sẽ dẫn đến lệnh cấm vĩnh viễn.",
     "gotIt": "Đã hiểu",
     "id": "ID",
     "incorrectCode": "Mã không chính xác. Bạn còn {attempts} lần thử{plural}.",
@@ -845,7 +869,8 @@
     "attachmentRejected": "Không thể gửi tệp này. Hãy sử dụng tệp khác.",
     "attachmentRejectedTitle": "Tệp không được chấp nhận",
     "attachmentLimitReachedTitle": "Đã đạt giới hạn tệp đính kèm",
-    "attachmentLimitReached": "Bạn đã đạt đến số lượng tệp đính kèm tối đa."
+    "attachmentLimitReached": "Bạn đã đạt đến số lượng tệp đính kèm tối đa.",
+    "removeFile": "Xóa tệp"
   },
   "p2pAccess": {
     "description": "Bạn không thể sử dụng tài khoản Deriv P2P của mình nữa. Kiểm tra email của bạn để biết thêm chi tiết. Để được hỗ trợ, hãy liên hệ với chúng tôi qua trò chuyện trực tiếp.",
@@ -910,7 +935,11 @@
     "selectUpTo3": "Chọn tối đa 3",
     "sellerAccepts": "Người bán chấp nhận",
     "title": "Phương thức thanh toán",
-    "unableToAdd": "Không thể thêm phương thức thanh toán"
+    "unableToAdd": "Không thể thêm phương thức thanh toán",
+    "invalidFieldValueTitle": "{fieldValue} không hợp lệ",
+    "invalidFieldValueDescription": "Nhập {fieldValue} hợp lệ để thêm phương thức thanh toán này.",
+    "editDetails": "Chỉnh sửa chi tiết",
+    "fieldFallback": "số tài khoản"
   },
   "paymentMethodFields": {
     "account": "Tài khoản",

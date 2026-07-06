@@ -13,6 +13,8 @@ import { useAddPaymentMethod, useUserPaymentMethods, type PaymentMethodError } f
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useRouter } from "next/navigation"
 import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
+import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
+import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
 import { isPaymentMethodIdSelected, normalizePaymentMethodId } from "@/lib/payment-methods/payment-method-selection-utils"
 
 interface PaymentMethod {
@@ -65,6 +67,20 @@ const AdPaymentMethods = () => {
               hideAlert()
               setShowAddPaymentPanel(false)
               router.push("/profile?tab=payment")
+            },
+          }),
+        )
+        return
+      }
+
+      if (errorCode === "PaymentMethodInvalidFieldValue") {
+        showAlert(
+          createPaymentMethodInvalidFieldValueAlertConfig(t, {
+            fieldValue: resolvePaymentMethodAccountFieldValue(fields, t),
+            onEdit: () => hideAlert(),
+            onCancel: () => {
+              hideAlert()
+              setShowAddPaymentPanel(false)
             },
           }),
         )

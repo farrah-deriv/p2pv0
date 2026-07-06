@@ -23,6 +23,8 @@ import {
 } from "@/lib/rtl"
 import { useUserPaymentMethods, useUpdatePaymentMethod, useDeletePaymentMethod, type PaymentMethodError } from "@/hooks/use-api-queries"
 import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
+import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
+import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
 
 interface PaymentMethod {
   id: string
@@ -165,6 +167,20 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
         showAlert(
           createPaymentMethodDuplicateAlertConfig(t, {
             onManage: () => {
+              hideAlert()
+              setEditPanel({ show: false, paymentMethod: null })
+            },
+          }),
+        )
+        return
+      }
+
+      if (errorCode === "PaymentMethodInvalidFieldValue") {
+        showAlert(
+          createPaymentMethodInvalidFieldValueAlertConfig(t, {
+            fieldValue: resolvePaymentMethodAccountFieldValue(fields, t),
+            onEdit: () => hideAlert(),
+            onCancel: () => {
               hideAlert()
               setEditPanel({ show: false, paymentMethod: null })
             },

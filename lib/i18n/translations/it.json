@@ -216,8 +216,8 @@
     "errorPromotionalContent": "I contenuti promozionali e le pubblicità non sono consentiti.",
     "errorSensitiveDataRequests": "Il tuo messaggio richiede una revisione aggiuntiva. Per favore, attendi mentre ti mettiamo in contatto con uno specialista.",
     "fileTooLargeDescription": "Gli allegati devono essere di 5 MB o meno. Comprimi il file o invia uno più piccolo.",
-    "errorAttachmentRejected": "Allegato non inviato. Si prega di condividere solo i messaggi pertinenti a questo ordine.",
-    "errorAttachmentLimitReached": "Allegato non inviato: hai raggiunto il numero massimo di allegati.",
+    "errorAttachmentRejected": "Impossibile inviare questo file. Utilizza un file diverso.",
+    "errorAttachmentLimitReached": "Hai raggiunto il numero massimo di allegati.",
     "fileTooLargeTitle": "File troppo grande",
     "justNow": "proprio ora",
     "messageNotSent": "Messaggio non inviato: {error}",
@@ -228,7 +228,17 @@
     "seenHoursAgo": "{hours} or{plural} fa",
     "seenMinutesAgo": "{minutes} minut{plural} fa",
     "send": "Invia",
-    "typeMessage": "Scrivi un messaggio..."
+    "typeMessage": "Scrivi un messaggio...",
+    "oneItemAtATimeTitle": "Un elemento alla volta",
+    "oneItemAtATimeDescription": "Invia il messaggio e l'allegato separatamente, non nella stessa richiesta.",
+    "imageBlocked": "Immagine bloccata",
+    "attachmentsRemaining": "Allegati rimanenti: {count}",
+    "attachmentUploadRequiresPot": "Paga questo ordine e carica la prova del trasferimento prima di caricare altri allegati.",
+    "pendingPotSubmissionTitle": "Conferma il tuo pagamento",
+    "pendingPotSubmissionDescription": "Paga prima questo ordine e carica la prova del trasferimento prima degli altri allegati.",
+    "submitDocument": "Carica prova del trasferimento",
+    "later": "Più tardi",
+    "attachFile": "Allega file"
   },
   "common": {
     "add": "Aggiungi",
@@ -721,7 +731,12 @@
     "withdrawalLimitDescription": "Verifica il tuo account per effettuare ulteriori prelievi.",
     "withdrawalLimitTitle": "Limite di prelievo raggiunto",
     "youPay": "Paghi",
-    "youReceive": "Ricevi"
+    "youReceive": "Ricevi",
+    "browseAds": "Sfoglia annunci",
+    "notEligibleYetTitle": "Non ancora idoneo",
+    "notEligibleYetMessage": "Il tuo account non è stato attivo abbastanza a lungo per fare trading con questo venditore. Sfoglia altri annunci per continuare.",
+    "completionRateTooLowTitle": "Tasso di completamento troppo basso",
+    "completionRateTooLowMessage": "Il tuo tasso di completamento è troppo basso per fare trading con questo venditore. Completa altri ordini per migliorarlo."
   },
   "orderDetails": {
     "amount": "Importo",
@@ -779,13 +794,22 @@
     "checkPreviousOrders": "Controlla ordini precedenti",
     "confirm": "Conferma",
     "confirmPayment": "Conferma il tuo pagamento",
+    "fraudWarningStart": "Eventuali mancate corrispondenze nell'importo, nel destinatario o nella data verranno rifiutate. Se la tua ricevuta è falsa o modificata, il tuo account lo sarà",
+    "fraudWarningBold": "chiuso definitivamente",
+    "fraudWarningEnd": "e i fondi restituiti all'acquirente.",
+    "amountLabel": "Quantità",
+    "recipientLabel": "Destinatario",
+    "receiptMustShow": "La ricevuta deve essere visibile",
+    "checklistRecipient": "Destinatario:",
+    "checklistAmount": "Importo esatto:",
+    "checklistDate": "Data della transazione nell'ultima ora",
+    "checklistSender": "Il nome del mittente corrisponde al tuo ID verificato",
+    "confirmGenuineCheckbox": "Confermo che questo pagamento è autentico. Se invio prove false, il mio account verrà chiuso definitivamente.",
     "confirmPaymentReceived": "Conferma pagamento ricevuto",
     "date": "Data",
     "didntReceiveCode": "Non hai ricevuto il codice?",
-    "ensurePayment": "Assicurati di aver pagato {amount} {currency} a {name} e carica la ricevuta come prova di pagamento.",
     "fileTooLarge": "Il file deve essere di 5MB o meno.",
     "fileTypes": "JPEG, JPG, PNG, PDF (fino a 5MB)",
-    "fraudWarning": "Fornire documenti fraudolenti comporterà un ban permanente.",
     "gotIt": "Capito",
     "id": "ID",
     "incorrectCode": "Codice errato. Hai {attempts} tentativo{plural} rimasto.",
@@ -819,7 +843,8 @@
     "attachmentRejected": "Impossibile inviare questo file. Usa un file diverso.",
     "attachmentRejectedTitle": "File non accettato",
     "attachmentLimitReachedTitle": "Limite allegati raggiunto",
-    "attachmentLimitReached": "Hai raggiunto il numero massimo di allegati."
+    "attachmentLimitReached": "Hai raggiunto il numero massimo di allegati.",
+    "removeFile": "Rimuovi file"
   },
   "p2pAccess": {
     "description": "Non puoi più utilizzare il tuo account Deriv P2P. Controlla la tua email per maggiori dettagli. Per ricevere supporto, contattaci tramite live chat.",
@@ -884,7 +909,11 @@
     "selectUpTo3": "Seleziona fino a 3",
     "sellerAccepts": "Il venditore accetta",
     "title": "Metodo di pagamento",
-    "unableToAdd": "Impossibile aggiungere il metodo di pagamento"
+    "unableToAdd": "Impossibile aggiungere il metodo di pagamento",
+    "invalidFieldValueTitle": "{fieldValue} non valido",
+    "invalidFieldValueDescription": "Inserisci un {fieldValue} valido per aggiungere questo metodo di pagamento.",
+    "editDetails": "Modifica dettagli",
+    "fieldFallback": "numero di conto"
   },
   "paymentMethodFields": {
     "account": "Conto",

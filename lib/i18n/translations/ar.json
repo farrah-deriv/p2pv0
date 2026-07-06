@@ -215,8 +215,8 @@
     "errorPromotionalContent": "المحتوى الترويجي والإعلانات غير مسموح بها.",
     "errorSensitiveDataRequests": "رسالتك تتطلب مراجعة إضافية. يرجى الانتظار بينما نوصلك بأخصائي.",
     "fileTooLargeDescription": "يجب أن يكون حجم المرفقات 5 ميجابايت أو أقل. ضغط الملف أو أرسل ملفًا أصغر.",
-    "errorAttachmentRejected": "لم يتم إرسال المرفق. يرجى مشاركة الرسائل ذات الصلة بهذا الطلب فقط.",
-    "errorAttachmentLimitReached": "لم يتم إرسال المرفق: لقد وصلت إلى الحد الأقصى لعدد المرفقات.",
+    "errorAttachmentRejected": "لا يمكن إرسال هذا الملف. استخدم ملفًا مختلفًا.",
+    "errorAttachmentLimitReached": "لقد وصلت إلى الحد الأقصى لعدد المرفقات.",
     "fileTooLargeTitle": "الملف كبير جدًا",
     "justNow": "الآن",
     "messageNotSent": "لم يتم إرسال الرسالة: {error}",
@@ -227,7 +227,17 @@
     "seenHoursAgo": "منذ {hours} ساعة{plural}",
     "seenMinutesAgo": "منذ {minutes} دقيقة{plural}",
     "send": "أرسل",
-    "typeMessage": "اكتب رسالة..."
+    "typeMessage": "اكتب رسالة...",
+    "oneItemAtATimeTitle": "عنصر واحد في وقت واحد",
+    "oneItemAtATimeDescription": "أرسل رسالتك والمرفق بشكل منفصل، وليس في نفس الطلب.",
+    "imageBlocked": "تم حظر الصورة",
+    "attachmentsRemaining": "المرفقات المتبقية: {count}",
+    "attachmentUploadRequiresPot": "ادفع مقابل هذا الطلب وارفع إثبات التحويل قبل رفع مرفقات أخرى.",
+    "pendingPotSubmissionTitle": "تأكيد الدفع الخاص بك",
+    "pendingPotSubmissionDescription": "ادفع مقابل هذا الطلب أولاً وارفع إثبات التحويل قبل المرفقات الأخرى.",
+    "submitDocument": "رفع إثبات التحويل",
+    "later": "لاحقًا",
+    "attachFile": "إرفاق ملف"
   },
   "common": {
     "add": "أضف",
@@ -703,7 +713,12 @@
     "withdrawalLimitDescription": "قم بالتحقق من حسابك لإجراء المزيد من عمليات السحب.",
     "withdrawalLimitTitle": "تم الوصول إلى حد السحب",
     "youPay": "أنت تدفع",
-    "youReceive": "تتلقى"
+    "youReceive": "تتلقى",
+    "browseAds": "تصفح الإعلانات",
+    "notEligibleYetTitle": "غير مؤهل بعد",
+    "notEligibleYetMessage": "حسابك لم يكن نشطًا لفترة كافية للتداول مع هذا البائع. تصفح إعلانات أخرى للمتابعة.",
+    "completionRateTooLowTitle": "معدل الإكمال منخفض جدًا",
+    "completionRateTooLowMessage": "معدل إكمالك منخفض جدًا للتداول مع هذا البائع. أكمل طلبات أخرى لرفع معدلك."
   },
   "orderDetails": {
     "amount": "المبلغ",
@@ -761,13 +776,22 @@
     "checkPreviousOrders": "تحقق من الطلبات السابقة",
     "confirm": "تأكيد",
     "confirmPayment": "تأكيد الدفع الخاص بك",
+    "fraudWarningStart": "سيتم رفض عدم التطابق في المبلغ أو المستلم أو التاريخ. إذا كان إيصالك مزيفًا أو معدلاً، فسيكون حسابك كذلك",
+    "fraudWarningBold": "مغلقة نهائيا",
+    "fraudWarningEnd": "وعادت الأموال إلى المشتري.",
+    "amountLabel": "كمية",
+    "recipientLabel": "متلقي",
+    "receiptMustShow": "يجب أن يظهر إيصالك",
+    "checklistRecipient": "متلقي:",
+    "checklistAmount": "المبلغ المحدد:",
+    "checklistDate": "تاريخ المعاملة خلال الساعة الماضية",
+    "checklistSender": "يتطابق اسم المرسل مع هويتك التي تم التحقق منها",
+    "confirmGenuineCheckbox": "أؤكد أن هذه الدفعة حقيقية. إذا قمت بتقديم دليل كاذب، فسيتم إغلاق حسابي نهائيًا.",
     "confirmPaymentReceived": "تأكيد استلام الدفعة",
     "date": "التاريخ",
     "didntReceiveCode": "لم تتلق الرمز؟",
-    "ensurePayment": "تأكد من دفع {amount} {currency} لـ{name} وقم برفع الإيصال كإثبات للدفع.",
     "fileTooLarge": "يجب أن يكون حجم الملف 5 ميجابايت أو أصغر.",
     "fileTypes": "JPEG, JPG, PNG, PDF (حتى 5 ميغابايت)",
-    "fraudWarning": "سيؤدي تقديم المستندات الاحتيالية إلى فرض حظر دائم.",
     "gotIt": "حصلت عليه",
     "id": "المعرف",
     "incorrectCode": "رمز غير صحيح. لديك {attempts} محاولة{plural} متبقية.",
@@ -801,7 +825,8 @@
     "attachmentRejected": "تعذر إرسال هذا الملف. استخدم ملفًا مختلفًا.",
     "attachmentRejectedTitle": "الملف غير مقبول",
     "attachmentLimitReachedTitle": "تم الوصول إلى حد المرفقات",
-    "attachmentLimitReached": "لقد وصلت إلى الحد الأقصى لعدد المرفقات."
+    "attachmentLimitReached": "لقد وصلت إلى الحد الأقصى لعدد المرفقات.",
+    "removeFile": "إزالة الملف"
   },
   "p2pAccess": {
     "description": "لم يعد بإمكانك استخدام حساب Deriv P2P الخاص بك. تحقق من بريدك الإلكتروني لمزيد من التفاصيل. للحصول على الدعم، تواصل معنا عبر الدردشة المباشرة.",
@@ -866,7 +891,11 @@
     "selectUpTo3": "اختر ما يصل إلى 3",
     "sellerAccepts": "البائع يقبل",
     "title": "طريقة الدفع",
-    "unableToAdd": "تعذر إضافة طريقة الدفع"
+    "unableToAdd": "تعذر إضافة طريقة الدفع",
+    "invalidFieldValueTitle": "{fieldValue} غير صالح",
+    "invalidFieldValueDescription": "أدخل {fieldValue} صالحًا لإضافة طريقة الدفع هذه.",
+    "editDetails": "تعديل التفاصيل",
+    "fieldFallback": "رقم الحساب"
   },
   "paymentMethodFields": {
     "account": "الحساب",

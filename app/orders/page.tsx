@@ -32,6 +32,7 @@ import { createKycOnboardingAlertConfig } from "@/components/kyc-onboarding-shee
 import { useOrders } from "@/hooks/use-api-queries"
 import { useTrackers } from "@/analytics/useTrackers"
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
+import { shouldDisableChatAttachments } from "@/lib/orders/order-chat-gating"
 
 function TimeRemainingDisplay({ expiresAt, testId }: { expiresAt: string; testId?: string }) {
   const timeRemaining = useTimeRemaining(expiresAt)
@@ -254,20 +255,20 @@ export default function OrdersPage() {
         : selectedOrder?.advert?.user?.last_online_at
 
     return (
-      <div className="h-screen md:h-[calc(100vh-64px)] md:mb-[64px] flex flex-col">
-        <div className="flex-1 h-full">
-          <OrderChat
-            orderId={selectedOrder.id}
-            counterpartyName={counterpartyName}
-            counterpartyInitial={counterpartyInitial}
-            isClosed={isClosed}
-            counterpartyOnlineStatus={counterpartyOnlineStatus}
-            counterpartyLastOnlineAt={counterpartyLastOnlineAt}
-            onNavigateToOrderDetails={() => {
-              router.push(`/orders/${selectedOrder.id}`)
-            }}
-          />
-        </div>
+      <div className="flex flex-col flex-1 min-h-0 h-full w-full">
+        <OrderChat
+          orderId={selectedOrder.id}
+          order={selectedOrder}
+          counterpartyName={counterpartyName}
+          counterpartyInitial={counterpartyInitial}
+          isClosed={isClosed}
+          isAttachmentUploadDisabled={shouldDisableChatAttachments(selectedOrder, userId)}
+          counterpartyOnlineStatus={counterpartyOnlineStatus}
+          counterpartyLastOnlineAt={counterpartyLastOnlineAt}
+          onNavigateToOrderDetails={() => {
+            router.push(`/orders/${selectedOrder.id}`)
+          }}
+        />
       </div>
     )
   }
@@ -283,8 +284,8 @@ export default function OrdersPage() {
   return (
     <>
       {showKycPopup && <span data-testid="orders-alert-kyc" aria-hidden="true" className="hidden" />}
-      <div className="flex flex-col h-full md:h-screen px-3">
-        <div className="flex flex-col">
+      <div className="flex flex-col flex-1 min-h-0 h-full md:h-screen px-3 overflow-hidden">
+        <div className="flex flex-col flex-shrink-0">
           <div className="relative z-10 w-[calc(100%+24px)] md:w-full h-[80px] flex flex-row items-center gap-[16px] md:gap-[24px] bg-slate-1200 p-6 rounded-b-3xl md:rounded-3xl justify-between -m-3 mb-0 md:m-0">
             <Tabs value={activeTab} onValueChange={handleTabChange}>
               <TabsList className="w-full bg-transparent p-0 gap-4">
@@ -331,23 +332,22 @@ export default function OrdersPage() {
               <TemporaryBanAlert tempBanUntil={tempBanUntil} />
             </div>
           )}
-          <div className="my-4 self-end rtl:self-start">
-            {activeTab === "past" && !isLoading && hasPastOrders && (
-              <div data-testid="orders-select-date-filter">
-                <DateFilter
-                  value={dateFilter}
-                  customRange={customDateRange}
-                  onValueChange={(val) => {
-                    track("ek_date_filter_orders")
-                    setDateFilter(val)
-                  }}
-                  onCustomRangeChange={setCustomDateRange}
-                />
-              </div>
-            )}
-          </div>
+          {activeTab === "past" && !isLoading && hasPastOrders && (
+            <div className="my-4 self-end rtl:self-start" data-testid="orders-select-date-filter">
+              <DateFilter
+                value={dateFilter}
+                customRange={customDateRange}
+                onValueChange={(val) => {
+                  track("ek_date_filter_orders")
+                  setDateFilter(val)
+                }}
+                onCustomRangeChange={setCustomDateRange}
+              />
+            </div>
+          )}
         </div>
-        <div className="flex-1 pb-4 flex flex-col overflow-hidden">
+
+        <div ref={scrollContainer} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pt-4">
           {isMaintenanceActive ? (
             <div data-testid="orders-empty-state">
               {activeTab === "active" ? (
@@ -367,7 +367,7 @@ export default function OrdersPage() {
               )}
             </div>
           ) : (
-            <div ref={scrollContainer} className="flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-0">
+            <>
               <Table>
                 <TableHeader className="hidden border-b sticky top-0 bg-white shadow-sm">
                   <TableRow>
@@ -491,7 +491,7 @@ export default function OrdersPage() {
                   <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
                 </div>
               )}
-            </div>
+            </>
           )}
         </div>
         <RatingSidebar
