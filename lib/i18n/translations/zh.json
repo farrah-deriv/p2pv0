@@ -1215,6 +1215,8 @@
     "transactionType": "交易类型",
     "transactions": "交易",
     "transfer": "转乘",
+    "buyOrder": "购买订单",
+    "sellOrder": "出售订单",
     "transferAmount": "转账金额",
     "transferErrorDuring": "我们无法处理您的转帐。请再试一次。",
     "transferFee": "转让费",

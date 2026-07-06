@@ -9,29 +9,7 @@ import { formatAmountWithDecimals } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useTranslations } from "@/lib/i18n/use-translations"
-
-interface Transaction {
-  transaction_id: number
-  timestamp: string
-  metadata: {
-    brand_name: string
-    description: string
-    destination_client_id: string
-    destination_wallet_id: string
-    destination_wallet_type: string
-    is_reversible: string
-    payout_method: string
-    requester_platform: string
-    source_client_id: string
-    source_wallet_id: string
-    source_wallet_type: string
-    transaction_currency: string
-    transaction_gross_amount: string
-    transaction_net_amount: string
-    transaction_status: string
-    wallet_transaction_type: string
-  }
-}
+import type { Transaction } from "../types"
 
 interface TransactionsResponse {
   data: {
@@ -102,8 +80,11 @@ export default function TransactionsTab({
   }
 
   const getTransactionType = (transaction: Transaction) => {
-    const walletTransactionType = transaction.metadata.wallet_transaction_type
+    const orderType = transaction.statement_metadata?.order_type
+    if (orderType === "buy") return t("wallet.buyOrder")
+    if (orderType === "sell") return t("wallet.sellOrder")
 
+    const walletTransactionType = transaction.metadata.wallet_transaction_type
     if (walletTransactionType === "transfer_cashier_to_wallet") {
       return t("wallet.deposit")
     } else if (walletTransactionType === "transfer_cashier_from_wallet") {
@@ -111,6 +92,7 @@ export default function TransactionsTab({
     } else if (walletTransactionType === "transfer_between_wallets") {
       return t("wallet.transfer")
     }
+    return walletTransactionType.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
   }
 
   const getTransactionDisplay = (transaction: Transaction) => {
@@ -141,18 +123,27 @@ export default function TransactionsTab({
           type: t("wallet.withdraw"),
         }
       case t("wallet.transfer"):
+      case t("wallet.buyOrder"):
+      case t("wallet.sellOrder"):
         return {
           iconSrc: "/icons/transfer-icon.png",
           amountColor: getAmountColor(),
-          type: t("wallet.transfer"),
+          type: type,
         }
       default:
         return {
           iconSrc: "/icons/add-icon.png",
           amountColor: getAmountColor(),
-          type: t("wallet.deposit"),
+          type: type,
         }
     }
+  }
+
+  const getOrderCounterpartyText = (transaction: Transaction) => {
+    const { order_type, buyer_nickname, seller_nickname } = transaction.statement_metadata ?? {}
+    const buyer = buyer_nickname ?? ""
+    const seller = seller_nickname ?? ""
+    return order_type === "sell" ? `${seller} → ${buyer}` : `${buyer} → ${seller}`
   }
 
   const getTransferDestinationText = (transaction: Transaction) => {
@@ -241,6 +232,7 @@ export default function TransactionsTab({
                   {dateTransactions.map((transaction, index) => {
                     const display = getTransactionDisplay(transaction)
                     const isTransfer = display.type === t("wallet.transfer")
+                    const isOrder = display.type === t("wallet.buyOrder") || display.type === t("wallet.sellOrder")
 
                     return (
                       <div key={transaction.transaction_id} data-testid={`wallet-row-tx-${transaction.transaction_id}`} className="relative">
@@ -268,6 +260,11 @@ export default function TransactionsTab({
                               {isTransfer && (
                                 <div className="text-xs font-normal text-grayscale-text-muted">
                                   {getTransferDestinationText(transaction)}
+                                </div>
+                              )}
+                              {isOrder && (
+                                <div className="text-xs font-normal text-grayscale-text-muted">
+                                  {getOrderCounterpartyText(transaction)}
                                 </div>
                               )}
                             </div>

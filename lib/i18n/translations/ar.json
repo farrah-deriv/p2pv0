@@ -1215,6 +1215,8 @@
     "transactionType": "نوع المعاملة",
     "transactions": "المعاملات",
     "transfer": "نقل",
+    "buyOrder": "أمر شراء",
+    "sellOrder": "أمر بيع",
     "transferAmount": "تحويل المبلغ",
     "transferErrorDuring": "لم نتمكن من معالجة عملية النقل الخاصة بك. يرجى المحاولة مرة أخرى.",
     "transferFee": "رسوم التحويل",

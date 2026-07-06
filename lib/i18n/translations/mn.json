@@ -1215,6 +1215,8 @@
     "transactionType": "Гүйлгээний төрөл",
     "transactions": "Гүйлгээ",
     "transfer": "Дамжуулах",
+    "buyOrder": "Худалдан авах захиалга",
+    "sellOrder": "Зарах захиалга",
     "transferAmount": "Шилжүүлгийн хэмжээ",
     "transferErrorDuring": "Бид таны шилжүүлгийг боловсруулж чадсангүй. Дахин оролдоно уу.",
     "transferFee": "Шилжүүлгийн хураамж",

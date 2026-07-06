@@ -1215,6 +1215,8 @@
     "transactionType": "交易類型",
     "transactions": "交易",
     "transfer": "轉乘",
+    "buyOrder": "購買訂單",
+    "sellOrder": "出售訂單",
     "transferAmount": "轉帳金額",
     "transferErrorDuring": "我們無法處理您的轉帳。請再試一次。",
     "transferFee": "轉讓費",

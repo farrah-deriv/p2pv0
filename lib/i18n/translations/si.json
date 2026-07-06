@@ -1215,6 +1215,8 @@
     "transactionType": "ගනුදෙනු වර්ගය",
     "transactions": "ගනුදෙනු",
     "transfer": "මාරු කරන්න",
+    "buyOrder": "මිලදී ගැනීමේ ඇණවුම",
+    "sellOrder": "විකිණීමේ ඇණවුම",
     "transferAmount": "මාරු මුදල",
     "transferErrorDuring": "අපට ඔබේ මාරු කිරීම ක්‍රියාවට නැංවීමට නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.",
     "transferFee": "මාරු ගාස්තුව",

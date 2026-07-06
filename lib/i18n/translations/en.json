@@ -627,6 +627,8 @@
     "deposit": "Deposit",
     "withdraw": "Withdraw",
     "transfer": "Transfer",
+    "buyOrder": "Buy order",
+    "sellOrder": "Sell order",
     "amount": "Amount",
     "loadingAssets": "Loading assets...",
     "noAssetsTitle": "No assets yet",

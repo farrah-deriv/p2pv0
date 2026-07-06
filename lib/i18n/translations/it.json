@@ -1233,6 +1233,8 @@
     "transactionType": "Tipo di transazione",
     "transactions": "Transazioni",
     "transfer": "Trasferisci",
+    "buyOrder": "Ordine di acquisto",
+    "sellOrder": "Ordine di vendita",
     "transferAmount": "Importo del trasferimento",
     "transferErrorDuring": "Non siamo riusciti a elaborare il tuo trasferimento. Riprova.",
     "transferFee": "Commissione di trasferimento",

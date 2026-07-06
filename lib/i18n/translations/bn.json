@@ -1225,6 +1225,8 @@
     "transactionType": "লেনদেন টাইপ",
     "transactions": "লেনদেন",
     "transfer": "ট্রান্সফার",
+    "buyOrder": "ক্রয় অর্ডার",
+    "sellOrder": "বিক্রয় অর্ডার",
     "transferAmount": "ট্রান্সফার পরিমাণ",
     "transferErrorDuring": "আমরা আপনার ট্রান্সফার প্রক্রিয়া করতে পারিনি। অনুগ্রহ করে আবার চেষ্টা করুন।",
     "transferFee": "ট্রান্সফার ফি",

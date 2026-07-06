@@ -4,36 +4,13 @@ import { formatAppDate } from "@/lib/format-date"
 import { localeToBcp47 } from "@/lib/i18n/config"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import Image from "next/image"
-
-interface Transaction {
-  transaction_id: number
-  timestamp: string
-  metadata: {
-    brand_name: string
-    description: string
-    destination_client_id: string
-    destination_wallet_id: string
-    destination_wallet_type: string
-    is_reversible: string
-    payout_method: string
-    requester_platform: string
-    source_client_id: string
-    source_wallet_id: string
-    source_wallet_type: string
-    transaction_currency: string
-    transaction_gross_amount: string
-    transaction_net_amount: string
-    transaction_status: string
-    wallet_transaction_type: string
-  }
-}
+import type { Transaction } from "../types"
 
 interface TransactionDetailsProps {
   transaction: Transaction | null
-  onClose: () => void
 }
 
-export default function TransactionDetails({ transaction, onClose }: TransactionDetailsProps) {
+export default function TransactionDetails({ transaction }: TransactionDetailsProps) {
   const { t, locale } = useTranslations()
   const numberLocale = localeToBcp47(locale)
 
@@ -43,7 +20,6 @@ export default function TransactionDetails({ transaction, onClose }: Transaction
   }
 
   const formatDate = (timestamp: string) => {
-    const date = new Date(timestamp)
     return formatAppDate(new Date(timestamp), locale, {
       day: "numeric",
       month: "long",
@@ -67,6 +43,10 @@ export default function TransactionDetails({ transaction, onClose }: Transaction
   }
 
   const getTransactionType = (transaction: Transaction) => {
+    const orderType = transaction.statement_metadata?.order_type
+    if (orderType === "buy") return t("wallet.buyOrder")
+    if (orderType === "sell") return t("wallet.sellOrder")
+
     const walletTransactionType = transaction.metadata.wallet_transaction_type
     if (walletTransactionType === "transfer_cashier_to_wallet") {
       return t("wallet.deposit")
@@ -79,6 +59,10 @@ export default function TransactionDetails({ transaction, onClose }: Transaction
   }
 
   const getFromWalletName = (transaction: Transaction) => {
+    const orderType = transaction.statement_metadata?.order_type
+    if (orderType === "buy") return transaction.statement_metadata?.buyer_nickname ?? ""
+    if (orderType === "sell") return transaction.statement_metadata?.seller_nickname ?? ""
+
     const sourceWalletType = transaction.metadata.source_wallet_type
     const transactionCurrency = transaction.metadata.transaction_currency
 
@@ -93,6 +77,10 @@ export default function TransactionDetails({ transaction, onClose }: Transaction
   }
 
   const getToWalletName = (transaction: Transaction) => {
+    const orderType = transaction.statement_metadata?.order_type
+    if (orderType === "buy") return transaction.statement_metadata?.seller_nickname ?? ""
+    if (orderType === "sell") return transaction.statement_metadata?.buyer_nickname ?? ""
+
     const destinationWalletType = transaction.metadata.destination_wallet_type
     const transactionCurrency = transaction.metadata.transaction_currency
 

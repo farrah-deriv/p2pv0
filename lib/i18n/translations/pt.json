@@ -1237,6 +1237,8 @@
     "transactionType": "Tipo de transação",
     "transactions": "Transações",
     "transfer": "Transferir",
+    "buyOrder": "Ordem de compra",
+    "sellOrder": "Ordem de venda",
     "transferAmount": "Valor da transferência",
     "transferErrorDuring": "Não foi possível processar sua transferência. Por favor, tente novamente.",
     "transferFee": "Taxa de transferência",

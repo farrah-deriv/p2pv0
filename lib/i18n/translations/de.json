@@ -1242,6 +1242,8 @@
     "transactionType": "Transaktionstyp",
     "transactions": "Transaktionen",
     "transfer": "Übertragen",
+    "buyOrder": "Kaufauftrag",
+    "sellOrder": "Verkaufsauftrag",
     "transferAmount": "Übertragungsbetrag",
     "transferErrorDuring": "Wir konnten Ihre Übertragung nicht verarbeiten. Bitte versuchen Sie es erneut.",
     "transferFee": "Übertragungsgebühr",

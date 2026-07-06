@@ -1247,6 +1247,8 @@
     "transactionType": "Тип транзакции",
     "transactions": "Транзакции",
     "transfer": "Перевести",
+    "buyOrder": "Ордер на покупку",
+    "sellOrder": "Ордер на продажу",
     "transferAmount": "Сумма перевода",
     "transferErrorDuring": "Мы не смогли обработать ваш перевод. Пожалуйста, попробуйте снова.",
     "transferFee": "Комиссия за перевод",

@@ -1259,6 +1259,8 @@
     "transactionType": "Loại giao dịch",
     "transactions": "Giao dịch",
     "transfer": "Chuyển khoản",
+    "buyOrder": "Lệnh mua",
+    "sellOrder": "Lệnh bán",
     "transferAmount": "Số tiền chuyển",
     "transferErrorDuring": "Chúng tôi không thể xử lý giao dịch chuyển khoản của bạn. Vui lòng thử lại.",
     "transferFee": "Phí chuyển khoản",

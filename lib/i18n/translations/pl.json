@@ -1227,6 +1227,8 @@
     "transactionType": "Typ transakcji",
     "transactions": "Transakcje",
     "transfer": "Przelew",
+    "buyOrder": "Zlecenie kupna",
+    "sellOrder": "Zlecenie sprzedaży",
     "transferAmount": "Kwota transferu",
     "transferErrorDuring": "Nie mogliśmy przetworzyć Twojego transferu. Spróbuj ponownie.",
     "transferFee": "Opłata za transfer",

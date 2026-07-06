@@ -1223,6 +1223,8 @@
     "transactionType": "Aina ya miamala",
     "transactions": "Miamala",
     "transfer": "Uhamisho",
+    "buyOrder": "Agizo la kununua",
+    "sellOrder": "Agizo la kuuza",
     "transferAmount": "Kiasi cha uhamisho",
     "transferErrorDuring": "Hatukuweza kuchakata uhamisho wako. Tafadhali jaribu tena.",
     "transferFee": "Ada ya uhamisho",

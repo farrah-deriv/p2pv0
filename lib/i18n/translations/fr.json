@@ -1231,6 +1231,8 @@
     "transactionType": "Type de transaction",
     "transactions": "Opérations",
     "transfer": "Transfert",
+    "buyOrder": "Ordre d'achat",
+    "sellOrder": "Ordre de vente",
     "transferAmount": "Montant du transfert",
     "transferErrorDuring": "Nous n'avons pas pu traiter votre transfert. Veuillez réessayer.",
     "transferFee": "Frais de transfert",
