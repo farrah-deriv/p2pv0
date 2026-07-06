@@ -14,7 +14,6 @@ import {
   evaluateRisk,
   type RiskWarningResult,
 } from "@/components/buy-sell/risk-warning/risk-warning-rules"
-import MobileFooterNav from "@/components/mobile-footer-nav"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { CurrencyFilter } from "@/components/currency-filter/currency-filter"
@@ -933,10 +932,6 @@ export default function BuySellPage() {
             </div>
           )}
           <div ref={sentinelRef} className="h-1" data-testid="markets-sentinel-load-more" />
-        </div>
-
-        <div className="flex-shrink-0">
-          <MobileFooterNav />
         </div>
 
         <OrderSidebar

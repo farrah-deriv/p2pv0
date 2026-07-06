@@ -485,7 +485,7 @@ export default function OrdersPage() {
                   })}
                 </TableBody>
               </Table>
-              <div ref={observerTarget} className="h-12" />
+              <div ref={observerTarget} className="h-1" />
               {isFetchingNextPage && (
                 <div className="flex justify-center py-4">
                   <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />

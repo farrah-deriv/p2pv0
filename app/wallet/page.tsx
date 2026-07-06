@@ -192,9 +192,9 @@ export default function WalletPage() {
   }
 
   return (
-    <div data-testid="wallet-container" className="min-h-screen bg-background px-0 md:ps-[16px]">
-      <div className="w-full flex flex-col items-center">
-        <div className="w-full mt-0">
+    <div data-testid="wallet-container" className="flex flex-col h-full min-h-0 md:min-h-screen overflow-hidden bg-background px-0 md:ps-[16px]">
+      <div className="flex flex-col flex-1 min-h-0 w-full items-center">
+        <div className="w-full mt-0 flex-shrink-0">
           <WalletSummary
             isBalancesView={displayBalances || !!selectedTransaction}
             selectedCurrency={selectedCurrency}
@@ -209,11 +209,11 @@ export default function WalletPage() {
           />
         </div>
         {tempBanUntil && !isMaintenanceActive && (
-          <div data-testid="wallet-alert-temp-ban" className="w-full px-4 md:px-0 mt-4">
+          <div data-testid="wallet-alert-temp-ban" className="w-full flex-shrink-0 px-4 md:px-0 mt-4">
             <TemporaryBanAlert tempBanUntil={tempBanUntil} />
           </div>
         )}
-        <div className="w-full mt-6 mx-4 md:mx-4 px-6 md:px-0">
+        <div className="flex flex-col flex-1 min-h-0 w-full mt-6 mx-4 md:mx-4 px-6 md:px-0">
           {isMaintenanceActive ? (
             <div data-testid="wallet-empty-transactions"><EmptyState icon="/icons/no-active-orders.svg" title={t("wallet.noTransactions")} /></div>
           ) : displayBalances ? (

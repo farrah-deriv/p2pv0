@@ -215,7 +215,7 @@ export default function TransactionsTab({
 
   return (
     <>
-      <div className="py-0 space-y-6 mx-auto overflow-hidden">
+      <div className="flex flex-col flex-1 min-h-0 h-full py-0 space-y-6 mx-auto overflow-hidden">
         <div className="hidden gap-2">
           {filters.map((filter) => (
             <Button
@@ -232,7 +232,7 @@ export default function TransactionsTab({
         </div>
 
         {!selectedTransaction && (
-          <div className="space-y-6 h-[calc(100vh-16rem)] md:h-[calc(100vh-14rem)] overflow-y-scroll pb-16">
+          <div className="flex flex-col flex-1 min-h-0 overflow-y-auto space-y-6">
             {Object.entries(groupedTransactions).map(([dateKey, dateTransactions]) => (
               <div key={dateKey} className="space-y-0">
                 <h3 className="text-xs font-medium text-grayscale-text-muted">{dateKey}</h3>
@@ -313,7 +313,7 @@ export default function TransactionsTab({
         )}
 
         {selectedTransaction && (
-          <div className="space-y-6 h-[calc(100vh-16rem)] md:h-[calc(100vh-14rem)] overflow-y-scroll pb-16">
+          <div className="flex flex-col flex-1 min-h-0 overflow-y-auto space-y-6">
             <div className="bg-white">
               <div className="space-y-6">
                 <TransactionDetails transaction={selectedTransaction} />

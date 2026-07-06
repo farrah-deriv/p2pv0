@@ -252,7 +252,7 @@ export default function Main({
         <main
           className={cn(
             "flex flex-col flex-1 min-h-0",
-            pathname.startsWith("/profile") ? "overflow-y-auto" : "overflow-hidden pb-20",
+            pathname.startsWith("/profile") ? "overflow-y-auto" : "overflow-hidden",
           )}
         >
           {isHeaderVisible && pathname.startsWith("/profile") && <Header />}

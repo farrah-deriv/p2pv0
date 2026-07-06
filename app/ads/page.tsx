@@ -264,7 +264,7 @@ export default function AdsPage() {
 
   return (
     <>
-      <div className="flex flex-col h-full md:h-screen bg-white px-3">
+      <div className="flex flex-col h-full min-h-0 md:h-screen overflow-hidden bg-white px-3">
         <div className="flex-none container mx-auto">
           <div className="relative z-10 w-[calc(100%+24px)] md:w-full h-[80px] bg-slate-1200 p-6 rounded-b-3xl md:rounded-3xl text-white text-xl font-bold -m-3 mb-4 md:mx-0 md:mt-0">
             {t("myAds.title")}
@@ -291,7 +291,7 @@ export default function AdsPage() {
           </div>
         </div>
 
-        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden container mx-auto p-0 pb-20 md:p-0" data-testid="ads-table-container">
+        <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden container mx-auto p-0 md:p-0" data-testid="ads-table-container">
           {queryError ? (
             <div className="text-center py-8 text-red-500">{t("myAds.errorLoadingAds")}</div>
           ) : (
