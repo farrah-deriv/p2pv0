@@ -43,7 +43,7 @@ export default function TransactionDetails({ transaction }: TransactionDetailsPr
   }
 
   const getTransactionType = (transaction: Transaction) => {
-    const orderType = transaction.statement_metadata?.order_type
+    const orderType = transaction.metadata.statement_metadata?.order_type
     if (orderType === "buy") return t("wallet.buyOrder")
     if (orderType === "sell") return t("wallet.sellOrder")
 
@@ -59,9 +59,9 @@ export default function TransactionDetails({ transaction }: TransactionDetailsPr
   }
 
   const getFromWalletName = (transaction: Transaction) => {
-    const orderType = transaction.statement_metadata?.order_type
-    if (orderType === "buy") return transaction.statement_metadata?.buyer_nickname ?? ""
-    if (orderType === "sell") return transaction.statement_metadata?.seller_nickname ?? ""
+    const orderType = transaction.metadata.statement_metadata?.order_type
+    if (orderType === "buy") return transaction.metadata.statement_metadata?.buyer_nickname ?? ""
+    if (orderType === "sell") return transaction.metadata.statement_metadata?.seller_nickname ?? ""
 
     const sourceWalletType = transaction.metadata.source_wallet_type
     const transactionCurrency = transaction.metadata.transaction_currency
@@ -77,9 +77,9 @@ export default function TransactionDetails({ transaction }: TransactionDetailsPr
   }
 
   const getToWalletName = (transaction: Transaction) => {
-    const orderType = transaction.statement_metadata?.order_type
-    if (orderType === "buy") return transaction.statement_metadata?.seller_nickname ?? ""
-    if (orderType === "sell") return transaction.statement_metadata?.buyer_nickname ?? ""
+    const orderType = transaction.metadata.statement_metadata?.order_type
+    if (orderType === "buy") return transaction.metadata.statement_metadata?.seller_nickname ?? ""
+    if (orderType === "sell") return transaction.metadata.statement_metadata?.buyer_nickname ?? ""
 
     const destinationWalletType = transaction.metadata.destination_wallet_type
     const transactionCurrency = transaction.metadata.transaction_currency

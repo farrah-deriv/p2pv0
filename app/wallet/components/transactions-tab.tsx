@@ -80,7 +80,7 @@ export default function TransactionsTab({
   }
 
   const getTransactionType = (transaction: Transaction) => {
-    const orderType = transaction.statement_metadata?.order_type
+    const orderType = transaction.metadata.statement_metadata?.order_type
     if (orderType === "buy") return t("wallet.buyOrder")
     if (orderType === "sell") return t("wallet.sellOrder")
 
@@ -140,7 +140,7 @@ export default function TransactionsTab({
   }
 
   const getOrderCounterpartyText = (transaction: Transaction) => {
-    const { order_type, buyer_nickname, seller_nickname } = transaction.statement_metadata ?? {}
+    const { order_type, buyer_nickname, seller_nickname } = transaction.metadata.statement_metadata ?? {}
     const buyer = buyer_nickname ?? ""
     const seller = seller_nickname ?? ""
     return order_type === "sell" ? `${seller} → ${buyer}` : `${buyer} → ${seller}`
@@ -206,7 +206,7 @@ export default function TransactionsTab({
 
   return (
     <>
-      <div className="flex flex-col flex-1 min-h-0 h-full py-0 space-y-6 mx-auto overflow-hidden">
+      <div className="py-0 space-y-6">
         <div className="hidden gap-2">
           {filters.map((filter) => (
             <Button
@@ -223,7 +223,7 @@ export default function TransactionsTab({
         </div>
 
         {!selectedTransaction && (
-          <div className="flex flex-col flex-1 min-h-0 overflow-y-auto space-y-6">
+          <div className="space-y-6 h-[calc(100vh-16rem)] md:h-[calc(100vh-18rem)] overflow-y-auto pb-16">
             {Object.entries(groupedTransactions).map(([dateKey, dateTransactions]) => (
               <div key={dateKey} className="space-y-0">
                 <h3 className="text-xs font-medium text-grayscale-text-muted">{dateKey}</h3>
@@ -310,7 +310,7 @@ export default function TransactionsTab({
         )}
 
         {selectedTransaction && (
-          <div className="flex flex-col flex-1 min-h-0 overflow-y-auto space-y-6">
+          <div className="space-y-6 h-[calc(100vh-16rem)] md:h-[calc(100vh-18rem)] overflow-y-auto pb-16">
             <div className="bg-white">
               <div className="space-y-6">
                 <TransactionDetails transaction={selectedTransaction} />

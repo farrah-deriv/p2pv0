@@ -1,12 +1,12 @@
 export interface Transaction {
   transaction_id: number
   timestamp: string
-  statement_metadata?: {
-    order_type?: "buy" | "sell"
-    buyer_nickname?: string
-    seller_nickname?: string
-  }
   metadata: {
+    statement_metadata?: {
+      order_type?: "buy" | "sell"
+      buyer_nickname?: string
+      seller_nickname?: string
+    }
     brand_name: string
     description: string
     destination_client_id: string
