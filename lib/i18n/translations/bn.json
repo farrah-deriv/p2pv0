@@ -1034,16 +1034,19 @@
     "userFollowed": "{nickname} অনুসরণ করা হয়েছে।",
     "userUnblocked": "{nickname} আনব্লক করা হয়েছে।",
     "userUnfollowed": "{nickname} অনুসরণ বাতিল করা হয়েছে।",
-    "validationAccountTooLong": "অ্যাকাউন্ট নম্বর 50 অক্ষর বা তার কম হতে হবে।",
-    "validationNumbersOnly": "শুধুমাত্র সংখ্যা অনুমোদিত।",
-    "validationSymbolsOnly": "শুধুমাত্র অক্ষর, সংখ্যা, স্পেস, এবং চিহ্ন -+.,'#@():; অনুমোদিত",
+    "validationNumbersOnly": "শুধুমাত্র সংখ্যা ব্যবহার করুন, শুরুতে + থাকতে পারে।",
     "verificationExpired": "যাচাইকরণ মেয়াদ শেষ",
     "whenUsersFollow": "যখন ব্যবহারকারীরা আপনাকে অনুসরণ করবে, তারা এখানে প্রদর্শিত হবে।",
     "daysHours": "{days}দি {hours}ঘ",
     "joinedOn": "{date} তারিখে যোগ দিয়েছেন",
     "ratingWithCount": "{rating}/5 ({count} রেটিং)",
     "hoursOnly": "{hours}ঘ",
-    "daysOnly": "{days}দি"
+    "daysOnly": "{days}দি",
+    "validationAccountInvalidFormat": "শুধুমাত্র অক্ষর, সংখ্যা, স্পেস এবং @ - . , _ ( ) + : ব্যবহার করুন।",
+    "validationInstructionsInvalidFormat": "শুধুমাত্র অক্ষর, সংখ্যা, স্পেস এবং @ - . ! / % & , _ ( ) + : ; ব্যবহার করুন।",
+    "validationBankNameInvalidFormat": "শুধুমাত্র অক্ষর, সংখ্যা, স্পেস এবং @ - . , _ ( ) + : ব্যবহার করুন।",
+    "validationBankCodeInvalidFormat": "শুধুমাত্র অক্ষর, সংখ্যা, স্পেস এবং @ - . , _ ( ) + : ব্যবহার করুন।",
+    "validationBranchInvalidFormat": "শুধুমাত্র অক্ষর, সংখ্যা, স্পেস এবং @ - . , _ ( ) + : ব্যবহার করুন।"
   },
   "ratingSidebar": {
     "no": "না",

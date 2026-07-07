@@ -600,9 +600,7 @@
     "editPaymentDetails": "Edit payment details",
     "saveChanges": "Save changes",
     "loading": "Loading...",
-    "validationSymbolsOnly": "Only letters, numbers, spaces, and symbols -+.,'#@():; are allowed",
-    "validationNumbersOnly": "Only numbers are allowed.",
-    "validationAccountTooLong": "Account number must be 50 characters or fewer.",
+    "validationNumbersOnly": "Use numbers only, with an optional + at the start.",
     "fieldRequired": "{field} is required",
     "enterField": "Enter {field}",
     "tryAgain": "Try again",
@@ -619,7 +617,12 @@
     "closedGroupMemberTooltip": "This user is in your group list.",
     "daysHours": "{days}d {hours}h",
     "hoursOnly": "{hours}h",
-    "daysOnly": "{days}d"
+    "daysOnly": "{days}d",
+    "validationAccountInvalidFormat": "Use letters, numbers, spaces, and @ - . , _ ( ) + : only.",
+    "validationInstructionsInvalidFormat": "Use letters, numbers, spaces, and @ - . ! / % & , _ ( ) + : ; only.",
+    "validationBankNameInvalidFormat": "Use letters, numbers, spaces, and @ - . , _ ( ) + : only.",
+    "validationBankCodeInvalidFormat": "Use letters, numbers, spaces, and @ - . , _ ( ) + : only.",
+    "validationBranchInvalidFormat": "Use letters, numbers, spaces, and @ - . , _ ( ) + : only."
   },
   "wallet": {
     "title": "Wallet",

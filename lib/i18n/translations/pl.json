@@ -1036,16 +1036,19 @@
     "userFollowed": "Użytkownik {nickname} jest teraz obserwowany.",
     "userUnblocked": "Użytkownik {nickname} został odblokowany.",
     "userUnfollowed": "Użytkownik {nickname} nie jest już obserwowany.",
-    "validationAccountTooLong": "Numer konta musi mieć maksymalnie 50 znaków.",
-    "validationNumbersOnly": "Dozwolone są tylko cyfry.",
-    "validationSymbolsOnly": "Dozwolone są tylko litery, cyfry, spacje i symbole -+.,'#@():;",
+    "validationNumbersOnly": "Używaj tylko cyfr, z opcjonalnym + na początku.",
     "verificationExpired": "Weryfikacja wygasła",
     "whenUsersFollow": "Gdy użytkownicy Cię obserwują, pojawią się tutaj.",
     "daysHours": "{days}d {hours}godz.",
     "joinedOn": "Dołączył {date}",
     "ratingWithCount": "{rating}/5 ({count} ocen)",
     "hoursOnly": "{hours}godz.",
-    "daysOnly": "{days}d"
+    "daysOnly": "{days}d",
+    "validationAccountInvalidFormat": "Używaj tylko liter, cyfr, spacji oraz @ - . , _ ( ) + :.",
+    "validationInstructionsInvalidFormat": "Używaj tylko liter, cyfr, spacji oraz @ - . ! / % & , _ ( ) + : ;.",
+    "validationBankNameInvalidFormat": "Używaj tylko liter, cyfr, spacji oraz @ - . , _ ( ) + :.",
+    "validationBankCodeInvalidFormat": "Używaj tylko liter, cyfr, spacji oraz @ - . , _ ( ) + :.",
+    "validationBranchInvalidFormat": "Używaj tylko liter, cyfr, spacji oraz @ - . , _ ( ) + :."
   },
   "ratingSidebar": {
     "no": "Nie",

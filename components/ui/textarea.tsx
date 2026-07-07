@@ -24,10 +24,11 @@ export interface TextareaProps
     VariantProps<typeof textareaVariants> {
   label?: string
   required?: boolean
+  error?: boolean
 }
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, variant, label, required, onFocus, onBlur, onChange, value, defaultValue, ...props }, ref) => {
+  ({ className, variant, label, required, error, onFocus, onBlur, onChange, value, defaultValue, ...props }, ref) => {
     const [isFocused, setIsFocused] = React.useState(false)
     const [hasValue, setHasValue] = React.useState(false)
 
@@ -58,7 +59,11 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       return (
         <div className="relative">
           <textarea
-            className={cn(textareaVariants({ variant }), className)}
+            className={cn(
+              textareaVariants({ variant }),
+              error && "border-error focus:border-error focus-visible:border-error",
+              className,
+            )}
             ref={ref}
             onFocus={handleFocus}
             onBlur={handleBlur}
@@ -82,7 +87,11 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 
     return (
       <textarea
-        className={cn(textareaVariants({ variant }), className)}
+        className={cn(
+          textareaVariants({ variant }),
+          error && "border-error focus:border-error focus-visible:border-error",
+          className,
+        )}
         ref={ref}
         onFocus={onFocus}
         onBlur={onBlur}

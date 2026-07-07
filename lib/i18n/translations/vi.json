@@ -1068,16 +1068,19 @@
     "userFollowed": "{nickname} đã theo dõi.",
     "userUnblocked": "Đã bỏ chặn {nickname}.",
     "userUnfollowed": "{nickname} đã hủy theo dõi.",
-    "validationAccountTooLong": "Số tài khoản phải có 50 ký tự trở xuống.",
-    "validationNumbersOnly": "Chỉ cho phép số.",
-    "validationSymbolsOnly": "Chỉ cho phép chữ cái, số, khoảng trắng và ký hiệu -+.,'#@():;",
+    "validationNumbersOnly": "Chỉ sử dụng số, có thể thêm + ở đầu.",
     "verificationExpired": "Xác minh đã hết hạn",
     "whenUsersFollow": "Khi người dùng theo dõi bạn, họ sẽ xuất hiện ở đây.",
     "daysHours": "{days}ngày {hours}h",
     "joinedOn": "Tham gia ngày {date}",
     "ratingWithCount": "{rating}/5 ({count} đánh giá)",
     "hoursOnly": "{hours}h",
-    "daysOnly": "{days}ngày"
+    "daysOnly": "{days}ngày",
+    "validationAccountInvalidFormat": "Chỉ sử dụng chữ cái, số, khoảng trắng và @ - . , _ ( ) + :.",
+    "validationInstructionsInvalidFormat": "Chỉ sử dụng chữ cái, số, khoảng trắng và @ - . ! / % & , _ ( ) + : ;.",
+    "validationBankNameInvalidFormat": "Chỉ sử dụng chữ cái, số, khoảng trắng và @ - . , _ ( ) + :.",
+    "validationBankCodeInvalidFormat": "Chỉ sử dụng chữ cái, số, khoảng trắng và @ - . , _ ( ) + :.",
+    "validationBranchInvalidFormat": "Chỉ sử dụng chữ cái, số, khoảng trắng và @ - . , _ ( ) + :."
   },
   "ratingSidebar": {
     "no": "Không",

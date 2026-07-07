@@ -3,18 +3,21 @@
 import type React from "react"
 import Image from "next/image"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { PanelWrapper } from "@/components/ui/panel-wrapper"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import {
-  getPaymentMethodAccountValidationIssue,
-  PAYMENT_METHOD_ACCOUNT_MAX_LENGTH,
+  getPaymentMethodFieldMaxLength,
+  getPaymentMethodFieldValidationIssue,
+  paymentMethodFieldNameFromKey,
+  PAYMENT_METHOD_INSTRUCTIONS_MAX_LENGTH,
   requiresNumericAccountField,
-  sanitizeNumericAccountInput,
+  sanitizeMpesaAccountInput,
 } from "@/lib/payment-method-validation"
+import { getPaymentMethodFieldValidationMessageKey } from "@/lib/payment-method-field-validation-messages"
 
 interface EditPaymentMethodPanelProps {
   onClose: () => void
@@ -45,6 +48,22 @@ export default function EditPaymentMethodPanel({
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
 
+  const getFieldValidationError = useCallback(
+    (method: string, fieldName: string, value: string): string | null => {
+      const trimmed = value.trim()
+      if (!trimmed) return null
+
+      const field = paymentMethodFieldNameFromKey(fieldName)
+      if (!field) return null
+
+      const issue = getPaymentMethodFieldValidationIssue(method, fieldName, value)
+      if (!issue) return null
+
+      return t(getPaymentMethodFieldValidationMessageKey(field, issue))
+    },
+    [t],
+  )
+
   useEffect(() => {
     if (!paymentMethod?.details) return
 
@@ -65,27 +84,11 @@ export default function EditPaymentMethodPanel({
       }
     })
     setErrors(initialErrors)
-  }, [paymentMethod])
-
-  const validateSymbolsInput = (value: string) => {
-    const allowedPattern = /^[a-zA-Z0-9\s\-.@_+#(),:;']+$/
-    return allowedPattern.test(value)
-  }
-
-  const getFieldValidationError = (method: string, fieldName: string, value: string): string | null => {
-    const trimmed = value.trim()
-    if (!trimmed) return null
-
-    const accountIssue = getPaymentMethodAccountValidationIssue(method, fieldName, value)
-    if (accountIssue === "numbersOnly") return t("profile.validationNumbersOnly")
-    if (accountIssue === "tooLong") return t("profile.validationAccountTooLong")
-
-    return validateSymbolsInput(trimmed) ? null : t("profile.validationSymbolsOnly")
-  }
+  }, [paymentMethod, getFieldValidationError])
 
   const handleInputChange = (fieldName: string, value: string) => {
     const nextValue = requiresNumericAccountField(paymentMethod.type, fieldName)
-      ? sanitizeNumericAccountInput(value)
+      ? sanitizeMpesaAccountInput(value)
       : value
 
     setFieldValues((prev) => ({ ...prev, [fieldName]: nextValue }))
@@ -167,10 +170,10 @@ export default function EditPaymentMethodPanel({
 
   return (
     <PanelWrapper onClose={onClose}>
-      <h2 className="text-2xl font-bold p-4 pb-0 text-start">{t("profile.editPaymentDetails")}</h2>
-      <form onSubmit={handleSubmit} className="overflow-y-auto">
-        <div className="p-4 space-y-4">
-          <div className="space-y-4">
+      <div className="flex flex-col flex-1 min-h-0">
+        <h2 className="shrink-0 p-4 pb-0 text-start text-2xl font-bold">{t("profile.editPaymentDetails")}</h2>
+        <form onSubmit={handleSubmit} className="min-h-0 flex-1 overflow-y-auto">
+          <div className="space-y-4 p-4">
             {Object.entries(paymentMethod.details).map(([fieldName, fieldConfig]) => (
               <div key={fieldName}>
                 {fieldName === "instructions" ? (
@@ -181,12 +184,13 @@ export default function EditPaymentMethodPanel({
                       onChange={(e) => handleInputChange(fieldName, e.target.value)}
                       label={t("profile.enterField", { field: fieldConfig.display_name.toLowerCase() })}
                       className="min-h-[120px] resize-none"
-                      maxLength={300}
+                      maxLength={PAYMENT_METHOD_INSTRUCTIONS_MAX_LENGTH}
                       variant="floating"
+                      error={Boolean(errors[fieldName])}
                     />
-                    {errors[fieldName] && <p className="mt-1 text-xs text-red-500 text-start">{errors[fieldName]}</p>}
-                    <div className="flex justify-end mt-1 text-xs text-gray-500 rtl:justify-start">
-                      {(fieldValues[fieldName] || "").length}/300
+                    {errors[fieldName] && <p className="mt-1 text-xs text-error-text text-start">{errors[fieldName]}</p>}
+                    <div className="flex justify-end mt-1 text-xs text-slate-1200 rtl:justify-start">
+                      {(fieldValues[fieldName] || "").length}/{PAYMENT_METHOD_INSTRUCTIONS_MAX_LENGTH}
                     </div>
                   </div>
                 ) : (
@@ -204,32 +208,31 @@ export default function EditPaymentMethodPanel({
                       label={t("profile.enterField", { field: fieldConfig.display_name.toLowerCase() })}
                       required={fieldConfig.required}
                       variant="floating"
-                      maxLength={
-                        fieldName === "account" ? PAYMENT_METHOD_ACCOUNT_MAX_LENGTH : undefined
-                      }
+                      maxLength={getPaymentMethodFieldMaxLength(fieldName)}
+                      error={Boolean(errors[fieldName])}
                     />
-                    {errors[fieldName] && <p className="mt-1 text-xs text-red-500 text-start">{errors[fieldName]}</p>}
+                    {errors[fieldName] && <p className="mt-1 text-xs text-error-text text-start">{errors[fieldName]}</p>}
                   </div>
                 )}
               </div>
             ))}
           </div>
-        </div>
-      </form>
+        </form>
 
-      <div className="p-4 flex justify-end rtl:justify-start">
-        <Button
-          type="button"
-          onClick={handleSubmit}
-          disabled={isLoading || !isFormValid()}
-          className="w-full md:w-auto"
-        >
-          {isLoading ? (
-            <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
-          ) : (
-            t("profile.saveChanges")
-          )}
-        </Button>
+        <div className="mt-auto flex shrink-0 justify-end bg-white p-4 rtl:justify-start">
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isLoading || !isFormValid()}
+            className="w-full md:w-auto"
+          >
+            {isLoading ? (
+              <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
+            ) : (
+              t("profile.saveChanges")
+            )}
+          </Button>
+        </div>
       </div>
     </PanelWrapper>
   )

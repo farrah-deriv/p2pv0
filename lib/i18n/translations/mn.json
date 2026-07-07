@@ -1024,16 +1024,19 @@
     "userFollowed": "{nickname} дагасан.",
     "userUnblocked": "{nickname} блокоос гарсан.",
     "userUnfollowed": "{nickname} дагахаа больсон.",
-    "validationAccountTooLong": "Дансны дугаар 50 тэмдэгт эсвэл түүнээс бага байх ёстой.",
-    "validationNumbersOnly": "Зөвхөн тоо зөвшөөрөгдөнө.",
-    "validationSymbolsOnly": "Зөвхөн үсэг, тоо, зай, тэмдэг -+.,'#@():; зөвшөөрөгдсөн",
+    "validationNumbersOnly": "Зөвхөн тоо оруулна уу, эхэнд нь + тэмдэгийг заавал биш байдлаар оруулж болно.",
     "verificationExpired": "Баталгаажуулах хугацаа дууссан",
     "whenUsersFollow": "Хэрэглэгчид таныг дагавал энд харагдах болно.",
     "daysHours": "{days}өд {hours}ц",
     "joinedOn": "{date}-д нэгдсэн",
     "ratingWithCount": "{rating}/5 ({count} үнэлгээ)",
     "hoursOnly": "{hours}ц",
-    "daysOnly": "{days}өд"
+    "daysOnly": "{days}өд",
+    "validationAccountInvalidFormat": "Зөвхөн үсэг, тоо, хоосон зай болон @ - . , _ ( ) + : ашиглана уу.",
+    "validationInstructionsInvalidFormat": "Зөвхөн үсэг, тоо, хоосон зай болон @ - . ! / % & , _ ( ) + : ; ашиглана уу.",
+    "validationBankNameInvalidFormat": "Зөвхөн үсэг, тоо, хоосон зай болон @ - . , _ ( ) + : ашиглана уу.",
+    "validationBankCodeInvalidFormat": "Зөвхөн үсэг, тоо, хоосон зай болон @ - . , _ ( ) + : ашиглана уу.",
+    "validationBranchInvalidFormat": "Зөвхөн үсэг, тоо, хоосон зай болон @ - . , _ ( ) + : ашиглана уу."
   },
   "ratingSidebar": {
     "no": "Үгүй",

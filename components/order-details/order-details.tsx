@@ -139,7 +139,7 @@ export const OrderDetails = ({ order, setShowChat }) => {
       />
 
       <div className="flex md:block items-end justify-between">
-        <div className="flex-1">
+        <div className={cn("flex-1", isBlockLayout && "space-y-4")}>
           <OrderDetailItem
             label={isCounterpartyBuyer ? t("orderDetails.buyerNickname") : t("orderDetails.sellerNickname")}
             value={counterpartyNickname || ""}

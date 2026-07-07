@@ -1024,16 +1024,19 @@
     "userFollowed": "{nickname} 紧随其后。",
     "userUnblocked": "{nickname} 已解锁。",
     "userUnfollowed": "{nickname} 已取消关注。",
-    "validationAccountTooLong": "账号必须为 50 个字符或更少。",
-    "validationNumbersOnly": "仅允许数字。",
-    "validationSymbolsOnly": "仅限字母、数字、空格和符号 -+.,'#@():;被允许",
+    "validationNumbersOnly": "仅可使用数字，开头可选 +。",
     "verificationExpired": "验证已过期",
     "whenUsersFollow": "当用户关注您时，他们会出现在此处。",
     "daysHours": "{days}天{hours}时",
     "joinedOn": "加入于 {date}",
     "ratingWithCount": "{rating}/5（{count} 个评分）",
     "hoursOnly": "{hours}时",
-    "daysOnly": "{days}天"
+    "daysOnly": "{days}天",
+    "validationAccountInvalidFormat": "仅可使用字母、数字、空格和 @ - . , _ ( ) + :。",
+    "validationInstructionsInvalidFormat": "仅可使用字母、数字、空格和 @ - . ! / % & , _ ( ) + : ;。",
+    "validationBankNameInvalidFormat": "仅可使用字母、数字、空格和 @ - . , _ ( ) + :。",
+    "validationBankCodeInvalidFormat": "仅可使用字母、数字、空格和 @ - . , _ ( ) + :。",
+    "validationBranchInvalidFormat": "仅可使用字母、数字、空格和 @ - . , _ ( ) + :。"
   },
   "ratingSidebar": {
     "no": "否",

@@ -8,11 +8,15 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { usePaymentMethods } from "@/hooks/use-api-queries"
 import {
-  getPaymentMethodAccountValidationIssue,
-  PAYMENT_METHOD_ACCOUNT_MAX_LENGTH,
+  getPaymentMethodFieldMaxLength,
+  getPaymentMethodFieldValidationIssue,
+  isValidPaymentMethodKey,
+  paymentMethodFieldNameFromKey,
+  PAYMENT_METHOD_INSTRUCTIONS_MAX_LENGTH,
   requiresNumericAccountField,
-  sanitizeNumericAccountInput,
+  sanitizeMpesaAccountInput,
 } from "@/lib/payment-method-validation"
+import { getPaymentMethodFieldValidationMessageKey } from "@/lib/payment-method-field-validation-messages"
 import { getPaymentMethodFields, getPaymentMethodIcon, type AvailablePaymentMethod } from "@/lib/utils"
 import { PanelWrapper } from "@/components/ui/panel-wrapper"
 import EmptyState from "@/components/empty-state"
@@ -44,7 +48,6 @@ export default function AddPaymentMethodPanel({
   const [instructions, setInstructions] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
-  const [charCount, setCharCount] = useState(0)
   const [availablePaymentMethods, setAvailablePaymentMethods] = useState<AvailablePaymentMethod[]>([])
   const [searchQuery, setSearchQuery] = useState("")
 
@@ -70,10 +73,6 @@ export default function AddPaymentMethodPanel({
     setErrors({})
     setTouched({})
   }, [selectedMethod])
-
-  useEffect(() => {
-    setCharCount(instructions.length)
-  }, [instructions])
 
   useEffect(() => {
     return () => {
@@ -114,26 +113,25 @@ export default function AddPaymentMethodPanel({
     onBack?.()
   }
 
-  const validateSymbolsInput = (value: string) => {
-    const allowedPattern = /^[a-zA-Z0-9\s\-.@_+#(),:;']+$/
-    return allowedPattern.test(value)
-  }
-
   const getFieldValidationError = (method: string, fieldName: string, value: string): string | null => {
     const trimmed = value.trim()
     if (!trimmed) return null
 
-    const accountIssue = getPaymentMethodAccountValidationIssue(method, fieldName, value)
-    if (accountIssue === "numbersOnly") return t("profile.validationNumbersOnly")
-    if (accountIssue === "tooLong") return t("profile.validationAccountTooLong")
+    const field = paymentMethodFieldNameFromKey(fieldName)
+    if (!field) return null
 
-    return validateSymbolsInput(trimmed) ? null : t("profile.validationSymbolsOnly")
+    const issue = getPaymentMethodFieldValidationIssue(method, fieldName, value)
+    if (!issue) return null
+
+    return t(getPaymentMethodFieldValidationMessageKey(field, issue))
   }
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
     if (!selectedMethod) {
+      newErrors.method = t("paymentMethod.pleaseSelectPaymentMethod")
+    } else if (!isValidPaymentMethodKey(selectedMethod)) {
       newErrors.method = t("paymentMethod.pleaseSelectPaymentMethod")
     }
 
@@ -151,8 +149,9 @@ export default function AddPaymentMethodPanel({
       }
     })
 
-    if (instructions && !validateSymbolsInput(instructions)) {
-      newErrors.instructions = t("profile.validationSymbolsOnly")
+    const instructionsError = getFieldValidationError(selectedMethod, "instructions", instructions)
+    if (instructionsError) {
+      newErrors.instructions = instructionsError
     }
 
     setErrors(newErrors)
@@ -161,7 +160,7 @@ export default function AddPaymentMethodPanel({
 
   const handleInputChange = (name: string, value: string) => {
     const nextValue = requiresNumericAccountField(selectedMethod, name)
-      ? sanitizeNumericAccountInput(value)
+      ? sanitizeMpesaAccountInput(value)
       : value
 
     setDetails((prev) => ({ ...prev, [name]: nextValue }))
@@ -186,20 +185,20 @@ export default function AddPaymentMethodPanel({
   const handleInstructionsChange = (value: string) => {
     setInstructions(value)
 
-    if (errors.instructions) {
-      setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors.instructions
-        return newErrors
-      })
-    }
-
-    if (value && !validateSymbolsInput(value)) {
+    const fieldError = getFieldValidationError(selectedMethod, "instructions", value)
+    if (fieldError) {
       setErrors((prev) => ({
         ...prev,
-        instructions: t("profile.validationSymbolsOnly"),
+        instructions: fieldError,
       }))
+      return
     }
+
+    setErrors((prev) => {
+      const newErrors = { ...prev }
+      delete newErrors.instructions
+      return newErrors
+    })
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -349,15 +348,21 @@ export default function AddPaymentMethodPanel({
   }
 
   const formContent = (
-    <>
-      <div className="flex items-center gap-4 p-4 pb-0">
+    <div className="flex flex-col flex-1 min-h-0">
+      <div className="flex items-center gap-4 p-4 pb-0 shrink-0">
         <h2 className="text-2xl font-bold text-start">{t("paymentMethod.addPaymentDetails")}</h2>
       </div>
-      <form onSubmit={handleSubmit} className="overflow-y-auto">
+      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto min-h-0">
         <div className="p-4 space-y-4">
           {selectedMethodFields.length > 0 && (
             <div className="space-y-4">
-              {selectedMethodFields.map((field) => (
+              {selectedMethodFields.map((field) => {
+                const fieldError =
+                  (touched[field.name] || details[field.name]) && errors[field.name]
+                    ? errors[field.name]
+                    : undefined
+
+                return (
                 <div key={field.name}>
                   <Input
                     id={field.name}
@@ -372,15 +377,14 @@ export default function AddPaymentMethodPanel({
                     label={`${t("profile.enterField", { field: field.label.toLowerCase() })}`}
                     required={field.required}
                     variant="floating"
-                    maxLength={
-                      field.name === "account" ? PAYMENT_METHOD_ACCOUNT_MAX_LENGTH : undefined
-                    }
+                    maxLength={getPaymentMethodFieldMaxLength(field.name)}
+                    error={Boolean(fieldError)}
                   />
-                  {(touched[field.name] || details[field.name]) && errors[field.name] && (
-                    <p className="mt-1 text-xs text-red-500 text-start">{errors[field.name]}</p>
+                  {fieldError && (
+                    <p className="mt-1 text-xs text-error-text text-start">{fieldError}</p>
                   )}
                 </div>
-              ))}
+              )})}
             </div>
           )}
 
@@ -391,16 +395,19 @@ export default function AddPaymentMethodPanel({
               onChange={(e) => handleInstructionsChange(e.target.value)}
               label={t("paymentMethod.enterInstructions")}
               className="min-h-[120px] resize-none"
-              maxLength={300}
+              maxLength={PAYMENT_METHOD_INSTRUCTIONS_MAX_LENGTH}
               variant="floating"
+              error={Boolean(errors.instructions)}
             />
-            {errors.instructions && <p className="mt-1 text-xs text-red-500 text-start">{errors.instructions}</p>}
-            <div className="flex justify-end rtl:justify-start mt-1 text-xs text-gray-500">{charCount}/300</div>
+            {errors.instructions && <p className="mt-1 text-xs text-error-text text-start">{errors.instructions}</p>}
+            <div className="flex justify-end rtl:justify-start mt-1 text-xs text-slate-1200">
+              {instructions.length}/{PAYMENT_METHOD_INSTRUCTIONS_MAX_LENGTH}
+            </div>
           </div>
         </div>
       </form>
 
-      <div className="p-4 flex justify-end rtl:justify-start">
+      <div className="mt-auto shrink-0 bg-white p-4 flex justify-end rtl:justify-start">
         <Button
           type="button"
           onClick={handleSubmit}
@@ -414,7 +421,7 @@ export default function AddPaymentMethodPanel({
           )}
         </Button>
       </div>
-    </>
+    </div>
   )
 
   if (onClose) {
@@ -425,5 +432,5 @@ export default function AddPaymentMethodPanel({
     )
   }
 
-  return <div className="w-full h-[calc(100%-60px)]">{formContent}</div>
+  return <div className="flex h-[calc(100%-60px)] w-full min-h-0 flex-col">{formContent}</div>
 }

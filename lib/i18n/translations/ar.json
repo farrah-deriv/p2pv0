@@ -1024,16 +1024,19 @@
     "userFollowed": "تمت متابعة {nickname}.",
     "userUnblocked": "تم إلغاء حظر {nickname}.",
     "userUnfollowed": "تم إلغاء متابعة {nickname}.",
-    "validationAccountTooLong": "يجب أن يكون رقم الحساب 50 حرفًا أو أقل.",
-    "validationNumbersOnly": "يُسمح بالأرقام فقط.",
-    "validationSymbolsOnly": "يُسمح فقط بالحروف والأرقام والمسافات والرموز -+.,'#@():;",
+    "validationNumbersOnly": "استخدم الأرقام فقط، مع إمكانية إضافة + في البداية.",
     "verificationExpired": "انتهت صلاحية التحقق",
     "whenUsersFollow": "عندما يتابعك المستخدمون، سيظهرون هنا.",
     "daysHours": "{days}ي {hours}س",
     "joinedOn": "انضم في {date}",
     "ratingWithCount": "{rating}/5 ({count} تقييمات)",
     "hoursOnly": "{hours}س",
-    "daysOnly": "{days}ي"
+    "daysOnly": "{days}ي",
+    "validationAccountInvalidFormat": "استخدم الأحرف والأرقام والمسافات و @ - . , _ ( ) + : فقط.",
+    "validationInstructionsInvalidFormat": "استخدم الأحرف والأرقام والمسافات و @ - . ! / % & , _ ( ) + : ; فقط.",
+    "validationBankNameInvalidFormat": "استخدم الأحرف والأرقام والمسافات و @ - . , _ ( ) + : فقط.",
+    "validationBankCodeInvalidFormat": "استخدم الأحرف والأرقام والمسافات و @ - . , _ ( ) + : فقط.",
+    "validationBranchInvalidFormat": "استخدم الأحرف والأرقام والمسافات و @ - . , _ ( ) + : فقط."
   },
   "ratingSidebar": {
     "no": "لا",

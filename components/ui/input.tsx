@@ -36,10 +36,11 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>,
   label?: string
   required?: boolean
   currency?: string
+  error?: boolean
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, variant, type, label, required, currency, ...props }, ref) => {
+  ({ className, variant, type, label, required, currency, error, ...props }, ref) => {
     const { locale } = useTranslations()
     const dir = isRtlLocale(locale) ? "rtl" : "ltr"
     const [isFocused, setIsFocused] = React.useState(false)
@@ -86,7 +87,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <div className="relative mt-2" dir={dir}>
           <input
             type={type}
-            className={cn(inputVariants({ variant: computedVariant }), className)}
+            className={cn(
+              inputVariants({ variant: computedVariant }),
+              error && "border-error focus:border-error focus-visible:border-error",
+              className,
+            )}
             ref={ref}
             onFocus={handleFocus}
             onBlur={handleBlur}
@@ -118,7 +123,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       <input
         type={type}
         dir={dir}
-        className={cn(inputVariants({ variant: computedVariant }), className)}
+        className={cn(
+          inputVariants({ variant: computedVariant }),
+          error && "border-error focus:border-error focus-visible:border-error",
+          className,
+        )}
         ref={ref}
         {...props}
       />

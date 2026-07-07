@@ -1032,16 +1032,19 @@
     "userFollowed": "{nickname} unafuata sasa.",
     "userUnblocked": "{nickname} zuio limeondolewa.",
     "userUnfollowed": "{nickname} haifuatwi tena.",
-    "validationAccountTooLong": "Nambari ya akaunti lazima iwe na vibambo 50 au chini.",
-    "validationNumbersOnly": "Namba pekee zinakubaliwa.",
-    "validationSymbolsOnly": "Herufi, namba, nafasi, na alama -+.,'#@():; tu zinakubaliwa",
+    "validationNumbersOnly": "Tumia nambari pekee, na + hiari mwanzoni.",
     "verificationExpired": "Uthibitisho umepita muda",
     "whenUsersFollow": "Wakati watumiaji wanakufuata, wataonekana hapa.",
     "daysHours": "{days}siku {hours}saa",
     "joinedOn": "Alijiunga tarehe {date}",
     "ratingWithCount": "{rating}/5 (maoni {count})",
     "hoursOnly": "{hours}saa",
-    "daysOnly": "{days}siku"
+    "daysOnly": "{days}siku",
+    "validationAccountInvalidFormat": "Tumia herufi, nambari, nafasi, na @ - . , _ ( ) + : pekee.",
+    "validationInstructionsInvalidFormat": "Tumia herufi, nambari, nafasi, na @ - . ! / % & , _ ( ) + : ; pekee.",
+    "validationBankNameInvalidFormat": "Tumia herufi, nambari, nafasi, na @ - . , _ ( ) + : pekee.",
+    "validationBankCodeInvalidFormat": "Tumia herufi, nambari, nafasi, na @ - . , _ ( ) + : pekee.",
+    "validationBranchInvalidFormat": "Tumia herufi, nambari, nafasi, na @ - . , _ ( ) + : pekee."
   },
   "ratingSidebar": {
     "no": "Hapana",

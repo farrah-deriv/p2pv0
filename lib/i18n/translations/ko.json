@@ -1073,16 +1073,19 @@
     "userFollowed": "{nickname} 님이 팔로우했습니다.",
     "userUnblocked": "{nickname}을 차단 해제했습니다.",
     "userUnfollowed": "{nickname} 팔로우를 취소했습니다.",
-    "validationAccountTooLong": "계좌번호는 50자 이하여야 합니다.",
-    "validationNumbersOnly": "숫자만 입력할 수 있습니다.",
-    "validationSymbolsOnly": "문자, 숫자, 공백 및 기호 -+.,'#@():;만 허용됩니다",
+    "validationNumbersOnly": "숫자만 입력하세요. 시작 부분에 +를 선택적으로 사용할 수 있습니다.",
     "verificationExpired": "검증 만료",
     "whenUsersFollow": "사용자가 팔로우할 때 여기에 나타납니다.",
     "daysHours": "{days}일 {hours}시간",
     "joinedOn": "{date}에 가입함",
     "ratingWithCount": "{rating}/5 ({count}개 평점)",
     "hoursOnly": "{hours}시간",
-    "daysOnly": "{days}일"
+    "daysOnly": "{days}일",
+    "validationAccountInvalidFormat": "문자, 숫자, 공백 및 @ - . , _ ( ) + : 만 사용하세요.",
+    "validationInstructionsInvalidFormat": "문자, 숫자, 공백 및 @ - . ! / % & , _ ( ) + : ; 만 사용하세요.",
+    "validationBankNameInvalidFormat": "문자, 숫자, 공백 및 @ - . , _ ( ) + : 만 사용하세요.",
+    "validationBankCodeInvalidFormat": "문자, 숫자, 공백 및 @ - . , _ ( ) + : 만 사용하세요.",
+    "validationBranchInvalidFormat": "문자, 숫자, 공백 및 @ - . , _ ( ) + : 만 사용하세요."
   },
   "ratingSidebar": {
     "no": "아니오",

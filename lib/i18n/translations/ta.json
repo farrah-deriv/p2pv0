@@ -1024,16 +1024,19 @@
     "userFollowed": "{nickname} பின்தொடர்ந்தது.",
     "userUnblocked": "{nickname} தடைநீக்கப்பட்டது.",
     "userUnfollowed": "{nickname} பின்தொடரப்படவில்லை.",
-    "validationAccountTooLong": "கணக்கு எண் 50 எழுத்துகள் அல்லது அதற்கு குறைவாக இருக்க வேண்டும்.",
-    "validationNumbersOnly": "எண்கள் மட்டுமே அனுமதிக்கப்படும்.",
-    "validationSymbolsOnly": "எழுத்துக்கள், எண்கள், இடைவெளிகள் மற்றும் குறியீடுகள் மட்டும் -+.,'#@():; அனுமதிக்கப்படுகின்றன",
+    "validationNumbersOnly": "எண்கள் மட்டுமே பயன்படுத்தவும், தொடக்கத்தில் + அனுமதிக்கப்படும்.",
     "verificationExpired": "சரிபார்ப்பு காலாவதியானது",
     "whenUsersFollow": "பயனர்கள் உங்களைப் பின்தொடரும்போது, அவர்கள் இங்கே தோன்றுவார்கள்.",
     "daysHours": "{days}நா {hours}மணி",
     "joinedOn": "{date} அன்று சேர்ந்தார்",
     "ratingWithCount": "{rating}/5 ({count} மதிப்பீடுகள்)",
     "hoursOnly": "{hours}மணி",
-    "daysOnly": "{days}நா"
+    "daysOnly": "{days}நா",
+    "validationAccountInvalidFormat": "எழுத்துகள், எண்கள், இடைவெளிகள் மற்றும் @ - . , _ ( ) + : மட்டுமே பயன்படுத்தவும்.",
+    "validationInstructionsInvalidFormat": "எழுத்துகள், எண்கள், இடைவெளிகள் மற்றும் @ - . ! / % & , _ ( ) + : ; மட்டுமே பயன்படுத்தவும்.",
+    "validationBankNameInvalidFormat": "எழுத்துகள், எண்கள், இடைவெளிகள் மற்றும் @ - . , _ ( ) + : மட்டுமே பயன்படுத்தவும்.",
+    "validationBankCodeInvalidFormat": "எழுத்துகள், எண்கள், இடைவெளிகள் மற்றும் @ - . , _ ( ) + : மட்டுமே பயன்படுத்தவும்.",
+    "validationBranchInvalidFormat": "எழுத்துகள், எண்கள், இடைவெளிகள் மற்றும் @ - . , _ ( ) + : மட்டுமே பயன்படுத்தவும்."
   },
   "ratingSidebar": {
     "no": "இல்லை",

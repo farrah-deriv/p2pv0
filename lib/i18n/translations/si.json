@@ -1024,16 +1024,19 @@
     "userFollowed": "{nickname} අනුගමනය කළා.",
     "userUnblocked": "{nickname} අවහිර කිරීම ඉවත් කරන ලදී.",
     "userUnfollowed": "{nickname} අනුගමනය නොකළේය.",
-    "validationAccountTooLong": "ගිණුම් අංකය අක්ෂර 50ක් හෝ ඊට අඩු විය යුතුය.",
-    "validationNumbersOnly": "අංක පමණක් අවසර ඇත.",
-    "validationSymbolsOnly": "අකුරු, ඉලක්කම්, හිස්තැන් සහ සංකේත පමණි -+.,'#@():; අවසර ලැබේ",
+    "validationNumbersOnly": "අංක පමණක් භාවිතා කරන්න, ආරම්භයේ + එක ඇතුළත් කළ හැක.",
     "verificationExpired": "සත්‍යාපනය කල් ඉකුත් විය",
     "whenUsersFollow": "පරිශීලකයන් ඔබව අනුගමනය කරන විට, ඔවුන් මෙහි දිස් වනු ඇත.",
     "daysHours": "{days}දි {hours}ප",
     "joinedOn": "{date} දින සම්බන්ධ විය",
     "ratingWithCount": "{rating}/5 ({count} ශ්‍රේණිගත කිරීම්)",
     "hoursOnly": "{hours}ප",
-    "daysOnly": "{days}දි"
+    "daysOnly": "{days}දි",
+    "validationAccountInvalidFormat": "අකුරු, අංක, හිස්තැන් සහ @ - . , _ ( ) + : පමණක් භාවිතා කරන්න.",
+    "validationInstructionsInvalidFormat": "අකුරු, අංක, හිස්තැන් සහ @ - . ! / % & , _ ( ) + : ; පමණක් භාවිතා කරන්න.",
+    "validationBankNameInvalidFormat": "අකුරු, අංක, හිස්තැන් සහ @ - . , _ ( ) + : පමණක් භාවිතා කරන්න.",
+    "validationBankCodeInvalidFormat": "අකුරු, අංක, හිස්තැන් සහ @ - . , _ ( ) + : පමණක් භාවිතා කරන්න.",
+    "validationBranchInvalidFormat": "අකුරු, අංක, හිස්තැන් සහ @ - . , _ ( ) + : පමණක් භාවිතා කරන්න."
   },
   "ratingSidebar": {
     "no": "නැත",

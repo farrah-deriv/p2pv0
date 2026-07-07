@@ -1,11 +1,16 @@
 import {
   getPaymentMethodAccountValidationIssue,
+  getPaymentMethodFieldMaxLength,
+  getPaymentMethodFieldValidationIssue,
   hasInvalidLegacyMpesaAccountNumber,
   isDigitsOnly,
   isMpesaPaymentMethod,
+  isValidMpesaAccount,
+  isValidPaymentMethodKey,
   PAYMENT_METHOD_ACCOUNT_MAX_LENGTH,
+  PAYMENT_METHOD_INSTRUCTIONS_MAX_LENGTH,
   requiresNumericAccountField,
-  sanitizeNumericAccountInput,
+  sanitizeMpesaAccountInput,
 } from "@/lib/payment-method-validation"
 
 describe("payment-method-validation", () => {
@@ -35,33 +40,46 @@ describe("payment-method-validation", () => {
     })
   })
 
-  describe("sanitizeNumericAccountInput", () => {
-    it("removes non-digit characters", () => {
-      expect(sanitizeNumericAccountInput("12ab 34")).toBe("1234")
-      expect(sanitizeNumericAccountInput("0712-345-678")).toBe("0712345678")
+  describe("sanitizeMpesaAccountInput", () => {
+    it("preserves optional leading plus and strips other non-digits", () => {
+      expect(sanitizeMpesaAccountInput("+254712abc")).toBe("+254712")
+      expect(sanitizeMpesaAccountInput("0712-345-678")).toBe("0712345678")
+      expect(sanitizeMpesaAccountInput("12+34")).toBe("1234")
     })
   })
 
-  describe("isDigitsOnly", () => {
+  describe("isValidMpesaAccount", () => {
+    it("accepts digits only and optional leading plus", () => {
+      expect(isValidMpesaAccount("0712345678")).toBe(true)
+      expect(isValidMpesaAccount("+254712345678")).toBe(true)
+    })
+
+    it("rejects invalid M-Pesa account formats", () => {
+      expect(isValidMpesaAccount("KE123ABC")).toBe(false)
+      expect(isValidMpesaAccount("07+12")).toBe(false)
+      expect(isValidMpesaAccount("+")).toBe(false)
+      expect(isValidMpesaAccount("1".repeat(PAYMENT_METHOD_ACCOUNT_MAX_LENGTH + 1))).toBe(false)
+    })
+  })
+
+  describe("isDigitsOnly (deprecated)", () => {
     it("accepts digits and rejects other characters", () => {
       expect(isDigitsOnly("123456")).toBe(true)
       expect(isDigitsOnly("0712345678")).toBe(true)
       expect(isDigitsOnly("12a34")).toBe(false)
       expect(isDigitsOnly("")).toBe(false)
     })
-
-    it("rejects whitespace-only strings", () => {
-      expect(isDigitsOnly("   ")).toBe(false)
-    })
   })
 
   describe("hasInvalidLegacyMpesaAccountNumber", () => {
     it("returns true for non-numeric legacy M-Pesa accounts", () => {
       expect(hasInvalidLegacyMpesaAccountNumber("safaricom_mpesa", "0712-abc")).toBe(true)
+      expect(hasInvalidLegacyMpesaAccountNumber("safaricom_mpesa", "KE123ABC")).toBe(true)
     })
 
-    it("returns false for numeric M-Pesa accounts", () => {
+    it("returns false for valid M-Pesa accounts", () => {
       expect(hasInvalidLegacyMpesaAccountNumber("safaricom_mpesa", "0712345678")).toBe(false)
+      expect(hasInvalidLegacyMpesaAccountNumber("safaricom_mpesa", "+254712345678")).toBe(false)
     })
 
     it("returns false for empty or non-M-Pesa methods", () => {
@@ -70,31 +88,130 @@ describe("payment-method-validation", () => {
     })
   })
 
-  describe("getPaymentMethodAccountValidationIssue", () => {
-    it("returns numbersOnly for non-numeric M-Pesa account values", () => {
-      expect(getPaymentMethodAccountValidationIssue("safaricom_mpesa", "account", "12a34")).toBe(
+  describe("getPaymentMethodFieldValidationIssue", () => {
+    it("returns numbersOnly for invalid M-Pesa account values", () => {
+      expect(getPaymentMethodFieldValidationIssue("safaricom_mpesa", "account", "12a34")).toBe(
+        "numbersOnly",
+      )
+      expect(getPaymentMethodFieldValidationIssue("mpesa_tanzania", "account", "KE123ABC")).toBe(
         "numbersOnly",
       )
     })
 
-    it("returns tooLong when account exceeds max length", () => {
-      const longAccount = "1".repeat(PAYMENT_METHOD_ACCOUNT_MAX_LENGTH + 1)
-      expect(getPaymentMethodAccountValidationIssue("paypal", "account", longAccount)).toBe("tooLong")
-    })
-
-    it("returns null for valid account values", () => {
-      expect(getPaymentMethodAccountValidationIssue("safaricom_mpesa", "account", "0712345678")).toBe(
+    it("accepts numeric and plus-prefixed M-Pesa accounts", () => {
+      expect(getPaymentMethodFieldValidationIssue("vodacom_m_pesa", "account", "0712345678")).toBe(
         null,
       )
-      expect(getPaymentMethodAccountValidationIssue("paypal", "account", "user@bank.com")).toBe(null)
+      expect(
+        getPaymentMethodFieldValidationIssue("vodacom_m_pesa", "account", "+254712345678"),
+      ).toBe(null)
+    })
+
+    it("returns invalidFormat for invalid non-M-Pesa account values", () => {
+      expect(getPaymentMethodFieldValidationIssue("paypal", "account", "user#name")).toBe(
+        "invalidFormat",
+      )
+      expect(getPaymentMethodFieldValidationIssue("paypal", "account", "O'Brien")).toBe(
+        "invalidFormat",
+      )
+    })
+
+    it("accepts valid non-M-Pesa account values", () => {
+      expect(getPaymentMethodFieldValidationIssue("safaricom_mpesa", "account", "0712345678")).toBe(
+        null,
+      )
+      expect(getPaymentMethodFieldValidationIssue("paypal", "account", "user@bank.com")).toBe(null)
     })
 
     it("returns null for empty values", () => {
-      expect(getPaymentMethodAccountValidationIssue("safaricom_mpesa", "account", "")).toBe(null)
+      expect(getPaymentMethodFieldValidationIssue("safaricom_mpesa", "account", "")).toBe(null)
+      expect(getPaymentMethodFieldValidationIssue("safaricom_mpesa", "account", "   ")).toBe(null)
     })
 
-    it("returns null for whitespace-only account values", () => {
-      expect(getPaymentMethodAccountValidationIssue("safaricom_mpesa", "account", "   ")).toBe(null)
+    it("accepts unicode bank names and branches", () => {
+      expect(
+        getPaymentMethodFieldValidationIssue("bank_transfer", "bank_name", "البنك الأهلي"),
+      ).toBe(null)
+      expect(getPaymentMethodFieldValidationIssue("bank_transfer", "branch", "فرع الرياض")).toBe(
+        null,
+      )
+    })
+
+    it("rejects disallowed symbols in bank fields", () => {
+      expect(getPaymentMethodFieldValidationIssue("bank_transfer", "bank_name", "Bank #1")).toBe(
+        "invalidFormat",
+      )
+    })
+
+    it("accepts extended symbols in instructions", () => {
+      expect(
+        getPaymentMethodFieldValidationIssue(
+          "wise",
+          "instructions",
+          "Pay within 24h! Use ref: ABC/123",
+        ),
+      ).toBe(null)
+    })
+
+    it("rejects instructions over 300 characters", () => {
+      expect(getPaymentMethodFieldValidationIssue("wise", "instructions", "a".repeat(301))).toBe(
+        "invalidFormat",
+      )
+    })
+
+    it("validates bank code with ASCII pattern", () => {
+      expect(getPaymentMethodFieldValidationIssue("bank_transfer", "bank_code", "SWIFT123")).toBe(
+        null,
+      )
+      expect(getPaymentMethodFieldValidationIssue("bank_transfer", "bank_code", "كود")).toBe(
+        "invalidFormat",
+      )
+    })
+
+    it("returns null for unknown field names", () => {
+      expect(getPaymentMethodFieldValidationIssue("paypal", "method", "invalid")).toBe(null)
+    })
+  })
+
+  describe("getPaymentMethodAccountValidationIssue (deprecated)", () => {
+    it("delegates to field validation for account fields only", () => {
+      expect(getPaymentMethodAccountValidationIssue("safaricom_mpesa", "account", "12a34")).toBe(
+        "numbersOnly",
+      )
+      expect(getPaymentMethodAccountValidationIssue("paypal", "account", "user@bank.com")).toBe(
+        null,
+      )
+      expect(getPaymentMethodAccountValidationIssue("paypal", "instructions", "bad#value")).toBe(
+        null,
+      )
+    })
+  })
+
+  describe("getPaymentMethodFieldMaxLength", () => {
+    it("returns max lengths for known fields", () => {
+      expect(getPaymentMethodFieldMaxLength("account")).toBe(PAYMENT_METHOD_ACCOUNT_MAX_LENGTH)
+      expect(getPaymentMethodFieldMaxLength("instructions")).toBe(
+        PAYMENT_METHOD_INSTRUCTIONS_MAX_LENGTH,
+      )
+      expect(getPaymentMethodFieldMaxLength("bank_name")).toBe(100)
+      expect(getPaymentMethodFieldMaxLength("bank_code")).toBe(50)
+      expect(getPaymentMethodFieldMaxLength("branch")).toBe(100)
+    })
+
+    it("returns undefined for unknown fields", () => {
+      expect(getPaymentMethodFieldMaxLength("unknown")).toBeUndefined()
+    })
+  })
+
+  describe("isValidPaymentMethodKey", () => {
+    it("accepts lowercase method keys with underscores", () => {
+      expect(isValidPaymentMethodKey("bank_transfer")).toBe(true)
+      expect(isValidPaymentMethodKey("safaricom_mpesa")).toBe(true)
+    })
+
+    it("rejects invalid method keys", () => {
+      expect(isValidPaymentMethodKey("Bank Transfer")).toBe(false)
+      expect(isValidPaymentMethodKey("bank-transfer")).toBe(false)
     })
   })
 })

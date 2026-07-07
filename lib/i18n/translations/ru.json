@@ -1054,16 +1054,19 @@
     "userFollowed": "Подписка на {nickname} выполнена.",
     "userUnblocked": "{nickname} разблокирован.",
     "userUnfollowed": "Отписка от {nickname} выполнена.",
-    "validationAccountTooLong": "Номер учетной записи должен содержать не более 50 символов.",
-    "validationNumbersOnly": "Разрешены только цифры.",
-    "validationSymbolsOnly": "Разрешены только буквы, цифры, пробелы и символы -+.,'#@():;",
+    "validationNumbersOnly": "Используйте только цифры, с необязательным + в начале.",
     "verificationExpired": "Срок верификации истек",
     "whenUsersFollow": "Когда пользователи подпишутся на вас, они появятся здесь.",
     "daysHours": "{days}д {hours}ч",
     "joinedOn": "Присоединился {date}",
     "ratingWithCount": "{rating}/5 ({count} оценок)",
     "hoursOnly": "{hours}ч",
-    "daysOnly": "{days}д"
+    "daysOnly": "{days}д",
+    "validationAccountInvalidFormat": "Используйте только буквы, цифры, пробелы и @ - . , _ ( ) + :.",
+    "validationInstructionsInvalidFormat": "Используйте только буквы, цифры, пробелы и @ - . ! / % & , _ ( ) + : ;.",
+    "validationBankNameInvalidFormat": "Используйте только буквы, цифры, пробелы и @ - . , _ ( ) + :.",
+    "validationBankCodeInvalidFormat": "Используйте только буквы, цифры, пробелы и @ - . , _ ( ) + :.",
+    "validationBranchInvalidFormat": "Используйте только буквы, цифры, пробелы и @ - . , _ ( ) + :."
   },
   "ratingSidebar": {
     "no": "Нет",

@@ -1051,16 +1051,19 @@
     "userFollowed": "{nickname} wird jetzt gefolgt.",
     "userUnblocked": "{nickname} entsperrt.",
     "userUnfollowed": "{nickname} wird nicht mehr gefolgt.",
-    "validationAccountTooLong": "Die Kontonummer darf maximal 50 Zeichen lang sein.",
-    "validationNumbersOnly": "Nur Zahlen sind erlaubt.",
-    "validationSymbolsOnly": "Nur Buchstaben, Zahlen, Leerzeichen und die Symbole -+.,'#@():; sind erlaubt",
+    "validationNumbersOnly": "Verwenden Sie nur Zahlen, optional mit + am Anfang.",
     "verificationExpired": "Verifizierung abgelaufen",
     "whenUsersFollow": "Wenn Ihnen Nutzer folgen, erscheinen sie hier.",
     "daysHours": "{days}T. {hours}Std.",
     "joinedOn": "Beigetreten am {date}",
     "ratingWithCount": "{rating}/5 ({count} Bewertungen)",
     "hoursOnly": "{hours}Std.",
-    "daysOnly": "{days}T."
+    "daysOnly": "{days}T.",
+    "validationAccountInvalidFormat": "Verwenden Sie nur Buchstaben, Zahlen, Leerzeichen und @ - . , _ ( ) + :.",
+    "validationInstructionsInvalidFormat": "Verwenden Sie nur Buchstaben, Zahlen, Leerzeichen und @ - . ! / % & , _ ( ) + : ;.",
+    "validationBankNameInvalidFormat": "Verwenden Sie nur Buchstaben, Zahlen, Leerzeichen und @ - . , _ ( ) + :.",
+    "validationBankCodeInvalidFormat": "Verwenden Sie nur Buchstaben, Zahlen, Leerzeichen und @ - . , _ ( ) + :.",
+    "validationBranchInvalidFormat": "Verwenden Sie nur Buchstaben, Zahlen, Leerzeichen und @ - . , _ ( ) + :."
   },
   "ratingSidebar": {
     "no": "Nein",

@@ -1042,16 +1042,19 @@
     "userFollowed": "Ahora sigues a {nickname}.",
     "userUnblocked": "Has desbloqueado a {nickname}.",
     "userUnfollowed": "Has dejado de seguir a {nickname}.",
-    "validationAccountTooLong": "El número de cuenta debe tener 50 caracteres o menos.",
-    "validationNumbersOnly": "Solo se permiten números.",
-    "validationSymbolsOnly": "Solo se permiten letras, números, espacios y símbolos -+.,'#@():;",
+    "validationNumbersOnly": "Usa solo números, con un + opcional al inicio.",
     "verificationExpired": "Verificación vencida",
     "whenUsersFollow": "Cuando los usuarios te sigan, aparecerán aquí.",
     "daysHours": "{days}d {hours}h",
     "joinedOn": "Se unió el {date}",
     "ratingWithCount": "{rating}/5 ({count} valoraciones)",
     "hoursOnly": "{hours}h",
-    "daysOnly": "{days}d"
+    "daysOnly": "{days}d",
+    "validationAccountInvalidFormat": "Usa solo letras, números, espacios y @ - . , _ ( ) + :.",
+    "validationInstructionsInvalidFormat": "Usa solo letras, números, espacios y @ - . ! / % & , _ ( ) + : ;.",
+    "validationBankNameInvalidFormat": "Usa solo letras, números, espacios y @ - . , _ ( ) + :.",
+    "validationBankCodeInvalidFormat": "Usa solo letras, números, espacios y @ - . , _ ( ) + :.",
+    "validationBranchInvalidFormat": "Usa solo letras, números, espacios y @ - . , _ ( ) + :."
   },
   "ratingSidebar": {
     "no": "No",
