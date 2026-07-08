@@ -267,26 +267,26 @@ export async function logout(): Promise<void> {
 }
 
 /**
- * Fetch current user data from /users/me endpoint
+ * Fetch current user data from /users/me endpoint.
+ * Returns null for 403/404 (unverified or no P2P profile yet).
  */
 export async function getMe(): Promise<any> {
-  try {
-    const response = await p2pFetch(`${getCoreUrl()}/p2p/v1/users/me`, {
-      method: "GET",
-      credentials: "include",
-      headers: getAuthHeader(),
-    })
+  const response = await p2pFetch(`${getCoreUrl()}/p2p/v1/users/me`, {
+    method: "GET",
+    credentials: "include",
+    headers: getAuthHeader(),
+  })
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch user data: ${response.statusText}`)
-    }
-
-    const result = await response.json()
-    return result.data
-  } catch (error) {
-    console.error("Error fetching user data:", error)
-    throw error
+  if (response.status === 403 || response.status === 404) {
+    return null
   }
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch user data: ${response.status}`)
+  }
+
+  const result = await response.json()
+  return result.data
 }
 
 /**
