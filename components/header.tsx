@@ -62,12 +62,28 @@ export default function Header() {
   const isAdFormPage = pathname === "/ads/create" || pathname.startsWith("/ads/edit/")
   if (pathname.startsWith("/advertiser") || isOrderDetailPage || isAdFormPage || isTransactionListVisible || (isMobile && isOrderDetailPage && isChatVisible)) return null
 
+  const handleAskAmy = () => {
+    track("ek_ask_amy_markets")
+    if (window.Intercom) {
+      window.Intercom("show")
+    }
+  }
+
   return (
     <>
       <header data-testid="header-container" className="relative z-20 flex justify-between items-center px-6 md:px-[24px] py-4 md:py-3 bg-slate-1200 -mb-px md:mb-0 h-14 md:h-auto">
         <div className="flex items-center md:hidden">
           <MobileSidebarTrigger data-testid="header-btn-mobile-sidebar" />
         </div>
+        <Button
+          data-testid="header-btn-ask-amy"
+          onClick={handleAskAmy}
+          aria-label={t("navigation.askAmy")}
+          variant="ghost"
+          className="absolute left-1/2 -translate-x-1/2 md:hidden p-0 hover:bg-transparent"
+        >
+          <Image src="/icons/ic-ask-amy-mobile.svg" alt={t("navigation.askAmy")} width={114} height={32} />
+        </Button>
 
         <div className="hidden md:block">
           <nav className="flex h-12 border-b border-slate-200">

@@ -783,7 +783,8 @@ export default function BuySellPage() {
                                 <TradeBandBadge
                                   tradeBand={ad.user.trade_band}
                                   showLearnMore={true}
-                                  size={18}
+                                  width={20}
+                                  height={30}
                                 />
                               )}
                               {IS_CLOSED_GROUP_ENABLED && ad.is_private && (

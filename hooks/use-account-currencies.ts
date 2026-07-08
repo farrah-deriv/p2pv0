@@ -12,16 +12,20 @@ export interface AccountCurrency {
   }
 }
 
-export function useAccountCurrencies() {
+export function useAccountCurrencies(): { accountCurrencies: AccountCurrency[]; isLoading: boolean; error: string | null } {
   const { data: currenciesData, isLoading, error } = useCurrencies()
 
   const accountCurrencies = useMemo(() => {
     if (!currenciesData) return []
 
     return Object.keys(currenciesData)
+      .filter((code) => {
+        const cashiers = currenciesData[code]?.cashiers
+        return Array.isArray(cashiers) && cashiers.includes("p2p")
+      })
       .map((code) => ({
         code,
-        name: code,
+        name: currenciesData[code]?.label ?? currenciesData[code]?.currency_name ?? code,
         decimal: currenciesData[code]?.decimal,
       }))
       .sort((a, b) => {

@@ -41,7 +41,6 @@ import ProfileSelectedIcon from "@/public/icons/profile-icon-red.svg"
 import GuideIcon from "@/public/icons/ic-guide.svg"
 import GuideSelectedIcon from "@/public/icons/ic-guide-selected.svg"
 import HomeIcon from "@/public/icons/ic-house.svg"
-import LiveChatIcon from "@/public/icons/ic-livechat.svg"
 interface SidebarProps {
   className?: string
 }
@@ -142,8 +141,10 @@ export default function Sidebar({ className }: SidebarProps) {
     if (userId && verificationStatus?.phone_verified && !isPoiExpired && !isPoaExpired) {
       router.push(`/advertiser/${advertiserId}`)
     } else {
-      showAlert(createKycOnboardingAlertConfig({ route: "markets",
-        onClose: hideAlert }))
+      showAlert(createKycOnboardingAlertConfig({
+        route: "markets",
+        onClose: hideAlert
+      }))
     }
   }
 
@@ -224,8 +225,6 @@ export default function Sidebar({ className }: SidebarProps) {
 
   const helpCentreUrl = `${getHelpCentreUrl(locale)}/help-centre/deriv-p2p`
 
-  const liveChatUrl = "https://deriv.com/livechat"
-
   const navItems = [
     ...(!isDisabled
       ? [
@@ -238,7 +237,7 @@ export default function Sidebar({ className }: SidebarProps) {
           : []),
         { name: t("navigation.profile"), href: "/profile", icon: ProfileIcon, selectedIcon: ProfileSelectedIcon, testId: "sidebar-link-profile" },
         { name: t("navigation.p2pHelpCentre"), href: helpCentreUrl, icon: GuideIcon, selectedIcon: GuideSelectedIcon, testId: "sidebar-link-help" },
-        { name: t("navigation.liveChat"), href: liveChatUrl, icon: LiveChatIcon, selectedIcon: LiveChatIcon, testId: "sidebar-btn-livechat" },
+        { name: t("navigation.askAmy"), href: "", icon: undefined, selectedIcon: undefined, testId: "sidebar-btn-ask-amy" },
       ]
       : []),
   ]
@@ -250,7 +249,7 @@ export default function Sidebar({ className }: SidebarProps) {
     t("navigation.myAds"),
     t("navigation.wallet"),
     t("navigation.profile"),
-    t("navigation.liveChat"),
+    t("navigation.askAmy"),
   ]
 
   const getInitials = () => {
@@ -259,7 +258,7 @@ export default function Sidebar({ className }: SidebarProps) {
     return (firstName && lastName) ? (firstInitial + lastInitial).toUpperCase() : email?.[0].toUpperCase()
   }
 
-  const handleLiveChat = () => {
+  const handleAskAmy = () => {
     track("ek_ask_amy_markets")
     if (window.Intercom) {
       window.Intercom("show")
@@ -353,7 +352,7 @@ export default function Sidebar({ className }: SidebarProps) {
                     ))}
                     {isFetchingNextPage && (
                       <div className="sticky bottom-0 flex justify-center py-2 bg-white">
-                        <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                        <div className="w-4 h-4 border-2 border-grayscale-400 border-t-slate-600 rounded-full animate-spin" />
                       </div>
                     )}
                     <div ref={dropdownSentinelRef} className="h-1" />
@@ -371,7 +370,7 @@ export default function Sidebar({ className }: SidebarProps) {
         )}
         <ul>
           {navItems.map((item) => {
-            const isExternal = item.name === t("navigation.home") || item.name === t("navigation.p2pHelpCentre") || item.name === t("navigation.liveChat")
+            const isExternal = item.name === t("navigation.home") || item.name === t("navigation.p2pHelpCentre")
             const isActive = !isExternal && (
               item.href === "/"
                 ? pathname === "/" || pathname.startsWith("/advertiser")
@@ -390,14 +389,17 @@ export default function Sidebar({ className }: SidebarProps) {
             return (
               <li key={item.name} className={cn(hideOnMobile.includes(item.name) && "hidden md:block")}>
                 {(item.name === t("navigation.p2pHelpCentre") || item.name === t("navigation.market")) && <div className="my-3 border-b border-grayscale-200"></div>}
-                {item.name === t("navigation.liveChat") ? (
-                  <button
+                {item.name === t("navigation.askAmy") ? (
+                  <Button
                     data-testid={item.testId}
-                    onClick={handleLiveChat}
-                    className="flex items-center gap-3 rounded-md py-4 text-sm w-full text-start"
+                    onClick={handleAskAmy}
+                    aria-label={item.name}
+                    variant="ghost"
+                    size="lg"
+                    className="w-full my-1 p-0 hover:bg-transparent"
                   >
-                    {linkContent}
-                  </button>
+                    <Image src="/icons/ic-ask-amy.svg" alt={item.name} width={263} height={40} />
+                  </Button>
                 ) : isExternal ? (
                   <a
                     data-testid={item.testId}

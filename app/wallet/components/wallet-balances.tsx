@@ -3,7 +3,7 @@
 import Image from "next/image"
 import BalanceItem from "./balance-item"
 import { useTranslations } from "@/lib/i18n/use-translations"
-import EmptyState from "@/components/empty-state"
+import BuyCurrencies from "./buy-currencies"
 import { Skeleton } from "@/components/ui/skeleton"
 
 interface Balance {
@@ -41,7 +41,7 @@ export default function WalletBalances({ onBalanceClick, balances = [], isLoadin
   }
 
   if (balances.length === 0) {
-    return <div data-testid="wallet-empty-state"><EmptyState title={t("wallet.noAssetsTitle")} description={t("wallet.noAssetsDescription")} /></div>
+    return <div data-testid="wallet-empty-state"><BuyCurrencies /></div>
   }
 
   return (

@@ -468,7 +468,7 @@ export function preventSwipeNavigation(): () => void {
 }
 
 export const currencyLogoMapper = {
-  USD: "/icons/usd-flag.png",
+  USD: "/icons/ic-usd-wallet.svg",
   BTC: "/icons/bitcoin-logo.png",
   ETH: "/icons/ethereum-logo.png",
   LTC: "/icons/litecoin-logo.png",

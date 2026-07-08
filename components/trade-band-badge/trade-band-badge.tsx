@@ -10,6 +10,8 @@ interface TradeBandBadgeProps {
   tradeBand: string
   showLearnMore?: boolean
   size?: number
+  width?: number
+  height?: number
   className?: string
 }
 
@@ -40,7 +42,7 @@ const TRADE_BAND_CONFIG = {
   },
 } as const
 
-export function TradeBandBadge({ tradeBand, showLearnMore = false, size = 18, className = "" }: TradeBandBadgeProps) {
+export function TradeBandBadge({ tradeBand, showLearnMore = false, size = 18, width, height, className = "" }: TradeBandBadgeProps) {
   const { t, locale } = useTranslations()
 
   const config = TRADE_BAND_CONFIG[tradeBand as keyof typeof TRADE_BAND_CONFIG]
@@ -62,8 +64,8 @@ export function TradeBandBadge({ tradeBand, showLearnMore = false, size = 18, cl
           <Image
             src={config.icon || "/placeholder.svg"}
             alt={config.alt}
-            width={size}
-            height={size}
+            width={width ?? size}
+            height={height ?? size}
             className={`cursor-pointer ${className}`}
           />
         </TooltipTrigger>

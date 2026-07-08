@@ -94,7 +94,7 @@
     "backToHome": "Go to Home",
     "home": "Home",
     "p2pHelpCentre": "P2P help centre",
-    "liveChat": "Live chat",
+    "askAmy": "Ask Amy",
     "goToMyAds": "Go to My ads"
   },
   "market": {
@@ -413,7 +413,7 @@
     "applyFilters": "Apply filters",
     "filter": "Filter",
     "currencyUnavailable": "{currency} is unavailable",
-    "selectAnotherCurrency": "Select another currency"
+    "selectAnotherCurrency": "Select another currency."
   },
   "chat": {
     "conversationClosed": "This conversation is closed.",
@@ -636,6 +636,7 @@
     "loadingAssets": "Loading assets...",
     "noAssetsTitle": "No assets yet",
     "noAssetsDescription": "Make your first deposit and begin your trading journey today.",
+    "buyCurrenciesTitle": "Buy currencies to get started",
     "transactions": "Transactions",
     "all": "All",
     "today": "Today",
