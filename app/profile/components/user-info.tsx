@@ -45,8 +45,8 @@ export default function UserInfo({
             ) : (
               <Skeleton className="h-7 w-32 bg-white/20" />
             )}
-            {isFullyVerified && <span data-testid="profile-badge-verified"><VerifiedBadge /></span>}
-            {tradeBand && <span data-testid="profile-badge-trade-band"><TradeBandBadge tradeBand={tradeBand} showLearnMore={true} size={22} className="-mb-[0.2rem]" /></span>}
+            {isFullyVerified && <span data-testid="profile-badge-verified"><VerifiedBadge size={20} /></span>}
+            {tradeBand && <span data-testid="profile-badge-trade-band"><TradeBandBadge tradeBand={tradeBand} showLearnMore={true} size={20} /></span>}
           </div>
           {joinDate && <div className="text-xs text-white opacity-[0.72]">{joinDate}</div>}
           <div className="flex flex-wrap gap-y-2 items-center mt-1 text-xs">

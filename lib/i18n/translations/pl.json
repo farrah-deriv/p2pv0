@@ -482,7 +482,7 @@
       "orderCompletedLabel": "Zrealizowane zlecenia",
       "sellCompletionRateLabel": "Wskaźnik realizacji sprzedaży"
     },
-    "searchAdvertiserNickname": "Wyszukaj pseudonim ogłoszeniodawcy",
+    "searchAdvertiserNickname": "Wpisz pseudonim ogłoszeniodawcy",
     "sellTab": "Sprzedaj",
     "title": "Rynek",
     "tradeLimitsLabel": "Limity zamówień",
@@ -1193,7 +1193,7 @@
     "directWithdrawalTitle": "Wypłata",
     "endOfTransaction": "Koniec transakcji",
     "estTotalAssetsTooltip": "To jest szacowane łączne saldo we wszystkich portfelach P2P, wyświetlane w USD.",
-    "estTotalValue": "Szacunkowa całkowita wartość",
+    "estTotalValue": "Saldo portfela P2P",
     "exceedsBalance": "Kwota nie może przekraczać dostępnego salda {amount} {currency}.",
     "external": "Zewnętrzny",
     "failed": "Nieudane",

@@ -478,7 +478,7 @@
       "orderCompletedLabel": "Захиалга дууссан",
       "sellCompletionRateLabel": "Худалдах гүйцэтгэлийн хувь"
     },
-    "searchAdvertiserNickname": "Зар сурталчлагчийн хочин нэрийг хайх",
+    "searchAdvertiserNickname": "Зар сурталчлагчийн хочин нэрийг бичнэ үү",
     "sellTab": "Зарна",
     "title": "Зах зээл",
     "tradeLimitsLabel": "Захиалгын хязгаарлалт",
@@ -1181,7 +1181,7 @@
     "directWithdrawalTitle": "Татаж авах",
     "endOfTransaction": "Гүйлгээний төгсгөл",
     "estTotalAssetsTooltip": "Энэ бол бүх P2P түрийвчүүдийн нийт тооцоолсон үлдэгдэл бөгөөд USD-ээр харуулна.",
-    "estTotalValue": "Тооцоолол. нийт үнэ цэнэ",
+    "estTotalValue": "P2P түрийвчний үлдэгдэл",
     "exceedsBalance": "Дүн нь боломжтой үлдэгдэл {amount} {currency} хэтэрч болохгүй.",
     "external": "Гадаад",
     "failed": "Амжилтгүй",

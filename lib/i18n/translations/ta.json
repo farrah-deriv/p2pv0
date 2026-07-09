@@ -478,7 +478,7 @@
       "orderCompletedLabel": "ஆர்டர் முடிந்தது",
       "sellCompletionRateLabel": "விற்பனை நிறைவு விகிதம்"
     },
-    "searchAdvertiserNickname": "விளம்பரதாரரின் புனைப்பெயரைத் தேடுங்கள்",
+    "searchAdvertiserNickname": "விளம்பரதாரரின் புனைப்பெயரை உள்ளிடுங்கள்",
     "sellTab": "விற்கவும்",
     "title": "சந்தை",
     "tradeLimitsLabel": "ஆர்டர் வரம்புகள்",
@@ -1181,7 +1181,7 @@
     "directWithdrawalTitle": "திரும்பப் பெறவும்",
     "endOfTransaction": "பரிவர்த்தனையின் முடிவு",
     "estTotalAssetsTooltip": "இது அனைத்து P2P பணப்பைகளிலும் உங்கள் மதிப்பிடப்பட்ட ஒருங்கிணைந்த இருப்பு, USD-இல் காட்டப்படுகிறது.",
-    "estTotalValue": "Est. மொத்த மதிப்பு",
+    "estTotalValue": "P2P வாலட் இருப்பு",
     "exceedsBalance": "கிடைக்கும் இருப்புத் தொகை {amount} {currency} ஐ விட அதிகமாக இருக்கக்கூடாது.",
     "external": "வெளி",
     "failed": "தோல்வியடைந்தது",

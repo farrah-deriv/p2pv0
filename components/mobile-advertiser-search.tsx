@@ -215,7 +215,7 @@ export default function MobileAdvertiserSearch({ isOpen, onClose }: MobileAdvert
                             value={searchInput}
                             onChange={(e) => handleSearchChange(e.target.value)}
                             autoFocus
-                            className="w-full min-w-0 rounded-full ps-10 pe-10"
+                            className={`w-full min-w-0 rounded-full ps-10 ${searchInput ? "pe-10" : "pe-4"}`}
                         />
                         {searchInput && (
                             <Button

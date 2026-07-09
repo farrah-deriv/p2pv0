@@ -143,7 +143,7 @@
       "goBack": "Go back"
     },
     "failedToLoadAdvertisements": "Failed to load advertisements",
-    "searchAdvertiserNickname": "Search advertiser's nickname",
+    "searchAdvertiserNickname": "Type advertiser's nickname",
     "tradeLimitsLabel": "Trade limits:"
   },
   "order": {
@@ -626,7 +626,7 @@
   },
   "wallet": {
     "title": "Wallet",
-    "estTotalValue": "Est. total value",
+    "estTotalValue": "P2P Wallet Balance",
     "deposit": "Deposit",
     "withdraw": "Withdraw",
     "transfer": "Transfer",

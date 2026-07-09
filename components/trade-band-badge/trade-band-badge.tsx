@@ -67,6 +67,7 @@ export function TradeBandBadge({ tradeBand, showLearnMore = false, size = 18, wi
             width={width ?? size}
             height={height ?? size}
             className={`cursor-pointer ${className}`}
+            style={{ width: width ?? size, height: height ?? size }}
           />
         </TooltipTrigger>
         <TooltipContent side="bottom" className="max-w-[340px] text-wrap">

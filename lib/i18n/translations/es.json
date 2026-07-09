@@ -487,7 +487,7 @@
       "orderCompletedLabel": "Órdenes completadas",
       "sellCompletionRateLabel": "Tasa de finalización de venta"
     },
-    "searchAdvertiserNickname": "Buscar el apodo del anunciante",
+    "searchAdvertiserNickname": "Escribe el apodo del anunciante",
     "sellTab": "Vender",
     "title": "Mercado",
     "tradeLimitsLabel": "Límites de orden",
@@ -1199,7 +1199,7 @@
     "directWithdrawalTitle": "Retirar",
     "endOfTransaction": "Fin de transacción",
     "estTotalAssetsTooltip": "Este es su saldo combinado estimado en todas las billeteras P2P, mostrado en USD.",
-    "estTotalValue": "Valor total estimado",
+    "estTotalValue": "Saldo de billetera P2P",
     "exceedsBalance": "El monto no puede exceder el saldo disponible {amount} {currency}.",
     "external": "Externo",
     "failed": "Fallido",

@@ -778,13 +778,12 @@ export default function BuySellPage() {
                               >
                                 {ad.user?.nickname}
                               </button>
-                              <VerifiedBadge />
+                              <VerifiedBadge size={20} />
                               {ad.user.trade_band && (
                                 <TradeBandBadge
                                   tradeBand={ad.user.trade_band}
                                   showLearnMore={true}
-                                  width={20}
-                                  height={30}
+                                  size={20}
                                 />
                               )}
                               {IS_CLOSED_GROUP_ENABLED && ad.is_private && (
@@ -797,7 +796,7 @@ export default function BuySellPage() {
                                 />
                               )}
                               {ad.user?.is_favourite && (
-                                <span className="ms-1 px-[8px] py-[4px] bg-blue-50 text-blue-100 text-xs rounded-[4px]">
+                                <span className="px-[8px] py-[4px] bg-blue-50 text-blue-100 text-xs rounded-[4px]">
                                   {t("market.following")}
                                 </span>
                               )}

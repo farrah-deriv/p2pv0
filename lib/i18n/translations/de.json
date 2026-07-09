@@ -505,7 +505,7 @@
       "orderCompletedLabel": "Abgeschlossene Aufträge",
       "sellCompletionRateLabel": "Verkauf-Abschlussrate"
     },
-    "searchAdvertiserNickname": "Spitzname des Werbetreibenden suchen",
+    "searchAdvertiserNickname": "Spitzname des Werbetreibenden eingeben",
     "sellTab": "Verkaufen",
     "title": "Markt",
     "tradeLimitsLabel": "Bestelllimits",
@@ -1208,7 +1208,7 @@
     "directWithdrawalTitle": "Abheben",
     "endOfTransaction": "Ende der Transaktion",
     "estTotalAssetsTooltip": "Dies ist Ihr geschätztes Gesamtguthaben über alle P2P-Wallets, angezeigt in USD.",
-    "estTotalValue": "Geschätzter Gesamtwert",
+    "estTotalValue": "P2P-Wallet-Guthaben",
     "exceedsBalance": "Der Betrag darf das verfügbare Guthaben von {amount} {currency} nicht überschreiten.",
     "external": "Extern",
     "failed": "Fehlgeschlagen",

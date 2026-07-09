@@ -478,7 +478,7 @@
       "orderCompletedLabel": "완료된 주문",
       "sellCompletionRateLabel": "판매 완료율"
     },
-    "searchAdvertiserNickname": "광고주 닉네임 검색",
+    "searchAdvertiserNickname": "광고주 닉네임 입력",
     "sellTab": "판매",
     "title": "마켓",
     "tradeLimitsLabel": "주문 한도",
@@ -1230,7 +1230,7 @@
     "directWithdrawalTitle": "출금",
     "endOfTransaction": "거래 종료",
     "estTotalAssetsTooltip": "모든 P2P 지갑에 걸친 예상 합산 잔액이며 USD로 표시됩니다.",
-    "estTotalValue": "총 가치 추정",
+    "estTotalValue": "P2P 지갑 잔액",
     "exceedsBalance": "금액은 사용 가능한 잔액 {amount} {currency}을 초과할 수 없습니다.",
     "external": "외부",
     "failed": "실패",

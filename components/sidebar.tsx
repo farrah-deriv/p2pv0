@@ -327,7 +327,7 @@ export default function Sidebar({ className }: SidebarProps) {
                           if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current)
                           blurTimeoutRef.current = setTimeout(() => setIsSearchFocused(false), 150)
                         }}
-                        className="w-full min-w-0 bg-grayscale-500 rounded-lg ps-10 pe-10 mt-6"
+                        className={`w-full min-w-0 bg-grayscale-500 rounded-lg ps-10 mt-6 ${searchInput ? "pe-10" : "pe-4"}`}
                       />
                       {searchInput && (
                         <Button

@@ -478,7 +478,7 @@
       "orderCompletedLabel": "Maagizo yaliyokamilika",
       "sellCompletionRateLabel": "Kiwango cha kukamilisha mauzo"
     },
-    "searchAdvertiserNickname": "Tafuta jina la utani la mtangazaji",
+    "searchAdvertiserNickname": "Andika jina la utani la mtangazaji",
     "sellTab": "Uza",
     "title": "Soko",
     "tradeLimitsLabel": "Vikomo vya amri",
@@ -1189,7 +1189,7 @@
     "directWithdrawalTitle": "Toa pesa",
     "endOfTransaction": "Mwisho wa miamala",
     "estTotalAssetsTooltip": "Hii ni salio lako la makadirio lililounganishwa katika pochi zote za P2P, linaonyeshwa kwa USD.",
-    "estTotalValue": "Est. thamani ya jumla",
+    "estTotalValue": "Salio la Mkoba wa P2P",
     "exceedsBalance": "Kiasi hakiwezi kuzidi salio linalopatikana {amount} {currency}.",
     "external": "Nje",
     "failed": "Imeshindwa",

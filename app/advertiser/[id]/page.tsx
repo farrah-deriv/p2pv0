@@ -494,13 +494,13 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                   <div className="flex-1">
                     <div className="flex gap-2 items-center">
                       <h2 data-testid="advertiser-text-nickname" className="text-lg font-bold">{profile?.nickname}</h2>
-                      <span data-testid="advertiser-badge-verified"><VerifiedBadge /></span>
+                      <span data-testid="advertiser-badge-verified"><VerifiedBadge size={20} /></span>
                       {profile.trade_band && (
                         <span data-testid="advertiser-badge-trade-band">
                           <TradeBandBadge
                             tradeBand={profile.trade_band}
                             showLearnMore={true}
-                            size={18}
+                            size={20}
                           />
                         </span>
                       )}

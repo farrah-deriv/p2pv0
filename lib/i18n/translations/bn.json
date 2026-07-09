@@ -487,7 +487,7 @@
       "orderCompletedLabel": "সম্পূর্ণ অর্ডার",
       "sellCompletionRateLabel": "বিক্রয় সম্পূর্ণতার হার"
     },
-    "searchAdvertiserNickname": "বিজ্ঞাপনদাতার ডাকনাম অনুসন্ধান করুন",
+    "searchAdvertiserNickname": "বিজ্ঞাপনদাতার ডাকনাম টাইপ করুন",
     "sellTab": "বিক্রয় করুন",
     "title": "মার্কেট",
     "tradeLimitsLabel": "অর্ডার সীমা",
@@ -1191,7 +1191,7 @@
     "directWithdrawalTitle": "উত্তোলন",
     "endOfTransaction": "লেনদেন শেষ",
     "estTotalAssetsTooltip": "এটি সমস্ত P2P ওয়ালেট জুড়ে আপনার আনুমানিক সম্মিলিত ব্যালেন্স, USD-তে দেখানো হয়েছে।",
-    "estTotalValue": "আনু. মোট মূল্য",
+    "estTotalValue": "P2P ওয়ালেট ব্যালেন্স",
     "exceedsBalance": "পরিমাণ উপলব্ধ ব্যালেন্স {amount} {currency} অতিক্রম করতে পারবে না।",
     "external": "বাহ্যিক",
     "failed": "ব্যর্থ",

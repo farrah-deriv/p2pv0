@@ -487,7 +487,7 @@
       "orderCompletedLabel": "Ordres complétés",
       "sellCompletionRateLabel": "Taux de réalisation à la vente"
     },
-    "searchAdvertiserNickname": "Rechercher le pseudonyme de l'annonceur",
+    "searchAdvertiserNickname": "Saisir le pseudonyme de l'annonceur",
     "sellTab": "Vendre",
     "title": "Marché",
     "tradeLimitsLabel": "Limites de commande",
@@ -1197,7 +1197,7 @@
     "directWithdrawalTitle": "Retrait",
     "endOfTransaction": "Fin de la transaction",
     "estTotalAssetsTooltip": "Il s'agit de votre solde combiné estimé sur tous les portefeuilles P2P, affiché en USD.",
-    "estTotalValue": "Valeur totale estimée",
+    "estTotalValue": "Solde du portefeuille P2P",
     "exceedsBalance": "Le montant ne peut pas dépasser le solde disponible {amount} {currency}.",
     "external": "Externe",
     "failed": "Échoué",

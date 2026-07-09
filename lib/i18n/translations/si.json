@@ -478,7 +478,7 @@
       "orderCompletedLabel": "ඇණවුම සම්පූර්ණ කරන ලදී",
       "sellCompletionRateLabel": "විකුණුම් අවසන් කිරීමේ අනුපාතය"
     },
-    "searchAdvertiserNickname": "වෙළඳ ප්‍රචාරකයාගේ අන්වර්ථ නාමය සොයන්න",
+    "searchAdvertiserNickname": "වෙළඳ ප්‍රචාරකයාගේ අන්වර්ථ නාමය ටයිප් කරන්න",
     "sellTab": "විකුණනවා",
     "title": "වෙළෙඳපොළ",
     "tradeLimitsLabel": "ඇණවුම් සීමාවන්",
@@ -1181,7 +1181,7 @@
     "directWithdrawalTitle": "ආපසු ගන්න",
     "endOfTransaction": "ගනුදෙනුවේ අවසානය",
     "estTotalAssetsTooltip": "මෙය සියලු P2P පසුම්බි වලින් ඔබේ ඇස්තමේන්තුගත සංයුක්ත ශේෂය වන අතර USD වලින් පෙන්වයි.",
-    "estTotalValue": "ඇස්තමේන්තුගත මුළු වටිනාකම",
+    "estTotalValue": "P2P පසුම්බි ශේෂය",
     "exceedsBalance": "මුදල පවතින ශේෂය {amount} {currency} ඉක්මවිය නොහැක.",
     "external": "බාහිර",
     "failed": "අසාර්ථකයි",

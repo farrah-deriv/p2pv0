@@ -478,7 +478,7 @@
       "orderCompletedLabel": "اكتمل الطلب",
       "sellCompletionRateLabel": "بيع معدل الانتهاء"
     },
-    "searchAdvertiserNickname": "ابحث عن لقب المعلن",
+    "searchAdvertiserNickname": "اكتب لقب المعلن",
     "sellTab": "بيع",
     "title": "السوق",
     "tradeLimitsLabel": "حدود الطلب",
@@ -1181,7 +1181,7 @@
     "directWithdrawalTitle": "انسحاب",
     "endOfTransaction": "نهاية المعاملة",
     "estTotalAssetsTooltip": "هذا هو رصيدك التقديري المجمع عبر جميع محافظ P2P، معروضًا بالدولار الأمريكي.",
-    "estTotalValue": "مؤسسة. القيمة الإجمالية",
+    "estTotalValue": "رصيد محفظة P2P",
     "exceedsBalance": "لا يمكن أن يتجاوز المبلغ الرصيد المتاح {amount} {currency}.",
     "external": "خارجي",
     "failed": "فشل",

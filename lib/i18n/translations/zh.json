@@ -478,7 +478,7 @@
       "orderCompletedLabel": "订单已完成",
       "sellCompletionRateLabel": "销售完成率"
     },
-    "searchAdvertiserNickname": "搜索广告商昵称",
+    "searchAdvertiserNickname": "输入广告商昵称",
     "sellTab": "出售",
     "title": "市场",
     "tradeLimitsLabel": "订单限制",
@@ -1181,7 +1181,7 @@
     "directWithdrawalTitle": "撤回",
     "endOfTransaction": "交易结束",
     "estTotalAssetsTooltip": "这是您所有 P2P 钱包的预估合并余额，以美元显示。",
-    "estTotalValue": "预计。总价值",
+    "estTotalValue": "P2P钱包余额",
     "exceedsBalance": "金额不能超过可用余额 {amount} {currency}。",
     "external": "外部",
     "failed": "失败",

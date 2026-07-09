@@ -39,9 +39,9 @@ export function AdvertiserSearchResultCard({ ad, onAdvertiserClick, onBuySellCli
                         >
                             {ad.user?.nickname}
                         </button>
-                        <VerifiedBadge />
+                        <VerifiedBadge size={20} />
                         {ad.user.trade_band && (
-                            <TradeBandBadge tradeBand={ad.user.trade_band} showLearnMore={true} size={18} />
+                            <TradeBandBadge tradeBand={ad.user.trade_band} showLearnMore={true} size={20} />
                         )}
                         {IS_CLOSED_GROUP_ENABLED && ad.is_private && (
                             <Image src="/icons/closed-group.svg" alt={t("common.closedGroup")} width={32} height={32} className="cursor-pointer me-1" />

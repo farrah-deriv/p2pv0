@@ -478,7 +478,7 @@
       "orderCompletedLabel": "訂單已完成",
       "sellCompletionRateLabel": "銷售完成率"
     },
-    "searchAdvertiserNickname": "搜尋廣告商暱稱",
+    "searchAdvertiserNickname": "輸入廣告商暱稱",
     "sellTab": "出售",
     "title": "市場",
     "tradeLimitsLabel": "訂單限制",
@@ -1181,7 +1181,7 @@
     "directWithdrawalTitle": "撤回",
     "endOfTransaction": "交易結束",
     "estTotalAssetsTooltip": "這是您所有 P2P 錢包的預估合併餘額，以美元顯示。",
-    "estTotalValue": "預計。總價值",
+    "estTotalValue": "P2P錢包餘額",
     "exceedsBalance": "金額不能超過可用餘額 {amount} {currency}。",
     "external": "外部",
     "failed": "失敗",

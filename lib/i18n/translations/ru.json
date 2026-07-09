@@ -503,7 +503,7 @@
       "orderCompletedLabel": "Завершенные ордера",
       "sellCompletionRateLabel": "Процент завершенных продаж"
     },
-    "searchAdvertiserNickname": "Поиск по никнейму рекламодателя",
+    "searchAdvertiserNickname": "Введите никнейм рекламодателя",
     "sellTab": "Продать",
     "title": "Рынок",
     "tradeLimitsLabel": "Лимиты заказа",
@@ -1213,7 +1213,7 @@
     "directWithdrawalTitle": "Вывести",
     "endOfTransaction": "Конец транзакции",
     "estTotalAssetsTooltip": "Это ваша ориентировочная совокупная сумма по всем P2P-кошелькам, отображаемая в USD.",
-    "estTotalValue": "Прибл. общая стоимость",
+    "estTotalValue": "Баланс кошелька P2P",
     "exceedsBalance": "Сумма не может превышать доступный баланс {amount} {currency}.",
     "external": "Внешний",
     "failed": "Неудачно",

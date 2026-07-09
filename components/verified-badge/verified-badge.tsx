@@ -5,7 +5,11 @@ import Image from "next/image"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useIsMobile } from "@/hooks/use-mobile"
 
-export default function VerifiedBadge() {
+interface VerifiedBadgeProps {
+  size?: number
+}
+
+export default function VerifiedBadge({ size = 20 }: VerifiedBadgeProps) {
   const { t } = useTranslations()
   const isMobile = useIsMobile()
 
@@ -17,8 +21,9 @@ export default function VerifiedBadge() {
             src="/icons/verified-badge.svg"
             className="cursor-pointer"
             alt="Verified"
-            width={20}
-            height={30}
+            width={size}
+            height={size * 1.5}
+            style={{ width: size, height: size * 1.5 }}
           />
         </TooltipTrigger>
         <TooltipContent align={isMobile ? "middle" : "start"} side="bottom" className="max-w-[328px] text-wrap">

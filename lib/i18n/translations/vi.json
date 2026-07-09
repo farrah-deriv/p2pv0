@@ -521,7 +521,7 @@
       "orderCompletedLabel": "Đơn hàng đã hoàn thành",
       "sellCompletionRateLabel": "Tỷ lệ hoàn thành bán"
     },
-    "searchAdvertiserNickname": "Tìm biệt danh của nhà quảng cáo",
+    "searchAdvertiserNickname": "Nhập biệt danh của nhà quảng cáo",
     "sellTab": "Bán",
     "title": "Thị trường",
     "tradeLimitsLabel": "Giới hạn đơn hàng",
@@ -1225,7 +1225,7 @@
     "directWithdrawalTitle": "Rút tiền",
     "endOfTransaction": "Kết thúc giao dịch",
     "estTotalAssetsTooltip": "Đây là số dư ước tính tổng hợp trên tất cả ví P2P của bạn, hiển thị bằng USD.",
-    "estTotalValue": "Tổng giá trị ước tính",
+    "estTotalValue": "Số dư ví P2P",
     "exceedsBalance": "Số tiền không được vượt quá số dư khả dụng {amount} {currency}.",
     "external": "Bên ngoài",
     "failed": "Thất bại",
