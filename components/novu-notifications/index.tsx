@@ -94,7 +94,7 @@ export function NovuNotifications({ disabled = false }: NovuNotificationsProps) 
       colorBackground: "#ffffff",
     },
     elements: {
-      popoverTrigger: {
+      "inbox__popoverTrigger": {
         borderRadius: "50%",
         backgroundColor: isMobile ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.04)",
         padding: 0,
@@ -113,7 +113,7 @@ export function NovuNotifications({ disabled = false }: NovuNotificationsProps) 
       },
       notificationImage: { display: "none" },
       preferences__button: { display: "none" },
-      popoverContent: "novu-popover-content",
+      "inbox__popoverContent": "novu-popover-content",
     },
   }
 

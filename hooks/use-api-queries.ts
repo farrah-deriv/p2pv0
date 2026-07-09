@@ -506,6 +506,7 @@ export function useFavouriteUsers(enabled = true) {
 // Orders Hooks
 export function useOrders(filters?: OrderFilters) {
   const maintenanceBlocked = useP2PQueriesBlocked()
+  const userId = useUserDataStore((state) => state.userId)
   return useInfiniteQuery({
     queryKey: queryKeys.orders.listByFilters(filters),
     queryFn: ({ pageParam = 1 }) => OrdersAPI.getOrders(filters, pageParam as number, PAGE_SIZE),
@@ -515,7 +516,7 @@ export function useOrders(filters?: OrderFilters) {
     },
     initialPageParam: 1,
     staleTime: 1000 * 30,
-    enabled: !maintenanceBlocked,
+    enabled: !maintenanceBlocked && !!userId,
   })
 }
 

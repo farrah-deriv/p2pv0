@@ -116,8 +116,8 @@ export default function Main({
 
         if (!sessionAuth && !isPublic) {
           setIsHeaderVisible(false)
-          window.location.href = getLoginUrl(userData?.signup === "v1")
-        } else if (sessionAuth) {
+          window.location.href = getLoginUrl(useUserDataStore.getState().userData?.signup === "v1")
+        } else if (sessionAuth && !useUserDataStore.getState().userData) {
           await AuthAPI.fetchUserIdAndStore()
         }
       } catch (error) {

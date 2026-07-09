@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { cn, getHomeUrl } from "@/lib/utils"
 import { getHelpCentreUrl } from "@/lib/get-help-centre-url"
 import { NovuNotifications } from "./novu-notifications"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, Fragment } from "react"
 import { useUserDataStore, getCachedSignup } from "@/stores/user-data-store"
 import { SvgIcon } from "@/components/icons/svg-icon"
 import { useTranslations } from "@/lib/i18n/use-translations"
@@ -237,7 +237,6 @@ export default function Sidebar({ className }: SidebarProps) {
           : []),
         { name: t("navigation.profile"), href: "/profile", icon: ProfileIcon, selectedIcon: ProfileSelectedIcon, testId: "sidebar-link-profile" },
         { name: t("navigation.p2pHelpCentre"), href: helpCentreUrl, icon: GuideIcon, selectedIcon: GuideSelectedIcon, testId: "sidebar-link-help" },
-        { name: t("navigation.askAmy"), href: "", icon: undefined, selectedIcon: undefined, testId: "sidebar-btn-ask-amy" },
       ]
       : []),
   ]
@@ -249,7 +248,6 @@ export default function Sidebar({ className }: SidebarProps) {
     t("navigation.myAds"),
     t("navigation.wallet"),
     t("navigation.profile"),
-    t("navigation.askAmy"),
   ]
 
   const getInitials = () => {
@@ -280,94 +278,6 @@ export default function Sidebar({ className }: SidebarProps) {
         )}
       </div>
       <nav className="flex-1 px-4">
-        {(pathname === "/" || pathname.startsWith("/advertiser")) && (
-          <div className="relative mt-2">
-            <Image
-              src="/icons/search-icon-custom.png"
-              alt={t("common.search")}
-              width={24}
-              height={24}
-              className="absolute start-2 top-1/2 z-10 -translate-y-1/2 pointer-events-none"
-            />
-            <Input
-              data-testid="sidebar-input-search"
-              variant="tertiary"
-              placeholder={t("market.searchAdvertiserNickname")}
-              value={searchInput}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              onFocus={() => {
-                if (isMaintenanceActive) return
-                setIsSearchFocused(true)
-              }}
-              disabled={isMaintenanceActive}
-              onBlur={() => {
-                if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current)
-                blurTimeoutRef.current = setTimeout(() => setIsSearchFocused(false), 150)
-              }}
-              className="w-full min-w-0 bg-grayscale-500 rounded-lg ps-10 pe-10"
-            />
-            {searchInput && (
-              <Button
-                data-testid="sidebar-btn-search-clear"
-                variant="ghost"
-                size="sm"
-                onClick={handleClear}
-                className="absolute end-2 md:end-4 top-1/2 transform -translate-y-1/2 hover:bg-transparent p-0 h-auto"
-              >
-                <Image src="/icons/clear-search-icon.png" alt={t("common.clearSearch")} width={24} height={24} />
-              </Button>
-            )}
-            {isSearchFocused && searchInput.length > 0 && (
-              <div className="absolute top-full start-0 mt-1 w-[360px] min-h-[272px] bg-white border border-slate-200 rounded-xl shadow-md z-50 overflow-hidden" onMouseDown={(e) => e.preventDefault()}>
-                <div className="px-0 pt-3 pb-0">
-                  <Tabs value={searchTab} onValueChange={(v) => { if (v === "sell") track("ek_buy_tab_markets_search"); else track("ek_sell_tab_markets_search"); setSearchTab(v as "buy" | "sell") }}>
-                    <TabsList className="w-full bg-transparent p-0">
-                      <TabsTrigger
-                        data-testid="sidebar-tab-search-buy"
-                        value="sell"
-                        variant="underline"
-                        className="flex-1 data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:rounded-none after:bg-black data-[state=active]:after:w-full"
-                      >
-                        {t("market.buyTab")}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        data-testid="sidebar-tab-search-sell"
-                        value="buy"
-                        variant="underline"
-                        className="flex-1 data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:rounded-none after:bg-black data-[state=active]:after:w-full"
-                      >
-                        {t("market.sellTab")}
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </div>
-                {isSearching && searchResults.length === 0 ? (
-                  <AdvertiserSearchSkeleton count={3} />
-                ) : searchResults.length > 0 ? (
-                  <div ref={dropdownScrollContainerRef} className="max-h-[480px] overflow-y-auto">
-                    {searchResults.map((ad) => (
-                      <div key={ad.id} data-testid={`sidebar-card-search-${ad.user?.id}`} className="border-b border-slate-100">
-                        {ad.user && <AdvertiserSearchResultCard ad={ad} onAdvertiserClick={handleAdvertiserClick} onBuySellClick={handleBuySellClick} />}
-                      </div>
-                    ))}
-                    {isFetchingNextPage && (
-                      <div className="sticky bottom-0 flex justify-center py-2 bg-white">
-                        <div className="w-4 h-4 border-2 border-grayscale-400 border-t-slate-600 rounded-full animate-spin" />
-                      </div>
-                    )}
-                    <div ref={dropdownSentinelRef} className="h-1" />
-                  </div>
-                ) : debouncedSearchInput.length > 0 ? (
-                  <EmptyState
-                    title={t("common.searchNoResultsTitle", { query: debouncedSearchInput })}
-                    description={t("common.searchNoResultsDescription")}
-                    className="py-4 px-2"
-                  />
-                ) : null}
-              </div>
-            )}
-          </div>
-        )}
         <ul>
           {navItems.map((item) => {
             const isExternal = item.name === t("navigation.home") || item.name === t("navigation.p2pHelpCentre")
@@ -386,40 +296,122 @@ export default function Sidebar({ className }: SidebarProps) {
               </>
             )
 
+            const isMarket = item.name === t("navigation.market")
+            const isOnMarketPage = pathname === "/" || pathname.startsWith("/advertiser")
+
             return (
-              <li key={item.name} className={cn(hideOnMobile.includes(item.name) && "hidden md:block")}>
-                {(item.name === t("navigation.p2pHelpCentre") || item.name === t("navigation.market")) && <div className="my-3 border-b border-grayscale-200"></div>}
-                {item.name === t("navigation.askAmy") ? (
-                  <Button
-                    data-testid={item.testId}
-                    onClick={handleAskAmy}
-                    aria-label={item.name}
-                    variant="ghost"
-                    size="lg"
-                    className="w-full my-1 p-0 hover:bg-transparent"
-                  >
-                    <Image src="/icons/ic-ask-amy.svg" alt={item.name} width={263} height={40} />
-                  </Button>
-                ) : isExternal ? (
-                  <a
-                    data-testid={item.testId}
-                    href={item.href}
-                    className="flex items-center gap-3 rounded-md py-4 text-sm"
-                    rel="noopener noreferrer"
-                  >
-                    {linkContent}
-                  </a>
-                ) : (
-                  <Link
-                    prefetch
-                    data-testid={item.testId}
-                    href={item.href}
-                    className={cn("flex items-center gap-3 rounded-md py-4 text-sm", isActive ? "text-primary" : "")}
-                  >
-                    {linkContent}
-                  </Link>
-                )}
-              </li>
+              <Fragment key={item.name}>
+                <li className={cn(hideOnMobile.includes(item.name) && "hidden md:block")}>
+                  {(item.name === t("navigation.p2pHelpCentre") || isMarket) && <div className="my-3 border-b border-grayscale-200"></div>}
+                  {isMarket && isOnMarketPage && (
+                    <div className="relative mt-2 mb-1">
+                      <Image
+                        src="/icons/search-icon-custom.png"
+                        alt={t("common.search")}
+                        width={24}
+                        height={24}
+                        className="absolute start-2 top-1/2 z-10 -translate-y-1/2 pointer-events-none"
+                      />
+                      <Input
+                        data-testid="sidebar-input-search"
+                        variant="tertiary"
+                        placeholder={t("market.searchAdvertiserNickname")}
+                        value={searchInput}
+                        onChange={(e) => handleSearchChange(e.target.value)}
+                        onFocus={() => {
+                          if (isMaintenanceActive) return
+                          setIsSearchFocused(true)
+                        }}
+                        disabled={isMaintenanceActive}
+                        onBlur={() => {
+                          if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current)
+                          blurTimeoutRef.current = setTimeout(() => setIsSearchFocused(false), 150)
+                        }}
+                        className="w-full min-w-0 bg-grayscale-500 rounded-lg ps-10 pe-10 mt-6"
+                      />
+                      {searchInput && (
+                        <Button
+                          data-testid="sidebar-btn-search-clear"
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleClear}
+                          className="absolute end-2 md:end-4 top-1/2 transform -translate-y-1/2 hover:bg-transparent p-0 h-auto"
+                        >
+                          <Image src="/icons/clear-search-icon.png" alt={t("common.clearSearch")} width={24} height={24} />
+                        </Button>
+                      )}
+                      {isSearchFocused && searchInput.length > 0 && (
+                        <div className="absolute top-full start-0 mt-1 w-[360px] min-h-[272px] bg-white border border-slate-200 rounded-xl shadow-md z-50 overflow-hidden" onMouseDown={(e) => e.preventDefault()}>
+                          <div className="px-0 pt-3 pb-0">
+                            <Tabs value={searchTab} onValueChange={(v) => { if (v === "sell") track("ek_buy_tab_markets_search"); else track("ek_sell_tab_markets_search"); setSearchTab(v as "buy" | "sell") }}>
+                              <TabsList className="w-full bg-transparent p-0">
+                                <TabsTrigger
+                                  data-testid="sidebar-tab-search-buy"
+                                  value="sell"
+                                  variant="underline"
+                                  className="flex-1 data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:rounded-none after:bg-black data-[state=active]:after:w-full"
+                                >
+                                  {t("market.buyTab")}
+                                </TabsTrigger>
+                                <TabsTrigger
+                                  data-testid="sidebar-tab-search-sell"
+                                  value="buy"
+                                  variant="underline"
+                                  className="flex-1 data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:rounded-none after:bg-black data-[state=active]:after:w-full"
+                                >
+                                  {t("market.sellTab")}
+                                </TabsTrigger>
+                              </TabsList>
+                            </Tabs>
+                          </div>
+                          {isSearching && searchResults.length === 0 ? (
+                            <AdvertiserSearchSkeleton count={3} />
+                          ) : searchResults.length > 0 ? (
+                            <div ref={dropdownScrollContainerRef} className="max-h-[480px] overflow-y-auto">
+                              {searchResults.map((ad) => (
+                                <div key={ad.id} data-testid={`sidebar-card-search-${ad.user?.id}`} className="border-b border-slate-100">
+                                  {ad.user && <AdvertiserSearchResultCard ad={ad} onAdvertiserClick={handleAdvertiserClick} onBuySellClick={handleBuySellClick} />}
+                                </div>
+                              ))}
+                              {isFetchingNextPage && (
+                                <div className="sticky bottom-0 flex justify-center py-2 bg-white">
+                                  <div className="w-4 h-4 border-2 border-grayscale-400 border-t-slate-600 rounded-full animate-spin" />
+                                </div>
+                              )}
+                              <div ref={dropdownSentinelRef} className="h-1" />
+                            </div>
+                          ) : debouncedSearchInput.length > 0 ? (
+                            <EmptyState
+                              title={t("common.searchNoResultsTitle", { query: debouncedSearchInput })}
+                              description={t("common.searchNoResultsDescription")}
+                              className="py-4 px-2"
+                            />
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {isExternal ? (
+                    <a
+                      data-testid={item.testId}
+                      href={item.href}
+                      className="flex items-center gap-3 rounded-md py-4 text-sm"
+                      rel="noopener noreferrer"
+                    >
+                      {linkContent}
+                    </a>
+                  ) : (
+                    <Link
+                      prefetch
+                      data-testid={item.testId}
+                      href={item.href}
+                      className={cn("flex items-center gap-3 rounded-md py-4 text-sm", isActive ? "text-primary" : "")}
+                    >
+                      {linkContent}
+                    </Link>
+                  )}
+                </li>
+              </Fragment>
             )
           })}
         </ul>
@@ -434,6 +426,18 @@ export default function Sidebar({ className }: SidebarProps) {
             </div>
             {t("nps.sendFeedback")}
           </button>
+        )}
+        {!isDisabled && (
+          <Button
+            data-testid="sidebar-btn-ask-amy"
+            onClick={handleAskAmy}
+            aria-label={t("navigation.askAmy")}
+            variant="ghost"
+            size="lg"
+            className="hidden md:flex w-full my-1 p-0 hover:bg-transparent"
+          >
+            <Image src="/icons/ic-ask-amy.svg" alt={t("navigation.askAmy")} width={263} height={40} />
+          </Button>
         )}
       </nav>
       <div className="p-4 pb-6">

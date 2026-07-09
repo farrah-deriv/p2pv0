@@ -129,6 +129,10 @@ export async function getOrders(filters?: OrderFilters, page?: number, perPage?:
       credentials: "include",
     })
 
+    if (response.status === 403) {
+      return []
+    }
+
     if (!response.ok) {
       throw new Error(`Error fetching orders: ${response.statusText}`)
     }
