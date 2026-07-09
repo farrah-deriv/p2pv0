@@ -142,7 +142,7 @@ export default function TransactionDetails({ transaction }: TransactionDetailsPr
     switch (status.toLowerCase()) {
       case "complete":
       case "completed":
-        return { text: t("wallet.success"), color: "text-success-text" }
+        return { text: t("wallet.completed"), color: "text-success-text" }
       case "pending":
         return { text: t("wallet.pending"), color: "text-pending-text-secondary" }
       case "processing":

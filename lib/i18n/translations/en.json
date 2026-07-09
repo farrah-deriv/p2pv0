@@ -655,6 +655,7 @@
     "date": "Date",
     "time": "Time",
     "success": "Success",
+    "completed": "Completed",
     "processing": "Processing",
     "pending": "Pending",
     "failed": "Failed",

@@ -5,7 +5,7 @@ import { p2pFetch } from "./p2p-fetch"
 export interface Order {
   id: string
   type: "buy" | "sell"
-  status: "Pending" | "Completed" | "Cancelled" | "Disputed"
+  status: "pending_payment" | "pending_release" | "timed_out" | "completed" | "cancelled" | "disputed" | "refunded" | "Pending" | "Completed" | "Cancelled" | "Disputed"
   amount: Value
   rate: {
     value: string

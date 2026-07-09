@@ -55,6 +55,7 @@ export default function WalletBalances({ onBalanceClick, balances = [], isLoadin
               currency={wallet.currency}
               amount={wallet.amount}
               label={`P2P ${wallet.label}`}
+              currencyLabel={wallet.label}
               onClick={() => onBalanceClick?.(wallet.currency, wallet.amount)}
             />
           ))}

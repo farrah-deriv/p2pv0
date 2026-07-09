@@ -502,19 +502,43 @@ export default function OrderDetailsPage() {
             </Button>
           </div>
         )}
-        {(order.status === "pending_release" || order.status === "timed_out" || order.status === "disputed") &&
+        {(order.status === "pending_release" || order.status === "disputed") &&
           isCurrentUserSeller && (
           <div
             className={cn(
               isMobileFooter ? "w-full" : "md:pl-4 pt-4 flex gap-4 md:float-right sticky bottom-0 bg-white md:static md:bg-transparent",
             )}
           >
-            <Button className="flex-1 w-full" onClick={handlePaymentReceived} disabled={isConfirmLoading} data-testid="order-details-btn-received">
+            <Button className="flex-1" onClick={handlePaymentReceived} disabled={isConfirmLoading} data-testid="order-details-btn-received">
               {isConfirmLoading ? (
                 <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
               ) : (
                 t("orderDetails.iveReceivedPayment")
               )}
+            </Button>
+          </div>
+        )}
+        {order.status === "timed_out" && (
+          <div className={cn(isMobileFooter ? "flex flex-col gap-3 w-full" : "py-4 flex gap-4")}>
+            {isCurrentUserSeller && (
+              <Button className="flex-1" onClick={handlePaymentReceived} disabled={isConfirmLoading} data-testid="order-details-btn-received">
+                {isConfirmLoading ? (
+                  <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
+                ) : (
+                  t("orderDetails.iveReceivedPayment")
+                )}
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => {
+                track("ek_make_complaint_order_details")
+                setShowComplaintForm(true)
+              }}
+              data-testid="order-details-btn-complaint"
+            >
+              {t("orderDetails.complain")}
             </Button>
           </div>
         )}
@@ -542,20 +566,6 @@ export default function OrderDetailsPage() {
                 {t("orderDetails.rateTransaction")}
               </Button>
             </div>
-          </div>
-        )}
-        {order.status === "timed_out" && !isMobileFooter && (
-          <div className="py-4 flex justify-end flex-auto md:flex-none">
-            <Button
-              variant="outline"
-              onClick={() => {
-                track("ek_make_complaint_order_details")
-                setShowComplaintForm(true)
-              }}
-              className="flex-auto md:flex-1"
-            >
-              {t("orderDetails.complain")}
-            </Button>
           </div>
         )}
       </>
@@ -597,7 +607,7 @@ export default function OrderDetailsPage() {
   }
 
   return (
-    <div className="lg:absolute inset-x-0 top-6 bottom-0 bg-white flex flex-col flex-1 min-h-0 h-full overflow-hidden md:overflow-y-auto">
+    <div className="lg:absolute inset-x-0 top-0 bottom-0 bg-white flex flex-col flex-1 min-h-0 h-full overflow-hidden md:overflow-y-auto lg:pt-6">
       {order?.type && (
         <Navigation
           isBackBtnVisible={false}
@@ -703,7 +713,7 @@ export default function OrderDetailsPage() {
                 </div>
                 <div className={cn(isMobile && "flex-1 min-h-0 overflow-y-auto px-[24px] pt-6 pb-4")}>
                 {(order.status === "timed_out" || (order.status === "refunded" && order.disputed_at)) && !isBuyer && (
-                  <Alert variant="info" className="flex items-center gap-2 mb-[24px]">
+                  <Alert variant="info" className="flex items-center gap-2 mb-[24px] [&>svg]:!static [&>svg~*]:!ps-0 [&>svg+div]:!translate-y-0">
                     <InfoCircleIcon className="h-6 w-6 flex-shrink-0 [&>path]:fill-current" aria-hidden="true" />
                     <AlertDescription>{t("orderDetails.fundsWillBeCredited")}</AlertDescription>
                   </Alert>
@@ -843,21 +853,6 @@ export default function OrderDetailsPage() {
                         </div>
                       )}
                     </div>
-                  </div>
-                )}
-                {order.status === "timed_out" && (
-                  <div className="py-4 flex justify-end flex-auto md:flex-none md:hidden">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        track("ek_make_complaint_order_details")
-                        setShowComplaintForm(true)
-                      }}
-                      className="flex-auto md:flex-1"
-                      data-testid="order-details-btn-complaint"
-                    >
-                      {t("orderDetails.complain")}
-                    </Button>
                   </div>
                 )}
                 </div>

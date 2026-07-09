@@ -195,7 +195,7 @@ export default function WalletSummary({
 
   const displayCurrency = externalSelectedCurrency || propCurrency
   const formattedBalance = formatAmountWithDecimals(propBalance)
-  const displayCurrencyLabel = currencies.find((c) => c.code === displayCurrency)?.label || displayCurrency
+  const displayCurrencyLabel = currenciesResponse?.data?.[displayCurrency]?.label || displayCurrency
 
   const fetchCurrencies = () => {
     if (currenciesResponse?.data) {

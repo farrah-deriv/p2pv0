@@ -16,12 +16,12 @@ const badgeVariants = cva(
         "success-light":
           "justify-center items-center rounded border-transparent bg-success-light text-xs font-bold leading-5 px-2 py-0.5 text-success-text",
         "success-secondary":
-          "justify-center items-center rounded border-transparent bg-success-bg-secondary text-xs font-bold leading-5 px-2 py-0.5 text-success-text-secondary",
+          "justify-center items-center rounded border-transparent bg-success-bg-secondary text-xs font-medium leading-5 px-2 py-0.5 text-success-text",
         error: "border-transparent bg-error text-white hover:bg-error/80",
         "error-light":
           "justify-center items-center rounded border-transparent bg-error-light text-xs font-bold leading-5 px-2 py-0.5 text-error-text",
         "error-secondary":
-          "justify-center items-center rounded border-transparent bg-error-bg-secondary text-xs font-bold leading-5 px-2 py-0.5 text-error",
+          "justify-center items-center rounded border-transparent bg-error-bg-secondary text-xs font-medium leading-5 px-2 py-0.5 text-error",
         warning: "border-transparent bg-warning-bg text-warning-icon hover:bg-warning-bg/80",
         buy: "border-transparent bg-buy text-white hover:bg-buy/80",
         sell: "border-transparent bg-sell text-white hover:bg-sell/80",
@@ -32,7 +32,7 @@ const badgeVariants = cva(
         info: "border-transparent bg-info-light text-info hover:bg-info-light/80",
         pending: "border-transparent bg-pending-light text-pending hover:bg-pending-light/80",
         "pending-secondary":
-          "justify-center items-center rounded border-transparent bg-pending-bg text-xs font-bold leading-5 px-2 py-0.5 text-pending-text-secondary",
+          "justify-center items-center rounded border-transparent bg-pending-bg text-xs font-medium leading-5 px-2 py-0.5 text-pending-text-secondary",
         completed: "border-transparent bg-completed-light text-completed hover:bg-completed-light/80",
         cancelled: "border-transparent bg-cancelled-light text-cancelled hover:bg-cancelled-light/80",
         disputed: "border-transparent bg-disputed-light text-disputed hover:bg-disputed-light/80",

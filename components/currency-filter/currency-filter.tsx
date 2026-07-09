@@ -85,7 +85,7 @@ export function CurrencyFilter({
     }
   }, [])
 
-  const CurrencyList = () => (
+  const currencyListJsx = (
     <div className="w-full h-full">
       <div className="relative mb-6 md:mb-4 md:pe-6">
         <Image
@@ -185,7 +185,7 @@ export function CurrencyFilter({
           <div className="my-4">
             <h3 className="text-xl font-extrabold text-center text-slate-1200">{title}</h3>
           </div>
-          <CurrencyList />
+          {currencyListJsx}
         </DrawerContent>
       </Drawer>
     )
@@ -200,7 +200,7 @@ export function CurrencyFilter({
         side="bottom"
         avoidCollisions={false}
       >
-        <CurrencyList />
+        {currencyListJsx}
       </PopoverContent>
     </Popover>
   )

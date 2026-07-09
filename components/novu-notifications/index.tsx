@@ -3,11 +3,11 @@
 import { Inbox } from "@novu/nextjs"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { getCoreUrl } from "@/lib/get-core-url"
-import Image from "next/image"
 import "../../styles/globals.css"
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import { p2pFetch } from "@/services/api/p2p-fetch"
@@ -72,13 +72,13 @@ export function NovuNotifications({ disabled = false }: NovuNotificationsProps) 
 
   const appearance = {
     icons: {
-      bell: () => {
-        return isMobile ? (
+      bell: () => (
+        isMobile ? (
           <Image src="/icons/bell-sm.png" alt={t("notifications.title")} width={24} height={24} />
         ) : (
           <Image src="/icons/bell-desktop.png" alt={t("notifications.title")} width={24} height={24} />
         )
-      },
+      ),
     },
     variables: {
       borderRadius: "8px",
@@ -104,18 +104,6 @@ export function NovuNotifications({ disabled = false }: NovuNotificationsProps) 
         alignItems: "center",
         justifyContent: "center",
       },
-      bellContainer: {
-        margin: 0,
-        width: "32px",
-        height: "32px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      },
-      bellIcon: {
-        width: "24px",
-        height: "24px",
-      },
       bellDot: {
         top: "0px",
         right: "0px",
@@ -123,6 +111,7 @@ export function NovuNotifications({ disabled = false }: NovuNotificationsProps) 
         height: "8px",
         border: "none",
       },
+      notificationImage: { display: "none" },
       preferences__button: { display: "none" },
       popoverContent: "novu-popover-content",
     },

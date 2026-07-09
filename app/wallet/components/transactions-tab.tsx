@@ -76,6 +76,12 @@ export default function TransactionsTab({
     if (s === "reverted") {
       return <Badge variant="error-secondary">{t("wallet.cancelled")}</Badge>
     }
+    if (s === "complete" || s === "completed") {
+      return <Badge variant="success-secondary">{t("wallet.completed")}</Badge>
+    }
+    if (s === "processing") {
+      return <Badge variant="pending-secondary">{t("wallet.processing")}</Badge>
+    }
     return null
   }
 
@@ -273,7 +279,7 @@ export default function TransactionsTab({
                           <div className="flex flex-col items-end me-6 gap-1">
                             <div data-testid={`wallet-text-tx-amount-${transaction.transaction_id}`} className={`${display.amountColor} text-base font-normal`}>
                               {formatAmountWithDecimals(transaction.metadata.transaction_net_amount)}{" "}
-                              {transaction.metadata.transaction_currency}
+                              {currencies[transaction.metadata.transaction_currency]?.label || transaction.metadata.transaction_currency}
                             </div>
                             {getStatusBadge(transaction.metadata.transaction_status)}
                           </div>
