@@ -95,10 +95,75 @@ export function getCreatedPaymentMethodId(data: unknown): string | undefined {
   return record.id != null ? String(record.id) : undefined
 }
 
+/** Method keys (`method` slug) already represented in the current selection. */
+export function getSelectedPaymentMethodKeys<T extends { id: string | number; method: string }>(
+  methods: T[],
+  selectedIds: (string | number)[],
+): Set<string> {
+  const byId = new Map(
+    methods.map((method) => [
+      normalizePaymentMethodId(method.id),
+      method.method.toLowerCase(),
+    ]),
+  )
+  const keys = new Set<string>()
+
+  for (const id of normalizePaymentMethodIds(selectedIds)) {
+    const key = byId.get(id)
+    if (key) keys.add(key)
+  }
+
+  return keys
+}
+
+/** Bank transfer accounts may be multi-selected; e-wallet method keys may not. */
+export function isUniquePaymentMethodKeyRequired(methodKey: string): boolean {
+  return methodKey.toLowerCase() !== "bank_transfer"
+}
+
+/**
+ * True when another selected account already uses the same e-wallet `method` key
+ * (e.g. two Airtel accounts). Bank transfer is exempt. Deselecting the candidate
+ * itself returns false.
+ */
+export function isPaymentMethodKeyAlreadySelected<T extends { id: string | number; method: string }>(
+  methods: T[],
+  selectedIds: (string | number)[],
+  candidateId: string | number,
+): boolean {
+  if (isPaymentMethodIdSelected(selectedIds, candidateId)) return false
+
+  const candidate = methods.find(
+    (method) =>
+      normalizePaymentMethodId(method.id) === normalizePaymentMethodId(candidateId),
+  )
+  if (!candidate) return false
+
+  const candidateKey = candidate.method.toLowerCase()
+  if (!isUniquePaymentMethodKeyRequired(candidateKey)) return false
+
+  return getSelectedPaymentMethodKeys(methods, selectedIds).has(candidateKey)
+}
+
+/** Max-3 or same-`method` key already taken — row should be non-interactive. */
+export function isUserPaymentMethodSelectionDisabled<
+  T extends { id: string | number; method: string },
+>(
+  methods: T[],
+  selectedIds: (string | number)[],
+  methodId: string | number,
+  maxSelected = 3,
+): boolean {
+  if (isPaymentMethodIdSelected(selectedIds, methodId)) return false
+  if (normalizePaymentMethodIds(selectedIds).length >= maxSelected) return true
+  return isPaymentMethodKeyAlreadySelected(methods, selectedIds, methodId)
+}
+
 export function appendSelectedPaymentMethodId(
   selectedIds: (string | number)[],
   createdId: string | number,
   maxSelected = 3,
+  methods?: { id: string | number; method: string }[],
 ): string[] {
   const normalizedCreatedId = normalizePaymentMethodId(createdId)
   const normalizedSelectedIds = normalizePaymentMethodIds(selectedIds)
@@ -106,6 +171,13 @@ export function appendSelectedPaymentMethodId(
   if (
     normalizedSelectedIds.length >= maxSelected ||
     normalizedSelectedIds.includes(normalizedCreatedId)
+  ) {
+    return normalizedSelectedIds
+  }
+
+  if (
+    methods &&
+    isPaymentMethodKeyAlreadySelected(methods, normalizedSelectedIds, createdId)
   ) {
     return normalizedSelectedIds
   }

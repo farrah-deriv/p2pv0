@@ -32,6 +32,7 @@ import {
   formatPaymentMethodAccountLine,
   getCreatedPaymentMethodId,
   isPaymentMethodIdSelected,
+  isUserPaymentMethodSelectionDisabled,
   mergeCreatedPaymentMethodIntoList,
   normalizePaymentMethodId,
   resolveSelectedUserPaymentMethodIds,
@@ -70,6 +71,11 @@ interface PaymentDetailsFormProps {
   onRefetchPaymentMethods: () => Promise<void>
 }
 
+/**
+ * Buy-ad catalogue picker only. Rows are unique `AvailablePaymentMethod` templates
+ * (one per `method` key), so same-key e-wallet disable does not apply here.
+ * Sell ads / user account instances use `PaymentSelectionContent` instead.
+ */
 const FullPagePaymentSelection = ({
   isOpen,
   onClose,
@@ -79,7 +85,7 @@ const FullPagePaymentSelection = ({
 }: {
   isOpen: boolean
   onClose: () => void
-  paymentMethods: (UserPaymentMethod | AvailablePaymentMethod)[]
+  paymentMethods: AvailablePaymentMethod[]
   selectedPaymentMethods: string[]
   onConfirm: (methods: string[]) => void
 }) => {
@@ -87,20 +93,18 @@ const FullPagePaymentSelection = ({
   const dir = isRtlLocale(locale) ? "rtl" : "ltr"
   const isMobile = useIsMobile()
   const [localSelected, setLocalSelected] = useState<string[]>(selectedPaymentMethods)
-  const [openStateSelection, setOpenStateSelection] = useState<string[]>(selectedPaymentMethods)
   const [searchQuery, setSearchQuery] = useState("")
   const [isSearchFocused, setIsSearchFocused] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
       setLocalSelected(selectedPaymentMethods)
-      setOpenStateSelection(selectedPaymentMethods)
       setSearchQuery("")
     }
   }, [isOpen, selectedPaymentMethods])
 
-  const getMethodId = (method: UserPaymentMethod | AvailablePaymentMethod) => {
-    return normalizePaymentMethodId("id" in method ? method.id : method.method)
+  const getMethodId = (method: AvailablePaymentMethod) => {
+    return normalizePaymentMethodId(method.method)
   }
 
   const filteredMethods = useMemo(() => {
@@ -110,12 +114,13 @@ const FullPagePaymentSelection = ({
     return methods.filter((method) => method.display_name.toLowerCase().includes(query))
   }, [paymentMethods, searchQuery])
 
+  // Live sort: selected catalogue keys move to the top (mobile buy-sheet parity).
   const sortedFilteredMethods = useMemo(
     () =>
-      sortSelectableItemsSelectedFirst(filteredMethods, openStateSelection, (method) =>
+      sortSelectableItemsSelectedFirst(filteredMethods, localSelected, (method) =>
         getMethodId(method),
       ),
-    [filteredMethods, openStateSelection],
+    [filteredMethods, localSelected],
   )
 
   const handleToggle = (methodId: string) => {
@@ -281,21 +286,25 @@ const PaymentSelectionContent = ({
 }) => {
   const { t } = useTranslations()
   const [selectedPMs, setSelectedPMs] = useState(tempSelectedPaymentMethods)
-  const [openStateSelection] = useState(tempSelectedPaymentMethods)
 
   useEffect(() => {
     setSelectedPMs(tempSelectedPaymentMethods)
   }, [tempSelectedPaymentMethods])
+
+  const userMethods = useMemo(
+    () => paymentMethods.filter((method): method is UserPaymentMethod => "id" in method),
+    [paymentMethods],
+  )
 
   const handlePaymentMethodToggle = (methodId: string) => {
     setSelectedPMs((prev) => {
       if (isPaymentMethodIdSelected(prev, methodId)) {
         return prev.filter((id) => !isPaymentMethodIdSelected([id], methodId))
       }
-      if (prev.length < 3) {
-        return [...prev, normalizePaymentMethodId(methodId)]
+      if (isUserPaymentMethodSelectionDisabled(userMethods, prev, methodId)) {
+        return prev
       }
-      return prev
+      return [...prev, normalizePaymentMethodId(methodId)]
     })
   }
 
@@ -318,13 +327,9 @@ const PaymentSelectionContent = ({
     return formatPaymentMethodName(method.display_name, t)
   }
 
-  const userMethods = useMemo(
-    () => paymentMethods.filter((method): method is UserPaymentMethod => "id" in method),
-    [paymentMethods],
-  )
   const sortedPaymentMethods = useMemo(
-    () => sortPaymentMethodsSelectedFirst(userMethods, openStateSelection),
-    [userMethods, openStateSelection],
+    () => sortPaymentMethodsSelectedFirst(userMethods, selectedPMs),
+    [userMethods, selectedPMs],
   )
 
   return (
@@ -344,7 +349,11 @@ const PaymentSelectionContent = ({
           sortedPaymentMethods.map((method) => {
             const methodId = getMethodId(method)
             const isSelected = isPaymentMethodIdSelected(selectedPMs, methodId)
-            const isDisabled = !isSelected && selectedPMs.length >= 3
+            const isDisabled = isUserPaymentMethodSelectionDisabled(
+              userMethods,
+              selectedPMs,
+              methodId,
+            )
 
             return (
               <div
@@ -520,7 +529,12 @@ export default function PaymentDetailsForm({
         let nextSelection = [...tempSelectedPaymentMethods]
 
         if (createdId) {
-          nextSelection = appendSelectedPaymentMethodId(tempSelectedPaymentMethods, createdId)
+          nextSelection = appendSelectedPaymentMethodId(
+            tempSelectedPaymentMethods,
+            createdId,
+            3,
+            nextUserPaymentMethods,
+          )
           setSelectedPaymentMethodIds(nextSelection)
           setTempSelectedPaymentMethods(nextSelection)
         }
@@ -670,7 +684,7 @@ export default function PaymentDetailsForm({
       <FullPagePaymentSelection
         isOpen={showFullPageModal}
         onClose={() => setShowFullPageModal(false)}
-        paymentMethods={initialData.type === "buy" ? availablePaymentMethods : userPaymentMethods}
+        paymentMethods={availablePaymentMethods}
         selectedPaymentMethods={selectedPaymentMethodIds}
         onConfirm={(methods) => setSelectedPaymentMethodIds(methods)}
       />

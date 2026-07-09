@@ -1,7 +1,10 @@
 import {
   appendSelectedPaymentMethodId,
   getCreatedPaymentMethodId,
+  getSelectedPaymentMethodKeys,
   isPaymentMethodIdSelected,
+  isPaymentMethodKeyAlreadySelected,
+  isUserPaymentMethodSelectionDisabled,
   mergeCreatedPaymentMethodIntoList,
   normalizePaymentMethodId,
   resolveSelectedUserPaymentMethodIds,
@@ -49,6 +52,38 @@ describe("payment-method-selection-utils", () => {
     expect(appendSelectedPaymentMethodId(["1", "2", "3"], "4")).toEqual(["1", "2", "3"])
     expect(appendSelectedPaymentMethodId(["1", "2"], "2")).toEqual(["1", "2"])
     expect(appendSelectedPaymentMethodId(["1"], 2)).toEqual(["1", "2"])
+  })
+
+  it("guards appendSelectedPaymentMethodId against same e-wallet method key", () => {
+    const methods = [
+      { id: 1, method: "airtel" },
+      { id: 2, method: "airtel" },
+      { id: 3, method: "bank_transfer" },
+      { id: 4, method: "bank_transfer" },
+    ]
+
+    expect(appendSelectedPaymentMethodId(["1"], 2, 3, methods)).toEqual(["1"])
+    expect(appendSelectedPaymentMethodId(["1"], 3, 3, methods)).toEqual(["1", "3"])
+    expect(appendSelectedPaymentMethodId(["3"], 4, 3, methods)).toEqual(["3", "4"])
+  })
+
+  it("blocks duplicate e-wallet method keys but allows multiple bank_transfer", () => {
+    const methods = [
+      { id: 1, method: "airtel" },
+      { id: 2, method: "Airtel" },
+      { id: 3, method: "bank_transfer" },
+      { id: 4, method: "bank_transfer" },
+    ]
+
+    expect(getSelectedPaymentMethodKeys(methods, ["1"])).toEqual(new Set(["airtel"]))
+    expect(isPaymentMethodKeyAlreadySelected(methods, ["1"], 2)).toBe(true)
+    expect(isPaymentMethodKeyAlreadySelected(methods, ["1"], 3)).toBe(false)
+    expect(isPaymentMethodKeyAlreadySelected(methods, ["1"], 1)).toBe(false)
+    expect(isPaymentMethodKeyAlreadySelected(methods, ["3"], 4)).toBe(false)
+    expect(isUserPaymentMethodSelectionDisabled(methods, ["1"], 2)).toBe(true)
+    expect(isUserPaymentMethodSelectionDisabled(methods, ["1"], 3)).toBe(false)
+    expect(isUserPaymentMethodSelectionDisabled(methods, ["3"], 4)).toBe(false)
+    expect(isUserPaymentMethodSelectionDisabled(methods, ["1", "3", "4"], 2)).toBe(true)
   })
 
   it("merges created payment methods immediately for selector reopen", () => {

@@ -15,7 +15,12 @@ import { useRouter } from "next/navigation"
 import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
 import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
 import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
-import { isPaymentMethodIdSelected, normalizePaymentMethodId } from "@/lib/payment-methods/payment-method-selection-utils"
+import {
+  isPaymentMethodIdSelected,
+  isUserPaymentMethodSelectionDisabled,
+  normalizePaymentMethodId,
+  sortPaymentMethodsSelectedFirst,
+} from "@/lib/payment-methods/payment-method-selection-utils"
 
 interface PaymentMethod {
   id: number
@@ -45,7 +50,10 @@ const AdPaymentMethods = () => {
   }, [paymentMethodsResponse?.data])
 
   const handleCheckboxChange = (methodId: number, checked: boolean) => {
-    if (checked && selectedPaymentMethodIds.length >= 3) {
+    if (
+      checked &&
+      isUserPaymentMethodSelectionDisabled(paymentMethods, selectedPaymentMethodIds, methodId)
+    ) {
       return
     }
 
@@ -136,11 +144,14 @@ const AdPaymentMethods = () => {
 
         <div className="md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
           <div className="flex gap-4 overflow-x-auto pb-2 md:contents">
-            {paymentMethods.map((method) => {
+            {sortPaymentMethodsSelectedFirst(paymentMethods, selectedPaymentMethodIds).map((method) => {
               const isSelected = isPaymentMethodIdSelected(selectedPaymentMethodIds, method.id)
               const displayDetails = getMethodDisplayDetails(method)
-              const isMaxReached = selectedPaymentMethodIds.length >= 3
-              const isDisabled = isMaxReached && !isSelected
+              const isDisabled = isUserPaymentMethodSelectionDisabled(
+                paymentMethods,
+                selectedPaymentMethodIds,
+                method.id,
+              )
 
               return (
                 <Card

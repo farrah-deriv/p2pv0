@@ -39,6 +39,7 @@ import {
   formatPaymentMethodAccountLine,
   getCreatedPaymentMethodId,
   isPaymentMethodIdSelected,
+  isUserPaymentMethodSelectionDisabled,
   mergeCreatedPaymentMethodIntoList,
   normalizePaymentMethodId,
   resolveSelectedUserPaymentMethodIds,
@@ -107,15 +108,14 @@ const PaymentSelectionContent = ({
 }) => {
   const { t } = useTranslations()
   const [selectedPMs, setSelectedPMs] = useState(tempSelectedPaymentMethods)
-  const [openStateSelection] = useState(tempSelectedPaymentMethods)
 
   useEffect(() => {
     setSelectedPMs(tempSelectedPaymentMethods)
   }, [tempSelectedPaymentMethods])
 
   const sortedPaymentMethods = useMemo(
-    () => sortPaymentMethodsSelectedFirst(userPaymentMethods, openStateSelection),
-    [userPaymentMethods, openStateSelection],
+    () => sortPaymentMethodsSelectedFirst(userPaymentMethods, selectedPMs),
+    [userPaymentMethods, selectedPMs],
   )
 
   const handlePaymentMethodToggle = (methodId: string | number) => {
@@ -123,10 +123,10 @@ const PaymentSelectionContent = ({
       if (isPaymentMethodIdSelected(prev, methodId)) {
         return prev.filter((id) => !isPaymentMethodIdSelected([id], methodId))
       }
-      if (prev.length < 3) {
-        return [...prev, normalizePaymentMethodId(methodId)]
+      if (isUserPaymentMethodSelectionDisabled(userPaymentMethods, prev, methodId)) {
+        return prev
       }
-      return prev
+      return [...prev, normalizePaymentMethodId(methodId)]
     })
   }
 
@@ -180,7 +180,11 @@ const PaymentSelectionContent = ({
           sortedPaymentMethods.map((method) => {
             const methodId = normalizePaymentMethodId(method.id)
             const isSelected = isPaymentMethodIdSelected(selectedPMs, methodId)
-            const isDisabled = !isSelected && selectedPMs.length >= 3
+            const isDisabled = isUserPaymentMethodSelectionDisabled(
+              userPaymentMethods,
+              selectedPMs,
+              methodId,
+            )
 
             return (
             <div
@@ -661,7 +665,12 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
       let nextSelection = tempSelectedPaymentMethods
 
       if (createdId) {
-        nextSelection = appendSelectedPaymentMethodId(tempSelectedPaymentMethods, createdId)
+        nextSelection = appendSelectedPaymentMethodId(
+          tempSelectedPaymentMethods,
+          createdId,
+          3,
+          nextUserPaymentMethods,
+        )
         setSelectedPaymentMethods(nextSelection)
         setTempSelectedPaymentMethods(nextSelection)
       }
