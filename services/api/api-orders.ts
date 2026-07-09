@@ -1,6 +1,40 @@
 import { API, AUTH } from "@/lib/local-variables"
 import { p2pFetch } from "./p2p-fetch"
 
+export class OrderChatSendError extends Error {
+  readonly code: string
+  readonly tags: string[]
+
+  constructor(code: string, tags: string[] = []) {
+    super(code)
+    this.name = "OrderChatSendError"
+    this.code = code
+    this.tags = tags
+  }
+}
+
+function extractP2PApiError(data: unknown, fallbackCode: string): { code: string; tags: string[] } {
+  if (!data || typeof data !== "object") {
+    return { code: fallbackCode, tags: [] }
+  }
+
+  const body = data as {
+    code?: unknown
+    detail?: { tags?: unknown }
+    errors?: Array<{ code?: unknown; detail?: { tags?: unknown } }>
+  }
+
+  const code =
+    (typeof body.errors?.[0]?.code === "string" && body.errors[0].code) ||
+    (typeof body.code === "string" && body.code) ||
+    fallbackCode
+
+  const rawTags = body.errors?.[0]?.detail?.tags ?? body.detail?.tags
+  const tags = Array.isArray(rawTags) ? rawTags.map(String) : []
+
+  return { code, tags }
+}
+
 // Type definitions
 export interface Order {
   id: string
@@ -487,8 +521,8 @@ export async function sendChatMessage(
     }
 
     if (!response.ok) {
-      const errorCode = data?.errors?.[0]?.code || response.statusText || "UnknownError"
-      throw new Error(errorCode)
+      const { code, tags } = extractP2PApiError(data, response.statusText || "UnknownError")
+      throw new OrderChatSendError(code, tags)
     }
 
     const time = new Date().toISOString()

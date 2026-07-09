@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { OrdersAPI } from "@/services/api"
+import { OrderChatSendError } from "@/services/api/api-orders"
 import { useWebSocketContext } from "@/contexts/websocket-context"
 import { getChatErrorMessage, formatTime } from "@/lib/utils"
 import { useTranslations } from "@/lib/i18n/use-translations"
@@ -31,19 +32,101 @@ type Message = {
   tags: string[]
 }
 
+function buildMessageId(raw: Record<string, unknown>): string {
+  if (raw.id != null && String(raw.id) !== "") {
+    return String(raw.id)
+  }
+
+  const time = raw.time ?? raw.created_at ?? Date.now()
+  const sender = raw.sender_is_self ?? ""
+  const text = String(raw.message ?? "")
+  const attachment =
+    typeof raw.attachment === "object" && raw.attachment !== null
+      ? String((raw.attachment as { url?: string; name?: string }).url ?? (raw.attachment as { name?: string }).name ?? "")
+      : String(raw.attachment ?? "")
+
+  return `msg-${time}-${sender}-${text.slice(0, 32)}-${attachment.slice(-16)}`
+}
+
 function normalizeChatMessage(raw: Record<string, unknown>): Message {
   const tags = Array.isArray(raw.tags) ? raw.tags.map(String) : []
-  const moderationEnabled = isP2POrderChatModerationEnabled()
+  const rawTime = raw.time ?? raw.created_at
 
   return {
-    id: String(raw.id ?? ""),
+    id: buildMessageId(raw),
     attachment: (raw.attachment as Message["attachment"]) ?? null,
     message: String(raw.message ?? ""),
     sender_is_self: Boolean(raw.sender_is_self),
-    time: Number(raw.time ?? Date.now()),
-    rejected: Boolean(raw.rejected) || (moderationEnabled && tags.length > 0),
+    time: Number(rawTime ?? Date.now()),
+    rejected: Boolean(raw.rejected) || tags.length > 0,
     tags,
   }
+}
+
+function messageDedupeKey(msg: Message): string {
+  if (msg.id && !msg.id.startsWith("local-rejected-")) {
+    return `id:${msg.id}`
+  }
+
+  const attachmentKey = msg.attachment?.url ?? msg.attachment?.name ?? ""
+  return `fallback:${msg.time}:${msg.sender_is_self}:${msg.message}:${attachmentKey}`
+}
+
+function stripMatchingLocalRejected(prev: Message[], incoming: Message): Message[] {
+  if (!incoming.sender_is_self) {
+    return prev
+  }
+
+  return prev.filter((msg) => {
+    if (!msg.id.startsWith("local-rejected-")) {
+      return true
+    }
+
+    if (incoming.message && msg.message === incoming.message) {
+      return false
+    }
+
+    if (incoming.attachment?.name && msg.attachment?.name === incoming.attachment.name) {
+      return false
+    }
+
+    return true
+  })
+}
+
+function isDuplicateMessage(prev: Message[], incoming: Message): boolean {
+  const key = messageDedupeKey(incoming)
+  if (prev.some((msg) => messageDedupeKey(msg) === key)) {
+    return true
+  }
+
+  if (!incoming.sender_is_self) {
+    return false
+  }
+
+  return prev.some(
+    (msg) =>
+      msg.sender_is_self &&
+      msg.rejected === incoming.rejected &&
+      msg.message === incoming.message &&
+      (msg.attachment?.name ?? "") === (incoming.attachment?.name ?? ""),
+  )
+}
+
+function getChatSendErrorInfo(error: unknown): { code: string; tags: string[] } | null {
+  if (error instanceof OrderChatSendError) {
+    return { code: error.code, tags: error.tags }
+  }
+
+  if (error instanceof Error) {
+    return { code: error.message, tags: [] }
+  }
+
+  return null
+}
+
+function rejectionTags(tags: string[], fallback: string): string[] {
+  return tags.length > 0 ? tags : [fallback]
 }
 
 function normalizeChatMessages(rawMessages: unknown[]): Message[] {
@@ -104,7 +187,8 @@ export default function OrderChat({
 
   useEffect(() => {
     const unsubscribe = subscribe((data) => {
-      if (data?.options?.channel !== "orders") {
+      const channel = data?.options?.channel
+      if (channel && channel !== "orders") {
         return
       }
 
@@ -117,16 +201,28 @@ export default function OrderChat({
 
         setMessages((prev) => {
           if (payload.chat_history && Array.isArray(payload.chat_history)) {
-            return normalizeChatMessages(payload.chat_history)
+            const history = normalizeChatMessages(payload.chat_history)
+            const historySelfTexts = new Set(
+              history.filter((msg) => msg.sender_is_self && msg.message).map((msg) => msg.message),
+            )
+            const localRejected = prev.filter(
+              (msg) =>
+                msg.id.startsWith("local-rejected-") &&
+                !(msg.message && historySelfTexts.has(msg.message)),
+            )
+            return [...history, ...localRejected]
           }
 
           if (payload.message || payload.attachment) {
             if (payload.order_id == orderId) {
               const incoming = normalizeChatMessage(payload as Record<string, unknown>)
-              if (!incoming.id || prev.some((msg) => msg.id === incoming.id)) {
-                return prev
+              const withoutStaleLocal = stripMatchingLocalRejected(prev, incoming)
+
+              if (isDuplicateMessage(withoutStaleLocal, incoming)) {
+                return withoutStaleLocal
               }
-              return [...prev, incoming]
+
+              return [...withoutStaleLocal, incoming]
             }
           }
 
@@ -187,26 +283,16 @@ export default function OrderChat({
     try {
       await OrdersAPI.sendChatMessage(orderId, messageToSend, null)
     } catch (error) {
-      if (error instanceof Error && error.message === "OrderTempLocked") {
+      const chatError = getChatSendErrorInfo(error)
+      const errorCode = chatError?.code ?? "UnknownError"
+
+      if (errorCode === "OrderTempLocked") {
         showOrderTempLockedAlert()
-      } else if (error instanceof Error && error.message === "PendingPotSubmission") {
+      } else if (errorCode === "PendingPotSubmission") {
         showPendingPotSubmissionAlert()
-      } else if (error instanceof Error && error.message === "OrderChatMessageRejected") {
-        if (!isChatModerationEnabled) {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: `local-rejected-${Date.now()}`,
-              attachment: null,
-              message: messageToSend,
-              sender_is_self: true,
-              time: Date.now(),
-              rejected: true,
-              tags: ["message_rejected"],
-            },
-          ])
-        }
-      } else if (error instanceof Error && error.message === "BothChatMessageAndAttachmentPresent") {
+      } else if (errorCode === "OrderChatMessageRejected") {
+        // Server pushes the rejected message over WebSocket with moderation tags.
+      } else if (errorCode === "BothChatMessageAndAttachmentPresent") {
         showAlert({
           title: t("chat.oneItemAtATimeTitle"),
           description: t("chat.oneItemAtATimeDescription"),
@@ -266,43 +352,42 @@ export default function OrderChat({
         const base64 = await fileToBase64(file)
         await OrdersAPI.sendChatMessage(orderId, "", base64)
       } catch (error) {
-        if (error instanceof Error && error.message === "OrderChatFileSizeExceeded") {
+        const chatError = getChatSendErrorInfo(error)
+        const errorCode = chatError?.code ?? "UnknownError"
+
+        if (errorCode === "OrderChatFileSizeExceeded") {
           showFileTooLargeDialog()
-        } else if (error instanceof Error && error.message === "OrderTempLocked") {
+        } else if (errorCode === "OrderTempLocked") {
           showOrderTempLockedAlert()
-        } else if (error instanceof Error && error.message === "PendingPotSubmission") {
+        } else if (errorCode === "PendingPotSubmission") {
           showPendingPotSubmissionAlert()
-        } else if (error instanceof Error && error.message === "OrderChatAttachmentRejected") {
-          if (!isChatModerationEnabled) {
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: `local-rejected-${Date.now()}`,
-                attachment: { name: file.name, url: "" },
-                message: "",
-                sender_is_self: true,
-                time: Date.now(),
-                rejected: true,
-                tags: ["attachment_rejected"],
-              },
-            ])
-          }
-        } else if (error instanceof Error && error.message === "ChatAttachmentLimitReached") {
-          if (!isChatModerationEnabled) {
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: `local-rejected-${Date.now()}`,
-                attachment: { name: file.name, url: "" },
-                message: "",
-                sender_is_self: true,
-                time: Date.now(),
-                rejected: true,
-                tags: ["attachment_limit_reached"],
-              },
-            ])
-          }
-        } else if (error instanceof Error && error.message === "BothChatMessageAndAttachmentPresent") {
+        } else if (errorCode === "OrderChatAttachmentRejected") {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `local-rejected-${Date.now()}`,
+              attachment: { name: file.name, url: "" },
+              message: "",
+              sender_is_self: true,
+              time: Date.now(),
+              rejected: true,
+              tags: rejectionTags(chatError?.tags ?? [], "attachment_rejected"),
+            },
+          ])
+        } else if (errorCode === "ChatAttachmentLimitReached") {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `local-rejected-${Date.now()}`,
+              attachment: { name: file.name, url: "" },
+              message: "",
+              sender_is_self: true,
+              time: Date.now(),
+              rejected: true,
+              tags: rejectionTags(chatError?.tags ?? [], "attachment_limit_reached"),
+            },
+          ])
+        } else if (errorCode === "BothChatMessageAndAttachmentPresent") {
           showAlert({
             title: t("chat.oneItemAtATimeTitle"),
             description: t("chat.oneItemAtATimeDescription"),
@@ -425,7 +510,7 @@ export default function OrderChat({
                     <div key={msg.id} dir="ltr" className={`flex ${msg.sender_is_self ? "justify-end" : "justify-start"}`} data-testid={`order-chat-msg-${msg.id}`}>
                       <div className="max-w-[80%] rounded-lg pb-[16px]">
                         {msg.attachment && (
-                          <div className={`flex items-center gap-[4px] ${msg.sender_is_self ? "justify-end" : ""}`}>
+                          <div className={`flex items-center gap-2 ${msg.sender_is_self ? "justify-end" : ""}`}>
                             <div
                               className={`relative ${msg.sender_is_self ? "bg-slate-200" : "bg-slate-1700"} p-[16px] rounded-[8px]`}
                             >
@@ -460,9 +545,9 @@ export default function OrderChat({
                           </div>
                         )}
                         {msg.message && (
-                          <div className="flex items-center">
+                          <div className={`flex items-center gap-2 ${msg.sender_is_self ? "justify-end" : ""}`}>
                             <div
-                              className={`relative break-words ${msg.sender_is_self ? (msg.rejected ? "bg-slate-200 opacity-50" : "bg-slate-200") : "bg-slate-1700"} p-[16px] rounded-[8px] flex-1`}
+                              className={`relative break-words ${msg.sender_is_self ? (msg.rejected ? "bg-slate-200 opacity-50" : "bg-slate-200") : "bg-slate-1700"} p-[16px] rounded-[8px]`}
                             >
                               {!msg.sender_is_self && (
                                 <div className="absolute left-0 top-[16px] w-0 h-0 border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent border-r-[8px] border-r-slate-1700 -translate-x-full" />
@@ -472,7 +557,15 @@ export default function OrderChat({
                               )}
                               {msg.message}
                             </div>
-                            {msg.rejected && <Image src="/icons/info-icon.png" alt={t("common.error")} width={24} height={24} />}
+                            {msg.rejected && (
+                              <Image
+                                src="/icons/warning-circle.png"
+                                alt={t("common.error")}
+                                width={24}
+                                height={24}
+                                className="shrink-0"
+                              />
+                            )}
                           </div>
                         )}
                         {msg.rejected && msg.tags ? (
