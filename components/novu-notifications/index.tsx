@@ -73,11 +73,13 @@ export function NovuNotifications({ disabled = false }: NovuNotificationsProps) 
   const appearance = {
     icons: {
       bell: () => (
-        isMobile ? (
-          <Image src="/icons/bell-sm.png" alt={t("notifications.title")} width={24} height={24} />
-        ) : (
-          <Image src="/icons/bell-desktop.png" alt={t("notifications.title")} width={24} height={24} />
-        )
+        <Image
+          src={isMobile ? "/icons/bell-sm.png" : "/icons/bell-desktop.png"}
+          alt={t("notifications.title")}
+          width={24}
+          height={24}
+          style={{ width: "24px", height: "24px", minWidth: "24px", minHeight: "24px" }}
+        />
       ),
     },
     variables: {
@@ -96,13 +98,23 @@ export function NovuNotifications({ disabled = false }: NovuNotificationsProps) 
     elements: {
       "inbox__popoverTrigger": {
         borderRadius: "50%",
-        backgroundColor: isMobile ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.04)",
+        backgroundColor: "rgba(255, 255, 255, 0.04)",
         padding: 0,
         width: "32px",
         height: "32px",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+      },
+      bellIcon: {
+        width: "24px",
+        height: "24px",
+        minWidth: "24px",
+        minHeight: "24px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "visible",
       },
       bellDot: {
         top: "0px",

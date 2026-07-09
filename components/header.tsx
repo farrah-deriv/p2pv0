@@ -80,7 +80,7 @@ export default function Header() {
           onClick={handleAskAmy}
           aria-label={t("navigation.askAmy")}
           variant="ghost"
-          className="absolute left-1/2 -translate-x-1/2 md:hidden p-0 hover:bg-transparent"
+          className="absolute left-1/2 -translate-x-1/2 md:hidden p-0 hover:bg-transparent [&:hover]:opacity-80 [&:hover]:transition-opacity"
         >
           <Image src="/icons/ic-ask-amy-mobile.svg" alt={t("navigation.askAmy")} width={114} height={32} />
         </Button>
