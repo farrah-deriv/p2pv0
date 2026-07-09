@@ -821,6 +821,7 @@
     "date": "Дата",
     "didntReceiveCode": "Не получили код?",
     "fileTooLarge": "Размер файла должен быть 5 МБ или меньше.",
+    "invalidFileType": "Загрузите файл JPEG, JPG, PNG или PDF.",
     "fileTypes": "JPEG, JPG, PNG, PDF (до 5МБ)",
     "gotIt": "Понятно",
     "id": "ID",

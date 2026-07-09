@@ -635,6 +635,7 @@
     "exchangeRateRequiredDescription": "Este pedido precisa de uma taxa de câmbio. Insira a taxa acordada para continuar.",
     "exchangeRateRequiredTitle": "Adicionar taxa de câmbio",
     "fileTooLarge": "O arquivo deve ter 5MB ou menos.",
+    "invalidFileType": "Carregue um arquivo JPEG, JPG, PNG ou PDF.",
     "fileTypes": "JPEG, JPG, PNG, PDF (até 5MB)",
     "financialAssessmentDescription": "Complete sua avaliação financeira para fazer mais saques.",
     "financialAssessmentTitle": "Complete sua avaliação",

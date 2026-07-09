@@ -840,6 +840,7 @@
     "date": "날짜",
     "didntReceiveCode": "코드를 받지 못하셨나요?",
     "fileTooLarge": "파일은 5MB 이하여야 합니다.",
+    "invalidFileType": "JPEG, JPG, PNG 또는 PDF 파일을 업로드해 주세요.",
     "fileTypes": "JPEG, JPG, PNG, PDF(최대 5MB)",
     "gotIt": "확인했습니다",
     "id": "ID",

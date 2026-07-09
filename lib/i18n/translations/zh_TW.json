@@ -791,6 +791,7 @@
     "date": "日期",
     "didntReceiveCode": "沒有收到代碼？",
     "fileTooLarge": "文件必須為 5MB 或更小。",
+    "invalidFileType": "請上傳 JPEG、JPG、PNG 或 PDF 檔案。",
     "fileTypes": "JPEG、JPG、PNG、PDF（最大 5MB）",
     "gotIt": "明白了",
     "id": "身分證號",

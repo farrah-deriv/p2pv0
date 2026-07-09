@@ -135,6 +135,18 @@ describe("payment-method-validation", () => {
       expect(getPaymentMethodFieldValidationIssue("bank_transfer", "branch", "فرع الرياض")).toBe(
         null,
       )
+      expect(
+        getPaymentMethodFieldValidationIssue("bank_transfer", "bank_name", "भारतीय बैंक"),
+      ).toBe(null)
+      expect(
+        getPaymentMethodFieldValidationIssue("bank_transfer", "branch", "भारतीय बैंक"),
+      ).toBe(null)
+    })
+
+    it("accepts unicode instructions with combining marks", () => {
+      expect(
+        getPaymentMethodFieldValidationIssue("bank_transfer", "instructions", "भारतीय बैंक"),
+      ).toBe(null)
     })
 
     it("rejects disallowed symbols in bank fields", () => {

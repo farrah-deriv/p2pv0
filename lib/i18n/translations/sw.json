@@ -799,6 +799,7 @@
     "date": "Tarehe",
     "didntReceiveCode": "Hukupokea nambari ya kuthibitisha?",
     "fileTooLarge": "Faili lazima iwe 5MB au ndogo zaidi.",
+    "invalidFileType": "Tafadhali pakia faili ya JPEG, JPG, PNG, au PDF.",
     "fileTypes": "JPEG, JPG, PNG, PDF (hadi 5MB)",
     "gotIt": "Nimepata",
     "id": "ID",

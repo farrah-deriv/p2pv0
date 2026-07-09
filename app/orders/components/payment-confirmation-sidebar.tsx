@@ -12,11 +12,12 @@ import type { Order } from "@/services/api/api-orders"
 import { Input } from "@/components/ui/input"
 import { OrdersAPI } from "@/services/api"
 import { cn } from "@/lib/utils"
-import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
+import { useWebSocketContext } from "@/contexts/websocket-context"
 import { PaymentAmountRecipientCard } from "./payment-amount-recipient-card"
 import { ProofChecklistRow } from "./proof-checklist-row"
+import { isP2POrderChatModerationEnabled } from "@/lib/orders/order-chat-feature-flags"
 
 interface PaymentConfirmationSidebarProps {
   isOpen: boolean
@@ -40,8 +41,38 @@ export const PaymentConfirmationSidebar = ({
   const [fileError, setFileError] = useState<string | null>(null)
   const [confirmed, setConfirmed] = useState(false)
   const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null)
+  const [attachmentsRemaining, setAttachmentsRemaining] = useState<number | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const isMobile = useIsMobile()
+  const { isConnected, getChatHistory, subscribe } = useWebSocketContext()
+  const isChatModerationEnabled = isP2POrderChatModerationEnabled()
+
+  useEffect(() => {
+    if (!isChatModerationEnabled) {
+      return
+    }
+
+    const unsubscribe = subscribe((data) => {
+      if (data?.options?.channel !== "orders") {
+        return
+      }
+
+      if (typeof data?.payload?.data?.chat_attachments_limit === "number") {
+        setAttachmentsRemaining(data.payload.data.chat_attachments_limit)
+      }
+    })
+
+    return unsubscribe
+  }, [subscribe, isChatModerationEnabled])
+
+  useEffect(() => {
+    if (!isChatModerationEnabled) {
+      return
+    }
+
+    if (isOpen && isConnected && order) {
+      getChatHistory("orders", order.id)
+    }
+  }, [isOpen, isConnected, order?.id, getChatHistory, isChatModerationEnabled])
 
   useEffect(() => {
     if (!isOpen) {
@@ -50,6 +81,7 @@ export const PaymentConfirmationSidebar = ({
       setFileError(null)
       setConfirmed(false)
       setPreviewDataUrl(null)
+      setAttachmentsRemaining(null)
       if (fileInputRef.current) {
         fileInputRef.current.value = ""
       }
@@ -61,8 +93,13 @@ export const PaymentConfirmationSidebar = ({
   const handleFileSelect = (file: File) => {
     setFileError(null)
 
+    if (isChatModerationEnabled && attachmentsRemaining !== null && attachmentsRemaining <= 0) {
+      return
+    }
+
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "application/pdf"]
     if (!allowedTypes.includes(file.type)) {
+      setFileError(t("orders.invalidFileType"))
       return
     }
 
@@ -175,17 +212,13 @@ export const PaymentConfirmationSidebar = ({
   if (!isOpen) return null
 
   return (
-    <>
-      <div className="fixed inset-0 z-40 bg-black/80" onClick={onClose} />
-      <div
-        data-testid="order-details-sheet-confirm-payment"
-        className={`fixed inset-y-0 end-0 z-50 bg-white shadow-xl flex flex-col ${
-          isMobile ? "inset-0 w-full" : "w-full md:max-w-xl"
-        }`}
-      >
-        <div className="flex flex-col w-full h-full">
+    <div
+      data-testid="order-details-sheet-confirm-payment"
+      className="fixed inset-0 z-50 flex flex-col bg-white"
+    >
+      <div className="mx-auto flex h-full w-full max-w-[600px] flex-col">
           {/* Close button */}
-          <div className="flex items-center justify-end px-4 py-3">
+          <div className="flex items-center justify-end px-4 md:px-0 py-3">
             <Button
               variant="ghost"
               size="sm"
@@ -198,7 +231,7 @@ export const PaymentConfirmationSidebar = ({
           </div>
 
           {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-6">
+          <div className="flex-1 overflow-y-auto px-4 md:px-0 pb-4 space-y-6">
             {/* Title */}
             <h2 className="text-2xl md:text-3xl font-extrabold text-slate-1200">
               {t("orders.confirmPayment")}
@@ -327,6 +360,16 @@ export const PaymentConfirmationSidebar = ({
                 )}
               </div>
               {fileError && <p className="mt-1 text-xs text-error">{fileError}</p>}
+              {isChatModerationEnabled && attachmentsRemaining !== null && (
+                <p
+                  className={cn(
+                    "mt-2 text-xs text-center",
+                    attachmentsRemaining <= 0 ? "text-error-text" : "text-grayscale-text-muted",
+                  )}
+                >
+                  {t("chat.attachmentsRemaining", { count: attachmentsRemaining })}
+                </p>
+              )}
             </div>
 
             {/* Confirmation checkbox + submit */}
@@ -367,7 +410,6 @@ export const PaymentConfirmationSidebar = ({
             </div>
           </div>
         </div>
-      </div>
-    </>
+    </div>
   )
 }

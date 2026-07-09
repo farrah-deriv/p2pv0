@@ -818,6 +818,7 @@
     "date": "Datum",
     "didntReceiveCode": "Haben Sie den Code nicht erhalten?",
     "fileTooLarge": "Die Datei darf maximal 5MB groß sein.",
+    "invalidFileType": "Bitte laden Sie eine JPEG-, JPG-, PNG- oder PDF-Datei hoch.",
     "fileTypes": "JPEG, JPG, PNG, PDF (bis zu 5MB)",
     "gotIt": "Verstanden",
     "id": "ID",

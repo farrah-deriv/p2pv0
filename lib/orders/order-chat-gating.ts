@@ -1,4 +1,5 @@
 import type { Order } from "@/services/api/api-orders"
+import { isP2POrderChatModerationEnabled } from "@/lib/orders/order-chat-feature-flags"
 
 function idsMatch(
   left: number | string | null | undefined,
@@ -14,8 +15,12 @@ export function isOrderBuyer(
 ): boolean {
   if (userId == null || userId === "") return false
 
+  const role = (order as { role?: "buyer" | "seller" }).role
+  if (role === "buyer") return true
+  if (role === "seller") return false
+
   return (
-    (order.type === "buy" && idsMatch(order.user.id, userId)) ||
+    (order.type === "buy" && idsMatch(order.user?.id, userId)) ||
     (order.type === "sell" && idsMatch(order.advert?.user?.id, userId))
   )
 }
@@ -35,5 +40,9 @@ export function shouldDisableChatAttachments(
   order: Order,
   userId: number | string | null | undefined,
 ): boolean {
+  if (!isP2POrderChatModerationEnabled()) {
+    return false
+  }
+
   return canSubmitPaymentProof(order, userId) && !hasBuyerSubmittedPot(order)
 }

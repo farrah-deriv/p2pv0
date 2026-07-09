@@ -791,6 +791,7 @@
     "date": "தேதி",
     "didntReceiveCode": "குறியீட்டைப் பெறவில்லையா?",
     "fileTooLarge": "கோப்பு 5MB அல்லது சிறியதாக இருக்க வேண்டும்.",
+    "invalidFileType": "JPEG, JPG, PNG அல்லது PDF கோப்பை பதிவேற்றவும்.",
     "fileTypes": "JPEG, JPG, PNG, PDF (5MB வரை)",
     "gotIt": "கிடைத்தது",
     "id": "ஐடி",

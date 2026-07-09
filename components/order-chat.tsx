@@ -15,6 +15,7 @@ import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import type { Order } from "@/services/api/api-orders"
 import { shouldDisableChatAttachments } from "@/lib/orders/order-chat-gating"
+import { isP2POrderChatModerationEnabled } from "@/lib/orders/order-chat-feature-flags"
 import { useUserDataStore } from "@/stores/user-data-store"
 
 type Message = {
@@ -28,6 +29,27 @@ type Message = {
   time: number
   rejected: boolean
   tags: string[]
+}
+
+function normalizeChatMessage(raw: Record<string, unknown>): Message {
+  const tags = Array.isArray(raw.tags) ? raw.tags.map(String) : []
+  const moderationEnabled = isP2POrderChatModerationEnabled()
+
+  return {
+    id: String(raw.id ?? ""),
+    attachment: (raw.attachment as Message["attachment"]) ?? null,
+    message: String(raw.message ?? ""),
+    sender_is_self: Boolean(raw.sender_is_self),
+    time: Number(raw.time ?? Date.now()),
+    rejected: Boolean(raw.rejected) || (moderationEnabled && tags.length > 0),
+    tags,
+  }
+}
+
+function normalizeChatMessages(rawMessages: unknown[]): Message[] {
+  return rawMessages
+    .filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null)
+    .map(normalizeChatMessage)
 }
 
 type OrderChatProps = {
@@ -70,6 +92,7 @@ export default function OrderChat({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const maxLength = 300
   const maxFileSizeBytes = 5 * 1024 * 1024 // 5 MB
+  const isChatModerationEnabled = isP2POrderChatModerationEnabled()
 
   const { isConnected, getChatHistory, subscribe } = useWebSocketContext()
 
@@ -81,26 +104,34 @@ export default function OrderChat({
 
   useEffect(() => {
     const unsubscribe = subscribe((data) => {
+      if (data?.options?.channel !== "orders") {
+        return
+      }
+
       if (data && data.payload && data.payload.data) {
-        if (data.payload.data.chat_history && Array.isArray(data.payload.data.chat_history)) {
-          setMessages((prev) => {
-            const localRejected = prev.filter((msg) => msg.id?.startsWith("local-rejected-"))
-            return [...data.payload.data.chat_history, ...localRejected]
-          })
+        const payload = data.payload.data
+
+        if (typeof payload.chat_attachments_limit === "number" && isChatModerationEnabled) {
+          setAttachmentsRemaining(payload.chat_attachments_limit)
         }
 
-        if (data.payload.data.message || data.payload.data.attachment) {
-          const newMessage = data.payload.data
-          if (newMessage.order_id == orderId) {
-            setMessages((prev) => {
-              return [...prev, newMessage]
-            })
+        setMessages((prev) => {
+          if (payload.chat_history && Array.isArray(payload.chat_history)) {
+            return normalizeChatMessages(payload.chat_history)
           }
-        }
 
-        if (typeof data.payload.data.chat_attachments_limit === "number") {
-          setAttachmentsRemaining(data.payload.data.chat_attachments_limit)
-        }
+          if (payload.message || payload.attachment) {
+            if (payload.order_id == orderId) {
+              const incoming = normalizeChatMessage(payload as Record<string, unknown>)
+              if (!incoming.id || prev.some((msg) => msg.id === incoming.id)) {
+                return prev
+              }
+              return [...prev, incoming]
+            }
+          }
+
+          return prev
+        })
 
         setIsLoading(false)
       } else {
@@ -109,7 +140,7 @@ export default function OrderChat({
     })
 
     return unsubscribe
-  }, [subscribe])
+  }, [subscribe, orderId, isChatModerationEnabled])
 
   useEffect(() => {
     if (isConnected) {
@@ -161,18 +192,20 @@ export default function OrderChat({
       } else if (error instanceof Error && error.message === "PendingPotSubmission") {
         showPendingPotSubmissionAlert()
       } else if (error instanceof Error && error.message === "OrderChatMessageRejected") {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `local-rejected-${Date.now()}`,
-            attachment: null,
-            message: messageToSend,
-            sender_is_self: true,
-            time: Date.now(),
-            rejected: true,
-            tags: ["miscellaneous"],
-          },
-        ])
+        if (!isChatModerationEnabled) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `local-rejected-${Date.now()}`,
+              attachment: null,
+              message: messageToSend,
+              sender_is_self: true,
+              time: Date.now(),
+              rejected: true,
+              tags: ["message_rejected"],
+            },
+          ])
+        }
       } else if (error instanceof Error && error.message === "BothChatMessageAndAttachmentPresent") {
         showAlert({
           title: t("chat.oneItemAtATimeTitle"),
@@ -216,7 +249,7 @@ export default function OrderChat({
 
       const file = files[0]
 
-      if (attachmentsRemaining !== null && attachmentsRemaining <= 0) {
+      if (isChatModerationEnabled && attachmentsRemaining !== null && attachmentsRemaining <= 0) {
         if (fileInputRef.current) fileInputRef.current.value = ""
         return
       }
@@ -240,31 +273,35 @@ export default function OrderChat({
         } else if (error instanceof Error && error.message === "PendingPotSubmission") {
           showPendingPotSubmissionAlert()
         } else if (error instanceof Error && error.message === "OrderChatAttachmentRejected") {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: `local-rejected-${Date.now()}`,
-              attachment: { name: file.name, url: "" },
-              message: "",
-              sender_is_self: true,
-              time: Date.now(),
-              rejected: true,
-              tags: ["attachment_rejected"],
-            },
-          ])
+          if (!isChatModerationEnabled) {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: `local-rejected-${Date.now()}`,
+                attachment: { name: file.name, url: "" },
+                message: "",
+                sender_is_self: true,
+                time: Date.now(),
+                rejected: true,
+                tags: ["attachment_rejected"],
+              },
+            ])
+          }
         } else if (error instanceof Error && error.message === "ChatAttachmentLimitReached") {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: `local-rejected-${Date.now()}`,
-              attachment: { name: file.name, url: "" },
-              message: "",
-              sender_is_self: true,
-              time: Date.now(),
-              rejected: true,
-              tags: ["attachment_limit_reached"],
-            },
-          ])
+          if (!isChatModerationEnabled) {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: `local-rejected-${Date.now()}`,
+                attachment: { name: file.name, url: "" },
+                message: "",
+                sender_is_self: true,
+                time: Date.now(),
+                rejected: true,
+                tags: ["attachment_limit_reached"],
+              },
+            ])
+          }
         } else if (error instanceof Error && error.message === "BothChatMessageAndAttachmentPresent") {
           showAlert({
             title: t("chat.oneItemAtATimeTitle"),
@@ -335,7 +372,7 @@ export default function OrderChat({
           {counterpartyInitial}
           <div
             className={`absolute bottom-0 end-0 h-3 w-3 rounded-full border-2 border-white ${
-              counterpartyOnlineStatus ? "bg-buy" : "bg-gray-400"
+              counterpartyOnlineStatus ? "bg-buy" : "bg-slate-400"
             }`}
           />
         </div>
@@ -485,7 +522,7 @@ export default function OrderChat({
               />
               {message.trim() ? (
                 <Button
-                  className="absolute end-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-500 hover:text-gray-700 h-auto"
+                  className="absolute end-3 top-1/2 transform -translate-y-1/2 p-1 text-grayscale-text-muted hover:text-slate-700 h-auto"
                   onClick={handleSendMessage}
                   variant="ghost"
                   size="sm"
@@ -499,7 +536,7 @@ export default function OrderChat({
                   <Tooltip open={attachTooltipOpen} onOpenChange={setAttachTooltipOpen}>
                     <TooltipTrigger asChild>
                       <Button
-                        className="absolute end-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-500 hover:text-gray-700 h-auto opacity-40 cursor-not-allowed"
+                        className="absolute end-3 top-1/2 transform -translate-y-1/2 p-1 text-grayscale-text-muted hover:text-slate-700 h-auto opacity-40 cursor-not-allowed"
                         variant="ghost"
                         size="sm"
                         type="button"
@@ -525,12 +562,12 @@ export default function OrderChat({
                 </TooltipProvider>
               ) : (
                 <Button
-                  className="absolute end-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-500 hover:text-gray-700 h-auto disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="absolute end-3 top-1/2 transform -translate-y-1/2 p-1 text-grayscale-text-muted hover:text-slate-700 h-auto disabled:opacity-30 disabled:cursor-not-allowed"
                   onClick={() => fileInputRef.current?.click()}
                   variant="ghost"
                   size="sm"
                   aria-label={t("chat.attachFile")}
-                  disabled={attachmentsRemaining !== null && attachmentsRemaining <= 0}
+                  disabled={isChatModerationEnabled && attachmentsRemaining !== null && attachmentsRemaining <= 0}
                   data-testid="order-chat-btn-attach"
                 >
                   <Image src="/icons/paperclip-icon.png" alt="" aria-hidden="true" width={20} height={20} className="h-5 w-5" />
@@ -547,13 +584,13 @@ export default function OrderChat({
             </div>
             <div className="flex justify-between items-center">
               <div className="text-xs ms-1">
-                {attachmentsRemaining !== null && (
+                {isChatModerationEnabled && attachmentsRemaining !== null && (
                   <span className={attachmentsRemaining <= 0 ? "text-error-text" : "text-grayscale-text-muted"}>
                     {t("chat.attachmentsRemaining", { count: attachmentsRemaining })}
                   </span>
                 )}
               </div>
-              <div className="text-xs text-[#0000007A] me-4">
+              <div className="text-xs text-grayscale-text-muted me-4">
                 {message.length}/{maxLength}
               </div>
             </div>

@@ -803,6 +803,7 @@
     "date": "Data",
     "didntReceiveCode": "Nie otrzymałeś kodu?",
     "fileTooLarge": "Plik musi mieć 5 MB lub mniej.",
+    "invalidFileType": "Prześlij plik JPEG, JPG, PNG lub PDF.",
     "fileTypes": "JPEG, JPG, PNG, PDF (do 5MB)",
     "gotIt": "Rozumiem",
     "id": "ID",

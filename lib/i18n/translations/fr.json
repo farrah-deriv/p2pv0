@@ -631,6 +631,7 @@
     "exchangeRateRequiredDescription": "Cette commande nécessite un taux de change. Entrez le taux convenu pour continuer.",
     "exchangeRateRequiredTitle": "Ajouter un taux de change",
     "fileTooLarge": "Le fichier doit faire 5 Mo ou moins.",
+    "invalidFileType": "Veuillez télécharger un fichier JPEG, JPG, PNG ou PDF.",
     "fileTypes": "JPEG, JPG, PNG, PDF (jusqu'à 5 Mo)",
     "financialAssessmentDescription": "Complétez votre évaluation financière pour effectuer plus de retraits.",
     "financialAssessmentTitle": "Complétez votre évaluation",

@@ -441,34 +441,41 @@ export default function OrderDetailsPage() {
     )
   }
 
-  const orderType =
-    order?.type === "buy" ? (order?.user.id == userId ? "Buy" : "Sell") : order?.user.id == userId ? "Sell" : "Buy"
-  const counterpartyNickname = order?.advert.user.id == userId ? order?.user?.nickname : order?.advert?.user?.nickname
-  const counterpartyLabel =
-    order?.type === "sell"
-      ? order?.advert.user.id == userId
-        ? t("orderDetails.seller")
-        : t("orderDetails.buyer")
-      : order?.advert.user.id == userId
-        ? t("orderDetails.buyer")
-        : t("orderDetails.seller")
+  if (!isLoading && !order) {
+    return (
+      <div className="px-4">
+        <div className="text-center py-12">
+          <p>{t("orderDetails.orderNotFound")}</p>
+          <Button onClick={fetchOrderDetails} className="mt-4 text-white">
+            {t("orderDetails.tryAgain")}
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  const currentUserRole = (order as { role?: "buyer" | "seller" } | null)?.role
+  const orderUserId = order?.user?.id
+  const advertUserId = order?.advert?.user?.id
+  const userIdString = userId == null ? null : String(userId)
+  const isCurrentUserOrderUser = orderUserId != null && userIdString != null && String(orderUserId) === userIdString
+  const isCurrentUserAdvertUser = advertUserId != null && userIdString != null && String(advertUserId) === userIdString
+  const isCurrentUserBuyer =
+    currentUserRole === "buyer" ||
+    (order?.type === "buy" && isCurrentUserOrderUser) ||
+    (order?.type === "sell" && isCurrentUserAdvertUser)
+  const isCurrentUserSeller =
+    currentUserRole === "seller" ||
+    (order?.type === "buy" && isCurrentUserAdvertUser) ||
+    (order?.type === "sell" && isCurrentUserOrderUser)
+  const counterpartyNickname = isCurrentUserAdvertUser
+    ? order?.user?.nickname
+    : (order?.advert?.user?.nickname ?? order?.counterparty_name)
+  const counterpartyLabel = isCurrentUserBuyer ? t("orderDetails.seller") : t("orderDetails.buyer")
   const youPayReceiveLabel =
-    order?.type === "buy"
-      ? order?.user.id == userId
-        ? t("orderDetails.youPay")
-        : t("orderDetails.youReceive")
-      : order?.user.id == userId
-        ? t("orderDetails.youReceive")
-        : t("orderDetails.youPay")
-  const complainType =
-    order?.type === "sell"
-      ? order?.advert.user.id == userId
-        ? "buyer"
-        : "seller"
-      : order?.advert.user.id == userId
-        ? "seller"
-        : "buyer"
-  const isBuyer = counterpartyLabel === t("orderDetails.seller")
+    isCurrentUserBuyer ? t("orderDetails.youPay") : t("orderDetails.youReceive")
+  const complainType = isCurrentUserBuyer ? "seller" : "buyer"
+  const isBuyer = isCurrentUserBuyer
 
   const renderOrderActionButtons = (isMobileFooter: boolean) => {
     if (!order) return null
@@ -479,8 +486,7 @@ export default function OrderDetailsPage() {
 
     return (
       <>
-        {((order.type === "buy" && order.status === "pending_payment" && order.user.id == userId) ||
-          (order.type === "sell" && order.status === "pending_payment" && order.advert.user.id == userId)) && (
+        {order.status === "pending_payment" && isCurrentUserBuyer && (
           <div
             className={cn(
               isMobileFooter
@@ -496,12 +502,8 @@ export default function OrderDetailsPage() {
             </Button>
           </div>
         )}
-        {((order.type === "buy" &&
-          (order.status === "pending_release" || order.status === "timed_out" || order.status === "disputed") &&
-          order.advert.user.id == userId) ||
-          (order.type === "sell" &&
-            (order.status === "pending_release" || order.status === "timed_out" || order.status === "disputed") &&
-            order.user.id == userId)) && (
+        {(order.status === "pending_release" || order.status === "timed_out" || order.status === "disputed") &&
+          isCurrentUserSeller && (
           <div
             className={cn(
               isMobileFooter ? "w-full" : "md:pl-4 pt-4 flex gap-4 md:float-right sticky bottom-0 bg-white md:static md:bg-transparent",
@@ -563,20 +565,15 @@ export default function OrderDetailsPage() {
   const hasStickyMobileOrderActions =
     isMobile &&
     order &&
-    (((order.type === "buy" && order.status === "pending_payment" && order.user.id == userId) ||
-      (order.type === "sell" && order.status === "pending_payment" && order.advert.user.id == userId)) ||
-      ((order.type === "buy" &&
-        (order.status === "pending_release" || order.status === "timed_out" || order.status === "disputed") &&
-        order.advert.user.id == userId) ||
-        (order.type === "sell" &&
-          (order.status === "pending_release" || order.status === "timed_out" || order.status === "disputed") &&
-          order.user.id == userId)))
+    ((order.status === "pending_payment" && isCurrentUserBuyer) ||
+      ((order.status === "pending_release" || order.status === "timed_out" || order.status === "disputed") &&
+        isCurrentUserSeller))
 
   if (isMobile && showChat && order) {
-    const counterpartyOnlineStatus =
-      order?.advert.user.id == userId ? order?.user?.is_online : order?.advert?.user?.is_online
-    const counterpartyLastOnlineAt =
-      order?.advert.user.id == userId ? order?.user?.last_online_at : order?.advert?.user?.last_online_at
+    const counterpartyOnlineStatus = isCurrentUserAdvertUser ? order.user?.is_online : order.advert?.user?.is_online
+    const counterpartyLastOnlineAt = isCurrentUserAdvertUser
+      ? order.user?.last_online_at
+      : order.advert?.user?.last_online_at
 
     return (
       <div className="flex flex-col flex-1 min-h-0 h-full w-full">
@@ -654,7 +651,7 @@ export default function OrderDetailsPage() {
                 <Skeleton className="h-[120px] w-full rounded-lg bg-grayscale-500" />
               </div>
             </div>
-            <div className="hidden lg:block w-full lg:w-1/2 border rounded-lg overflow-hidden flex flex-col h-[600px]">
+            <div className="hidden lg:flex w-full lg:w-1/2 border rounded-lg overflow-hidden flex-col h-[600px]">
               <OrderChatSkeleton />
             </div>
           </div>
@@ -754,7 +751,7 @@ export default function OrderDetailsPage() {
                 {order.status !== "completed" && (
                   <div className="space-y-6 mt-4">
                     <div className="space-y-4">
-                      {order.advert.user.id == userId ? (
+                      {isCurrentUserAdvertUser ? (
                         <h2 className="text-lg font-bold">{t("orderDetails.myPaymentDetails")}</h2>
                       ) : (
                         <h2 className="text-lg font-bold">{t("orderDetails.sellerPaymentDetails")}</h2>
@@ -870,7 +867,7 @@ export default function OrderDetailsPage() {
                   </div>
                 )}
               </div>
-              <div className="hidden lg:block w-full lg:w-1/2 border rounded-lg overflow-hidden flex flex-col h-[600px]">
+              <div className="hidden lg:flex w-full lg:w-1/2 border rounded-lg overflow-hidden flex-col h-[600px]">
 
                 <OrderChat
                   orderId={orderId}
@@ -880,10 +877,10 @@ export default function OrderDetailsPage() {
                   isClosed={["cancelled", "completed", "refunded"].includes(order?.status)}
                   isAttachmentUploadDisabled={shouldDisableChatAttachments(order, userId)}
                   counterpartyOnlineStatus={
-                    order?.advert.user.id == userId ? order?.user?.is_online : order?.advert?.user?.is_online
+                    isCurrentUserAdvertUser ? order?.user?.is_online : order?.advert?.user?.is_online
                   }
                   counterpartyLastOnlineAt={
-                    order?.advert.user.id == userId ? order?.user?.last_online_at : order?.advert?.user?.last_online_at
+                    isCurrentUserAdvertUser ? order?.user?.last_online_at : order?.advert?.user?.last_online_at
                   }
                   onOpenProofOfTransfer={() => setShowPaymentConfirmation(true)}
                 />

@@ -101,7 +101,7 @@ const PaymentSelectionContent = ({
   hideAlert: () => void
   setSelectedPaymentMethods: (methods: string[]) => void
   setTempSelectedPaymentMethods: (methods: string[]) => void
-  handleAddPaymentMethodClick: () => void
+  handleAddPaymentMethodClick: (currentSelection: string[]) => void
   sellerPaymentMethods: SellerPaymentMethod[]
   onAddPaymentMethodWithType?: (methodType: string) => void
 }) => {
@@ -227,7 +227,7 @@ const PaymentSelectionContent = ({
             data-testid="order-sidebar-link-add-payment"
             className="border border-grayscale-200 rounded-lg p-4 cursor-pointer transition-colors"
             onClick={() => {
-              handleAddPaymentMethodClick()
+              handleAddPaymentMethodClick(selectedPMs)
             }}
           >
             <div className="flex items-center">
@@ -420,7 +420,8 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
     setShowAddPaymentPanel(true)
   }, [])
 
-  const handleAddPaymentMethodClick = useCallback(() => {
+  const handleAddPaymentMethodClick = useCallback((currentSelection: string[]) => {
+    setTempSelectedPaymentMethods(currentSelection)
     setShowAddPaymentPanel(true)
     hideAlert()
   }, [hideAlert])

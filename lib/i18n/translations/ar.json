@@ -791,6 +791,7 @@
     "date": "التاريخ",
     "didntReceiveCode": "لم تتلق الرمز؟",
     "fileTooLarge": "يجب أن يكون حجم الملف 5 ميجابايت أو أصغر.",
+    "invalidFileType": "يرجى تحميل ملف JPEG أو JPG أو PNG أو PDF.",
     "fileTypes": "JPEG, JPG, PNG, PDF (حتى 5 ميغابايت)",
     "gotIt": "حصلت عليه",
     "id": "المعرف",

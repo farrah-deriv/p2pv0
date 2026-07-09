@@ -25,11 +25,12 @@ export type PaymentMethodAccountValidationIssue = PaymentMethodFieldValidationIs
 const PAYMENT_METHOD_KEY_PATTERN = /^[a-z0-9_]+$/
 // Field patterns match mobile/backend specs. Legacy inline regex also allowed `'` and `#`;
 // `#` is tested below; `'` is intentionally excluded (same as mobile).
+// \p{M} required for scripts that use combining marks (e.g. Devanagari vowel signs, Arabic harakat).
 const ACCOUNT_PATTERN = /^[A-Za-z0-9@\-\.\s,_()+:]{0,50}$/
-const INSTRUCTIONS_PATTERN = /^[\p{L}\p{Nd}\s@\-\.!/%&,_()+:;]{0,300}$/u
-const BANK_NAME_PATTERN = /^[\p{L}\p{Nd}\s@\-\.,_()+:]{0,100}$/u
+const INSTRUCTIONS_PATTERN = /^[\p{L}\p{M}\p{Nd}\s@\-\.!/%&,_()+:;]{0,300}$/u
+const BANK_NAME_PATTERN = /^[\p{L}\p{M}\p{Nd}\s@\-\.,_()+:]{0,100}$/u
 const BANK_CODE_PATTERN = /^[A-Za-z0-9@\-\.\s,_()+:]{0,50}$/
-const BRANCH_PATTERN = /^[\p{L}\p{Nd}\s@\-\.,_()+:]{0,100}$/u
+const BRANCH_PATTERN = /^[\p{L}\p{M}\p{Nd}\s@\-\.,_()+:]{0,100}$/u
 const MPESA_ACCOUNT_PATTERN = /^(\+\d+|\d+)$/
 
 export function paymentMethodFieldNameFromKey(key: string): PaymentMethodFieldName | null {

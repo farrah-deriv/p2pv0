@@ -791,6 +791,7 @@
     "date": "日期",
     "didntReceiveCode": "没有收到代码？",
     "fileTooLarge": "文件必须为 5MB 或更小。",
+    "invalidFileType": "请上传 JPEG、JPG、PNG 或 PDF 文件。",
     "fileTypes": "JPEG、JPG、PNG、PDF（最大 5MB）",
     "gotIt": "明白了",
     "id": "身份证号",

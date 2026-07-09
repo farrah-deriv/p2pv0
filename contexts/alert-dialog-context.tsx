@@ -83,18 +83,18 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
 
     if (config.content) {
       return (
-        <div className="overflow-hidden">
-          <div className="flex justify-between gap-4 px-8 pt-6 items-center mb-4">
-            {config.title && <div className="flex-1 min-w-0 text-start font-bold text-2xl">{config.title}</div>}
+        <div className="flex min-w-0 w-full flex-col overflow-hidden">
+          <div className="mb-4 flex shrink-0 items-center justify-between gap-4 px-8 pt-6">
+            {config.title && <div className="min-w-0 flex-1 text-start text-2xl font-bold">{config.title}</div>}
             {!config.hideCloseButton && (
-              <Button onClick={handleClose} variant="ghost" className="bg-slate-75 px-1 min-w-[48px]">
+              <Button onClick={handleClose} variant="ghost" className="min-w-[48px] shrink-0 bg-slate-75 px-1">
                 <Image src="/icons/close-icon.png" alt={t("common.close")} width={24} height={24} />
               </Button>
             )}
           </div>
           <div
             className={cn(
-              "px-8 pb-6 flex flex-col min-h-0 max-h-[60vh] overflow-hidden",
+              "flex min-h-0 min-w-0 w-full max-w-full flex-col overflow-hidden px-8 pb-6 max-h-[60vh]",
               config.contentClassName,
             )}
           >
@@ -240,15 +240,16 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
           <AlertDialogContent
             dir={dir}
             className={cn(
-              "p-0 overflow-hidden",
+              "flex min-w-0 w-full max-w-xl flex-col overflow-hidden p-0",
               isKycOnboarding &&
                 "!w-[min(880px,95vw)] !max-w-[880px] !p-0 overflow-hidden rounded-3xl border-0",
-              config.contentClassName,
             )}
             onEscapeKeyDown={config.preventOutsideClose ? (e) => e.preventDefault() : undefined}
             onInteractOutside={config.preventOutsideClose ? (e) => e.preventDefault() : undefined}
           >
-            <AlertDialogDescription>{renderDesktopContent()}</AlertDialogDescription>
+            <AlertDialogDescription className="m-0 flex min-h-0 min-w-0 w-full max-w-full flex-1 flex-col overflow-hidden p-0 text-base">
+              {renderDesktopContent()}
+            </AlertDialogDescription>
           </AlertDialogContent>
         </AlertDialog>
       )}

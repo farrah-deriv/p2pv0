@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation"
 import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
 import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
 import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
+import { getPaymentMethodFieldValidationIssue } from "@/lib/payment-method-validation"
 import {
   appendSelectedPaymentMethodId,
   filterPaymentMethodsForAdvert,
@@ -134,7 +135,7 @@ const FullPagePaymentSelection = ({
   }
 
   const content = (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="box-border flex min-h-0 min-w-0 w-full max-w-full flex-1 flex-col overflow-hidden">
       {isMobile && (
         <div className="shrink-0 px-4 pb-4 text-center">
           <p className="text-base text-grayscale-600">{t("paymentMethod.selectUpTo3")}</p>
@@ -176,7 +177,7 @@ const FullPagePaymentSelection = ({
           <p className="text-base text-slate-1200">{t("paymentMethod.selectUpTo3")}</p>
         </div>
       )}
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 md:px-0 space-y-2">
+      <div className="min-h-0 min-w-0 max-w-full flex-1 space-y-2 overflow-x-hidden overflow-y-auto px-4 md:px-0">
         {sortedFilteredMethods.length === 0 ? (
           <div className="text-center pt-0 pb-4 md:pt-4 md:pb-8 flex flex-col items-center">
             <Image src="/icons/magnifier.png" alt={t("common.noResults")} width={88} height={88} className="mb-0" />
@@ -196,15 +197,17 @@ const FullPagePaymentSelection = ({
             return (
               <div
                 key={methodId}
-                className={`bg-grayscale-500 rounded-lg p-4 flex items-center justify-between gap-3 min-w-0 cursor-pointer ${isSelected ? "border border-black" : "border border-transparent"
+                className={`box-border w-full max-w-full min-w-0 overflow-hidden rounded-lg bg-grayscale-500 p-4 flex cursor-pointer items-center justify-between gap-3 ${isSelected ? "border border-black" : "border border-transparent"
                   } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
                 onClick={() => !isDisabled && handleToggle(methodId)}
               >
-                <div className="flex items-center gap-4 min-w-0 flex-1">
+                <div className="flex min-w-0 max-w-full flex-1 items-center gap-4 overflow-hidden">
                   <div
-                    className={`h-[10px] w-[10px] shrink-0 rounded-full mx-[11px] ${method.type === "bank" ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"}`}
+                    className={`h-[10px] w-[10px] shrink-0 rounded-full ${method.type === "bank" ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"}`}
                   />
-                  <span className={`text-base truncate ${isDisabled ? "text-gray-400" : "text-slate-1200"}`}>{method.display_name}</span>
+                  <span className={`block min-w-0 max-w-full flex-1 truncate text-base ${isDisabled ? "text-grayscale-text-muted" : "text-slate-1200"}`}>
+                    {method.display_name}
+                  </span>
                 </div>
                 <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
                   <Checkbox
@@ -220,8 +223,8 @@ const FullPagePaymentSelection = ({
           })
         )}
       </div>
-      <div className={`shrink-0 ${isMobile ? "px-4 pt-4 pb-6" : "pt-4 pb-6"}`}>
-        <Button onClick={handleConfirm} disabled={localSelected.length === 0} className="w-full">
+      <div className={`box-border w-full min-w-0 max-w-full shrink-0 ${isMobile ? "px-4 pt-4 pb-6" : "pt-4 pb-6"}`}>
+        <Button onClick={handleConfirm} disabled={localSelected.length === 0} className="w-full max-w-full min-w-0">
           {t("common.confirm")}
         </Button>
       </div>
@@ -243,7 +246,7 @@ const FullPagePaymentSelection = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent dir={dir} className="max-w-xl max-h-[90vh] flex flex-col min-h-0 p-8 rounded-[32px]" data-testid="ad-form-sheet-payment-methods">
+      <DialogContent dir={dir} className="flex min-h-0 min-w-0 w-full max-w-xl max-h-[90vh] flex-col overflow-hidden rounded-[32px] p-8" data-testid="ad-form-sheet-payment-methods">
         <ModalHeaderRow
           asDialog
           title={t("paymentMethod.title")}
@@ -274,7 +277,7 @@ const PaymentSelectionContent = ({
   setTempSelectedPaymentMethods: (methods: string[]) => void
   hideAlert: () => void
   setSelectedPaymentMethods: (methods: string[]) => void
-  handleAddPaymentMethodClick?: () => void
+  handleAddPaymentMethodClick?: (currentSelection: string[]) => void
 }) => {
   const { t } = useTranslations()
   const [selectedPMs, setSelectedPMs] = useState(tempSelectedPaymentMethods)
@@ -326,13 +329,13 @@ const PaymentSelectionContent = ({
 
   return (
     <div
-      className="flex flex-col flex-1 min-h-0 h-full"
+      className="box-border flex h-full min-h-0 w-full min-w-0 max-w-full flex-1 flex-col overflow-hidden"
       data-testid="ad-form-sheet-payment-methods"
     >
       {paymentMethods.length > 0 && (
         <div className="shrink-0 pb-4 text-grayscale-600">{t("paymentMethod.selectUpTo3")}</div>
       )}
-      <div className="flex-1 min-h-0 overflow-y-auto space-y-4">
+      <div className="min-h-0 min-w-0 max-w-full flex-1 space-y-4 overflow-x-hidden overflow-y-auto">
         {paymentMethods.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-600 mb-4">{t("adForm.noPaymentMethodsFound")}</p>
@@ -346,24 +349,24 @@ const PaymentSelectionContent = ({
             return (
               <div
                 key={methodId}
-                className={`bg-grayscale-500 rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-color ${isDisabled
+                className={`box-border w-full max-w-full min-w-0 overflow-hidden rounded-lg bg-grayscale-500 p-4 cursor-pointer transition-color ${isDisabled
                   ? "opacity-30 cursor-not-allowed hover:bg-white"
                   : ""
                   } ${isSelected ? "border border-black" : ""
                   }`}
                 onClick={() => !isDisabled && handlePaymentMethodToggle(methodId)}
               >
-                <div className="flex items-center justify-between gap-3 min-w-0">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                <div className="flex w-full min-w-0 max-w-full items-center justify-between gap-3">
+                  <div className="flex min-w-0 max-w-full flex-1 items-center gap-2 overflow-hidden">
                     <div
                       className={`h-2 w-2 shrink-0 rounded-full ${getMethodType(method) === "bank" ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"
                         }`}
                     />
-                    <div className="min-w-0 flex flex-col">
-                      <span className="text-base text-slate-1200">
+                    <div className="flex min-w-0 max-w-full flex-1 flex-col overflow-hidden">
+                      <span className="block truncate text-base text-slate-1200">
                         {getCategoryDisplayName(getMethodType(method), t)}
                       </span>
-                      <span className="text-base text-grayscale-text-muted truncate">
+                      <span className="block truncate text-base text-grayscale-text-muted">
                         {getMethodAccountInfo(method)}
                       </span>
                     </div>
@@ -372,7 +375,7 @@ const PaymentSelectionContent = ({
                     checked={isSelected}
                     onCheckedChange={() => !isDisabled && handlePaymentMethodToggle(methodId)}
                     disabled={isDisabled}
-                    className="shrink-0 border-neutral-7 data-[state=checked]:bg-black data-[state=checked]:border-black w-[20px] h-[20px] rounded-sm border-[2px] disabled:opacity-30 disabled:cursor-not-allowed pointer-events-none"
+                    className="pointer-events-none h-[20px] w-[20px] shrink-0 rounded-sm border-[2px] border-neutral-7 disabled:cursor-not-allowed disabled:opacity-30 data-[state=checked]:border-black data-[state=checked]:bg-black"
                     data-testid={`ad-form-checkbox-payment-${methodId}`}
                   />
                 </div>
@@ -383,9 +386,9 @@ const PaymentSelectionContent = ({
 
         {handleAddPaymentMethodClick && (
           <div
-            className="bg-grayscale-500 rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+            className="box-border w-full max-w-full min-w-0 cursor-pointer rounded-lg bg-grayscale-500 p-4 transition-colors hover:bg-gray-50"
             onClick={() => {
-              handleAddPaymentMethodClick()
+              handleAddPaymentMethodClick(selectedPMs)
             }}
             data-testid="ad-form-btn-add-payment"
           >
@@ -396,9 +399,9 @@ const PaymentSelectionContent = ({
           </div>
         )}
       </div>
-      <div className="shrink-0 pt-4 pb-6 md:py-4">
+      <div className="box-border w-full min-w-0 max-w-full shrink-0 pt-4 pb-6 md:py-4">
         <Button
-          className="w-full"
+          className="w-full max-w-full min-w-0"
           disabled={selectedPMs.length == 0}
           onClick={() => {
             const confirmedSelection = resolveSelectedUserPaymentMethodIds(
@@ -406,6 +409,7 @@ const PaymentSelectionContent = ({
               userMethods,
             )
             setSelectedPaymentMethods(confirmedSelection)
+            setTempSelectedPaymentMethods(confirmedSelection)
             hideAlert()
           }}
         >
@@ -438,10 +442,7 @@ export default function PaymentDetailsForm({
   const { selectedPaymentMethodIds, setSelectedPaymentMethodIds } = usePaymentSelection()
 
   const validateInstructions = (value: string) => {
-    // Allow letters, numbers, spaces, and special chars: @ - . ! / % & , _ ( ) + : ;
-    // Max 300 characters (enforced by maxLength on textarea)
-    const allowedPattern = new RegExp('^[\\p{L}\\p{Nd}\\s@\\-\\.!\\/%&,_()+:;]{0,300}$', 'u')
-    return allowedPattern.test(value)
+    return getPaymentMethodFieldValidationIssue("bank_transfer", "instructions", value) === null
   }
 
   const isFormValid = () => {
@@ -453,23 +454,29 @@ export default function PaymentDetailsForm({
     setTouched(true)
   }
 
-  const handleAddPaymentMethodClick = useCallback(() => {
+  const handleAddPaymentMethodClick = useCallback((currentSelection: string[]) => {
+    setTempSelectedPaymentMethods(currentSelection)
     setShowAddPaymentPanel(true)
     hideAlert()
   }, [hideAlert])
 
   const openSellPaymentSelection = useCallback(
     (selectionOverride?: string[], methodsOverride?: UserPaymentMethod[]) => {
-      const currentSelection = selectionOverride ?? selectedPaymentMethodIds
+      const currentSelection =
+        selectionOverride ??
+        (tempSelectedPaymentMethods.length > 0
+          ? tempSelectedPaymentMethods
+          : selectedPaymentMethodIds)
       const methodsForSheet = methodsOverride ?? userPaymentMethods
 
       showAlert({
         title: t("paymentMethod.paymentMethodsSheetTitle"),
+        contentClassName: "w-full min-w-0 max-w-full overflow-hidden",
         content: (
           <PaymentSelectionContent
             paymentMethods={methodsForSheet}
             tempSelectedPaymentMethods={currentSelection}
-            setTempSelectedPaymentMethods={setSelectedPaymentMethodIds}
+            setTempSelectedPaymentMethods={setTempSelectedPaymentMethods}
             setSelectedPaymentMethods={setSelectedPaymentMethodIds}
             hideAlert={hideAlert}
             handleAddPaymentMethodClick={handleAddPaymentMethodClick}
@@ -484,6 +491,7 @@ export default function PaymentDetailsForm({
       setSelectedPaymentMethodIds,
       showAlert,
       t,
+      tempSelectedPaymentMethods,
       userPaymentMethods,
     ],
   )
@@ -509,11 +517,12 @@ export default function PaymentDetailsForm({
           userPaymentMethods,
           created,
         )
-        let nextSelection = [...selectedPaymentMethodIds]
+        let nextSelection = [...tempSelectedPaymentMethods]
 
         if (createdId) {
-          nextSelection = appendSelectedPaymentMethodId(nextSelection, createdId)
+          nextSelection = appendSelectedPaymentMethodId(tempSelectedPaymentMethods, createdId)
           setSelectedPaymentMethodIds(nextSelection)
+          setTempSelectedPaymentMethods(nextSelection)
         }
 
         openSellPaymentSelection(nextSelection, nextUserPaymentMethods)
@@ -641,16 +650,16 @@ export default function PaymentDetailsForm({
                     }
                   }}
                   placeholder={initialData.type === "buy" ? t("adForm.sellerInstructions") : t("adForm.buyerInstructions")}
-                  className={`min-h-[120px] resize-none${instructionsError ? " border-red-500" : ""}`}
+                  className={`min-h-[120px] resize-none${instructionsError ? " border-error" : ""}`}
                   maxLength={300}
                 />
                 <div className="flex justify-between items-start mt-2 text-xs mx-4 gap-2">
                   {instructionsError ? (
-                    <span className="text-red-500">{instructionsError}</span>
+                    <span className="text-error">{instructionsError}</span>
                   ) : (
-                    <span className="text-gray-500">{t("adForm.instructionsDisclaimer")}</span>
+                    <span className="text-grayscale-text-muted">{t("adForm.instructionsDisclaimer")}</span>
                   )}
-                  <span className="text-gray-500">{instructions.length}/300</span>
+                  <span className="text-grayscale-text-muted">{instructions.length}/300</span>
                 </div>
               </div>
             </div>

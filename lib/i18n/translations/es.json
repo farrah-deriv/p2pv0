@@ -631,6 +631,7 @@
     "exchangeRateRequiredDescription": "Esta orden necesita un tipo de cambio. Ingresa el tipo acordado para continuar.",
     "exchangeRateRequiredTitle": "Agregar tipo de cambio",
     "fileTooLarge": "El archivo debe tener 5 MB o menos.",
+    "invalidFileType": "Sube un archivo JPEG, JPG, PNG o PDF.",
     "fileTypes": "JPEG, JPG, PNG, PDF (hasta 5MB)",
     "financialAssessmentDescription": "Completa tu evaluación financiera para realizar más retiros.",
     "financialAssessmentTitle": "Completa tu evaluación",

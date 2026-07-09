@@ -791,6 +791,7 @@
     "date": "Огноо",
     "didntReceiveCode": "Кодоо хүлээж аваагүй юу?",
     "fileTooLarge": "Файл 5MB буюу түүнээс бага хэмжээтэй байх ёстой.",
+    "invalidFileType": "JPEG, JPG, PNG эсвэл PDF файл оруулна уу.",
     "fileTypes": "JPEG, JPG, PNG, PDF (5 МБ хүртэл)",
     "gotIt": "Ойлголоо",
     "id": "ID",

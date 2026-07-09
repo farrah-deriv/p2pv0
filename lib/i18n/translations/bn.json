@@ -800,6 +800,7 @@
     "date": "তারিখ",
     "didntReceiveCode": "কোড পাননি?",
     "fileTooLarge": "ফাইলটি ৫MB বা ছোট হতে হবে।",
+    "invalidFileType": "অনুগ্রহ করে JPEG, JPG, PNG, বা PDF ফাইল আপলোড করুন।",
     "fileTypes": "JPEG, JPG, PNG, PDF (৫MB পর্যন্ত)",
     "fraudWarning": "জালিয়াতি নথি প্রদান করলে স্থায়ী নিষেধাজ্ঞা হবে।",
     "gotIt": "বুঝেছি",

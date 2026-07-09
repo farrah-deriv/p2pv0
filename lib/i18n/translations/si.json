@@ -791,6 +791,7 @@
     "date": "දිනය",
     "didntReceiveCode": "කේතය ලැබුණේ නැද්ද?",
     "fileTooLarge": "ගොනුව 5MB හෝ කුඩා විය යුතුය.",
+    "invalidFileType": "කරුණාකර JPEG, JPG, PNG හෝ PDF ගොනුවක් උඩුගත කරන්න.",
     "fileTypes": "JPEG, JPG, PNG, PDF (5MB දක්වා)",
     "gotIt": "තේරුනා",
     "id": "හැඳුනුම්පත",

@@ -633,6 +633,7 @@
     "exchangeRateRequiredDescription": "Questo ordine richiede un tasso di cambio. Inserisci il tasso concordato per continuare.",
     "exchangeRateRequiredTitle": "Aggiungi tasso di cambio",
     "fileTooLarge": "Il file deve essere di 5MB o meno.",
+    "invalidFileType": "Carica un file JPEG, JPG, PNG o PDF.",
     "fileTypes": "JPEG, JPG, PNG, PDF (fino a 5MB)",
     "financialAssessmentDescription": "Completa la tua valutazione finanziaria per effettuare ulteriori prelievi.",
     "financialAssessmentTitle": "Completa la tua valutazione",

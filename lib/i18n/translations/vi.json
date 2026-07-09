@@ -835,6 +835,7 @@
     "date": "Ngày",
     "didntReceiveCode": "Không nhận được mã?",
     "fileTooLarge": "Tệp phải có kích thước 5MB hoặc nhỏ hơn.",
+    "invalidFileType": "Vui lòng tải lên tệp JPEG, JPG, PNG hoặc PDF.",
     "fileTypes": "JPEG, JPG, PNG, PDF (tối đa 5MB)",
     "gotIt": "Đã hiểu",
     "id": "ID",

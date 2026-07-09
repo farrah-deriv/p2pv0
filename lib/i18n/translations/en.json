@@ -911,6 +911,7 @@
     "uploadProof": "Upload proof of payment",
     "fileTypes": "JPEG, JPG, PNG, PDF (up to 5MB)",
     "fileTooLarge": "File must be 5MB or smaller.",
+    "invalidFileType": "Please upload a JPEG, JPG, PNG, or PDF file.",
     "attachmentRejected": "This file couldn't be sent. Use a different file.",
     "submit": "Submit",
     "confirmPaymentReceived": "Confirm payment received",

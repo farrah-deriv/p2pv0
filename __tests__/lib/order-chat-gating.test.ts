@@ -4,7 +4,12 @@ import {
   isOrderBuyer,
   shouldDisableChatAttachments,
 } from "@/lib/orders/order-chat-gating"
+import { isP2POrderChatModerationEnabled } from "@/lib/orders/order-chat-feature-flags"
 import { Order } from "@/services/api/api-orders"
+
+jest.mock("@/lib/orders/order-chat-feature-flags", () => ({
+  isP2POrderChatModerationEnabled: jest.fn(() => false),
+}))
 
 const baseOrder = {
   id: "1",
@@ -25,6 +30,21 @@ const baseOrder = {
 } as Order
 
 describe("order-chat-gating", () => {
+  const originalEnv = process.env.NEXT_PUBLIC_P2P_ORDER_CHAT_MODERATION_ENABLED
+
+  beforeEach(() => {
+    delete process.env.NEXT_PUBLIC_P2P_ORDER_CHAT_MODERATION_ENABLED
+    jest.mocked(isP2POrderChatModerationEnabled).mockReturnValue(false)
+  })
+
+  afterAll(() => {
+    if (originalEnv === undefined) {
+      delete process.env.NEXT_PUBLIC_P2P_ORDER_CHAT_MODERATION_ENABLED
+    } else {
+      process.env.NEXT_PUBLIC_P2P_ORDER_CHAT_MODERATION_ENABLED = originalEnv
+    }
+  })
+
   describe("isOrderBuyer", () => {
     it("returns true for buy order when current user is order.user", () => {
       expect(isOrderBuyer(baseOrder, 1)).toBe(true)
@@ -64,7 +84,18 @@ describe("order-chat-gating", () => {
   })
 
   describe("shouldDisableChatAttachments", () => {
-    it("is true for buyer in pending payment with has_buyer_submitted_pot false", () => {
+    it("is false when moderation flag is off regardless of POT state", () => {
+      expect(
+        shouldDisableChatAttachments(
+          { ...baseOrder, has_buyer_submitted_pot: false },
+          "1",
+        ),
+      ).toBe(false)
+    })
+
+    it("is true for buyer in pending payment with has_buyer_submitted_pot false when flag is on", () => {
+      jest.mocked(isP2POrderChatModerationEnabled).mockReturnValue(true)
+
       expect(
         shouldDisableChatAttachments(
           { ...baseOrder, has_buyer_submitted_pot: false },
@@ -73,7 +104,9 @@ describe("order-chat-gating", () => {
       ).toBe(true)
     })
 
-    it("is false when has_buyer_submitted_pot is true", () => {
+    it("is false when has_buyer_submitted_pot is true and flag is on", () => {
+      jest.mocked(isP2POrderChatModerationEnabled).mockReturnValue(true)
+
       expect(
         shouldDisableChatAttachments(
           { ...baseOrder, has_buyer_submitted_pot: true },
@@ -82,11 +115,15 @@ describe("order-chat-gating", () => {
       ).toBe(false)
     })
 
-    it("is true when has_buyer_submitted_pot is absent", () => {
+    it("is true when has_buyer_submitted_pot is absent and flag is on", () => {
+      jest.mocked(isP2POrderChatModerationEnabled).mockReturnValue(true)
+
       expect(shouldDisableChatAttachments(baseOrder, 1)).toBe(true)
     })
 
-    it("is false for seller even when has_buyer_submitted_pot is false", () => {
+    it("is false for seller even when has_buyer_submitted_pot is false and flag is on", () => {
+      jest.mocked(isP2POrderChatModerationEnabled).mockReturnValue(true)
+
       expect(
         shouldDisableChatAttachments(
           { ...baseOrder, has_buyer_submitted_pot: false },
@@ -95,7 +132,9 @@ describe("order-chat-gating", () => {
       ).toBe(false)
     })
 
-    it("is false when order is not pending payment", () => {
+    it("is false when order is not pending payment and flag is on", () => {
+      jest.mocked(isP2POrderChatModerationEnabled).mockReturnValue(true)
+
       expect(
         shouldDisableChatAttachments(
           {
