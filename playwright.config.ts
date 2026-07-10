@@ -72,20 +72,8 @@ export default defineConfig({
     screenshot: "only-on-failure",
     video: "retain-on-failure",
 
-    launchOptions: {
-      slowMo: 0,
-      args: [
-        "--no-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-web-security",
-        "--disable-features=VizDisplayCompositor",
-      ],
-    },
-
     navigationTimeout: 45000,
     actionTimeout: 45000,
-
-    userAgent: "Playwright-Agent/deriv/1.9",
   },
 
   projects: [
@@ -94,16 +82,64 @@ export default defineConfig({
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 1536, height: 864 },
-        userAgent: "Playwright-Agent/deriv/1.9",
+        userAgent: `${devices["Desktop Chrome"].userAgent} Playwright-Agent/deriv/1.9`,
+        launchOptions: {
+          args: [
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-web-security",
+            "--disable-features=VizDisplayCompositor",
+            "--use-fake-ui-for-media-stream",
+            "--use-fake-device-for-media-stream",
+          ],
+        },
       },
     },
     {
       name: "chromium-mobile",
       use: {
-        ...devices['Pixel 7'],
+        ...devices["Pixel 7"],
         viewport: { width: 412, height: 915 },
-        // userAgent: `${devices["Pixel 7"].userAgent} Playwright-Agent/deriv/1.9`,
-        userAgent: 'Playwright-Agent/deriv/1.9',
+        userAgent: `${devices["Pixel 7"].userAgent} Playwright-Agent/deriv/1.9`,
+        launchOptions: {
+          args: [
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-web-security",
+            "--disable-features=VizDisplayCompositor",
+            "--use-fake-ui-for-media-stream",
+            "--use-fake-device-for-media-stream",
+          ],
+        },
+      },
+    },
+    {
+      name: "firefox",
+      use: {
+        ...devices["Desktop Firefox"],
+        viewport: { width: 1536, height: 864 },
+        userAgent: `${devices["Desktop Firefox"].userAgent} Playwright-Agent/deriv/1.9`,
+        launchOptions: {
+          firefoxUserPrefs: {
+            "media.navigator.streams.fake": true,
+            "media.navigator.permission.disabled": true,
+          },
+        },
+      },
+    },
+    {
+      name: "webkit",
+      use: {
+        ...devices["Desktop Safari"],
+        viewport: { width: 1536, height: 864 },
+        userAgent: `${devices["Desktop Safari"].userAgent} Playwright-Agent/deriv/1.9`,
+      },
+    },
+    {
+      name: "webkit-mobile",
+      use: {
+        ...devices["iPhone 15 Plus"],
+        userAgent: `${devices["iPhone 15 Plus"].userAgent} Playwright-Agent/deriv/1.9`,
       },
     },
   ],

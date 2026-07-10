@@ -122,14 +122,9 @@ export class LoginPage {
         return this.page.getByRole("heading", { name: "My trading accounts" });
     }
 
-    /** "Real" tab button on the dashboard */
-    get tabReal(): Locator {
-        return this.page.getByTestId("dashboard-btn-tab-real");
-    }
-
-    /** "Demo" tab button on the dashboard */
-    get tabDemo(): Locator {
-        return this.page.getByTestId("dashboard-btn-tab-demo");
+    /** "Add more accounts" button — confirms trading accounts section fully rendered */
+    get addMoreAccountsButton(): Locator {
+        return this.page.getByTestId("dashboard-btn-add-more-accounts");
     }
 
     /**
@@ -281,15 +276,14 @@ export class LoginPage {
      * Always asserts:
      * - URL is /dashboard/home
      * - "My trading accounts" heading is visible
-     * - Real / Demo tab switcher buttons are visible
+     * - "Add more accounts" button is visible (confirms accounts section rendered)
      * - Home / CFDs / Options / Portfolio nav links are visible
      * - User profile link/button is visible
      */
     async verifySuccessfulLogin(): Promise<void> {
         await expect(this.page, "URL should be /dashboard/home after successful login").toHaveURL(/\/dashboard\/home/);
         await expect(this.tradingAccountsHeading, '"My trading accounts" heading should be visible').toBeVisible();
-        await expect(this.tabReal, '"Real" tab button should be visible').toBeVisible();
-        await expect(this.tabDemo, '"Demo" tab button should be visible').toBeVisible();
+        await expect(this.addMoreAccountsButton, '"Add more accounts" button should be visible').toBeVisible();
         await expect(this.navHomeLink, '"Home" navigation link should be visible').toBeVisible();
         await expect(this.navCfdsLink, '"CFDs" / "Trade" navigation link should be visible').toBeVisible();
         await expect(this.navOptionsLink, '"Options" navigation link should be visible').toBeVisible();
