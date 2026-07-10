@@ -638,7 +638,6 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                                       <ExchangeRateDisplay
                                         rate={ad.effective_rate_display}
                                         paymentCurrency={ad.payment_currency}
-                                        accountCurrency={ad.account_currency}
                                         mutedClassName="text-xs font-normal text-black opacity-[0.48]"
                                       />
                                     </span>

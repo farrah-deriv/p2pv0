@@ -85,7 +85,6 @@ export function AdvertiserSearchResultCard({ ad, onAdvertiserClick, onBuySellCli
                     <ExchangeRateDisplay
                         rate={ad.effective_rate_display}
                         paymentCurrency={ad.payment_currency}
-                        accountCurrency={ad.account_currency}
                         mutedClassName="text-xs text-slate-500 font-normal"
                     />
                 </div>

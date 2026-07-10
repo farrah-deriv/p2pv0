@@ -10,7 +10,7 @@ export { formatEffectiveRateDisplay, buildExchangeRateLine } from "@/lib/exchang
 type ExchangeRateDisplayProps = {
   rate: number | null | undefined
   paymentCurrency: string
-  accountCurrency: string
+  accountCurrency?: string
   className?: string
   mutedClassName?: string
   formatRate?: boolean
@@ -42,15 +42,15 @@ export function ExchangeRateDisplay({
     <span dir="ltr" className={cn("inline-flex items-baseline gap-1", className)}>
       {rtl ? (
         <>
-          <span className={mutedClassName}>{accountCurrency}</span>
-          <span className={mutedClassName}>/</span>
+          {accountCurrency && <span className={mutedClassName}>{accountCurrency}</span>}
+          {accountCurrency && <span className={mutedClassName}>/</span>}
           <span>{paymentAndRate}</span>
         </>
       ) : (
         <>
           <span>{paymentAndRate}</span>
-          <span className={mutedClassName}>/</span>
-          <span className={mutedClassName}>{accountCurrency}</span>
+          {accountCurrency && <span className={mutedClassName}>/</span>}
+          {accountCurrency && <span className={mutedClassName}>{accountCurrency}</span>}
         </>
       )}
     </span>
