@@ -349,7 +349,7 @@ export default function OrdersPage() {
 
         <div ref={scrollContainer} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pt-4">
           {isMaintenanceActive ? (
-            <div data-testid="orders-empty-state">
+            <div className="h-full flex items-center justify-center md:h-auto md:block" data-testid="orders-empty-state">
               {activeTab === "active" ? (
                 <EmptyState title={t("orders.noActiveOrders")} description={t("orders.noActiveOrdersDescription")} />
               ) : (
@@ -359,7 +359,7 @@ export default function OrdersPage() {
           ) : isLoading ? (
             <OrdersLoadingSkeleton />
           ) : orders.length === 0 ? (
-            <div data-testid="orders-empty-state">
+            <div className="h-full flex items-center justify-center md:h-auto md:block" data-testid="orders-empty-state">
               {activeTab === "active" ? (
                 <EmptyState title={t("orders.noActiveOrders")} description={t("orders.noActiveOrdersDescription")} redirectToAds={true} redirectToMarket={true} />
               ) : (

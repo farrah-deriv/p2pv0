@@ -301,14 +301,28 @@ interface WebSocketContextType {
   leaveUsersOnlineChannel: () => void
 }
 
-const WebSocketContext = createContext<WebSocketContextType | null>(null)
+const NOOP_WS_CONTEXT: WebSocketContextType = {
+  isConnected: false,
+  joinChannel: () => false,
+  leaveChannel: () => {},
+  getChatHistory: () => {},
+  subscribe: () => () => {},
+  reconnect: () => {},
+  subscribeToUserUpdates: () => {},
+  unsubscribeFromUserUpdates: () => {},
+  joinExchangeRatesChannel: () => {},
+  leaveExchangeRatesChannel: () => {},
+  requestExchangeRate: () => {},
+  joinAdvertsChannel: () => {},
+  leaveAdvertsChannel: () => {},
+  joinUsersOnlineChannel: () => {},
+  leaveUsersOnlineChannel: () => {},
+}
+
+const WebSocketContext = createContext<WebSocketContextType>(NOOP_WS_CONTEXT)
 
 export function useWebSocketContext() {
-  const context = useContext(WebSocketContext)
-  if (!context) {
-    throw new Error("useWebSocketContext must be used within WebSocketProvider")
-  }
-  return context
+  return useContext(WebSocketContext)
 }
 
 interface WebSocketProviderProps {

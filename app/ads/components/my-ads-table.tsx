@@ -355,7 +355,7 @@ export default function MyAdsTable({ ads, hiddenAdverts, isLoading, isFetching =
 
   if (ads.length === 0) {
     return (
-      <div data-testid="ads-empty-state">
+      <div className="h-full flex items-center justify-center md:h-auto md:block" data-testid="ads-empty-state">
         <EmptyState
           title={t("myAds.noAdsTitle")}
           description={t("myAds.noAdsDescription")}

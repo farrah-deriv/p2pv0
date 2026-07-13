@@ -187,7 +187,7 @@ export default function PaymentMethodsFilter({
       ))
   }
 
-  const FilterContent = () => (
+  const filterContent = (
     <div className="w-full">
       <div className="relative mb-4">
         <Image
@@ -203,7 +203,6 @@ export default function PaymentMethodsFilter({
           onChange={handleSearchChange}
           className="h-14 rounded-lg border-0 bg-grayscale-500 text-sm font-normal text-start placeholder:text-grayscale-text-placeholder ps-10 pe-10 focus:border-0 md:h-8"
           autoComplete="off"
-          autoFocus
           data-testid="payment-filter-input-search"
         />
         {searchQuery && (
@@ -219,7 +218,15 @@ export default function PaymentMethodsFilter({
         )}
       </div>
 
-      <div ref={scrollContainerRef} className="space-y-2 max-h-60 overflow-y-auto scrollbar-custom">
+      <div
+        ref={scrollContainerRef}
+        className={cn(
+          "space-y-2 overflow-y-auto scrollbar-custom",
+          filteredPaymentMethods.length === 0
+            ? "flex items-center justify-center min-h-[200px] md:max-h-60"
+            : "max-h-60",
+        )}
+      >
         {filteredPaymentMethods.length > 0 && (
           <div className={cn(CHECKBOX_LABEL_ROW, "mb-4")}>
             <Checkbox
@@ -241,7 +248,7 @@ export default function PaymentMethodsFilter({
         {isLoading ? (
           <div className="text-center py-4 text-gray-500">{t("paymentMethod.loadingPaymentMethods")}</div>
         ) : filteredPaymentMethods.length === 0 ? (
-          <div className="text-center py-4 text-gray-500">
+          <div className="w-full">
             {searchQuery ? (
               <EmptyState
                 title={t("paymentMethod.paymentMethodUnavailable")}
@@ -249,7 +256,7 @@ export default function PaymentMethodsFilter({
                 redirectToAds={false}
               />
             ) : (
-              t("paymentMethod.noPaymentMethodsAvailable")
+              <p className="text-center text-gray-500">{t("paymentMethod.noPaymentMethodsAvailable")}</p>
             )}
           </div>
         ) : (
@@ -307,7 +314,7 @@ export default function PaymentMethodsFilter({
           <div className="my-4">
             <h3 className="text-xl font-bold text-center">{t("paymentMethod.title")}</h3>
           </div>
-          <FilterContent />
+          {filterContent}
         </DrawerContent>
       </Drawer>
     )
@@ -317,7 +324,7 @@ export default function PaymentMethodsFilter({
     <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>{enhancedTrigger}</PopoverTrigger>
       <PopoverContent className="w-80 p-4" align="end">
-        <FilterContent />
+        {filterContent}
       </PopoverContent>
     </Popover>
   )

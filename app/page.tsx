@@ -487,8 +487,8 @@ export default function BuySellPage() {
             {/* Desktop only — maintenance + mobile balance banners live in main.tsx. */}
             {/* Tuck the dark balance card under the banner's bottom edge via `-mb-8`. */}
             <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <div className="w-[calc(100%+24px)] md:w-full flex flex-row items-end gap-[16px] md:gap-[24px] bg-slate-1200 p-6 rounded-b-3xl md:rounded-3xl justify-between -mx-3 mb-4 md:m-0">
-                <div className="flex flex-col items-start w-full md:w-auto">
+              <div className="w-[calc(100%+24px)] md:w-full flex flex-row items-end gap-[16px] md:gap-[24px] bg-slate-1200 p-6 rounded-b-3xl md:rounded-3xl justify-between -mx-3 mb-4 md:m-0 overflow-hidden [transform:translateZ(0)]">
+                <div className="flex flex-col items-start flex-1 min-w-0 md:w-auto">
                   <div data-testid="markets-text-balance">
                     <BalanceSection balance={balance} currency={balanceCurrency} isLoading={isLoadingBalance} />
                   </div>
@@ -514,7 +514,7 @@ export default function BuySellPage() {
                   </Tabs>
                 </div>
                 {showCurrencyFilter && (
-                  <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
+                  <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 shrink-0">
                     {activeTab === "sell" && (
                       <span className="text-xs font-normal text-white opacity-72">
                         {t("market.payWith")}:
@@ -547,7 +547,7 @@ export default function BuySellPage() {
                               alt={`${displayCurrency} logo`}
                               width={24}
                               height={16}
-                              className="shrink-0 object-cover"
+                              className="min-w-6 w-6 object-cover"
                             />
                           )}
                           <span className="shrink-0">{displayCurrency}</span>
@@ -556,7 +556,7 @@ export default function BuySellPage() {
                             alt={t("common.arrow")}
                             width={24}
                             height={24}
-                            className="shrink-0 transition-transform duration-200"
+                            className="min-w-6 w-6 transition-transform duration-200"
                           />
                         </Button>
                       }
@@ -667,7 +667,7 @@ export default function BuySellPage() {
         </div>
         <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto pb-4 md:pb-4 scrollbar-hide px-3">
           {isMaintenanceActive ? (
-            <div className="h-full">
+            <div className="h-full flex items-center justify-center md:h-auto md:block">
               <EmptyState title={t("market.noAdsMaintenanceTitle")} route={null} />
             </div>
           ) : isLoading || (adverts.length === 0 && !currency) ? (
@@ -726,7 +726,7 @@ export default function BuySellPage() {
               {error.message || t("market.failedToLoadAdvertisements")}
             </div>
           ) : adverts.length === 0 ? (
-            <div className="h-full" data-testid="markets-empty-state">
+            <div className="h-full flex items-center justify-center md:h-auto md:block" data-testid="markets-empty-state">
               <EmptyState
                 title={t("market.noAdsTitle", { currency: currency })}
                 description={t("market.noAdsDescription", { currency: currency })}
