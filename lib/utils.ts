@@ -646,7 +646,7 @@ export const getHomeUrl = (isV1Signup = false, section = "", isWalletAccount = f
     baseUrl = isProduction ? `home.${domain}` : `staging-home.${domain}`
   }
 
-  const isWebApp = getCookieValue("web_app") === "true"
+  const isWebApp = getCookieValue("web_app") !== "false"
 
   if (section === "poi") {
     if (isV1Signup) {

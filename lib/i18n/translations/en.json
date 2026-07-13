@@ -324,7 +324,7 @@
     "unableToAdd": "Unable to add payment method",
     "addError": "There was an error when adding the payment method. Please try again.",
     "search": "Search",
-    "allPaymentMethod": "All payment method",
+    "allPaymentMethod": "All payment methods",
     "bankTransfers": "Bank transfer",
     "eWallets": "E-Wallets",
     "paymentMethodUnavailable": "Payment method unavailable",
