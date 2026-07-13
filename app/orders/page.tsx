@@ -351,9 +351,9 @@ export default function OrdersPage() {
           {isMaintenanceActive ? (
             <div data-testid="orders-empty-state">
               {activeTab === "active" ? (
-                <EmptyState icon="/icons/no-active-orders.svg" title={t("orders.noActiveOrders")} description={t("orders.noActiveOrdersDescription")} />
+                <EmptyState title={t("orders.noActiveOrders")} description={t("orders.noActiveOrdersDescription")} />
               ) : (
-                <EmptyState icon="/icons/no-active-orders.svg" title={t("orders.noPastOrders")} description={t("orders.noPastOrdersDescription")} />
+                <EmptyState title={t("orders.noPastOrders")} description={t("orders.noPastOrdersDescription")} />
               )}
             </div>
           ) : isLoading ? (
@@ -361,9 +361,9 @@ export default function OrdersPage() {
           ) : orders.length === 0 ? (
             <div data-testid="orders-empty-state">
               {activeTab === "active" ? (
-                <EmptyState icon="/icons/no-active-orders.svg" title={t("orders.noActiveOrders")} description={t("orders.noActiveOrdersDescription")} redirectToAds={true} redirectToMarket={true} />
+                <EmptyState title={t("orders.noActiveOrders")} description={t("orders.noActiveOrdersDescription")} redirectToAds={true} redirectToMarket={true} />
               ) : (
-                <EmptyState icon="/icons/no-active-orders.svg" title={t("orders.noPastOrders")} description={t("orders.noPastOrdersDescription")} />
+                <EmptyState title={t("orders.noPastOrders")} description={t("orders.noPastOrdersDescription")} />
               )}
             </div>
           ) : (

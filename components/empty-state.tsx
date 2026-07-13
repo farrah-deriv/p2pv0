@@ -1,5 +1,4 @@
 "use client"
-import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useUserDataStore } from "@/stores/user-data-store"
@@ -11,7 +10,6 @@ import { useTrackers } from "@/analytics/useTrackers"
 
 interface EmptyStateProps {
   adType?: "buy" | "sell"
-  icon?: string
   title?: string
   description?: string
   className?: string
@@ -23,7 +21,6 @@ interface EmptyStateProps {
 
 export default function EmptyState({
   adType = "sell",
-  icon,
   title,
   description,
   className,
@@ -59,7 +56,6 @@ export default function EmptyState({
 
   return (
     <div className={cn("flex flex-col items-center justify-center py-8 text-center px-3 md:px-0 justify-self-center", className)}>
-      <Image src={icon || "/icons/search-icon.svg"} alt={displayTitle} width={88} height={88} />
       {displayTitle && <p className="text-base text-slate-1200 mt-2 mb-1 font-bold whitespace-pre-wrap wrap-anywhere">{displayTitle}</p>}
       {description && <p className="text-base font-normal text-grayscale-600">{description}</p>}
       <div className="flex w-full gap-2 justify-center flex-wrap-reverse mt-4">

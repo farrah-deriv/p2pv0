@@ -215,7 +215,7 @@ export default function WalletPage() {
         )}
         <div className="flex flex-col flex-1 min-h-0 w-full mt-6 mx-4 md:mx-4 px-6 md:px-0">
           {isMaintenanceActive ? (
-            <div data-testid="wallet-empty-transactions"><EmptyState icon="/icons/no-active-orders.svg" title={t("wallet.noTransactions")} /></div>
+            <div data-testid="wallet-empty-transactions"><EmptyState title={t("wallet.noTransactions")} /></div>
           ) : displayBalances ? (
             <WalletBalances onBalanceClick={handleBalanceClick} balances={p2pBalances} isLoading={isBalanceLoading} />
           ) : (

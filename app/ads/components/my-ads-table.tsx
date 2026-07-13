@@ -357,7 +357,6 @@ export default function MyAdsTable({ ads, hiddenAdverts, isLoading, isFetching =
     return (
       <div data-testid="ads-empty-state">
         <EmptyState
-          icon="/icons/no-ads.svg"
           title={t("myAds.noAdsTitle")}
           description={t("myAds.noAdsDescription")}
           redirectToAds={true}
