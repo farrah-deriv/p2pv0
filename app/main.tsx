@@ -248,17 +248,16 @@ export default function Main({
       <div className="md:hidden flex flex-col h-dvh overflow-hidden">
         {showMaintenanceBanner && <P2PSystemMaintenanceBanner embeddedInDarkHeader />}
         {showBalanceWarning && <P2PBalanceWarning />}
-        {isHeaderVisible && !pathname.startsWith("/profile") && <Header className="flex-shrink-0" />}
+        {isHeaderVisible && <Header className="flex-shrink-0" />}
         <main
           className={cn(
             "flex flex-col flex-1 min-h-0",
-            pathname.startsWith("/profile") ? "overflow-y-auto" : "overflow-hidden",
+            pathname.startsWith("/profile") ? "overflow-y-auto overscroll-y-none" : "overflow-hidden",
           )}
         >
-          {isHeaderVisible && pathname.startsWith("/profile") && <Header />}
           {children}
         </main>
-        {showMobileFooterNav && !pathname.startsWith("/profile") && (
+        {showMobileFooterNav && (
           <MobileFooterNav className="flex-shrink-0" />
         )}
       </div>

@@ -18,6 +18,11 @@ describe("shouldShowMobileFooterNav", () => {
     expect(shouldShowMobileFooterNav("/wallet", false, true)).toBe(false)
   })
 
+  it("hides on profile pages", () => {
+    expect(shouldShowMobileFooterNav("/profile", false, false)).toBe(false)
+    expect(shouldShowMobileFooterNav("/profile/payment-methods", false, false)).toBe(false)
+  })
+
   it("shows on orders list and markets", () => {
     expect(shouldShowMobileFooterNav("/orders", false, false)).toBe(true)
     expect(shouldShowMobileFooterNav("/", false, false)).toBe(true)

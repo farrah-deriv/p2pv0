@@ -33,11 +33,21 @@ interface MyAdsTableProps {
   hiddenAdverts: boolean
   isLoading: boolean
   isFetching?: boolean
+  isActiveTab: boolean
   onAdDeleted?: (status?: string) => void
+  onAdsChanged?: () => Promise<void> | void
 }
 
 
-export default function MyAdsTable({ ads, hiddenAdverts, isLoading, isFetching = false, onAdDeleted }: MyAdsTableProps) {
+export default function MyAdsTable({
+  ads,
+  hiddenAdverts,
+  isLoading,
+  isFetching = false,
+  isActiveTab,
+  onAdDeleted,
+  onAdsChanged,
+}: MyAdsTableProps) {
   const { t } = useTranslations()
   const locale = useLanguageStore((state) => state.locale)
   const dropdownMenuAlign = isRtlLocale(locale) ? "start" : "end"
@@ -167,50 +177,47 @@ export default function MyAdsTable({ ads, hiddenAdverts, isLoading, isFetching =
     setDrawerOpen(false)
     setOpenDropdownId(null)
 
-    toggleStatusMutation.mutate(
-      { id: ad.id, isActive: isListed },
-      {
-        onSuccess: () => {
-          const message = isListed ? t("myAds.adActivated") : t("myAds.adDeactivated")
-          toast({
-            description: (
-              <div className="flex items-center gap-2">
-                <Image src="/icons/tick.svg" alt={t("common.success")} width={24} height={24} className="text-white" />
-                <span>{message}</span>
-              </div>
-            ),
-            className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
-            duration: 2500,
-          })
-        },
-        onError: (error: any) => {
-          if (error?.errors?.length > 0) {
-            const firstError = error.errors[0]
-            const errorCodeMap: Record<string, string> = {
-              AdvertActiveCountExceeded: t("adForm.adLimitReachedMessage"),
-              AdvertExchangeRateDuplicate: t("adForm.duplicateRateMessage"),
-              InvalidExchangeRate: t("adForm.invalidExchangeRateMessage"),
-            }
+    try {
+      await toggleStatusMutation.mutateAsync({ id: ad.id, isActive: isListed })
+      await onAdsChanged?.()
 
-            const errorMessage = errorCodeMap[firstError.code] || t("myAds.updateAdError")
+      const message = isListed ? t("myAds.adActivated") : t("myAds.adDeactivated")
+      toast({
+        description: (
+          <div className="flex items-center gap-2">
+            <Image src="/icons/tick.svg" alt={t("common.success")} width={24} height={24} className="text-white" />
+            <span>{message}</span>
+          </div>
+        ),
+        className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+        duration: 2500,
+      })
+    } catch (error: any) {
+      if (error?.errors?.length > 0) {
+        const firstError = error.errors[0]
+        const errorCodeMap: Record<string, string> = {
+          AdvertActiveCountExceeded: t("adForm.adLimitReachedMessage"),
+          AdvertExchangeRateDuplicate: t("adForm.duplicateRateMessage"),
+          InvalidExchangeRate: t("adForm.invalidExchangeRateMessage"),
+        }
 
-            showAlert({
-              title: t("myAds.unableToUpdateAd"),
-              description: errorMessage,
-              confirmText: t("common.ok"),
-              type: "warning",
-            })
-          } else {
-            showAlert({
-              title: t("myAds.unableToUpdateAd"),
-              description: t("myAds.updateAdError"),
-              confirmText: t("common.ok"),
-              type: "warning",
-            })
-          }
-        },
+        const errorMessage = errorCodeMap[firstError.code] || t("myAds.updateAdError")
+
+        showAlert({
+          title: t("myAds.unableToUpdateAd"),
+          description: errorMessage,
+          confirmText: t("common.ok"),
+          type: "warning",
+        })
+      } else {
+        showAlert({
+          title: t("myAds.unableToUpdateAd"),
+          description: t("myAds.updateAdError"),
+          confirmText: t("common.ok"),
+          type: "warning",
+        })
       }
-    )
+    }
   }
 
   const handleDelete = (adId: string) => {
@@ -229,6 +236,8 @@ export default function MyAdsTable({ ads, hiddenAdverts, isLoading, isFetching =
         track("ek_confirm_delete_delete_ad_sheet")
         deleteAdMutation.mutate(adId, {
           onSuccess: () => {
+            onAdDeleted?.("deleted")
+            void onAdsChanged?.()
             toast({
               description: (
                 <div className="flex items-center gap-2">
@@ -355,11 +364,11 @@ export default function MyAdsTable({ ads, hiddenAdverts, isLoading, isFetching =
 
   if (ads.length === 0) {
     return (
-      <div className="h-full flex items-center justify-center md:h-auto md:block" data-testid="ads-empty-state">
+      <div className="h-full flex items-center md:items-start justify-center md:pt-16" data-testid="ads-empty-state">
         <EmptyState
-          title={t("myAds.noAdsTitle")}
-          description={t("myAds.noAdsDescription")}
-          redirectToAds={true}
+          title={isActiveTab ? t("myAds.noAdsTitle") : t("myAds.noInactiveAdsTitle")}
+          description={isActiveTab ? t("myAds.noAdsDescription") : t("myAds.noInactiveAdsDescription")}
+          redirectToAds={isActiveTab}
           route="ads"
         />
       </div>

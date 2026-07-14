@@ -752,8 +752,8 @@
   "myAds": {
     "title": "All ads",
     "createAd": "Create ad",
-    "hideMyAds": "Hide my ads",
-    "hideMyAdsTooltip": "Hidden ads won't appear on the Market page.",
+    "hideMyAds": "Pause my ads",
+    "hideMyAdsTooltip": "Paused ads won't appear on the Market page.",
     "adDeleted": "Ad has been deleted.",
     "adActivated": "Ad has been activated.",
     "adDeactivated": "Ad has been deactivated.",
@@ -764,10 +764,10 @@
     "errorLoadingAds": "Failed to load ads. Please try again.",
     "errorLoadingAdsTitle": "Error Loading Ads",
     "errorLoadingAdsMessage": "Failed to load ads. Please try again later.",
-    "unableToHideAds": "Unable to hide your ads",
-    "unableToShowAds": "Unable to show your ads",
-    "hideAdsError": "Failed to hide your ads. Please try again.",
-    "showAdsError": "Failed to show your ads. Please try again.",
+    "unableToHideAds": "Unable to pause your ads",
+    "unableToShowAds": "Unable to resume your ads",
+    "hideAdsError": "Failed to pause your ads. Please try again.",
+    "showAdsError": "Failed to resume your ads. Please try again.",
     "noAdsTitle": "You have no ads",
     "noAdsDescription": "Looking to buy or sell? You can post your own ad for others to respond.",
     "loadingAds": "Loading ads...",
@@ -796,7 +796,11 @@
     "updateAdError": "There was an error when updating the advert. Please try again.",
     "visibilityStatus": "Your ad isn't visible",
     "visibilityStatusDescription": "Your ad isn't visible to others. Here's why:",
-    "visibilityStatusMultipleReasons": "Your ad isn't listed on Market due to the following reasons:"
+    "visibilityStatusMultipleReasons": "Your ad isn't listed on Market due to the following reasons:",
+    "tabActive": "Active",
+    "tabInactive": "Inactive",
+    "noInactiveAdsTitle": "No inactive ads",
+    "noInactiveAdsDescription": "Your inactive ads will appear here."
   },
   "visibilityStatus": {
     "advertInactive": {

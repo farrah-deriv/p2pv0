@@ -79,7 +79,8 @@ export const queryKeys = {
   // Ads queries
   ads: {
     all: ADS_KEYS,
-    userAdverts: (showInactive?: boolean) => [...ADS_KEYS, 'user-adverts', showInactive] as const,
+    userAdverts: (isActive?: boolean) => [...ADS_KEYS, 'user-adverts', isActive] as const,
+    allUserAdverts: () => [...ADS_KEYS, 'user-adverts'] as const,
   },
 }
 
@@ -312,11 +313,11 @@ export function useDeletePaymentMethod() {
 
 const PAGE_SIZE = 20
 
-export function useUserAdverts(showInactive?: boolean, enabled = true) {
+export function useUserAdverts(isActive?: boolean, enabled = true) {
   const maintenanceBlocked = useP2PQueriesBlocked()
   return useInfiniteQuery({
-    queryKey: queryKeys.ads.userAdverts(showInactive),
-    queryFn: ({ pageParam = 1 }) => AdsAPI.getUserAdverts(showInactive, pageParam as number, PAGE_SIZE),
+    queryKey: queryKeys.ads.userAdverts(isActive),
+    queryFn: ({ pageParam = 1 }) => AdsAPI.getUserAdverts(isActive, pageParam as number, PAGE_SIZE),
     getNextPageParam: (lastPage, allPages) =>
       lastPage.length < PAGE_SIZE ? undefined : allPages.length + 1,
     initialPageParam: 1,
@@ -339,7 +340,7 @@ export function useCreateAd() {
     },
     retry: 0,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ads.userAdverts(true) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.ads.allUserAdverts() })
     },
   })
 }
@@ -358,7 +359,7 @@ export function useUpdateAd() {
     },
     retry: 0,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ads.userAdverts(true) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.ads.allUserAdverts() })
     },
   })
 }
@@ -377,7 +378,7 @@ export function useDeleteAd() {
     },
     retry: 0,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ads.userAdverts(true) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.ads.allUserAdverts() })
     },
   })
 }
@@ -396,7 +397,7 @@ export function useToggleAdActiveStatus() {
     },
     retry: 0,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ads.userAdverts(true) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.ads.allUserAdverts() })
     },
   })
 }
@@ -406,7 +407,7 @@ export function useHideMyAds() {
   return useMutation({
     mutationFn: (hide: boolean) => AdsAPI.hideMyAds(hide),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ads.userAdverts(true) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.ads.allUserAdverts() })
     },
   })
 }

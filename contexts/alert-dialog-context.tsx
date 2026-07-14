@@ -59,6 +59,18 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
     hideAlert()
   }, [config.onClose, hideAlert])
 
+  const handleOpenChange = useCallback((open: boolean) => {
+    if (!open && config.preventOutsideClose) return
+
+    if (open) {
+      setIsOpen(true)
+      return
+    }
+
+    hideAlert()
+    config.onClose?.()
+  }, [config.onClose, config.preventOutsideClose, hideAlert])
+
   const contextValue: AlertDialogContextType = {
     showAlert,
     hideAlert,
@@ -216,11 +228,7 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
       {children}
 
       {isMobile ? (
-        <Drawer open={isOpen} onOpenChange={(open) => {
-          if (!open && config.preventOutsideClose) return
-          setIsOpen(open)
-          if (!open) config.onClose?.()
-        }}>
+        <Drawer open={isOpen} onOpenChange={handleOpenChange}>
           <DrawerContent
             dir={dir}
             hideHandle={isKycOnboarding}
@@ -235,7 +243,10 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
           </DrawerContent>
         </Drawer>
       ) : (
-        <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+        <AlertDialog
+          open={isOpen}
+          onOpenChange={handleOpenChange}
+        >
           <AlertDialogTitle></AlertDialogTitle>
           <AlertDialogContent
             dir={dir}

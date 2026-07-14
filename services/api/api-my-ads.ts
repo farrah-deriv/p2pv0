@@ -209,13 +209,13 @@ export async function getCurrencies(): Promise<string[]> {
   return ["USD", "BTC", "ETH", "LTC", "BRL", "VND"]
 }
 
-export async function getUserAdverts(showInactive?: boolean, page = 1, per_page = 20): Promise<MyAd[]> {
+export async function getUserAdverts(isActive?: boolean, page = 1, per_page = 20): Promise<MyAd[]> {
   try {
     const userId = useUserDataStore.getState().userId
 
     const queryParams = new URLSearchParams({
       user_id: userId.toString(),
-      show_inactive: showInactive !== undefined ? showInactive.toString() : "true",
+      show_inactive: "true",
       show_unorderable: "true",
       show_unlisted: "true",
       show_ineligible: "true",
@@ -225,6 +225,10 @@ export async function getUserAdverts(showInactive?: boolean, page = 1, per_page 
       sort_by: "is_active",
       sort_order: "desc",
     })
+
+    if (isActive !== undefined) {
+      queryParams.set("is_active", isActive.toString())
+    }
 
     const url = `${API.baseUrl}${API.endpoints.ads}?${queryParams.toString()}`
     const headers = AUTH.getAuthHeader()

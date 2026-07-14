@@ -5,11 +5,13 @@ import { TooltipTrigger } from "@/components/ui/tooltip"
 import { useEffect, useState, useRef, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import MyAdsTable from "./components/my-ads-table"
-import { useUserAdverts, useHideMyAds } from "@/hooks/use-api-queries"
+import { queryKeys, useUserAdverts, useHideMyAds } from "@/hooks/use-api-queries"
+import { useQueryClient } from "@tanstack/react-query"
 import Image from "next/image"
 import type { MyAd } from "./types"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import StatusBottomSheet from "./components/ui/status-bottom-sheet"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { Switch } from "@/components/ui/switch"
@@ -28,11 +30,15 @@ interface StatusData {
   showStatusModal: boolean
 }
 
+type MyAdsTab = "active" | "inactive"
+
 export default function AdsPage() {
   const { t } = useTranslations()
   const { track } = useTrackers()
+  const queryClient = useQueryClient()
   const [showDeletedBanner, setShowDeletedBanner] = useState(false)
   const [statusData, setStatusData] = useState<StatusData | null>(null)
+  const [activeTab, setActiveTab] = useState<MyAdsTab>("active")
   const { userData, userId, onboardingStatus, verificationStatus } = useUserDataStore()
   const isPoiExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poi_status !== "approved"
   const isPoaExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poa_status !== "approved"
@@ -55,7 +61,8 @@ export default function AdsPage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   // Use the React Query hook
-  const { data, isLoading: loading, isFetching, isFetchingNextPage, fetchNextPage, hasNextPage, error: queryError, refetch } = useUserAdverts(true, !!userId)
+  const isActiveTab = activeTab === "active"
+  const { data, isLoading: loading, isFetching, isFetchingNextPage, fetchNextPage, hasNextPage, error: queryError, refetch } = useUserAdverts(isActiveTab, !!userId)
   const userAdverts = useMemo(() => data?.pages.flat() ?? [], [data?.pages])
 
   // Infinite scroll: fetch next page when sentinel comes into view
@@ -105,6 +112,15 @@ export default function AdsPage() {
     router.push("/ads/create")
   }
 
+  const handleTabChange = (tabValue: string) => {
+    setActiveTab(tabValue as MyAdsTab)
+  }
+
+  const refetchCurrentTab = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.ads.allUserAdverts() })
+    await refetch()
+  }, [queryClient, refetch])
+
   useEffect(() => {
     if (queryError) {
       setErrorModal({
@@ -153,9 +169,10 @@ export default function AdsPage() {
         showStatusModal: true,
       })
 
+      queryClient.invalidateQueries({ queryKey: queryKeys.ads.allUserAdverts() })
       refetch()
     }
-  }, [showAlert, isMobile, t, refetch])
+  }, [showAlert, isMobile, t, refetch, queryClient])
 
   const handleAdUpdated = (status?: string) => {
     if (status === "deleted") {
@@ -205,6 +222,7 @@ export default function AdsPage() {
       await hideMyAdsMutation.mutateAsync(value)
       // Update the user store with the new value after successful API call
       useUserDataStore.getState().updateUserData({ adverts_are_listed: !value })
+      await refetchCurrentTab()
     } catch (error) {
       console.error("Failed to hide/show ads:", error)
       setHiddenAdverts(previousValue)
@@ -266,8 +284,27 @@ export default function AdsPage() {
     <>
       <div className="flex flex-col h-full min-h-0 md:h-screen overflow-hidden bg-white px-3">
         <div className="flex-none container mx-auto">
-          <div className="relative z-10 w-[calc(100%+24px)] md:w-full h-[80px] bg-slate-1200 p-6 rounded-b-3xl md:rounded-3xl text-white text-xl font-bold -m-3 mb-4 md:mx-0 md:mt-0">
-            {t("myAds.title")}
+          <div className="relative z-10 w-[calc(100%+24px)] md:w-full h-[80px] flex items-center justify-start gap-4 bg-slate-1200 p-6 rounded-b-3xl md:rounded-3xl text-white -m-3 mb-4 md:mx-0 md:mt-0">
+            <Tabs value={activeTab} onValueChange={handleTabChange}>
+              <TabsList className="w-full bg-transparent p-0 gap-4">
+                <TabsTrigger
+                  value="active"
+                  className="w-auto text-base data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:rounded-none px-0"
+                  variant="underline"
+                  data-testid="ads-tab-active"
+                >
+                  {t("myAds.tabActive")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="inactive"
+                  className="w-auto text-base data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:rounded-none px-0"
+                  variant="underline"
+                  data-testid="ads-tab-inactive"
+                >
+                  {t("myAds.tabInactive")}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
           {tempBanUntil && !isMaintenanceActive && (
             <div data-testid="ads-alert-temp-ban">
@@ -291,14 +328,16 @@ export default function AdsPage() {
           </div>
         </div>
 
-        <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden container mx-auto p-0 md:p-0" data-testid="ads-table-container">
+        <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-y-none scrollbar-hide container mx-auto p-0 md:p-0" data-testid="ads-table-container">
           {queryError ? (
             <div className="text-center py-8 text-red-500">{t("myAds.errorLoadingAds")}</div>
           ) : (
             <MyAdsTable
               ads={isMaintenanceActive ? [] : userAdverts}
               onAdDeleted={handleAdUpdated}
+              onAdsChanged={refetchCurrentTab}
               hiddenAdverts={hiddenAdverts}
+              isActiveTab={isActiveTab}
               isLoading={isMaintenanceActive ? false : loading}
               isFetching={isMaintenanceActive ? false : isFetching}
             />

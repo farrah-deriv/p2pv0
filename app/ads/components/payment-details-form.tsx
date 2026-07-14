@@ -491,6 +491,10 @@ export default function PaymentDetailsForm({
             handleAddPaymentMethodClick={handleAddPaymentMethodClick}
           />
         ),
+        // Dismissing without confirming (X, Escape, backdrop) discards the
+        // draft back to the last confirmed selection, so reopening later
+        // doesn't reseed from a stale, never-confirmed draft.
+        onClose: () => setTempSelectedPaymentMethods(selectedPaymentMethodIds),
       })
     },
     [
@@ -516,7 +520,6 @@ export default function PaymentDetailsForm({
   const handleAddPaymentMethod = async (method: string, fields: Record<string, string>) => {
     try {
       const result = await addPaymentMethod({ method, fields })
-      setShowAddPaymentPanel(false)
       await onRefetchPaymentMethods()
 
       if (initialData.type === "sell") {
@@ -535,12 +538,17 @@ export default function PaymentDetailsForm({
             3,
             nextUserPaymentMethods,
           )
-          setSelectedPaymentMethodIds(nextSelection)
           setTempSelectedPaymentMethods(nextSelection)
         }
 
+        // Reopen the selection popup and close the add-new panel in the same
+        // synchronous tick (React batches these) so there is no frame where
+        // neither overlay is mounted and the wizard's own Back/Close become
+        // reachable underneath.
         openSellPaymentSelection(nextSelection, nextUserPaymentMethods)
       }
+
+      setShowAddPaymentPanel(false)
     } catch (err) {
       const error = err as PaymentMethodError
       const errorCode = error?.errors?.[0]?.code
@@ -693,7 +701,13 @@ export default function PaymentDetailsForm({
         <AddPaymentMethodPanel
           onAdd={handleAddPaymentMethod}
           isLoading={isAddingPaymentMethod}
-          onClose={() => setShowAddPaymentPanel(false)}
+          onClose={() => {
+            // Closing without adding anything returns to the "Select payment
+            // methods" popup rather than dropping the user onto the bare
+            // wizard step.
+            openSellPaymentSelection()
+            setShowAddPaymentPanel(false)
+          }}
         />
       )}
     </>

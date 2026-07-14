@@ -291,7 +291,7 @@ export default function OrdersPage() {
               <TabsList className="w-full bg-transparent p-0 gap-4">
                 <TabsTrigger
                   value="active"
-                  className="w-auto data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:rounded-none px-0"
+                  className="w-auto text-base data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:rounded-none px-0"
                   variant="underline"
                   data-testid="orders-tab-active"
                 >
@@ -299,7 +299,7 @@ export default function OrdersPage() {
                 </TabsTrigger>
                 <TabsTrigger
                   value="past"
-                  className="w-auto data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:rounded-none px-0"
+                  className="w-auto text-base data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:rounded-none px-0"
                   variant="underline"
                   data-testid="orders-tab-past"
                 >
@@ -349,7 +349,7 @@ export default function OrdersPage() {
 
         <div ref={scrollContainer} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pt-4">
           {isMaintenanceActive ? (
-            <div className="h-full flex items-center justify-center md:h-auto md:block" data-testid="orders-empty-state">
+            <div className="h-full flex items-center md:items-start justify-center md:pt-16" data-testid="orders-empty-state">
               {activeTab === "active" ? (
                 <EmptyState title={t("orders.noActiveOrders")} description={t("orders.noActiveOrdersDescription")} />
               ) : (
@@ -359,7 +359,7 @@ export default function OrdersPage() {
           ) : isLoading ? (
             <OrdersLoadingSkeleton />
           ) : orders.length === 0 ? (
-            <div className="h-full flex items-center justify-center md:h-auto md:block" data-testid="orders-empty-state">
+            <div className="h-full flex items-center md:items-start justify-center md:pt-16" data-testid="orders-empty-state">
               {activeTab === "active" ? (
                 <EmptyState title={t("orders.noActiveOrders")} description={t("orders.noActiveOrdersDescription")} redirectToAds={true} redirectToMarket={true} />
               ) : (

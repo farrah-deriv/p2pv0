@@ -482,8 +482,9 @@ export default function BuySellPage() {
   return (
     <>
       <div className="flex flex-col h-full md:h-screen overflow-hidden">
-        <div className="flex-shrink-0 flex-grow-0 sticky top-0 z-4 bg-background px-3">
-          <div className="mb-4 md:mb-6 md:flex md:flex-col justify-between gap-4">
+        <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-y-none pb-4 scrollbar-hide px-3">
+          <div className="flex flex-col min-h-full">
+          <div className="mb-4 md:mb-6 md:flex md:flex-col justify-between gap-4 flex-shrink-0">
             {/* Desktop only — maintenance + mobile balance banners live in main.tsx. */}
             {/* Tuck the dark balance card under the banner's bottom edge via `-mb-8`. */}
             <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -495,7 +496,7 @@ export default function BuySellPage() {
                   <Tabs value={activeTab} onValueChange={(value) => { if (value === "sell") track("ek_buy_markets"); else track("ek_sell_markets"); setActiveTab(value as "buy" | "sell") }}>
                     <TabsList className="w-auto bg-transparent p-0 gap-4 rtl:w-full rtl:justify-end">
                       <TabsTrigger
-                        className="w-auto data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:rounded-none px-0"
+                        className="w-auto text-base data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:rounded-none px-0"
                         value="sell"
                         variant="underline"
                         data-testid="markets-tab-buy"
@@ -503,7 +504,7 @@ export default function BuySellPage() {
                         {t("market.buyTab")}
                       </TabsTrigger>
                       <TabsTrigger
-                        className="w-auto data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:rounded-none px-0"
+                        className="w-auto text-base data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:rounded-none px-0"
                         value="buy"
                         variant="underline"
                         data-testid="markets-tab-sell"
@@ -664,10 +665,8 @@ export default function BuySellPage() {
               </div>
             </div>
           </div>
-        </div>
-        <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto pb-4 md:pb-4 scrollbar-hide px-3">
           {isMaintenanceActive ? (
-            <div className="h-full flex items-center justify-center md:h-auto md:block">
+            <div className="flex-1 min-h-0 flex items-center md:items-start justify-center md:pt-16">
               <EmptyState title={t("market.noAdsMaintenanceTitle")} route={null} />
             </div>
           ) : isLoading || (adverts.length === 0 && !currency) ? (
@@ -726,7 +725,7 @@ export default function BuySellPage() {
               {error.message || t("market.failedToLoadAdvertisements")}
             </div>
           ) : adverts.length === 0 ? (
-            <div className="h-full flex items-center justify-center md:h-auto md:block" data-testid="markets-empty-state">
+            <div className="flex-1 min-h-0 flex items-center md:items-start justify-center md:pt-16" data-testid="markets-empty-state">
               <EmptyState
                 title={t("market.noAdsTitle", { currency: currency })}
                 description={t("market.noAdsDescription", { currency: currency })}
@@ -925,6 +924,7 @@ export default function BuySellPage() {
               </Table>
             </div>
           )}
+          </div>
           {isFetchingNextPage && (
             <div className="sticky bottom-0 flex justify-center py-4 bg-background">
               <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
