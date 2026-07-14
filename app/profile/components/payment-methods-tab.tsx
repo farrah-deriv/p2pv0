@@ -273,7 +273,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
   if (!userId) {
     return (
       <EmptyState
-        className="md:h-full"
+        className="h-full md:h-auto"
         title={t("profile.noPaymentMethodsYet")}
         description={t("profile.startAddingPaymentMethods")}
         redirectToAds={false}
@@ -325,7 +325,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
   if (bankTransfers.length == 0 && eWallets.length == 0) {
     return (
       <EmptyState
-        className="md:h-full"
+        className="h-full md:h-auto"
         title={t("profile.noPaymentMethodsYet")}
         description={t("profile.startAddingPaymentMethods")}
         redirectToAds={false}
