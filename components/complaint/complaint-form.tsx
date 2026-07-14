@@ -127,7 +127,7 @@ export function ComplaintForm({ isOpen, onClose, onSubmit, orderId, type }: Comp
                   )}
                   data-testid={`complaint-btn-reason-${option.id}`}
                 >
-                  <p className="text-slate-1200">{t(`complaint.${option.value}`)}</p>
+                  <p className="text-slate-1200">{t(`complaint.${option.labelKey}`)}</p>
                   <p className="text-xs text-grayscale-text-muted mt-0.5">{t(`complaint.${option.hintKey}`)}</p>
                 </button>
               ))}
