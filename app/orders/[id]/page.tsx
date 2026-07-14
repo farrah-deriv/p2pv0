@@ -506,7 +506,7 @@ export default function OrderDetailsPage() {
           isCurrentUserSeller && (
           <div
             className={cn(
-              isMobileFooter ? "w-full" : "md:pl-4 pt-4 flex gap-4 md:float-right sticky bottom-0 bg-white md:static md:bg-transparent",
+              isMobileFooter ? "flex w-full" : "md:pl-4 pt-4 flex gap-4 md:float-right sticky bottom-0 bg-white md:static md:bg-transparent",
             )}
           >
             <Button className="flex-1" onClick={handlePaymentReceived} disabled={isConfirmLoading} data-testid="order-details-btn-received">
