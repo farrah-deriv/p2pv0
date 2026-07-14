@@ -311,21 +311,23 @@ export default function AdsPage() {
               <TemporaryBanAlert tempBanUntil={tempBanUntil} />
             </div>
           )}
-          <div className="flex flex-wrap items-center justify-between gap-3 my-6">
-            {!isMaintenanceActive && userAdverts.length > 0 && (
-              <Button
-                onClick={handleCreateAd}
-                size="sm"
-                className="font-bold text-base leading-4 tracking-[0%] text-center whitespace-nowrap"
-                disabled={!!tempBanUntil}
-                data-testid="ads-btn-create"
-              >
-                <Image src="/icons/plus-white.png" alt={t("common.plus")} className="me-1" height={22} width={13} />
-                {t("myAds.createAd")}
-              </Button>
-            )}
-            {getHideMyAdsComponent()}
-          </div>
+          {isActiveTab && (
+            <div className="flex flex-wrap items-center justify-between gap-3 my-6">
+              {!isMaintenanceActive && userAdverts.length > 0 && (
+                <Button
+                  onClick={handleCreateAd}
+                  size="sm"
+                  className="font-bold text-base leading-4 tracking-[0%] text-center whitespace-nowrap"
+                  disabled={!!tempBanUntil}
+                  data-testid="ads-btn-create"
+                >
+                  <Image src="/icons/plus-white.png" alt={t("common.plus")} className="me-1" height={22} width={13} />
+                  {t("myAds.createAd")}
+                </Button>
+              )}
+              {getHideMyAdsComponent()}
+            </div>
+          )}
         </div>
 
         <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-y-none scrollbar-hide container mx-auto p-0 md:p-0" data-testid="ads-table-container">

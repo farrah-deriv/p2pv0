@@ -552,7 +552,7 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
             </TabsContent>
 
             <TabsContent value="payment" className="mt-4 h-[calc(100vh-440px)] overflow-y-auto">
-              <div className="relative">
+              <div className="relative h-full">
                 {paymentMethodsCount > 0 && (
                   <div className="flex justify-end mb-4">
                     <Button data-testid="profile-btn-add-payment" variant="outline" size="sm" onClick={handleShowAddPaymentMethod}>
