@@ -576,7 +576,8 @@ export default function OrderDetailsPage() {
     isMobile &&
     order &&
     ((order.status === "pending_payment" && isCurrentUserBuyer) ||
-      ((order.status === "pending_release" || order.status === "timed_out" || order.status === "disputed") &&
+      order.status === "timed_out" ||
+      ((order.status === "pending_release" || order.status === "disputed") &&
         isCurrentUserSeller))
 
   if (isMobile && showChat && order) {
