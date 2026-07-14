@@ -474,7 +474,7 @@ export default function OrderDetailsPage() {
   const counterpartyLabel = isCurrentUserBuyer ? t("orderDetails.seller") : t("orderDetails.buyer")
   const youPayReceiveLabel =
     isCurrentUserBuyer ? t("orderDetails.youPay") : t("orderDetails.youReceive")
-  const complainType = isCurrentUserBuyer ? "seller" : "buyer"
+  const complainType = isCurrentUserBuyer ? "buyer" : "seller"
   const isBuyer = isCurrentUserBuyer
 
   const renderOrderActionButtons = (isMobileFooter: boolean) => {
