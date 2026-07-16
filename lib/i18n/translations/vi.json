@@ -1279,6 +1279,7 @@
     "transferRouteWalletOnly": "Ví {currency}",
     "transferRouteWalletToP2p": "Ví {currency} → P2P {currency}",
     "transferSuccessMessage": "{amount} {currency} đã được chuyển từ {from} sang {to} của bạn",
+    "transferSuccessMessageMainToP2P": "{amount} {currency} đang trên đường đến ví {walletName} {currencyLabel} của bạn. Có thể mất vài phút để phản ánh.",
     "transferSuccessful": "Chuyển khoản thành công",
     "transferUnexpectedError": "Chúng tôi không thể xử lý giao dịch chuyển khoản của bạn. Vui lòng thử lại.",
     "transferUnsuccessful": "Chuyển khoản không thành công",

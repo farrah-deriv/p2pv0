@@ -42,8 +42,8 @@ export default function WalletBalance({ className }: WalletBalanceProps) {
   const [currencies, setCurrencies] = useState<Currency[]>([])
 
   const fetchCurrencies = () => {
-    if (currenciesResponse?.data) {
-      const currencyList = Object.entries(currenciesResponse.data).map(([code, data]: [string, any]) => ({
+    if (currenciesResponse) {
+      const currencyList = Object.entries(currenciesResponse).map(([code, data]: [string, any]) => ({
         code,
         name: data.label,
         logo: currencyLogoMapper[code as keyof typeof currencyLogoMapper],

@@ -1235,6 +1235,7 @@
     "transferRouteWalletOnly": "{currency} பணப்பை",
     "transferRouteWalletToP2p": "{currency} பணப்பை → P2P {currency}",
     "transferSuccessMessage": "{amount} {currency} உங்கள் {from} இலிருந்து உங்கள் {to}க்கு மாற்றப்பட்டது",
+    "transferSuccessMessageMainToP2P": "{amount} {currency} உங்கள் {walletName} {currencyLabel} பணப்பைக்கு வழியில் உள்ளது. பிரதிபலிக்க சில நிமிடங்கள் ஆகலாம்.",
     "transferSuccessful": "இடமாற்றம் வெற்றிகரமாக உள்ளது",
     "transferUnexpectedError": "உங்கள் பரிமாற்றத்தை எங்களால் செயல்படுத்த முடியவில்லை. மீண்டும் முயற்சிக்கவும்.",
     "transferUnsuccessful": "இடமாற்றம் தோல்வியடைந்தது",

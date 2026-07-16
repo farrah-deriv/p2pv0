@@ -674,6 +674,7 @@
     "transferSuccessful": "Transfer successful",
     "transferUnsuccessful": "Transfer unsuccessful",
     "transferSuccessMessage": "{amount} {currency} transferred from your {from} to your {to}",
+    "transferSuccessMessageMainToP2P": "{amount} {currency} is on its way to your {walletName} {currencyLabel} wallet. It may take a few minutes to reflect.",
     "transferUnsuccessfulMessage": "We couldn't process your transfer. Please try again.",
     "viewDetails": "View details",
     "gotIt": "Got it",

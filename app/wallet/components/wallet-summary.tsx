@@ -176,11 +176,11 @@ export default function WalletSummary({
 
   const displayCurrency = externalSelectedCurrency || propCurrency
   const formattedBalance = formatAmountWithDecimals(propBalance)
-  const displayCurrencyLabel = currenciesResponse?.data?.[displayCurrency]?.label || displayCurrency
+  const displayCurrencyLabel = currenciesResponse?.[displayCurrency]?.label || displayCurrency
 
   const fetchCurrencies = () => {
-    if (currenciesResponse?.data) {
-      const currencyList = Object.entries(currenciesResponse.data).map(([code, data]: [string, any]) => ({
+    if (currenciesResponse) {
+      const currencyList = Object.entries(currenciesResponse).map(([code, data]: [string, any]) => ({
         code,
         name: data.label,
         logo: currencyLogoMapper[code as keyof typeof currencyLogoMapper],

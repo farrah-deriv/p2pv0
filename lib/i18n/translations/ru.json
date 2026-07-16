@@ -1267,6 +1267,7 @@
     "transferRouteWalletOnly": "{currency} Кошелек",
     "transferRouteWalletToP2p": "{currency} Кошелек → P2P {currency}",
     "transferSuccessMessage": "{amount} {currency} переведено с вашего {from} на ваш {to}",
+    "transferSuccessMessageMainToP2P": "{amount} {currency} направляется в ваш кошелёк {walletName} {currencyLabel}. Это может занять несколько минут.",
     "transferSuccessful": "Перевод успешен",
     "transferUnexpectedError": "Мы не смогли обработать ваш перевод. Пожалуйста, попробуйте снова.",
     "transferUnsuccessful": "Перевод не удался",

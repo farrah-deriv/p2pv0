@@ -1257,6 +1257,7 @@
     "transferRouteWalletOnly": "Carteira {currency}",
     "transferRouteWalletToP2p": "Carteira {currency} → P2P {currency}",
     "transferSuccessMessage": "{amount} {currency} transferido da sua {from} para sua {to}",
+    "transferSuccessMessageMainToP2P": "{amount} {currency} está a caminho da sua carteira {walletName} {currencyLabel}. Pode levar alguns minutos para refletir.",
     "transferSuccessful": "Transferência bem-sucedida",
     "transferUnexpectedError": "Não foi possível processar sua transferência. Por favor, tente novamente.",
     "transferUnsuccessful": "Transferência malsucedida",

@@ -1235,6 +1235,7 @@
     "transferRouteWalletOnly": "{currency} түрийвч",
     "transferRouteWalletToP2p": "{currency} түрийвч → P2P {currency}",
     "transferSuccessMessage": "{amount} {currency}-г таны {from}-аас {to} руу шилжүүлсэн",
+    "transferSuccessMessageMainToP2P": "{amount} {currency} таны {walletName} {currencyLabel} түрийвч рүү явж байна. Тусгагдахад хэдхэн минут болж магадгүй.",
     "transferSuccessful": "Шилжилт амжилттай",
     "transferUnexpectedError": "Бид таны шилжүүлгийг боловсруулж чадсангүй. Дахин оролдоно уу.",
     "transferUnsuccessful": "Дамжуулалт амжилтгүй боллоо",

@@ -261,7 +261,7 @@ export default function TransactionsTab({
                           <div className="flex flex-col items-end me-6 gap-1">
                             <div data-testid={`wallet-text-tx-amount-${transaction.transaction_id}`} className={`${display.amountColor} text-base font-normal`}>
                               {formatAmountWithDecimals(transaction.metadata.transaction_net_amount)}{" "}
-                              {currencies[transaction.metadata.transaction_currency]?.label || transaction.metadata.transaction_currency}
+                              {transaction.metadata.transaction_currency}
                             </div>
                             {getStatusBadge(transaction.metadata.transaction_status)}
                           </div>

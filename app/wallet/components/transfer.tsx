@@ -42,6 +42,7 @@ interface ProcessedWallet {
   name: string
   balance: string
   currency: string
+
   icon: string
   type: string
 }
@@ -51,6 +52,7 @@ interface WalletData {
   name: string
   currency: string
   balance: string
+  type?: string
 }
 
 
@@ -77,9 +79,7 @@ interface CurrencyData {
 }
 
 interface CurrenciesResponse {
-  data: {
-    [currencyCode: string]: CurrencyData
-  }
+  [currencyCode: string]: CurrencyData
 }
 
 interface ExchangeRateData {
@@ -170,6 +170,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
         name: sourceWalletData.name,
         currency: currency,
         balance: sourceWalletData.balance,
+        type: sourceWalletData.type,
       })
     }
     setSelectedCurrency(currency)
@@ -177,9 +178,9 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
   }
 
   useEffect(() => {
-    if (!currenciesResponse?.data) return
+    if (!currenciesResponse) return
 
-    const currencyList = Object.entries(currenciesResponse.data).map(([code, data]: [string, any]) => ({
+    const currencyList = Object.entries(currenciesResponse).map(([code, data]: [string, any]) => ({
       code,
       name: data.label,
       logo: currencyLogoMapper[code as keyof typeof currencyLogoMapper],
@@ -201,12 +202,10 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
           response.data.wallets.forEach((wallet: any) => {
             const isP2p = (wallet.type || "").toLowerCase() === "p2p"
-            const usdLabel = currenciesData?.data["USD"]?.label || "USD"
+            const usdLabel = currenciesData?.["USD"]?.label || "USD"
             const usdName = isP2p ? `P2P ${usdLabel}` : usdLabel
             const balances = wallet.balances ?? []
 
-            // Non-USD currencies are hidden for now. Always emit a USD entry —
-            // synthesize one with balance "0" when the API omits USD.
             const usdBalance = balances.find((b: any) => b.currency === "USD")
 
             processedWallets.push({
@@ -214,6 +213,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
               name: usdName,
               balance: usdBalance?.balance ?? "0",
               currency: "USD",
+
               icon: isP2p ? "/icons/p2p-black.png" : currencyLogoMapper["USD"],
               type: wallet.type,
             })
@@ -229,6 +229,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
               name: p2pWallet.name,
               currency: p2pWallet.currency,
               balance: p2pWallet.balance,
+              type: p2pWallet.type,
             })
           }
         }
@@ -249,8 +250,8 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
       return null
     }
 
-    const sourceCurrencyData = currenciesData.data[sourceWalletData.currency]
-    const destinationCurrencyData = currenciesData.data[destinationWalletData.currency]
+    const sourceCurrencyData = currenciesData[sourceWalletData.currency]
+    const destinationCurrencyData = currenciesData[destinationWalletData.currency]
 
     if (!sourceCurrencyData || !destinationCurrencyData) {
       return null
@@ -385,8 +386,8 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
       return
     }
 
-    const sourceCurrencyData = currenciesData.data[sourceWalletData.currency]
-    const destinationCurrencyData = currenciesData.data[destinationWalletData.currency]
+    const sourceCurrencyData = currenciesData[sourceWalletData.currency]
+    const destinationCurrencyData = currenciesData[destinationWalletData.currency]
 
     if (!sourceCurrencyData || !destinationCurrencyData) {
       setShowCurrencySwitcher(false)
@@ -593,6 +594,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
         name: wallet.name,
         currency: wallet.currency,
         balance: wallet.balance,
+        type: wallet.type,
       })
     } else if (type === "to") {
       setDestinationWalletData({
@@ -600,6 +602,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
         name: wallet.name,
         currency: wallet.currency,
         balance: wallet.balance,
+        type: wallet.type,
       })
     }
 
@@ -772,7 +775,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                         name={wallet.name}
                         amount={formatAmountWithDecimals(wallet.balance)}
                         currency={wallet.currency}
-                        icon={wallet.icon}
+                        isP2PWallet={wallet.type?.toLowerCase() === "p2p"}
                         isSelected={selectedWalletName === wallet.name}
                         onClick={() => { }}
                       />
@@ -797,7 +800,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                         name={wallet.name}
                         amount={formatAmountWithDecimals(wallet.balance)}
                         currency={wallet.currency}
-                        icon={wallet.icon}
+                        isP2PWallet={wallet.type?.toLowerCase() === "p2p"}
                         isSelected={selectedWalletName === wallet.name}
                         onClick={() => { }}
                       />
@@ -861,7 +864,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                         name={wallet.name}
                         amount={formatAmountWithDecimals(wallet.balance)}
                         currency={wallet.currency}
-                        icon={getCurrencyImage(wallet.name, wallet.currency)}
+                        isP2PWallet={wallet.type?.toLowerCase() === "p2p"}
                         isSelected={selectedWalletName === wallet.name}
                         onClick={() => { }}
                       />
@@ -886,7 +889,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                         name={wallet.name}
                         amount={formatAmountWithDecimals(wallet.balance)}
                         currency={wallet.currency}
-                        icon={getCurrencyImage(wallet.name, wallet.currency)}
+                        isP2PWallet={wallet.type?.toLowerCase() === "p2p"}
                         isSelected={selectedWalletName === wallet.name}
                         onClick={() => { }}
                       />
@@ -936,7 +939,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                   <span className="text-base font-normal text-grayscale-text-muted">{t("wallet.from")}</span>
                   <div className="flex items-center gap-3">
                     {sourceWalletData &&
-                      (sourceWalletData.name.includes("P2P") ? (
+                      (sourceWalletData.type?.toLowerCase() === "p2p" ? (
                         <div className="relative w-[21px] h-[21px] flex-shrink-0">
                           <Image
                             src="/icons/p2p-black.png"
@@ -949,7 +952,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                             <div className="w-[10.5px] h-[10.5px] rounded-full bg-white flex items-center justify-center">
                               <Image
                                 src={
-                                  getCurrencyImage(sourceWalletData.name, sourceWalletData.currency)}
+                                  getCurrencyImage(sourceWalletData.currency)}
                                 alt={sourceWalletData.currency}
                                 width={9}
                                 height={9}
@@ -962,7 +965,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                         <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mb-3 mt-1">
                           <Image
                             src={
-                              getCurrencyImage(sourceWalletData.name, sourceWalletData.currency)}
+                              getCurrencyImage(sourceWalletData.currency)}
                             alt={sourceWalletData.currency}
                             width={24}
                             height={24}
@@ -979,7 +982,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                   <span className="text-base font-normal text-grayscale-text-muted">{t("wallet.to")}</span>
                   <div className="flex items-center gap-3">
                     {destinationWalletData &&
-                      (destinationWalletData.name.includes("P2P") ? (
+                      (destinationWalletData.type?.toLowerCase() === "p2p" ? (
                         <div className="relative w-[21px] h-[21px] flex-shrink-0">
                           <Image
                             src="/icons/p2p-black.png"
@@ -992,7 +995,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                             <div className="w-[10.5px] h-[10.5px] rounded-full bg-white flex items-center justify-center">
                               <Image
                                 src={
-                                  getCurrencyImage(destinationWalletData.name, destinationWalletData.currency)}
+                                  getCurrencyImage(destinationWalletData.currency)}
                                 alt={destinationWalletData.currency}
                                 width={9}
                                 height={9}
@@ -1005,7 +1008,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                         <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mb-3 mt-1">
                           <Image
                             src={
-                              getCurrencyImage(destinationWalletData.name, destinationWalletData.currency)}
+                              getCurrencyImage(destinationWalletData.currency)}
                             alt={destinationWalletData.currency}
                             width={24}
                             height={24}
@@ -1147,7 +1150,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                   <span className="text-base font-normal text-grayscale-text-muted">{t("wallet.from")}</span>
                   <div className="flex items-center gap-3">
                     {sourceWalletData &&
-                      (sourceWalletData.name.includes("P2P") ? (
+                      (sourceWalletData.type?.toLowerCase() === "p2p" ? (
                         <div className="relative w-[21px] h-[21px] flex-shrink-0">
                           <Image
                             src="/icons/p2p-black.png"
@@ -1160,7 +1163,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                             <div className="w-[10.5px] h-[10.5px] rounded-full bg-white flex items-center justify-center">
                               <Image
                                 src={
-                                  getCurrencyImage(sourceWalletData.name, sourceWalletData.currency)}
+                                  getCurrencyImage(sourceWalletData.currency)}
                                 alt={sourceWalletData.currency}
                                 width={9}
                                 height={9}
@@ -1173,7 +1176,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                         <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mb-3 mt-1">
                           <Image
                             src={
-                              getCurrencyImage(sourceWalletData.name, sourceWalletData.currency)}
+                              getCurrencyImage(sourceWalletData.currency)}
                             alt={sourceWalletData.currency}
                             width={24}
                             height={24}
@@ -1190,7 +1193,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                   <span className="text-base font-normal text-grayscale-text-muted">{t("wallet.to")}</span>
                   <div className="flex items-center gap-3">
                     {destinationWalletData &&
-                      (destinationWalletData.name.includes("P2P") ? (
+                      (destinationWalletData.type?.toLowerCase() === "p2p" ? (
                         <div className="relative w-[21px] h-[21px] flex-shrink-0">
                           <Image
                             src="/icons/p2p-black.png"
@@ -1203,7 +1206,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                             <div className="w-[10.5px] h-[10.5px] rounded-full bg-white flex items-center justify-center">
                               <Image
                                 src={
-                                  getCurrencyImage(destinationWalletData.name, destinationWalletData.currency)}
+                                  getCurrencyImage(destinationWalletData.currency)}
                                 alt={destinationWalletData.currency}
                                 width={9}
                                 height={9}
@@ -1216,7 +1219,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                         <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mb-3 mt-1">
                           <Image
                             src={
-                              getCurrencyImage(destinationWalletData.name, destinationWalletData.currency)}
+                              getCurrencyImage(destinationWalletData.currency)}
                             alt={destinationWalletData.currency}
                             width={24}
                             height={24}
@@ -1334,7 +1337,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     )
   }
 
-  const getCurrencyImage = (walletName: string, currency: string) => {
+  const getCurrencyImage = (currency: string) => {
     return currencyLogoMapper[currency as keyof typeof currencyLogoMapper]
   }
 
@@ -1420,7 +1423,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
               <div className="absolute top-4 start-6 flex flex-col items-start gap-1.5">
                 <div className="text-grayscale-text-muted text-base font-normal">{t("wallet.from")}</div>
                 {sourceWalletData &&
-                  (sourceWalletData.name.includes("P2P") ? (
+                  (sourceWalletData.type?.toLowerCase() === "p2p" ? (
                     <div className="relative w-[21px] h-[21px] flex-shrink-0 mt-1">
                       <Image
                         src="/icons/p2p-black.png"
@@ -1433,7 +1436,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                         <div className="w-[10.5px] h-[10.5px] rounded-full bg-white flex items-center justify-center">
                           <Image
                             src={
-                              getCurrencyImage(sourceWalletData.name, sourceWalletData.currency)}
+                              getCurrencyImage(sourceWalletData.currency)}
                             alt={sourceWalletData.currency}
                             width={9}
                             height={9}
@@ -1445,7 +1448,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                   ) : (
                     <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mb-3 mt-1">
                       <Image
-                        src={getCurrencyImage(sourceWalletData.name, sourceWalletData.currency)}
+                        src={getCurrencyImage(sourceWalletData.currency)}
                         alt={sourceWalletData.currency}
                         width={24}
                         height={24}
@@ -1482,7 +1485,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
               <div className="absolute top-4 start-6 flex flex-col items-start gap-1.5">
                 <div className="text-grayscale-text-muted text-base font-normal">{t("wallet.to")}</div>
                 {destinationWalletData &&
-                  (destinationWalletData.name.includes("P2P") ? (
+                  (destinationWalletData.type?.toLowerCase() === "p2p" ? (
                     <div className="relative w-[21px] h-[21px] flex-shrink-0 mt-1">
                       <Image
                         src="/icons/p2p-black.png"
@@ -1495,7 +1498,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                         <div className="w-[10.5px] h-[10.5px] rounded-full bg-white flex items-center justify-center">
                           <Image
                             src={
-                              getCurrencyImage(destinationWalletData.name, destinationWalletData.currency)}
+                              getCurrencyImage(destinationWalletData.currency)}
                             alt={destinationWalletData.currency}
                             width={9}
                             height={9}
@@ -1508,7 +1511,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                     <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mb-3 mt-1">
                       <Image
                         src={
-                          getCurrencyImage(destinationWalletData.name, destinationWalletData.currency)}
+                          getCurrencyImage(destinationWalletData.currency)}
                         alt={destinationWalletData.currency}
                         width={24}
                         height={24}
@@ -1744,12 +1747,23 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
   }
 
   if (step === "success") {
-    const transferText = t("wallet.transferSuccessMessage", {
-      amount: formatAmountWithDecimals(Number.parseFloat(transferAmount || "0")),
-      currency: selectedCurrency || "USD",
-      from: sourceWalletData?.name || "",
-      to: destinationWalletData?.name || "",
-    })
+    const isMainToP2P =
+      destinationWalletData?.type?.toLowerCase() === "p2p" &&
+      sourceWalletData?.type?.toLowerCase() !== "p2p"
+
+    const transferText = isMainToP2P
+      ? t("wallet.transferSuccessMessageMainToP2P", {
+          amount: formatAmountWithDecimals(Number.parseFloat(transferAmount || "0")),
+          currency: selectedCurrency || "USD",
+          walletName: destinationWalletData?.type?.toUpperCase() || "P2P",
+          currencyLabel: currenciesData?.[selectedCurrency || "USD"]?.label || selectedCurrency || "USD",
+        })
+      : t("wallet.transferSuccessMessage", {
+          amount: formatAmountWithDecimals(Number.parseFloat(transferAmount || "0")),
+          currency: selectedCurrency || "USD",
+          from: sourceWalletData?.name || "",
+          to: destinationWalletData?.name || "",
+        })
 
     return (
       <div

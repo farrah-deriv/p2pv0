@@ -123,7 +123,7 @@ export default function WalletPage() {
   }, [userData?.signup, router])
 
   useEffect(() => {
-    const currencies = currenciesResponse?.data || {}
+    const currencies = currenciesResponse || {}
     setCurrenciesData(currencies)
     processBalanceData(currencies, balanceData)
   }, [balanceData, currenciesResponse, processBalanceData])

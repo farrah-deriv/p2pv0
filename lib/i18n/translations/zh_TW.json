@@ -1235,6 +1235,7 @@
     "transferRouteWalletOnly": "{currency} 錢包",
     "transferRouteWalletToP2p": "{currency} 錢包 → P2P {currency}",
     "transferSuccessMessage": "{amount} {currency} 從您的 {from} 轉移到您的 {to}",
+    "transferSuccessMessageMainToP2P": "{amount} {currency} 正在轉入您的 {walletName} {currencyLabel} 錢包。可能需要幾分鐘才能顯示。",
     "transferSuccessful": "轉帳成功",
     "transferUnexpectedError": "我們無法處理您的轉帳。請再試一次。",
     "transferUnsuccessful": "轉帳失敗",

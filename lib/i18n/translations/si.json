@@ -1235,6 +1235,7 @@
     "transferRouteWalletOnly": "{currency} පසුම්බිය",
     "transferRouteWalletToP2p": "{currency} පසුම්බිය → P2P {currency}",
     "transferSuccessMessage": "{amount} {currency} ඔබේ {from} සිට ඔබේ {to} වෙත මාරු කර ඇත",
+    "transferSuccessMessageMainToP2P": "{amount} {currency} ඔබේ {walletName} {currencyLabel} පසුම්බිය වෙත යමින් පවතී. පිළිබිඹු වීමට විනාඩි කිහිපයක් ගතවිය හැකිය.",
     "transferSuccessful": "මාරු කිරීම සාර්ථකයි",
     "transferUnexpectedError": "අපට ඔබේ මාරු කිරීම ක්‍රියාවට නැංවීමට නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.",
     "transferUnsuccessful": "මාරු කිරීම අසාර්ථකයි",

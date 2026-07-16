@@ -1235,6 +1235,7 @@
     "transferRouteWalletOnly": "محفظة {currency}",
     "transferRouteWalletToP2p": "محفظة {currency} → P2P {currency}",
     "transferSuccessMessage": "تم تحويل {amount} {currency} من {from} إلى {to}",
+    "transferSuccessMessageMainToP2P": "{amount} {currency} في طريقه إلى محفظة {walletName} {currencyLabel} الخاصة بك. قد يستغرق الأمر بضع دقائق حتى يظهر.",
     "transferSuccessful": "تم النقل بنجاح",
     "transferUnexpectedError": "لم نتمكن من معالجة عملية النقل الخاصة بك. يرجى المحاولة مرة أخرى.",
     "transferUnsuccessful": "النقل غير ناجح",

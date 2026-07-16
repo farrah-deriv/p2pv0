@@ -7,20 +7,12 @@ interface WalletDisplayProps {
   name: string
   amount: string
   currency: string
+  isP2PWallet: boolean
   onClick?: () => void
   isSelected?: boolean
 }
 
-const getCurrencyImage = (walletName: string, currency: string) => {
-  if (walletName === "P2P Wallet") {
-    return "/icons/p2p-logo.png"
-  }
-  return currencyLogoMapper[currency as keyof typeof currencyLogoMapper]
-}
-
-export default function WalletDisplay({ name, amount, currency, onClick, isSelected }: WalletDisplayProps) {
-  const isP2PWallet = name.includes("P2P")
-
+export default function WalletDisplay({ name, amount, currency, isP2PWallet, onClick, isSelected }: WalletDisplayProps) {
   return (
     <div
       className={`h-[76px] px-4 py-2 flex items-center self-stretch rounded-lg bg-grayscale-500 cursor-pointer hover:bg-gray-100 transition-colors ${
@@ -34,7 +26,7 @@ export default function WalletDisplay({ name, amount, currency, onClick, isSelec
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/4">
             <div className="w-[14px] h-[14px] rounded-full bg-white flex items-center justify-center">
               <Image
-                src={currencyLogoMapper[currency as keyof typeof currencyLogoMapper] }
+                src={currencyLogoMapper[currency as keyof typeof currencyLogoMapper]}
                 alt={currency}
                 width={12}
                 height={12}
@@ -46,7 +38,7 @@ export default function WalletDisplay({ name, amount, currency, onClick, isSelec
       ) : (
         <div className="w-8 h-8 flex-shrink-0">
           <Image
-            src={getCurrencyImage(name, currency) }
+            src={currencyLogoMapper[currency as keyof typeof currencyLogoMapper]}
             alt={name}
             width={32}
             height={32}

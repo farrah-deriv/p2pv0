@@ -51,7 +51,7 @@ export default function BalanceItem({ currency, amount, label, currencyLabel, on
       </div>
 
       <div data-testid={`wallet-text-balance-${currency}`} className="text-slate-1200 text-base font-normal pe-6">
-        {displayAmount} {currencyLabel || currency}
+        {displayAmount} {currency}
       </div>
 
       <div className="absolute bottom-0 start-10 end-0 h-[1px] bg-grayscale-200" />

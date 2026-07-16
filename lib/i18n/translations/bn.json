@@ -1245,6 +1245,7 @@
     "transferRouteWalletOnly": "{currency} ওয়ালেট",
     "transferRouteWalletToP2p": "{currency} ওয়ালেট → P2P {currency}",
     "transferSuccessMessage": "{amount} {currency} আপনার {from} থেকে আপনার {to} তে ট্রান্সফার করা হয়েছে",
+    "transferSuccessMessageMainToP2P": "{amount} {currency} আপনার {walletName} {currencyLabel} ওয়ালেটে পৌঁছে যাচ্ছে। প্রতিফলিত হতে কয়েক মিনিট সময় লাগতে পারে।",
     "transferSuccessful": "ট্রান্সফার সফল",
     "transferUnexpectedError": "আমরা আপনার ট্রান্সফার প্রক্রিয়া করতে পারিনি। অনুগ্রহ করে আবার চেষ্টা করুন।",
     "transferUnsuccessful": "ট্রান্সফার ব্যর্থ",

@@ -1243,6 +1243,7 @@
     "transferRouteWalletOnly": "Pochi ya {currency}",
     "transferRouteWalletToP2p": "Pochi ya {currency} → P2P {currency}",
     "transferSuccessMessage": "{amount} {currency} imehamishwa kutoka {from} kwenda {to}",
+    "transferSuccessMessageMainToP2P": "{amount} {currency} iko njiani kwenda kwenye pochi yako ya {walletName} {currencyLabel}. Inaweza kuchukua dakika chache kuonekana.",
     "transferSuccessful": "Uhamisho umefanikia",
     "transferUnexpectedError": "Hatukuweza kuchakata uhamisho wako. Tafadhali jaribu tena.",
     "transferUnsuccessful": "Uhamisho haujakamilika",
