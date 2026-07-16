@@ -17,6 +17,7 @@ import { useTrackers } from "@/analytics/useTrackers"
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import EmptyState from "@/components/empty-state"
 import { useWalletViewStore } from "@/stores/wallet-view-store"
+import type { Transaction } from "./types"
 
 interface Balance {
   wallet_id: string
@@ -42,7 +43,7 @@ export default function WalletPage() {
   const [hasCheckedSignup, setHasCheckedSignup] = useState(false)
   const [hasBalance, setHasBalance] = useState(false)
   const [showKycPopup, setShowKycPopup] = useState(false)
-  const [selectedTransaction, setSelectedTransaction] = useState<any>(null)
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
   const { userData } = useUserDataStore()
   const tempBanUntil = userData?.temp_ban_until
   const isDisabled = userData?.status === "disabled"
@@ -199,13 +200,24 @@ export default function WalletPage() {
             isBalancesView={displayBalances || !!selectedTransaction}
             selectedCurrency={selectedCurrency}
             onBack={handleBackToBalances}
-            balance={isMaintenanceActive ? p2pBalanceAmount : totalBalance}
+            balance={isMaintenanceActive ? p2pBalanceAmount : (
+              !displayBalances && selectedCurrency
+                ? (p2pBalances.find((b) => b.currency === selectedCurrency)?.amount ?? totalBalance)
+                : totalBalance
+            )}
             currency={isMaintenanceActive ? p2pBalanceCurrency : balanceCurrency}
             isLoading={isMaintenanceActive ? false : isBalanceLoading}
             hasBalance={hasBalance}
             selectedTransaction={selectedTransaction}
             onTransactionSelect={setSelectedTransaction}
             actionsDisabled={isMaintenanceActive}
+            onViewTransactionDetails={(transaction) => {
+              const currency = transaction.metadata?.transaction_currency || selectedCurrency || "USD"
+              setDisplayBalances(false)
+              setSelectedCurrency(currency)
+              setSelectedTransaction(transaction)
+              setIsTransactionListVisible(true)
+            }}
           />
         </div>
         {tempBanUntil && !isMaintenanceActive && (

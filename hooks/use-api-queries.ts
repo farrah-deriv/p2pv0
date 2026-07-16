@@ -6,6 +6,7 @@ import * as OrdersAPI from '@/services/api/api-orders'
 import * as AuthAPI from '@/services/api/api-auth'
 import * as AdsAPI from '@/services/api/api-my-ads'
 import * as ProfileAPI from '@/services/api/api-profile'
+import * as WalletsAPI from '@/services/api/api-wallets'
 import { useUserDataStore } from '@/stores/user-data-store'
 import { useP2PQueriesBlocked } from '@/hooks/use-p2p-system-maintenance'
 import { isP2PWebSocketEligibleFromState } from '@/lib/p2p-websocket-eligibility'
@@ -23,6 +24,7 @@ const AUTH_KEYS = [...ALL_KEYS, 'auth'] as const
 const BUY_SELL_KEYS = [...ALL_KEYS, 'buy-sell'] as const
 const ORDERS_KEYS = [...ALL_KEYS, 'orders'] as const
 const ADS_KEYS = [...ALL_KEYS, 'ads'] as const
+const WALLET_KEYS = [...ALL_KEYS, 'wallet'] as const
 
 export const queryKeys = {
   all: ALL_KEYS,
@@ -81,6 +83,13 @@ export const queryKeys = {
     all: ADS_KEYS,
     userAdverts: (isActive?: boolean) => [...ADS_KEYS, 'user-adverts', isActive] as const,
     allUserAdverts: () => [...ADS_KEYS, 'user-adverts'] as const,
+  },
+
+  // Wallet queries
+  wallet: {
+    all: WALLET_KEYS,
+    transactions: (currency?: string | null) => [...WALLET_KEYS, 'transactions', currency ?? null] as const,
+    transaction: (referenceId: string) => [...WALLET_KEYS, 'transaction', referenceId] as const,
   },
 }
 
@@ -200,6 +209,17 @@ export function useCurrencies() {
     queryFn: () => AuthAPI.getCurrencies(),
     staleTime: 1000 * 60 * 2, // 2 minutes
     enabled: !maintenanceBlocked,
+  })
+}
+
+// Wallet Hooks
+export function useWalletTransactions(currency?: string | null, enabled = true) {
+  const maintenanceBlocked = useP2PQueriesBlocked()
+  return useQuery({
+    queryKey: queryKeys.wallet.transactions(currency),
+    queryFn: () => WalletsAPI.fetchTransactions(currency ?? undefined),
+    staleTime: 1000 * 60 * 2, // 2 minutes — matches balance hooks
+    enabled: enabled && !maintenanceBlocked,
   })
 }
 

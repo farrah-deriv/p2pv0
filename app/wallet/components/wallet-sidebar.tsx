@@ -6,6 +6,7 @@ import Transfer from "./transfer"
 import { Button } from "@/components/ui/button"
 import { isRtlLocale } from "@/lib/i18n/config"
 import { useTranslations } from "@/lib/i18n/use-translations"
+import type { Transaction } from "../types"
 
 interface Currency {
   code: string
@@ -23,6 +24,7 @@ interface WalletSidebarProps {
   onAccountTransferClick?: () => void
   currencies: Currency[]
   transferStep: string
+  onViewDetails?: (transaction: Transaction) => void
 }
 
 export default function WalletSidebar({
@@ -35,6 +37,7 @@ export default function WalletSidebar({
   onAccountTransferClick = () => {},
   currencies,
   transferStep,
+  onViewDetails,
 }: WalletSidebarProps) {
   const { t, locale } = useTranslations()
   const dir = isRtlLocale(locale) ? "rtl" : "ltr"
@@ -60,11 +63,9 @@ export default function WalletSidebar({
         <div className="h-full w-full" onClick={(e) => e.stopPropagation()}>
           <Transfer
             currencySelected={currencySelected}
-            onSendClick={onP2PTransferClick}
-            onReceiveClick={onAccountTransferClick}
-            currencies={currencies}
             onClose={onClose}
             stepVal={transferStep}
+            onViewDetails={onViewDetails}
           />
         </div>
       </div>

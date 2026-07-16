@@ -11,22 +11,23 @@ import {
   walletTransfer,
   fetchExchangeRate,
   walletExchangeTransfer,
-  fetchTransactionByReferenceId,
 } from "@/services/api/api-wallets"
+import * as WalletsAPI from "@/services/api/api-wallets"
 import { currencyLogoMapper, formatAmountWithDecimals } from "@/lib/utils"
 import { useCurrencies, queryKeys } from "@/hooks/use-api-queries"
 import { getQueryClient } from "@/lib/react-query-client"
 import WalletDisplay from "./wallet-display"
 import ChooseCurrencyStep from "./choose-currency-step"
-import TransactionDetails from "./transaction-details"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useTrackers } from "@/analytics/useTrackers"
 import { getWalletTransferRejectionInfo, type WalletTransferApiError, type WalletWithdrawalRejectionAmounts, type WalletWithdrawalRejectionCode, type WalletWithdrawalRejectionCta } from "@/lib/wallet-transfer"
+import type { Transaction } from "../types"
 
 interface TransferProps {
   currencySelected?: string
   onClose: () => void
   stepVal: string
+  onViewDetails?: (transaction: Transaction) => void
 }
 
 interface Currency {
@@ -52,29 +53,6 @@ interface WalletData {
   balance: string
 }
 
-interface Transaction {
-  transaction_id: number
-  timestamp: string
-  metadata: {
-    brand_name: string
-    description: string
-    destination_client_id: string
-    destination_wallet_id: string
-    destination_wallet_type: string
-    is_reversible: string
-    payout_method: string
-    requester_platform: string
-    source_client_id: string
-    source_wallet_id: string
-    source_wallet_type: string
-    transaction_currency: string
-    transaction_gross_amount: string
-    transaction_net_amount: string
-    transaction_status: string
-    wallet_transaction_type: string
-    external_reference_id?: string
-  }
-}
 
 interface CurrencyData {
   type: "cryptocurrency" | "fiat" | "stablecoin"
@@ -124,7 +102,7 @@ type TransferStep = "chooseCurrency" | "enterAmount" | "success" | "unsuccessful
 type WalletSelectorType = "from" | "to" | null
 type CurrencyToggleType = "source" | "destination"
 
-export default function Transfer({ currencySelected, onClose, stepVal = "enterAmount" }: TransferProps) {
+export default function Transfer({ currencySelected, onClose, stepVal = "enterAmount", onViewDetails }: TransferProps) {
   const { t } = useTranslations()
   const { track } = useTrackers()
   const queryClient = getQueryClient()
@@ -145,7 +123,6 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
   const [externalReferenceId, setExternalReferenceId] = useState<string | null>(null)
   const [requestId, setRequestId] = useState<string | null>(null)
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
   const [transferErrorMessage, setTransferErrorMessage] = useState<string | null>(null)
   const [transferRejectionCta, setTransferRejectionCta] = useState<WalletWithdrawalRejectionCta | null>(null)
   const [transferRejectionCode, setTransferRejectionCode] = useState<WalletWithdrawalRejectionCode | null>(null)
@@ -491,6 +468,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
       setExternalReferenceId(data.external_reference_id)
     }
     queryClient.invalidateQueries({ queryKey: queryKeys.auth.totalBalance() })
+    queryClient.invalidateQueries({ queryKey: queryKeys.wallet.all })
     setShowDesktopConfirmPopup(false)
     setShowMobileConfirmSheet(false)
     track("ek_transfer_successful_confirm_transfer_sheet")
@@ -569,22 +547,22 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     }
 
     try {
-      const response = await fetchTransactionByReferenceId(requestId)
+      const response = await queryClient.fetchQuery({
+        queryKey: queryKeys.wallet.transaction(requestId),
+        queryFn: () => WalletsAPI.fetchTransactionByReferenceId(requestId),
+        staleTime: 1000 * 60 * 5,
+      })
 
       if (response?.data?.transactions && response.data.transactions.length > 0) {
         const transaction = response.data.transactions[0]
-        setSelectedTransaction(transaction)
+        onViewDetails?.(transaction)
+        onClose()
       } else {
         console.error("Transaction not found with reference_id:", requestId)
       }
     } catch (error) {
       console.error("Error fetching transaction details:", error)
     }
-  }
-
-  const handleCloseTransactionDetails = () => {
-    setSelectedTransaction(null)
-    onClose()
   }
 
   const handleDoneClick = () => {
@@ -1774,14 +1752,13 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     })
 
     return (
-      <>
-        <div
-          className="absolute inset-0 flex flex-col h-full p-6"
-          style={{
-            background:
-              "radial-gradient(108.21% 50% at 52.05% 0%, rgba(255, 68, 79, 0.24) 0%, rgba(255, 68, 79, 0.00) 100%), #181C25",
-          }}
-        >
+      <div
+        className="absolute inset-0 flex flex-col h-full p-6"
+        style={{
+          background:
+            "radial-gradient(108.21% 50% at 52.05% 0%, rgba(255, 68, 79, 0.24) 0%, rgba(255, 68, 79, 0.00) 100%), #181C25",
+        }}
+      >
           <div className="flex-1 flex flex-col items-center justify-center text-center">
             <div className="mb-6">
               <Image src="/icons/success-transfer.png" alt={t("common.success")} width={256} height={256} />
@@ -1817,12 +1794,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
               {t("wallet.viewDetails")}
             </Button>
           </div>
-        </div>
-
-        {selectedTransaction && (
-          <TransactionDetails transaction={selectedTransaction} onClose={handleCloseTransactionDetails} />
-        )}
-      </>
+      </div>
     )
   }
 

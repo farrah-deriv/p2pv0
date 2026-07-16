@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { fetchTransactions } from "@/services/api/api-wallets"
+import { useState } from "react"
+import { useWalletTransactions } from "@/hooks/use-api-queries"
 import Image from "next/image"
 import TransactionDetails from "./transaction-details"
 import { formatAppDate } from "@/lib/format-date"
@@ -10,12 +10,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import type { Transaction } from "../types"
-
-interface TransactionsResponse {
-  data: {
-    transactions: Transaction[]
-  }
-}
 
 interface TransactionsTabProps {
   selectedCurrency?: string | null
@@ -31,31 +25,19 @@ export default function TransactionsTab({
   onTransactionSelect
 }: TransactionsTabProps) {
   const { t, locale } = useTranslations()
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState(t("wallet.all"))
   const [localSelectedTransaction, setLocalSelectedTransaction] = useState<Transaction | null>(null)
+
+  const { data, isLoading: loading } = useWalletTransactions(
+    selectedCurrency,
+    parentSelectedTransaction == null
+  )
+  const transactions = data?.data?.transactions ?? []
 
   // Use parent's transaction if provided, otherwise use local state
   const selectedTransaction = parentSelectedTransaction !== undefined ? parentSelectedTransaction : localSelectedTransaction
 
   const filters = [t("wallet.all"), t("wallet.deposit"), t("wallet.withdraw"), t("wallet.transfer")]
-
-  useEffect(() => {
-    const loadTransactions = async () => {
-      try {
-        setLoading(true)
-        const data: TransactionsResponse = await fetchTransactions(selectedCurrency || undefined)
-        setTransactions(data.data.transactions || [])
-      } catch (error) {
-        console.error("Error loading transactions:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadTransactions()
-  }, [selectedCurrency])
 
   const formatDate = (timestamp: string) => {
     const date = new Date(timestamp)
