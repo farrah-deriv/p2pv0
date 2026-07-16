@@ -66,13 +66,15 @@ export default function Main({
   const showMaintenanceBanner =
     isMaintenanceActive && shouldShowP2PMaintenanceBanner(pathname)
 
-  const { hasSeenGuide, startGuide } = useGuideStore()
+  const hasSeenGuide = useGuideStore((state) => state.hasSeenGuide)
+  const advertsSettled = useGuideStore((state) => state.advertsSettled)
+  const startGuide = useGuideStore((state) => state.startGuide)
 
   useEffect(() => {
-    if (isMarketsPage && isReady && isAuthenticated && !hasSeenGuide && !isMaintenanceActive) {
+    if (isMarketsPage && isReady && isAuthenticated && !hasSeenGuide && !isMaintenanceActive && advertsSettled) {
       startGuide()
     }
-  }, [isMarketsPage, isReady, isAuthenticated, hasSeenGuide, isMaintenanceActive, startGuide])
+  }, [isMarketsPage, isReady, isAuthenticated, hasSeenGuide, isMaintenanceActive, advertsSettled, startGuide])
 
   useEffect(() => {
     const walletParam = searchParams.get("wallet")

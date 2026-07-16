@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
+import SearchIconWhite from "@/public/icons/search-icon-white.svg"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { NovuNotifications } from "./novu-notifications"
 import { MobileSidebarTrigger } from "./mobile-sidebar-wrapper"
@@ -123,9 +124,10 @@ export default function Header() {
               }}
               variant="ghost"
               size="icon"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#ffffff0a] p-0"
+              aria-label={t("common.search")}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#ffffff0a] p-0 hover:bg-[#ffffff0a] [&_svg]:size-6"
             >
-              <Image src="/icons/search-icon-white.svg" alt={t("common.search")} width={24} height={24} />
+              <SearchIconWhite width={24} height={24} aria-hidden="true" />
             </Button>
           )}
           {userId && (

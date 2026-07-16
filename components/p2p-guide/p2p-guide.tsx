@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useCallback, useRef, useMemo } from "react"
+import Image from "next/image"
 import { useGuideStore, GUIDE_TOTAL_STEPS } from "@/stores/guide-store"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { Button } from "@/components/ui/button"
@@ -276,16 +277,16 @@ export function P2PGuide() {
           <div ref={tooltipRef} tabIndex={-1} className="relative bg-white rounded-2xl shadow-xl p-5 outline-none">
 
             {/* Title row with X dismiss button */}
-            <div className="flex items-start justify-between mb-2">
+            <div className="flex items-end justify-between mb-2">
               <p id="p2p-guide-title" className="font-bold text-base text-slate-1200 leading-snug pe-2">{t(config.titleKey)}</p>
               <Button
+                type="button"
                 variant="ghost"
-                size="sm"
                 onClick={completeGuide}
                 aria-label={t("guide.closeLabel")}
-                className="shrink-0 p-0 h-auto text-grayscale-600 hover:text-slate-1200"
+                className="shrink-0 p-0 h-auto w-auto min-w-0 bg-transparent hover:bg-transparent min-h-0"
               >
-                ✕
+                <Image src="/icons/close-icon.png" alt="" width={24} height={24} />
               </Button>
             </div>
 

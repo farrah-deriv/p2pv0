@@ -7,6 +7,8 @@ interface GuideState {
   hasSeenGuide: boolean
   isGuideActive: boolean
   currentStep: number
+  advertsSettled: boolean
+  setAdvertsSettled: () => void
   startGuide: () => void
   nextStep: () => void
   goToStep: (step: number) => void
@@ -19,6 +21,8 @@ export const useGuideStore = create<GuideState>()(
       hasSeenGuide: false,
       isGuideActive: false,
       currentStep: 0,
+      advertsSettled: false,
+      setAdvertsSettled: () => set((s) => s.advertsSettled ? s : { advertsSettled: true }),
       startGuide: () => set({ isGuideActive: true, currentStep: 0 }),
       nextStep: () => {
         const { currentStep } = get()

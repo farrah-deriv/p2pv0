@@ -42,6 +42,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useWebSocketContext } from "@/contexts/websocket-context"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useTrackers } from "@/analytics/useTrackers"
+import { useGuideStore } from "@/stores/guide-store"
 import { PresenceLastSeen } from "@/components/presence-last-seen"
 
 type Ad = Advertisement
@@ -127,6 +128,8 @@ export default function BuySellPage() {
   const isV1Signup = userData?.signup === "v1"
   const tempBanUntil = userData?.temp_ban_until
   const firstTradeableAdIndex = adverts.findIndex(ad => Number(userId) !== ad.user.id)
+
+  const setAdvertsSettled = useGuideStore((state) => state.setAdvertsSettled)
 
   // Zero-balance banner. Two gates:
   //   1. Onboarding gate — banner only shows for fully-onboarded P2P
@@ -272,8 +275,11 @@ export default function BuySellPage() {
         }
         return fetchedAdverts
       })
+      // Signal guide that ads have settled. advertsData !== undefined means the query
+      // actually ran (not just disabled due to missing currency/account_currency).
+      if (advertsData !== undefined) setAdvertsSettled()
     }
-  }, [fetchedAdverts])
+  }, [fetchedAdverts, advertsData, setAdvertsSettled])
 
   // Reset scroll position when filters change so sentinel re-enters view and load more works
   useEffect(() => {

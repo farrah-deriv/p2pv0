@@ -1,10 +1,11 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { useTranslations } from "@/lib/i18n/use-translations"
+import ProfileIconWhite from "@/public/icons/profile-icon-white.svg"
+import ArrowBackIcon from "@/public/icons/arrow-back.svg"
 
 export function MobileSidebarTrigger({ "data-testid": testId }: { "data-testid"?: string } = {}) {
   const { t } = useTranslations()
@@ -26,10 +27,11 @@ export function MobileSidebarTrigger({ "data-testid": testId }: { "data-testid"?
         onClick={handleBack}
         variant="ghost"
         size="icon"
-        className="h-8 w-8 rounded-full bg-[#ffffff0a]"
+        aria-label={t("common.back")}
+        className="h-8 w-8 rounded-full bg-[#ffffff0a] hover:bg-[#ffffff0a] [&_svg]:size-6"
         data-testid={testId}
       >
-        <Image src="/icons/arrow-back.svg" width={24} height={24} alt={t("common.back")} />
+        <ArrowBackIcon width={24} height={24} aria-hidden="true" />
       </Button>
     )
   }
@@ -37,10 +39,11 @@ export function MobileSidebarTrigger({ "data-testid": testId }: { "data-testid"?
   return (
     <Link
       href="/profile"
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#ffffff0a]"
+      aria-label={t("common.profile")}
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#ffffff0a] hover:bg-[#ffffff0a]"
       data-testid={testId}
     >
-      <Image src="/icons/profile-icon-white.svg" width={24} height={24} alt={t("common.profile")} />
+      <ProfileIconWhite width={24} height={24} aria-hidden="true" />
     </Link>
   )
 }
