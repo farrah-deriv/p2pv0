@@ -126,6 +126,7 @@ export default function BuySellPage() {
   const hasActiveFilters = filterOptions.fromFollowing !== false || sortBy !== "trade_band_rank"
   const isV1Signup = userData?.signup === "v1"
   const tempBanUntil = userData?.temp_ban_until
+  const firstTradeableAdIndex = adverts.findIndex(ad => Number(userId) !== ad.user.id)
 
   // Zero-balance banner. Two gates:
   //   1. Onboarding gate — banner only shows for fully-onboarded P2P
@@ -494,7 +495,7 @@ export default function BuySellPage() {
                     <BalanceSection balance={balance} currency={balanceCurrency} isLoading={isLoadingBalance} />
                   </div>
                   <Tabs value={activeTab} onValueChange={(value) => { if (value === "sell") track("ek_buy_markets"); else track("ek_sell_markets"); setActiveTab(value as "buy" | "sell") }}>
-                    <TabsList className="w-auto bg-transparent p-0 gap-4 rtl:w-full rtl:justify-end">
+                    <TabsList data-guide-id="guide-buy-sell-tabs" className="w-auto bg-transparent p-0 gap-4 rtl:w-full rtl:justify-end">
                       <TabsTrigger
                         className="w-auto text-base data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:rounded-none px-0"
                         value="sell"
@@ -515,7 +516,7 @@ export default function BuySellPage() {
                   </Tabs>
                 </div>
                 {showCurrencyFilter && (
-                  <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 shrink-0">
+                  <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 shrink-0" data-guide-id="guide-currency-filter">
                     {activeTab === "sell" && (
                       <span className="text-xs font-normal text-white opacity-72">
                         {t("market.payWith")}:
@@ -539,6 +540,7 @@ export default function BuySellPage() {
                           disabled={isMaintenanceActive}
                           className="h-10 min-h-10 max-h-10 gap-2 border border-[#ffffff3d] bg-transparent px-3 font-normal hover:bg-transparent rounded-3xl text-white"
                           onClick={() => track("ek_payment_currency_markets")}
+
                         >
                           {currencyFlagMapper[displayCurrency as keyof typeof currencyFlagMapper] && (
                             <Image
@@ -608,6 +610,7 @@ export default function BuySellPage() {
                             : "bg-transparent hover:bg-transparent",
                         )}
                         onClick={() => track("ek_payment_method_filter_markets")}
+                        data-guide-id="guide-payment-method-filter"
                       >
                         <span className="truncate overflow-hidden text-ellipsis whitespace-nowrap">
                           {getPaymentMethodsDisplayText()}
@@ -652,6 +655,7 @@ export default function BuySellPage() {
                           hasActiveFilters ? "bg-black hover:bg-black" : "bg-transparent hover:bg-transparent",
                         )}
                         onClick={() => track("ek_filter_markets")}
+                        data-guide-id="guide-advanced-filter"
                       >
                         {hasActiveFilters ? (
                           <Image src="/icons/filter-icon-white.png" alt={t("common.filter")} width={16} height={16} />
@@ -753,7 +757,7 @@ export default function BuySellPage() {
                 </TableHeader>
                 <TableBody className="bg-white lg:divide-y lg:divide-slate-200 font-normal text-sm" data-testid="markets-list-ads">
 
-                  {adverts.map((ad) => (
+                  {adverts.map((ad, adIndex) => (
                     <TableRow
                       className="grid grid-cols-[1fr_auto] lg:flex flex-col border-b lg:table-row lg:border-x-[0] lg:border-t-[0] lg:mb-[0] py-3 lg:p-0"
                       key={ad.id}
@@ -913,6 +917,7 @@ export default function BuySellPage() {
                             onClick={() => handleOrderClick(ad)}
                             disabled={!!tempBanUntil || isMaintenanceActive}
                             data-testid={ad.type === "buy" ? `markets-btn-sell-${ad.id}` : `markets-btn-buy-${ad.id}`}
+                            {...(adIndex === firstTradeableAdIndex ? { "data-guide-id": "guide-trade-button" } : {})}
                           >
                             {ad.type === "buy" ? t("common.sell") : t("common.buy")} {ad.account_currency}
                           </Button>

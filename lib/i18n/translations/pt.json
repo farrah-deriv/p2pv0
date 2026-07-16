@@ -1298,5 +1298,24 @@
     "withdrawFromP2p": "Sacar",
     "withdrawWith": "Sacar com",
     "youllReceive": "Você receberá"
+  },
+  "guide": {
+    "back": "Voltar",
+    "closeLabel": "Fechar guia",
+    "done": "Concluído",
+    "next": "Próximo",
+    "step1Title": "Comprar ou vender",
+    "step1Body": "Alterne entre comprar e vender. Toque em Comprar para ver os vendedores disponíveis, ou em Vender para publicar seus próprios anúncios no mercado.",
+    "step2Title": "Escolha sua moeda",
+    "step2Body": "Selecione sua moeda local preferida. Toque no menu suspenso para alterá-la antes de navegar pelos anúncios.",
+    "step3Title": "Filtrar por método de pagamento",
+    "step3Body": "Restrinja os anúncios àqueles que aceitam seu método de pagamento preferido.",
+    "step4Title": "Filtros avançados",
+    "step4Body": "Toque aqui para refinar os resultados por faixa de preço, taxa de conclusão do anunciante, avaliação e muito mais.",
+    "step5Title": "Iniciar uma negociação",
+    "step5Body": "Toque em Comprar para iniciar uma negociação com este anunciante. Você revisará as condições de pagamento antes de confirmar.",
+    "step6Title": "Navegar pela plataforma",
+    "step6Body": "Use as guias inferiores para acessar o mercado, rastrear pedidos ativos, gerenciar seus anúncios e visualizar o saldo da carteira.",
+    "step6BodyDesktop": "Use a barra lateral para acessar o mercado, rastrear pedidos ativos, gerenciar seus anúncios e visualizar o saldo da carteira."
   }
 }

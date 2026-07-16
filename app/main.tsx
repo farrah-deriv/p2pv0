@@ -25,6 +25,8 @@ import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import { shouldShowP2PMaintenanceBanner } from "@/lib/p2p-maintenance-constants"
 import { shouldShowMobileFooterNav } from "@/lib/mobile-footer-nav"
 import { useWalletViewStore } from "@/stores/wallet-view-store"
+import { useGuideStore } from "@/stores/guide-store"
+import { P2PGuide } from "@/components/p2p-guide/p2p-guide"
 import "./globals.css"
 
 export default function Main({
@@ -63,6 +65,14 @@ export default function Main({
   const showBalanceWarning = isMarketsPage && shouldShowBalanceWarning && !isMaintenanceActive
   const showMaintenanceBanner =
     isMaintenanceActive && shouldShowP2PMaintenanceBanner(pathname)
+
+  const { hasSeenGuide, startGuide } = useGuideStore()
+
+  useEffect(() => {
+    if (isMarketsPage && isReady && isAuthenticated && !hasSeenGuide && !isMaintenanceActive) {
+      startGuide()
+    }
+  }, [isMarketsPage, isReady, isAuthenticated, hasSeenGuide, isMaintenanceActive, startGuide])
 
   useEffect(() => {
     const walletParam = searchParams.get("wallet")
@@ -261,6 +271,7 @@ export default function Main({
           <MobileFooterNav className="flex-shrink-0" />
         )}
       </div>
+      <P2PGuide />
     </WebSocketProvider>
   )
 }

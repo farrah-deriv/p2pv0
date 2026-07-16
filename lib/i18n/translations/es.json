@@ -1294,5 +1294,24 @@
     "withdrawFromP2p": "Retirar",
     "withdrawWith": "Retirar con",
     "youllReceive": "Recibirás"
+  },
+  "guide": {
+    "back": "Atrás",
+    "closeLabel": "Cerrar guía",
+    "done": "Listo",
+    "next": "Siguiente",
+    "step1Title": "Comprar o vender",
+    "step1Body": "Cambia entre comprar y vender. Toca Comprar para explorar vendedores disponibles, o Vender para publicar tus propios anuncios en el mercado.",
+    "step2Title": "Elige tu moneda",
+    "step2Body": "Selecciona tu moneda local preferida. Toca el menú desplegable para cambiarla antes de explorar anuncios.",
+    "step3Title": "Filtrar por método de pago",
+    "step3Body": "Limita los anuncios a los que aceptan tu método de pago preferido.",
+    "step4Title": "Filtros avanzados",
+    "step4Body": "Toca aquí para refinar los resultados por rango de precios, tasa de finalización del anunciante, calificación y más.",
+    "step5Title": "Iniciar una operación",
+    "step5Body": "Toca Comprar para iniciar una operación con este anunciante. Revisarás sus condiciones de pago antes de confirmar.",
+    "step6Title": "Navegar por la plataforma",
+    "step6Body": "Usa las pestañas inferiores para acceder al mercado, rastrear pedidos activos, gestionar tus anuncios y ver el saldo de tu cartera.",
+    "step6BodyDesktop": "Usa la barra lateral para acceder al mercado, rastrear pedidos activos, gestionar tus anuncios y ver el saldo de tu cartera."
   }
 }

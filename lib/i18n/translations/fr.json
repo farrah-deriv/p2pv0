@@ -1292,5 +1292,24 @@
     "withdrawFromP2p": "Retrait",
     "withdrawWith": "Retirer avec",
     "youllReceive": "Vous recevrez"
+  },
+  "guide": {
+    "back": "Retour",
+    "closeLabel": "Fermer le guide",
+    "done": "Terminé",
+    "next": "Suivant",
+    "step1Title": "Acheter ou vendre",
+    "step1Body": "Basculez entre achat et vente. Appuyez sur Acheter pour parcourir les vendeurs disponibles, ou sur Vendre pour publier vos propres annonces sur le marché.",
+    "step2Title": "Choisissez votre devise",
+    "step2Body": "Sélectionnez votre devise locale préférée. Appuyez sur la liste déroulante pour la modifier avant de parcourir les annonces.",
+    "step3Title": "Filtrer par mode de paiement",
+    "step3Body": "Réduisez les annonces à celles qui acceptent votre mode de paiement préféré.",
+    "step4Title": "Filtres avancés",
+    "step4Body": "Appuyez ici pour affiner les résultats par plage de prix, taux de réalisation de annonceur, note et plus encore.",
+    "step5Title": "Commencer un échange",
+    "step5Body": "Appuyez sur Acheter pour commencer un échange avec cet annonceur. Vous examinerez ses conditions de paiement avant de confirmer.",
+    "step6Title": "Naviguer sur la plateforme",
+    "step6Body": "Utilisez les onglets du bas pour accéder au marché, suivre les commandes actives, gérer vos annonces et afficher le solde de votre portefeuille.",
+    "step6BodyDesktop": "Utilisez la barre latérale pour accéder au marché, suivre les commandes actives, gérer vos annonces et afficher le solde de votre portefeuille."
   }
 }

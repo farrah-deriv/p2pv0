@@ -1275,5 +1275,24 @@
     "description": "You can no longer use your Deriv P2P account. Check your email for more details. For support, reach out to us via live chat.",
     "illustrationAlt": "P2P access removed",
     "title": "P2P access removed"
+  },
+  "guide": {
+    "step1Title": "Buy or sell",
+    "step1Body": "Switch between buying and selling. Tap Buy to browse available sellers, or Sell to post your own ads on the market.",
+    "step2Title": "Choose your currency",
+    "step2Body": "Select your preferred local currency. Tap the dropdown to change it before browsing ads.",
+    "step3Title": "Filter by Payment Method",
+    "step3Body": "Narrow down ads to those that accept your preferred payment method.",
+    "step4Title": "Advanced filters",
+    "step4Body": "Tap here to refine results by price range, advertiser completion rate, rating, and more.",
+    "step5Title": "Start a Trade",
+    "step5Body": "Tap Buy USD to begin a trade with this advertiser. You'll review their payment terms before confirming.",
+    "step6Title": "Navigate the Platform",
+    "step6Body": "Use the bottom tabs to access the Market, track active Orders, manage your ads, and view your Wallet balance.",
+    "step6BodyDesktop": "Use the sidebar to access the Market, track active Orders, manage your ads, and view your Wallet balance.",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "closeLabel": "Close guide"
   }
 }

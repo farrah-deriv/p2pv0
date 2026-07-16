@@ -62,6 +62,7 @@ export default function MobileFooterNav({ className }: { className?: string }) {
   return (
     <div
       data-testid="footer-nav-container"
+      data-guide-id="guide-footer-nav"
       className={cn("bg-white border-t md:hidden z-40 flex-shrink-0", className)}
     >
       <div className={cn("grid grid-cols-4 min-h-16 relative", showWallet && "grid-cols-5")}>

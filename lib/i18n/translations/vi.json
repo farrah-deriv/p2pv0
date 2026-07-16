@@ -1320,5 +1320,24 @@
     "withdrawFromP2p": "Rút tiền",
     "withdrawWith": "Rút tiền bằng",
     "youllReceive": "Bạn sẽ nhận được"
+  },
+  "guide": {
+    "back": "Quay lại",
+    "closeLabel": "Đóng hướng dẫn",
+    "done": "Xong",
+    "next": "Tiếp theo",
+    "step1Title": "Mua hoặc bán",
+    "step1Body": "Chuyển đổi giữa mua và bán. Nhấn Mua để duyệt các người bán có sẵn, hoặc Bán để đăng quảng cáo của riêng bạn trên thị trường.",
+    "step2Title": "Chọn đơn vị tiền tệ",
+    "step2Body": "Chọn đơn vị tiền tệ địa phương ưa thích của bạn. Nhấn vào danh sách thả xuống để thay đổi trước khi duyệt quảng cáo.",
+    "step3Title": "Lọc theo phương thức thanh toán",
+    "step3Body": "Thu hẹp quảng cáo xuống những quảng cáo chấp nhận phương thức thanh toán ưa thích của bạn.",
+    "step4Title": "Bộ lọc nâng cao",
+    "step4Body": "Nhấn vào đây để tinh chỉnh kết quả theo khoảng giá, tỷ lệ hoàn thành của nhà quảng cáo, đánh giá và nhiều hơn nữa.",
+    "step5Title": "Bắt đầu giao dịch",
+    "step5Body": "Nhấn Mua để bắt đầu giao dịch với nhà quảng cáo này. Bạn sẽ xem xét các điều khoản thanh toán trước khi xác nhận.",
+    "step6Title": "Điều hướng nền tảng",
+    "step6Body": "Sử dụng các tab dưới cùng để truy cập Thị trường, theo dõi Đơn hàng đang hoạt động, quản lý quảng cáo và xem số dư Ví.",
+    "step6BodyDesktop": "Sử dụng thanh bên để truy cập Thị trường, theo dõi Đơn hàng đang hoạt động, quản lý quảng cáo và xem số dư Ví."
   }
 }

@@ -1284,5 +1284,24 @@
     "withdrawFromP2p": "Toa pesa",
     "withdrawWith": "Toa pesa kwa",
     "youllReceive": "Utapokea"
+  },
+  "guide": {
+    "back": "Rudi",
+    "closeLabel": "Funga mwongozo",
+    "done": "Imekamilika",
+    "next": "Endelea",
+    "step1Title": "Nunua au uze",
+    "step1Body": "Badilisha kati ya kununua na kuuza. Gusa Nunua ili kuvinjari wauzaji wanaopatikana, au Uza ili kuchapisha matangazo yako kwenye soko.",
+    "step2Title": "Chagua sarafu yako",
+    "step2Body": "Chagua sarafu yako ya ndani unayopendelea. Gusa menyu ya kushuka ili kuibadilisha kabla ya kuvinjari matangazo.",
+    "step3Title": "Chuja kwa njia ya malipo",
+    "step3Body": "Chuja matangazo ili kupata yale yanayokubali njia yako ya malipo unayopendelea.",
+    "step4Title": "Vichujio vya hali ya juu",
+    "step4Body": "Gusa hapa ili kuboresha matokeo kwa anuwai ya bei, kiwango cha ukamilishaji cha mtangazaji, ukadiriaji na zaidi.",
+    "step5Title": "Anza biashara",
+    "step5Body": "Gusa Nunua ili kuanza biashara na mtangazaji huyu. Utapitia masharti yao ya malipo kabla ya kuthibitisha.",
+    "step6Title": "Elekeza kwenye mfumo",
+    "step6Body": "Tumia vichupo vya chini kufikia Soko, kufuatilia Maagizo yanayoendelea, kusimamia matangazo yako na kuona salio la Pochi yako.",
+    "step6BodyDesktop": "Tumia upau wa pembeni kufikia Soko, kufuatilia Maagizo yanayoendelea, kusimamia matangazo yako na kuona salio la Pochi yako."
   }
 }

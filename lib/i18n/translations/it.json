@@ -1294,5 +1294,24 @@
     "withdrawFromP2p": "Preleva",
     "withdrawWith": "Preleva con",
     "youllReceive": "Riceverai"
+  },
+  "guide": {
+    "back": "Indietro",
+    "closeLabel": "Chiudi guida",
+    "done": "Fine",
+    "next": "Avanti",
+    "step1Title": "Compra o vendi",
+    "step1Body": "Passa tra acquisto e vendita. Tocca Compra per sfogliare i venditori disponibili, o Vendi per pubblicare i tuoi annunci sul mercato.",
+    "step2Title": "Scegli la tua valuta",
+    "step2Body": "Seleziona la tua valuta locale preferita. Tocca il menu a discesa per cambiarla prima di sfogliare gli annunci.",
+    "step3Title": "Filtra per metodo di pagamento",
+    "step3Body": "Limita gli annunci a quelli che accettano il tuo metodo di pagamento preferito.",
+    "step4Title": "Filtri avanzati",
+    "step4Body": "Tocca qui per affinare i risultati per fascia di prezzo, tasso di completamento dell inserzionista, valutazione e altro ancora.",
+    "step5Title": "Inizia uno scambio",
+    "step5Body": "Tocca Acquista per iniziare uno scambio con questo inserzionista. Esaminerai le condizioni di pagamento prima di confermare.",
+    "step6Title": "Naviga nella piattaforma",
+    "step6Body": "Usa le schede in basso per accedere al mercato, tracciare gli ordini attivi, gestire i tuoi annunci e visualizzare il saldo del portafoglio.",
+    "step6BodyDesktop": "Usa la barra laterale per accedere al mercato, tracciare gli ordini attivi, gestire i tuoi annunci e visualizzare il saldo del portafoglio."
   }
 }

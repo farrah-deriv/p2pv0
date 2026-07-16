@@ -1288,5 +1288,24 @@
     "withdrawFromP2p": "Wypłata",
     "withdrawWith": "Wypłata za pomocą",
     "youllReceive": "Otrzymasz"
+  },
+  "guide": {
+    "back": "Wstecz",
+    "closeLabel": "Zamknij przewodnik",
+    "done": "Gotowe",
+    "next": "Dalej",
+    "step1Title": "Kup lub sprzedaj",
+    "step1Body": "Przełączaj się między kupowaniem a sprzedawaniem. Naciśnij Kup, aby przeglądać dostępnych sprzedawców, lub Sprzedaj, aby opublikować własne ogłoszenia na rynku.",
+    "step2Title": "Wybierz swoją walutę",
+    "step2Body": "Wybierz preferowaną walutę lokalną. Naciśnij listę rozwijaną, aby ją zmienić przed przeglądaniem ogłoszeń.",
+    "step3Title": "Filtruj według metody płatności",
+    "step3Body": "Zawęź ogłoszenia do tych, które akceptują Twoją preferowaną metodę płatności.",
+    "step4Title": "Zaawansowane filtry",
+    "step4Body": "Naciśnij tutaj, aby zawęzić wyniki według przedziału cenowego, wskaźnika realizacji ogłoszeniodawcy, oceny i nie tylko.",
+    "step5Title": "Rozpocznij transakcję",
+    "step5Body": "Naciśnij Kup, aby rozpocząć transakcję z tym ogłoszeniodawcą. Przed potwierdzeniem zapoznasz się z warunkami płatności.",
+    "step6Title": "Nawiguj po platformie",
+    "step6Body": "Użyj dolnych zakładek, aby uzyskać dostęp do rynku, śledzić aktywne zlecenia, zarządzać ogłoszeniami i przeglądać saldo portfela.",
+    "step6BodyDesktop": "Użyj paska bocznego, aby uzyskać dostęp do rynku, śledzić aktywne zlecenia, zarządzać ogłoszeniami i przeglądać saldo portfela."
   }
 }
