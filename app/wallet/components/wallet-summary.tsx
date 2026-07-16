@@ -194,9 +194,11 @@ export default function WalletSummary({
     fetchCurrencies()
   }, [currenciesResponse])
 
+  const isVerified = !!(userId && verificationStatus?.phone_verified && !isPoiExpired && !isPoaExpired)
+
   const handleDepositClick = () => {
     if (actionsDisabled) return
-    if (userId && verificationStatus?.phone_verified && !isPoiExpired && !isPoaExpired) {
+    if (isVerified) {
       setCurrentOperation("DEPOSIT")
       setCurrentStep("chooseCurrency")
     } else {
@@ -207,7 +209,7 @@ export default function WalletSummary({
 
   const handleWithdrawClick = () => {
     if (actionsDisabled) return
-    if (userId && verificationStatus?.phone_verified && !isPoiExpired && !isPoaExpired) {
+    if (isVerified) {
       setCurrentOperation("WITHDRAW")
       setCurrentStep("chooseCurrency")
     } else {
@@ -218,16 +220,16 @@ export default function WalletSummary({
 
   const handleTransferClick = () => {
     if (actionsDisabled) return
+
+    if (!isVerified) {
+      showAlert(createKycOnboardingAlertConfig({ route: "wallets", onClose: hideAlert }))
+      return
+    }
+
     if (!hasBalance) return
     track("ek_transfer_wallets")
-
-    if (userId && verificationStatus?.phone_verified && !isPoiExpired && !isPoaExpired) {
-      setCurrentOperation("TRANSFER")
-      setIsSidebarOpen(true)
-    } else {
-      showAlert(createKycOnboardingAlertConfig({ route: "wallets",
-        onClose: hideAlert }))
-    }
+    setCurrentOperation("TRANSFER")
+    setIsSidebarOpen(true)
   }
 
   // Deep-link: Markets' zero-balance banner navigates here with
@@ -241,7 +243,7 @@ export default function WalletSummary({
     if (searchParams.get("operation") !== "TRANSFER") return
     if (!userId) return
     router.replace("/wallet")
-    if (verificationStatus?.phone_verified && !isPoiExpired && !isPoaExpired) {
+    if (isVerified) {
       track("ek_transfer_wallets")
       setCurrentOperation("TRANSFER")
       setIsSidebarOpen(true)
@@ -457,7 +459,7 @@ export default function WalletSummary({
                   size="icon"
                   className="h-12 w-12 rounded-full p-0 bg-[#FF444F] hover:bg-[#E63946] text-white"
                   onClick={handleTransferClick}
-                  disabled={actionsDisabled || !hasBalance}
+                  disabled={actionsDisabled || (!hasBalance && isVerified)}
                   aria-label="Transfer"
                 >
                   <Image src="/icons/transfer-white.png" alt={t("wallet.transfer")} width={14} height={14} />
