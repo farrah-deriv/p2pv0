@@ -242,7 +242,6 @@ export default function Sidebar({ className }: SidebarProps) {
   ]
 
   const hideOnMobile = [
-    t("navigation.home"),
     t("navigation.market"),
     t("navigation.orders"),
     t("navigation.myAds"),
@@ -280,6 +279,19 @@ export default function Sidebar({ className }: SidebarProps) {
         )}
       </div>
       <nav className="flex-1 px-4">
+        {!isDisabled && (
+          <a
+            data-testid="sidebar-link-home"
+            href={homeUrl}
+            className="hidden md:flex items-center gap-3 rounded-md py-4 text-sm"
+            rel="noopener noreferrer"
+          >
+            <div className="h-5 w-5 flex items-center justify-center">
+              <SvgIcon src={HomeIcon} fill="#181C25" />
+            </div>
+            {t("navigation.home")}
+          </a>
+        )}
         {/* Market divider + search sit above the nav list so the guide spotlight excludes them */}
         <div className="my-3 border-b border-grayscale-200"></div>
         {isOnMarketPage && (
@@ -371,8 +383,8 @@ export default function Sidebar({ className }: SidebarProps) {
           </div>
         )}
         <ul data-guide-id="guide-sidebar-nav">
-          {navItems.map((item) => {
-            const isExternal = item.name === t("navigation.home") || item.name === t("navigation.p2pHelpCentre")
+          {navItems.filter((item) => item.name !== t("navigation.home")).map((item) => {
+            const isExternal = item.name === t("navigation.p2pHelpCentre")
             const isActive = !isExternal && (
               item.href === "/"
                 ? pathname === "/" || pathname.startsWith("/advertiser")
