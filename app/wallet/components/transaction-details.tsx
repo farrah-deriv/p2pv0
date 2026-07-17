@@ -4,13 +4,16 @@ import { formatAppDate } from "@/lib/format-date"
 import { localeToBcp47 } from "@/lib/i18n/config"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import Image from "next/image"
+import type { CurrenciesResponse } from "@/services/api/api-auth"
 import type { Transaction } from "../types"
 
 interface TransactionDetailsProps {
   transaction: Transaction | null
+  currencies?: CurrenciesResponse
+  onClose?: () => void
 }
 
-export default function TransactionDetails({ transaction }: TransactionDetailsProps) {
+export default function TransactionDetails({ transaction, currencies }: TransactionDetailsProps) {
   const { t, locale } = useTranslations()
   const numberLocale = localeToBcp47(locale)
 
@@ -58,22 +61,25 @@ export default function TransactionDetails({ transaction }: TransactionDetailsPr
     return formatTransactionType(walletTransactionType)
   }
 
+  const getCurrencyLabel = (currencyCode: string) =>
+    currencies?.[currencyCode]?.label || currencyCode
+
   const getFromWalletName = (transaction: Transaction) => {
     const orderType = transaction.metadata.statement_metadata?.order_type
     if (orderType === "buy") return transaction.metadata.statement_metadata?.buyer_nickname ?? ""
     if (orderType === "sell") return transaction.metadata.statement_metadata?.seller_nickname ?? ""
 
-    const sourceWalletType = transaction.metadata.source_wallet_type
-    const transactionCurrency = transaction.metadata.transaction_currency
+    const sourceWalletType = transaction.metadata.source_wallet_type?.toLowerCase()
+    const currencyLabel = getCurrencyLabel(transaction.metadata.transaction_currency)
 
-    if (sourceWalletType === "main") {
-      return t("wallet.walletName", { currency: transactionCurrency })
+    if (sourceWalletType === "p2p") {
+      return `P2P ${currencyLabel}`
+    } else if (sourceWalletType === "main") {
+      return t("wallet.walletName", { currency: currencyLabel })
     } else if (sourceWalletType === "system") {
       return transaction.metadata.payout_method || t("wallet.external")
-    } else if (sourceWalletType === "p2p") {
-      return `P2P ${transactionCurrency}`
     }
-    return formatTransactionType(sourceWalletType)
+    return formatTransactionType(transaction.metadata.source_wallet_type)
   }
 
   const getToWalletName = (transaction: Transaction) => {
@@ -81,17 +87,17 @@ export default function TransactionDetails({ transaction }: TransactionDetailsPr
     if (orderType === "buy") return transaction.metadata.statement_metadata?.seller_nickname ?? ""
     if (orderType === "sell") return transaction.metadata.statement_metadata?.buyer_nickname ?? ""
 
-    const destinationWalletType = transaction.metadata.destination_wallet_type
-    const transactionCurrency = transaction.metadata.transaction_currency
+    const destinationWalletType = transaction.metadata.destination_wallet_type?.toLowerCase()
+    const currencyLabel = getCurrencyLabel(transaction.metadata.transaction_currency)
 
-    if (destinationWalletType === "main") {
-      return t("wallet.walletName", { currency: transactionCurrency })
+    if (destinationWalletType === "p2p") {
+      return `P2P ${currencyLabel}`
+    } else if (destinationWalletType === "main") {
+      return t("wallet.walletName", { currency: currencyLabel })
     } else if (destinationWalletType === "system") {
       return transaction.metadata.payout_method || t("wallet.external")
-    } else if (destinationWalletType === "p2p") {
-      return `P2P ${transactionCurrency}`
     }
-    return formatTransactionType(destinationWalletType)
+    return formatTransactionType(transaction.metadata.destination_wallet_type)
   }
 
   const getTransactionDisplay = (transaction: Transaction) => {

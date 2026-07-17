@@ -191,7 +191,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
   }, [currenciesResponse])
 
   useEffect(() => {
-    if (!selectedCurrency) return
+    if (!selectedCurrency || !currenciesData) return
 
     const loadWallets = async () => {
       try {
@@ -202,19 +202,19 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
           response.data.wallets.forEach((wallet: any) => {
             const isP2p = (wallet.type || "").toLowerCase() === "p2p"
-            const usdLabel = currenciesData?.["USD"]?.label || "USD"
-            const usdName = isP2p ? `P2P ${usdLabel}` : usdLabel
+            const currencyLabel = currenciesData?.[selectedCurrency]?.label || selectedCurrency
+            const walletName = isP2p ? `P2P ${currencyLabel}` : t("wallet.walletName", { currency: currencyLabel })
             const balances = wallet.balances ?? []
 
-            const usdBalance = balances.find((b: any) => b.currency === "USD")
+            const currencyBalance = balances.find((b: any) => b.currency === selectedCurrency)
 
             processedWallets.push({
               wallet_id: wallet.wallet_id,
-              name: usdName,
-              balance: usdBalance?.balance ?? "0",
-              currency: "USD",
+              name: walletName,
+              balance: currencyBalance?.balance ?? "0",
+              currency: selectedCurrency,
 
-              icon: isP2p ? "/icons/p2p-black.png" : currencyLogoMapper["USD"],
+              icon: isP2p ? "/icons/p2p-black.png" : currencyLogoMapper[selectedCurrency as keyof typeof currencyLogoMapper],
               type: wallet.type,
             })
           })
@@ -239,7 +239,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     }
 
     loadWallets()
-  }, [selectedCurrency])
+  }, [selectedCurrency, currenciesData])
 
   const calculateTransferFee = useCallback((): { feeAmount: number; feePercentage: number } | null => {
     if (!currenciesData || !sourceWalletData || !destinationWalletData || !transferAmount) {
@@ -627,7 +627,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     (amount: number | string, currencyCode: string): string => {
       if (!currenciesData) return formatAmountWithDecimals(amount)
 
-      const currencyData = currenciesData.data[currencyCode]
+      const currencyData = currenciesData[currencyCode]
       if (!currencyData?.decimal?.maximum) return formatAmountWithDecimals(amount)
 
       const numAmount = typeof amount === "string" ? Number.parseFloat(amount) : amount
@@ -650,7 +650,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
   const getDecimalConstraints = (): { minimum: number; maximum: number } | null => {
     if (!selectedCurrency || !currenciesData) return null
-    const currencyData = currenciesData.data[selectedCurrency]
+    const currencyData = currenciesData[selectedCurrency]
     return currencyData?.decimal || null
   }
 
@@ -659,7 +659,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     const sourceBalance = getSourceWalletBalance()
 
     if (!isNaN(numAmount) && selectedCurrency && currenciesData) {
-      const currencyData = currenciesData.data[selectedCurrency]
+      const currencyData = currenciesData[selectedCurrency]
       const minAmount = currencyData?.limit?.transfer?.min_amount_per_transaction || 0
 
       const effectiveMinAmount =
@@ -710,7 +710,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
   const getMinimumAmount = (): number => {
     if (!selectedCurrency || !currenciesData) return 0
-    const currencyData = currenciesData.data[selectedCurrency]
+    const currencyData = currenciesData[selectedCurrency]
     return currencyData?.limit?.transfer?.min_amount_per_transaction || 0
   }
 
@@ -726,11 +726,11 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
   const getFilteredWallets = (type: WalletSelectorType) => {
     if (type === "from" && destinationWalletData) {
-      return wallets.filter((w) => w.name !== destinationWalletData.name)
+      return wallets.filter((w) => w.wallet_id !== destinationWalletData.id)
     }
 
     if (type === "to" && sourceWalletData) {
-      return wallets.filter((w) => w.name !== sourceWalletData.name)
+      return wallets.filter((w) => w.wallet_id !== sourceWalletData.id)
     }
 
     return wallets

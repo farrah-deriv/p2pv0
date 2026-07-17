@@ -9,11 +9,12 @@ import { formatAmountWithDecimals } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useTranslations } from "@/lib/i18n/use-translations"
+import type { CurrenciesResponse } from "@/services/api/api-auth"
 import type { Transaction } from "../types"
 
 interface TransactionsTabProps {
   selectedCurrency?: string | null
-  currencies?: Record<string, any>
+  currencies?: CurrenciesResponse
   selectedTransaction?: Transaction | null
   onTransactionSelect?: (transaction: Transaction | null) => void
 }
@@ -301,7 +302,7 @@ export default function TransactionsTab({
           <div className="space-y-6 h-[calc(100vh-16rem)] md:h-[calc(100vh-18rem)] overflow-y-auto pb-16">
             <div className="bg-white">
               <div className="space-y-6">
-                <TransactionDetails transaction={selectedTransaction} />
+                <TransactionDetails transaction={selectedTransaction} currencies={currencies} />
               </div>
             </div>
           </div>

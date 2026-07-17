@@ -97,32 +97,35 @@ export default function WalletSummary({
     return type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
   }
 
-  const getFromWalletName = (transaction: Transaction) => {
-    const sourceWalletType = transaction.metadata.source_wallet_type
-    const transactionCurrency = transaction.metadata.transaction_currency
+  const getCurrencyLabel = (currencyCode: string) =>
+    currenciesResponse?.[currencyCode]?.label || currencyCode
 
-    if (sourceWalletType === "main") {
-      return t("wallet.walletName", { currency: transactionCurrency })
+  const getFromWalletName = (transaction: Transaction) => {
+    const sourceWalletType = transaction.metadata.source_wallet_type?.toLowerCase()
+    const currencyLabel = getCurrencyLabel(transaction.metadata.transaction_currency)
+
+    if (sourceWalletType === "p2p") {
+      return `P2P ${currencyLabel}`
+    } else if (sourceWalletType === "main") {
+      return t("wallet.walletName", { currency: currencyLabel })
     } else if (sourceWalletType === "system") {
       return transaction.metadata.payout_method || t("wallet.external")
-    } else if (sourceWalletType === "p2p") {
-      return `P2P ${transactionCurrency}`
     }
-    return formatTransactionType(sourceWalletType)
+    return formatTransactionType(transaction.metadata.source_wallet_type)
   }
 
   const getToWalletName = (transaction: Transaction) => {
-    const destinationWalletType = transaction.metadata.destination_wallet_type
-    const transactionCurrency = transaction.metadata.transaction_currency
+    const destinationWalletType = transaction.metadata.destination_wallet_type?.toLowerCase()
+    const currencyLabel = getCurrencyLabel(transaction.metadata.transaction_currency)
 
-    if (destinationWalletType === "main") {
-      return t("wallet.walletName", { currency: transactionCurrency })
+    if (destinationWalletType === "p2p") {
+      return `P2P ${currencyLabel}`
+    } else if (destinationWalletType === "main") {
+      return t("wallet.walletName", { currency: currencyLabel })
     } else if (destinationWalletType === "system") {
       return transaction.metadata.payout_method || t("wallet.external")
-    } else if (destinationWalletType === "p2p") {
-      return `P2P ${transactionCurrency}`
     }
-    return formatTransactionType(destinationWalletType)
+    return formatTransactionType(transaction.metadata.destination_wallet_type)
   }
 
   const formatAmount = (amount: string, currency: string) => {
@@ -338,17 +341,17 @@ export default function WalletSummary({
       >
         {!isBalancesView && (
           <div className="flex justify-start items-center h-8 mb-6">
-            <button data-testid="wallet-btn-back" onClick={onBack} className="w-8 h-8 flex items-center justify-center" aria-label="Back to balances">
+            <Button data-testid="wallet-btn-back" variant="ghost" size="sm" onClick={onBack} className="w-8 h-8 p-0" aria-label="Back to balances">
               <Image src="/icons/back-circle.png" alt={t("common.back")} width={32} height={32} />
-            </button>
+            </Button>
           </div>
         )}
 
         {isShowingTransactionDetails && selectedTransaction && (
           <div className="flex justify-start items-center h-8 mb-6">
-            <button onClick={handleCloseTransactionDetails} className="w-8 h-8 flex items-center justify-center" aria-label="Back to transaction list">
+            <Button variant="ghost" size="sm" onClick={handleCloseTransactionDetails} className="w-8 h-8 p-0" aria-label="Back to transaction list">
               <Image src="/icons/back-circle.png" alt={t("common.back")} width={32} height={32} />
-            </button>
+            </Button>
           </div>
         )}
 
@@ -564,7 +567,7 @@ export default function WalletSummary({
                 <Image src="/icons/back-circle.png" alt={t("common.back")} width={32} height={32} />
               </button>
             </div>
-            <TransactionDetails transaction={selectedTransaction} onClose={handleCloseTransactionDetails} />
+            <TransactionDetails transaction={selectedTransaction} currencies={currenciesResponse} onClose={handleCloseTransactionDetails} />
           </div>
         </div>
       )}
