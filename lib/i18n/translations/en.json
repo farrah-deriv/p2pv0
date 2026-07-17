@@ -1270,7 +1270,9 @@
     "loadFailed": "Failed to load notifications",
     "loading": "Notifications loading",
     "poweredBy": "Notifications by",
-    "title": "Notifications"
+    "title": "Notifications",
+    "fetchFailed": "Failed to retrieve subscriber data",
+    "noUserId": "No user ID available"
   },
   "p2pAccess": {
     "description": "You can no longer use your Deriv P2P account. Check your email for more details. For support, reach out to us via live chat.",

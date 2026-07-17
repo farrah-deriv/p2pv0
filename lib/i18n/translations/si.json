@@ -554,7 +554,9 @@
     "loadFailed": "පැතිකඩ පූරණය කිරීමට අසමත් විය. කරුණාකර නැවත උත්සාහ කරන්න.",
     "loading": "පූරණය වෙමින්...",
     "poweredBy": "Notifications by",
-    "title": "දැනුම්දීම්"
+    "title": "දැනුම්දීම්",
+    "fetchFailed": "Failed to retrieve subscriber data",
+    "noUserId": "No user ID available"
   },
   "nps": {
     "askMeLater": "පසුව මගෙන් අසන්න",

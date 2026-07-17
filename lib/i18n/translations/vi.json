@@ -597,7 +597,9 @@
     "loadFailed": "Không tải được hồ sơ. Vui lòng thử lại.",
     "loading": "Đang tải...",
     "poweredBy": "Notifications by",
-    "title": "Thông báo"
+    "title": "Thông báo",
+    "fetchFailed": "Không thể lấy dữ liệu người đăng ký",
+    "noUserId": "Không có ID người dùng"
   },
   "nps": {
     "askMeLater": "Hỏi tôi sau",

@@ -566,7 +566,9 @@
     "loadFailed": "Nie udało się załadować profilu. Spróbuj ponownie.",
     "loading": "Ładowanie...",
     "poweredBy": "Notifications by",
-    "title": "Powiadomienia"
+    "title": "Powiadomienia",
+    "fetchFailed": "Nie udało się pobrać danych subskrybenta",
+    "noUserId": "Brak identyfikatora użytkownika"
   },
   "nps": {
     "askMeLater": "Zapytaj mnie później",

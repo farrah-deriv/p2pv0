@@ -562,7 +562,9 @@
     "loadFailed": "Imeshindwa kupakia wasifu. Tafadhali jaribu tena.",
     "loading": "Inapakua...",
     "poweredBy": "Notifications by",
-    "title": "Arifa"
+    "title": "Arifa",
+    "fetchFailed": "Imeshindwa kupata data ya mwanachama",
+    "noUserId": "Hakuna kitambulisho cha mtumiaji"
   },
   "nps": {
     "askMeLater": "Niulize baadaye",

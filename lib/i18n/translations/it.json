@@ -565,7 +565,9 @@
     "loadFailed": "Impossibile caricare il profilo. Per favore riprova.",
     "loading": "Caricamento...",
     "poweredBy": "Notifications by",
-    "title": "Notifiche"
+    "title": "Notifiche",
+    "fetchFailed": "Impossibile recuperare i dati dell'abbonato",
+    "noUserId": "Nessun ID utente disponibile"
   },
   "nps": {
     "askMeLater": "Chiedimelo più tardi",

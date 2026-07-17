@@ -554,7 +554,9 @@
     "loadFailed": "无法加载配置文件。请再试一次。",
     "loading": "正在加载...",
     "poweredBy": "Notifications by",
-    "title": "通知"
+    "title": "通知",
+    "fetchFailed": "Failed to retrieve subscriber data",
+    "noUserId": "No user ID available"
   },
   "nps": {
     "askMeLater": "稍后再问我",

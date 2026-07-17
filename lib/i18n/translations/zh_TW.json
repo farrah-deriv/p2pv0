@@ -554,7 +554,9 @@
     "loadFailed": "無法載入設定檔。請再試一次。",
     "loading": "正在加載...",
     "poweredBy": "Notifications by",
-    "title": "通知"
+    "title": "通知",
+    "fetchFailed": "Failed to retrieve subscriber data",
+    "noUserId": "No user ID available"
   },
   "nps": {
     "askMeLater": "稍後再問我",

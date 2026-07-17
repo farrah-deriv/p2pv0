@@ -554,7 +554,9 @@
     "loadFailed": "Профайлыг ачаалж чадсангүй. Дахин оролдоно уу.",
     "loading": "Ачааж байна...",
     "poweredBy": "Notifications by",
-    "title": "Мэдэгдэл"
+    "title": "Мэдэгдэл",
+    "fetchFailed": "Failed to retrieve subscriber data",
+    "noUserId": "No user ID available"
   },
   "nps": {
     "askMeLater": "Дараа асуугаарай",

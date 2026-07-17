@@ -563,7 +563,9 @@
     "loadFailed": "Échec du chargement du profil. Veuillez réessayer.",
     "loading": "Chargement...",
     "poweredBy": "Notifications by",
-    "title": "Notifications"
+    "title": "Notifications",
+    "fetchFailed": "Impossible de récupérer les données de l'abonné",
+    "noUserId": "Aucun identifiant utilisateur disponible"
   },
   "nps": {
     "askMeLater": "Me le demander plus tard",

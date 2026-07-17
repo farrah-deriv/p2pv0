@@ -563,7 +563,9 @@
     "loadFailed": "No se pudo cargar el perfil. Por favor inténtalo de nuevo.",
     "loading": "Cargando...",
     "poweredBy": "Notifications by",
-    "title": "Notificaciones"
+    "title": "Notificaciones",
+    "fetchFailed": "No se pudieron obtener los datos del suscriptor",
+    "noUserId": "No hay ID de usuario disponible"
   },
   "nps": {
     "askMeLater": "Preguntarme más tarde",

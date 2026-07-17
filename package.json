@@ -21,7 +21,7 @@
     "@deriv-com/utils": "^0.0.42",
     "@eslint/eslintrc": "latest",
     "@hookform/resolvers": "^3.9.1",
-    "@novu/nextjs": "latest",
+    "@novu/nextjs": "3.17.0",
     "@radix-ui/react-accordion": "latest",
     "@radix-ui/react-alert-dialog": "latest",
     "@radix-ui/react-aspect-ratio": "latest",
