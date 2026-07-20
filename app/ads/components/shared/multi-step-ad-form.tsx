@@ -771,14 +771,14 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
       showAlert({
         title: t("adForm.cancelAdCreation"),
         description: t("adForm.cancelAdCreationDescription"),
-        cancelText: t("adForm.continueAdCreation"),
-        confirmText: t("common.cancel"),
+        confirmText: t("adForm.continueAdCreation"),
+        cancelText: t("common.cancel"),
         type: "warning",
-        onCancel: () => {
+        onConfirm: () => {
           track("ek_continue_editing_cancel_ad_sheet")
           hideAlert()
         },
-        onConfirm: () => {
+        onCancel: () => {
           track("ek_confirm_cancel_ad_cancel_ad_sheet")
           const finalData = { ...formDataRef.current }
           const currency = finalData?.buyCurrency || "USD"
