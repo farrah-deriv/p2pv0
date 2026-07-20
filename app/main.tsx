@@ -16,16 +16,12 @@ import { P2PAccessRemoved } from "@/components/p2p-access-removed"
 import { LoadingIndicator } from "@/components/loading-indicator"
 import { IntercomProvider } from "@/components/intercom-provider"
 import { P2PAnnouncementController } from "@/components/p2p-announcement"
-import { P2PBalanceWarning } from "@/components/p2p-balance-warning"
 import { P2PSystemMaintenanceBanner } from "@/components/p2p-system-maintenance"
 import { P2PMaintenanceController } from "@/components/p2p-maintenance-controller"
-import { useOnboardingGate } from "@/hooks/use-onboarding-gate"
-import { useP2PBalanceWarning } from "@/hooks/use-p2p-balance-warning"
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import { shouldShowP2PMaintenanceBanner } from "@/lib/p2p-maintenance-constants"
 import { shouldShowMobileFooterNav } from "@/lib/mobile-footer-nav"
 import { useWalletViewStore } from "@/stores/wallet-view-store"
-import { useGuideStore } from "@/stores/guide-store"
 import { P2PGuide } from "@/components/p2p-guide/p2p-guide"
 import "./globals.css"
 
@@ -57,24 +53,8 @@ export default function Main({
 
   const isDisabled = userData?.status === "disabled"
 
-  const balanceAmount = userData?.balances?.amount
-  const isV2User = userData?.signup === "v2"
-  const { isFullyOnboarded } = useOnboardingGate()
-  const { shouldShow: shouldShowBalanceWarning } = useP2PBalanceWarning(balanceAmount, isFullyOnboarded, isV2User)
-  const isMarketsPage = pathname === "/"
-  const showBalanceWarning = isMarketsPage && shouldShowBalanceWarning && !isMaintenanceActive
   const showMaintenanceBanner =
     isMaintenanceActive && shouldShowP2PMaintenanceBanner(pathname)
-
-  const hasSeenGuide = useGuideStore((state) => state.hasSeenGuide)
-  const advertsSettled = useGuideStore((state) => state.advertsSettled)
-  const startGuide = useGuideStore((state) => state.startGuide)
-
-  useEffect(() => {
-    if (isMarketsPage && isReady && isAuthenticated && !hasSeenGuide && !isMaintenanceActive && advertsSettled) {
-      startGuide()
-    }
-  }, [isMarketsPage, isReady, isAuthenticated, hasSeenGuide, isMaintenanceActive, advertsSettled, startGuide])
 
   useEffect(() => {
     const walletParam = searchParams.get("wallet")
@@ -259,7 +239,6 @@ export default function Main({
       </div>
       <div className="md:hidden flex flex-col h-dvh overflow-hidden">
         {showMaintenanceBanner && <P2PSystemMaintenanceBanner embeddedInDarkHeader />}
-        {showBalanceWarning && <P2PBalanceWarning />}
         {isHeaderVisible && <Header className="flex-shrink-0" />}
         <main
           className={cn(

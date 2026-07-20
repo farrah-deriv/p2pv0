@@ -134,6 +134,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
   const [transferFeeCalculation, setTransferFeeCalculation] = useState<TransferFeeCalculation | null>(null)
   const [showCurrencySwitcher, setShowCurrencySwitcher] = useState(false)
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const hasAutoSelectedRef = useRef(false)
 
   const [sourceMinAmount, setSourceMinAmount] = useState<number>(0)
   const [destinationMinAmount, setDestinationMinAmount] = useState<number>(0)
@@ -222,15 +223,39 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
           setWallets(processedWallets)
 
           const p2pWallet = processedWallets.find((w) => w.type?.toLowerCase() === "p2p")
+          const nonP2pWallet = processedWallets.find((w) => w.type?.toLowerCase() !== "p2p")
 
-          if (p2pWallet) {
-            setSourceWalletData({
-              id: p2pWallet.wallet_id,
-              name: p2pWallet.name,
-              currency: p2pWallet.currency,
-              balance: p2pWallet.balance,
-              type: p2pWallet.type,
-            })
+          // Only auto-select on initial load — don't override user's manual selection.
+          if (p2pWallet && !hasAutoSelectedRef.current) {
+            hasAutoSelectedRef.current = true
+            const p2pHasBalance = parseFloat(p2pWallet.balance) > 0
+
+            if (p2pHasBalance) {
+              setSourceWalletData({
+                id: p2pWallet.wallet_id,
+                name: p2pWallet.name,
+                currency: p2pWallet.currency,
+                balance: p2pWallet.balance,
+                type: p2pWallet.type,
+              })
+            } else {
+              setDestinationWalletData({
+                id: p2pWallet.wallet_id,
+                name: p2pWallet.name,
+                currency: p2pWallet.currency,
+                balance: p2pWallet.balance,
+                type: p2pWallet.type,
+              })
+              if (nonP2pWallet) {
+                setSourceWalletData({
+                  id: nonP2pWallet.wallet_id,
+                  name: nonP2pWallet.name,
+                  currency: nonP2pWallet.currency,
+                  balance: nonP2pWallet.balance,
+                  type: nonP2pWallet.type,
+                })
+              }
+            }
           }
         }
       } catch (error) {

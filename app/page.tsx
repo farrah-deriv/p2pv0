@@ -42,7 +42,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useWebSocketContext } from "@/contexts/websocket-context"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useTrackers } from "@/analytics/useTrackers"
-import { useGuideStore } from "@/stores/guide-store"
 import { PresenceLastSeen } from "@/components/presence-last-seen"
 
 type Ad = Advertisement
@@ -129,18 +128,6 @@ export default function BuySellPage() {
   const tempBanUntil = userData?.temp_ban_until
   const firstTradeableAdIndex = adverts.findIndex(ad => Number(userId) !== ad.user.id)
 
-  const setAdvertsSettled = useGuideStore((state) => state.setAdvertsSettled)
-
-  // Zero-balance banner. Two gates:
-  //   1. Onboarding gate — banner only shows for fully-onboarded P2P
-  //      advertisers (POI/POA approved, PNV verified, TnC accepted,
-  //      profile complete, p2p.allowed). Mirrors the mobile gate so the
-  //      banner stays hidden while the KYC onboarding sheet is shown.
-  //   2. Balance source — `total_account_value.amount` from /users/me,
-  //      which flows into local `balance` state via `fetchBalance` and
-  //      the `balance_change` WebSocket handler. Pass `undefined` while
-  //      loading so the hook preserves its state until a definitive
-  //      value arrives.
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
   const displayCurrency = currency || localCurrency || selectedAccountCurrency
   const showCurrencyFilter = currencies.length > 0 || Boolean(displayCurrency)
@@ -275,11 +262,8 @@ export default function BuySellPage() {
         }
         return fetchedAdverts
       })
-      // Signal guide that ads have settled. advertsData !== undefined means the query
-      // actually ran (not just disabled due to missing currency/account_currency).
-      if (advertsData !== undefined) setAdvertsSettled()
     }
-  }, [fetchedAdverts, advertsData, setAdvertsSettled])
+  }, [fetchedAdverts, advertsData])
 
   // Reset scroll position when filters change so sentinel re-enters view and load more works
   useEffect(() => {
@@ -679,7 +663,7 @@ export default function BuySellPage() {
             <div className="flex-1 min-h-0 flex items-center md:items-start justify-center md:pt-16">
               <EmptyState title={t("market.noAdsMaintenanceTitle")} route={null} />
             </div>
-          ) : isLoading || (adverts.length === 0 && !currency) ? (
+          ) : isLoading || (adverts.length === 0 && !currency) || (fetchedAdverts.length > 0 && adverts.length === 0) ? (
             <div className="md:block" data-testid="markets-skeleton-ads">
               <Table>
                 <TableHeader className="hidden lg:table-header-group border-b sticky top-0 bg-white z-[1]">
