@@ -3,16 +3,13 @@ import { PasswordPage } from "./PasswordPage";
 
 /**
  * LoginPage - Handles the Ory Kratos login flow for p2p-v0.
- * Navigates to LOGIN_URL (https://staging-home.deriv.com/dashboard/login).
- * After successful login, Ory Kratos redirects back to BASE_URL (/).
+ *
+ * Flow: staging-home.deriv.com/dashboard/login → email → password →
+ * staging-home.deriv.com/dashboard/home → click P2P → staging-p2p.deriv.com/
  *
  * @example
  * ```typescript
- * await loginPage.gotoLoginPage();
- * await loginPage.enterEmail("user@webapps.mailisk.net");
- * await loginPage.clickLogInButton();
- * await loginPage.passwordInput.fill("password");
- * await loginPage.clickLogInButton();
+ * await loginPage.login(); // handles full flow — do not call steps individually in tests
  * ```
  */
 export class LoginPage {
@@ -235,7 +232,10 @@ export class LoginPage {
     }
 
     /**
-     * Complete the full login flow (email → password → P2P Markets home).
+     * Complete the full login flow and land on the P2P Markets home page.
+     *
+     * Flow: LOGIN_URL (staging-home.deriv.com/dashboard/login) → email → password →
+     * staging-home.deriv.com/dashboard/home → click P2P → staging-p2p.deriv.com/
      *
      * @param email - User email (falls back to TEST_EMAIL env var)
      * @param password - User password (falls back to TEST_PASSWORD env var)
@@ -260,7 +260,13 @@ export class LoginPage {
         await passwordPage.waitForPasswordPageToLoad();
         await passwordPage.enterPasswordAndSubmit(loginPassword);
 
-        await this.page.waitForURL("/");
+        // Ory Kratos redirects to staging-home.deriv.com/dashboard/home after password.
+        // Click the P2P button — this carries the SSO token and navigates to staging-dp2p.deriv.com/.
+        // Use origin-match predicate because the landing URL includes query params (/?operation=buy&...).
+        await this.page.waitForURL(/\/dashboard\/home/);
+        await this.clickP2P();
+        const base = (process.env.BASE_URL ?? "https://staging-dp2p.deriv.com").replace(/\/$/, "");
+        await this.page.waitForURL((url) => url.origin === base);
         await this.page.waitForLoadState("domcontentloaded");
 
         return loginEmail;

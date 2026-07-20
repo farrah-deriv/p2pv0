@@ -5,7 +5,7 @@ This folder contains plain-English journey specifications, coverage scorecards, 
 
 Updated when new flows are added, tests are implemented, or coverage status changes.
 
-Last updated: 2026-06-26
+Last updated: 2026-06-30 (buy-sell Flow 1 + Flow 2 automated)
 
 ---
 
@@ -43,7 +43,8 @@ Each module section lists every documented flow with its current **status** and 
 | `orders` | 11 | 11 | 0 |
 | `profile` | 15 | 15 | 0 |
 | `wallet` | 13 | 13 | 0 |
-| **Total** | **79** | **79** | **2** |
+| `buy-sell` | 10 | 10 | 2 |
+| **Total** | **89** | **89** | **4** |
 
 > Status advances: `documented` → `automated`
 
@@ -191,6 +192,27 @@ Each module section lists every documented flow with its current **status** and 
 
 ---
 
+## Module: `buy-sell` — Order Sidebar & Placement
+
+**Flow docs:** `playwright/flows/buy-sell/` · **Test folder:** `playwright/tests/buy-sell/`
+
+> **Entry point:** `app/page.tsx` (root route). Feature components live in `components/buy-sell/`. See also `playwright/flows/market/` for ad listing, tab switching, and risk warning flows (not duplicated here).
+
+| Flow | Priority | Description | User State | Status |
+|------|----------|-------------|------------|--------|
+| Flow 1 | P0 | Buy-side order sidebar — content verification, place-order guard, and close | KYC verified; sell-type ad available; not the advertiser | `automated` |
+| Flow 2 | P0 | Sell-side order sidebar — content and payment method required guard | KYC verified; buy-type ad available; has payment method | `automated` |
+| Flow 3 | P1 | Payment method selection panel — open, select, and confirm | Sell-side sidebar accessible; compatible payment method exists | `documented` |
+| Flow 4 | P1 | Amount validation — order limit errors (below minimum and above maximum) | Any logged-in KYC-verified user; ad accessible | `documented` |
+| — | P2 | Place sell-side order end-to-end (G1) | KYC verified; funded P2P wallet; buy-type ad available | `documented` |
+| — | P2 | Insufficient P2P balance prevents sell order (G2) | Limited-balance staging account | `documented` |
+| — | P2 | Own-ad Buy/Sell button suppression (G6) | User has own active ads on market | `documented` |
+| — | P3 | Rate change confirmation modal (G3) | Float-rate ad; staging rate changes during session | `documented` |
+| — | P3 | Ad updated confirmation modal (G4) | Advertiser updates ad while user's sidebar is open | `documented` |
+| — | P3 | Add payment method from order sidebar (G5) | No compatible payment methods on account | `documented` |
+
+---
+
 ## Implementation Priority Order
 
 The recommended order for implementing new tests based on business impact and coverage gaps:
@@ -230,3 +252,4 @@ AI will read all `coverage.md` files and `playwright/tests/` spec files, compute
 | orders | [flow](orders/flow.md) | [catalog](orders/catalog.md) | [coverage](orders/coverage.md) |
 | profile | [flow](profile/flow.md) | [catalog](profile/catalog.md) | [coverage](profile/coverage.md) |
 | wallet | [flow](wallet/flow.md) | [catalog](wallet/catalog.md) | [coverage](wallet/coverage.md) |
+| buy-sell | [flow](buy-sell/flow.md) | [catalog](buy-sell/catalog.md) | [coverage](buy-sell/coverage.md) |

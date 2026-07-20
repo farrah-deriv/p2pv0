@@ -3,6 +3,7 @@ import { LoginPage } from "../pages/LoginPage";
 import { PasswordPage } from "../pages/PasswordPage";
 import { MarketPage } from "../pages/MarketPage";
 import { AdsPage } from "../pages/AdsPage";
+import { AdsCreatePage } from "../pages/AdsCreatePage";
 import { AdvertiserPage } from "../pages/AdvertiserPage";
 import { OrdersPage } from "../pages/OrdersPage";
 import { OrderDetailPage } from "../pages/OrderDetailPage";
@@ -57,6 +58,7 @@ export const test = base.extend<{
     passwordPage: PasswordPage;
     marketPage: MarketPage;
     adsPage: AdsPage;
+    adsCreatePage: AdsCreatePage;
     advertiserPage: AdvertiserPage;
     ordersPage: OrdersPage;
     orderDetailPage: OrderDetailPage;
@@ -107,6 +109,15 @@ export const test = base.extend<{
     adsPage: async ({ page }, use) => {
         const adsPage = new AdsPage(page);
         await use(adsPage);
+    },
+
+    /**
+     * Ads create page fixture — provides initialized AdsCreatePage instance.
+     * Covers the Create/Edit Ad wizard (`/ads/create`, `/ads/edit/[id]`).
+     */
+    adsCreatePage: async ({ page }, use) => {
+        const adsCreatePage = new AdsCreatePage(page);
+        await use(adsCreatePage);
     },
 
     /**

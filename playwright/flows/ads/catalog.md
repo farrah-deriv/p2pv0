@@ -1,7 +1,7 @@
 # 🗺️ Ads Journey Catalog — Technical Reference
 
 > Source of truth: `playwright/pages/AdsPage.ts`
-> Created: 2026-06-25 | Last updated: 2026-06-25
+> Created: 2026-06-25 | Last updated: 2026-07-03
 
 ---
 
@@ -118,7 +118,7 @@ await expect(
   page.getByText("You have no ads"),
   "Empty state title should be visible"
 ).toBeVisible();
-await expect(page.getByTestId("ads-btn-create"), "Create ad button should be visible in empty state").toBeVisible();
+await expect(page.getByRole("button", { name: "Create ad" }), "Create ad button should be visible in empty state").toBeVisible();
 ```
 
 **Locators used:**
@@ -147,21 +147,21 @@ await expect(page.getByText("Set ad and rate type"), "Step 0 title should be vis
 await page.getByPlaceholder("Total buy amount").fill("1000");
 await page.getByPlaceholder("Minimum order").fill("10");
 await page.getByPlaceholder("Maximum order").fill("500");
-await page.getByRole("button", { name: "Next" }).click();
+await page.getByTestId("ad-form-btn-next-step1").click();
 
 // Step 1 — "Set payment details"
 await expect(page.getByText("Set payment details"), "Step 1 title should be visible").toBeVisible();
 // Select first available payment method
 await page.getByRole("checkbox").first().check();
-await page.getByRole("button", { name: "Next" }).click();
+await page.getByTestId("ad-form-btn-next-step2").click();
 
 // Step 2 — "Set ad conditions"
 await expect(page.getByText("Set ad conditions"), "Step 2 title should be visible").toBeVisible();
-await page.getByRole("button", { name: "Create ad" }).click();
+await page.getByTestId("ad-form-btn-submit").click();
 
 // Success screen
 await expect(page.getByRole("heading", { name: "Ad created" }), "Success heading should be visible").toBeVisible();
-await expect(page.getByRole("button", { name: "Go to My ads" }), "Go to My ads button should be visible").toBeVisible();
+await expect(page.getByTestId("ad-form-btn-done"), "Go to My ads button should be visible").toBeVisible();
 ```
 
 **Locators used:**
@@ -174,10 +174,11 @@ await expect(page.getByRole("button", { name: "Go to My ads" }), "Go to My ads b
 | Total buy amount | `getByPlaceholder('Total buy amount')` | i18n: `t('adForm.buyQuantity')` | ✅ |
 | Minimum order | `getByPlaceholder('Minimum order')` | i18n: `t('adForm.minimumOrder')` | ✅ |
 | Maximum order | `getByPlaceholder('Maximum order')` | i18n: `t('adForm.maximumOrder')` | ✅ |
-| Next button | `getByRole('button', { name: 'Next' })` | i18n: `t('adForm.next')` | ✅ |
-| Create ad button (step 2) | `getByRole('button', { name: 'Create ad' })` | i18n: `t('adForm.createAd')` | ✅ |
+| Next button (step 0→1) | `page.getByTestId('ad-form-btn-next-step1')` | `data-testid="ad-form-btn-next-step1"` in `multi-step-ad-form.tsx` | ✅ |
+| Next button (step 1→2) | `page.getByTestId('ad-form-btn-next-step2')` | `data-testid="ad-form-btn-next-step2"` in `multi-step-ad-form.tsx` | ✅ |
+| Submit button (step 2) | `page.getByTestId('ad-form-btn-submit')` | `data-testid="ad-form-btn-submit"` in `multi-step-ad-form.tsx`; text = "Create ad" (create mode) / "Save changes" (edit mode) | ✅ |
 | Success heading | `getByRole('heading', { name: 'Ad created' })` | i18n: `t('myAds.adCreated')` | ✅ |
-| Go to My ads button | `getByRole('button', { name: 'Go to My ads' })` | i18n: `t('navigation.goToMyAds')` | 🔍 Verify on staging |
+| Go to My ads button | `page.getByTestId('ad-form-btn-done')` | `data-testid="ad-form-btn-done"` in `ad-success-screen.tsx` | ✅ |
 
 ---
 

@@ -1,6 +1,6 @@
 # Ads Journey Coverage
 
-**Analysis date:** 2026-06-25
+**Analysis date:** 2026-07-03
 
 ---
 
@@ -8,9 +8,9 @@
 
 | # | Journey | Desktop | Mobile | Notes |
 |---|---|---|---|---|
-| Flow 1 | My Ads page loads and displays existing ads | ❌ | ❌ | Smoke test — read-only page load |
+| Flow 1 | My Ads page loads and displays existing ads | ✅ | ✅ | Smoke test — read-only page load |
 | Flow 2 | My Ads page shows empty state when no ads exist | ❌ | ❌ | Requires account with no ads |
-| Flow 3 | Create a Buy ad (3-step wizard, fixed rate) | ❌ | ❌ | Mutates account state |
+| Flow 3 | Create a Buy ad (3-step wizard, fixed rate) | ✅ | ✅ | Mutates account state |
 | Flow 4 | Create a Sell ad (3-step wizard, fixed rate) | ❌ | ❌ | Requires funded P2P balance |
 | Flow 5 | Edit an existing ad and save changes | ❌ | ❌ | Mutates account state |
 | Flow 6 | Deactivate an active ad | ❌ | ❌ | Mutates account state |
