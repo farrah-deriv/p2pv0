@@ -1011,6 +1011,7 @@
     "notRatedYet": "Pas encore évalué",
     "notRecommendedYet": "Pas encore recommandé",
     "paymentMethodAdded": "Méthode de paiement ajoutée.",
+    "paymentMethodAddedWithName": "Méthode de paiement {methodName} ajoutée.",
     "paymentMethodDeleted": "Méthode de paiement supprimée.",
     "paymentMethodInUseByOrder": "Cette méthode de paiement est actuellement utilisée par une commande ouverte et ne peut pas être modifiée.",
     "paymentMethodLinkedToAd": "Cette méthode de paiement est liée à l'une de vos annonces et ne peut pas être supprimée.",

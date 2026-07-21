@@ -20,7 +20,7 @@ import { useWebSocketContext } from "@/contexts/websocket-context"
 import EmptyState from "@/components/empty-state"
 import { useOrdersFilterStore } from "@/stores/orders-filter-store"
 import { useChatVisibilityStore } from "@/stores/chat-visibility-store"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { HeaderSegmentedControl } from "@/components/header-segmented-control"
 import { DateFilter } from "./components/date-filter"
 import { format, startOfDay, endOfDay } from "date-fns"
 import { PreviousOrdersSection } from "./components/previous-orders-section"
@@ -286,27 +286,16 @@ export default function OrdersPage() {
       {showKycPopup && <span data-testid="orders-alert-kyc" aria-hidden="true" className="hidden" />}
       <div className="flex flex-col flex-1 min-h-0 h-full md:h-screen px-3 overflow-hidden">
         <div className="flex flex-col flex-shrink-0">
-          <div className="relative z-10 w-[calc(100%+24px)] md:w-full h-[80px] flex flex-row items-center gap-[16px] md:gap-[24px] bg-slate-1200 p-6 rounded-b-3xl md:rounded-3xl justify-between -m-3 mb-0 md:m-0">
-            <Tabs value={activeTab} onValueChange={handleTabChange}>
-              <TabsList className="w-full bg-transparent p-0 gap-4">
-                <TabsTrigger
-                  value="active"
-                  className="w-auto text-base data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:rounded-none px-0"
-                  variant="underline"
-                  data-testid="orders-tab-active"
-                >
-                  {t("orders.active")}
-                </TabsTrigger>
-                <TabsTrigger
-                  value="past"
-                  className="w-auto text-base data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:rounded-none px-0"
-                  variant="underline"
-                  data-testid="orders-tab-past"
-                >
-                  {t("orders.past")}
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+          <div className="relative z-10 w-[calc(100%+24px)] md:w-full min-h-[80px] flex flex-row items-center gap-[16px] md:gap-[24px] bg-slate-1200 px-6 pb-6 pt-8 md:p-6 rounded-b-3xl md:rounded-3xl justify-between -mx-3 mb-0 md:m-0">
+            <HeaderSegmentedControl
+              value={activeTab}
+              onValueChange={handleTabChange}
+              width={168}
+              segments={[
+                { value: "active", label: t("orders.active"), testId: "orders-tab-active" },
+                { value: "past", label: t("orders.past"), testId: "orders-tab-past" },
+              ]}
+            />
             {showCheckPreviousOrdersButton && (
               <Button
                 variant="ghost"

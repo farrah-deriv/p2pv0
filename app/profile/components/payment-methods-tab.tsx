@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { maskAccountNumber } from "@/lib/utils"
 import Image from "next/image"
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { CustomShimmer } from "./ui/custom-shimmer"
@@ -21,7 +21,14 @@ import {
   PAYMENT_METHOD_SECTION_TITLE,
   PAYMENT_METHOD_TEXT,
 } from "@/lib/rtl"
-import { useUserPaymentMethods, useUpdatePaymentMethod, useDeletePaymentMethod, type PaymentMethodError } from "@/hooks/use-api-queries"
+import {
+  flattenUserPaymentMethodsPages,
+  useUserPaymentMethods,
+  useUpdatePaymentMethod,
+  useDeletePaymentMethod,
+  type PaymentMethodError,
+} from "@/hooks/use-api-queries"
+import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
 import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
 import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
 import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
@@ -56,15 +63,28 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
   })
 
   // Use React Query hooks
-  const { data: methodsResponse, isLoading, error, refetch } = useUserPaymentMethods(!!userId)
+  const {
+    data: methodsResponse,
+    isLoading,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useUserPaymentMethods(!!userId)
   const updatePaymentMethod = useUpdatePaymentMethod()
   const deletePaymentMethod = useDeletePaymentMethod()
+  const handleLoadMore = useCallback(() => {
+    void fetchNextPage()
+  }, [fetchNextPage])
+  const { sentinelRef } = useLoadMoreOnScroll(!!hasNextPage, handleLoadMore, isFetchingNextPage)
 
   // Transform API response to PaymentMethod format
   const paymentMethods = useMemo(() => {
-    if (!methodsResponse?.data) return []
+    const methods = flattenUserPaymentMethodsPages(methodsResponse)
+    if (methods.length === 0) return []
 
-    return methodsResponse.data.map((method: any) => {
+    return methods.map((method: any) => {
       const methodType = method.method || ""
 
       let category: "bank_transfer" | "e_wallet" | "other" = "other"
@@ -440,6 +460,14 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
               </Card>
             ))}
           </div>
+        </div>
+      )}
+      {hasNextPage && (
+        <div ref={sentinelRef} className="h-1 w-full" data-testid="profile-payment-methods-sentinel" />
+      )}
+      {isFetchingNextPage && (
+        <div className="flex justify-center py-4">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
         </div>
       )}
       {editPanel.show && editPanel.paymentMethod && (

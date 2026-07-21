@@ -995,6 +995,7 @@
     "notRatedYet": "لا توجد تقييمات بعد",
     "notRecommendedYet": "لا توجد توصيات بعد",
     "paymentMethodAdded": "تمت إضافة طريقة الدفع.",
+    "paymentMethodAddedWithName": "تمت إضافة طريقة الدفع {methodName}.",
     "paymentMethodDeleted": "تم حذف طريقة الدفع.",
     "paymentMethodInUseByOrder": "طريقة الدفع هذه قيد الاستخدام حالياً في طلب مفتوح ولا يمكن تعديلها.",
     "paymentMethodLinkedToAd": "طريقة الدفع هذه مرتبطة بأحد إعلاناتك ولا يمكن حذفها.",

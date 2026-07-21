@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useRef, useEffect, useMemo } from "react"
+import { useState, useRef, useEffect, useMemo, useCallback } from "react"
 import { IS_CLOSED_GROUP_ENABLED, IS_AD_CONDITIONS_ENABLED } from "@/lib/utils"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import AdDetailsForm from "../ad-details-form"
 import PaymentDetailsForm from "../payment-details-form"
 import ShareAdPage from "../share-ad-page"
@@ -26,7 +26,14 @@ import { type Country } from "@/services/api/api-auth"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useWebSocketContext } from "@/contexts/websocket-context"
 import { useUserDataStore } from "@/stores/user-data-store"
-import { useCreateAd, useUpdateAd, useSettings, useUserPaymentMethods, usePaymentMethods } from "@/hooks/use-api-queries"
+import {
+  flattenUserPaymentMethodsPages,
+  useCreateAd,
+  useUpdateAd,
+  useSettings,
+  useUserPaymentMethods,
+  usePaymentMethods,
+} from "@/hooks/use-api-queries"
 import type { Ad } from "@/types"
 import { useTrackers } from "@/analytics/useTrackers"
 import type { AdFormData } from "@/app/ads/types"
@@ -47,6 +54,11 @@ import {
   type AdvertEditSnapshot,
 } from "@/lib/ads/advert-edit-patch"
 import { toNumericPaymentMethodIds } from "@/lib/payment-methods/payment-method-selection-utils"
+import {
+  MY_ADS_FROM_TAB_QUERY,
+  myAdsPath,
+  parseMyAdsTab,
+} from "@/lib/ads/my-ads-tab"
 
 interface MultiStepAdFormProps {
   mode: "create" | "edit"
@@ -73,7 +85,18 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
   const { t } = useTranslations()
   const { track } = useTrackers()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const isMobile = useIsMobile()
+  const myAdsReturnPath = useMemo(
+    () =>
+      mode === "edit"
+        ? myAdsPath(parseMyAdsTab(searchParams.get(MY_ADS_FROM_TAB_QUERY)))
+        : myAdsPath(),
+    [mode, searchParams],
+  )
+  const navigateToMyAdsList = useCallback(() => {
+    router.push(mode === "edit" ? myAdsReturnPath : myAdsPath())
+  }, [mode, myAdsReturnPath, router])
   const localCurrency = useUserDataStore((state) => state.localCurrency)
 
   const { toast } = useToast()
@@ -130,9 +153,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
   }
 
   useEffect(() => {
-    if (userPaymentMethodsData) {
-      setUserPaymentMethods(userPaymentMethodsData.data || [])
-    }
+    setUserPaymentMethods(flattenUserPaymentMethodsPages(userPaymentMethodsData))
 
     if (paymentMethodsData) {
       const methods = Array.isArray(paymentMethodsData) ? paymentMethodsData : []
@@ -573,7 +594,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
 
       if (Object.keys(patch).length === 0) {
         setIsSubmitting(false)
-        router.push("/ads")
+        router.push(myAdsReturnPath)
         return
       }
 
@@ -593,7 +614,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
               className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
               duration: 2500,
             })
-            router.push("/ads")
+            router.push(myAdsReturnPath)
           },
           onError: (error: any) => {
             setIsSubmitting(false)
@@ -649,7 +670,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
         title: t("adForm.adLimitReachedTitle"),
         type: "error",
         onConfirm: () => {
-          router.push("/ads")
+          navigateToMyAdsList()
         },
       },
       InsufficientBalance: {
@@ -783,14 +804,14 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
           const finalData = { ...formDataRef.current }
           const currency = finalData?.buyCurrency || "USD"
           leaveExchangeRatesChannel(currency)
-          router.push("/ads")
+          router.push(myAdsPath())
         },
       })
     } else {
       const finalData = { ...formDataRef.current }
       const currency = finalData?.buyCurrency || "USD"
       leaveExchangeRatesChannel(currency)
-      router.push("/ads")
+      router.push(myAdsReturnPath)
     }
   }
 

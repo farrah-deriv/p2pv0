@@ -1044,6 +1044,7 @@
     "notRatedYet": "평가 없음",
     "notRecommendedYet": "추천 없음",
     "paymentMethodAdded": "결제 방법이 추가되었습니다.",
+    "paymentMethodAddedWithName": "{methodName} 결제 방법이 추가되었습니다.",
     "paymentMethodDeleted": "결제 방법이 삭제되었습니다.",
     "paymentMethodInUseByOrder": "이 결제 방법은 현재 열려있는 주문에서 사용 중이며 수정할 수 없습니다.",
     "paymentMethodLinkedToAd": "이 결제 방법은 광고 중 하나와 연결되어 있으며 삭제할 수 없습니다.",
