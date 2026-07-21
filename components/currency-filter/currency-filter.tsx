@@ -138,10 +138,8 @@ export function CurrencyFilter({
                 key={currency.code}
                 onClick={() => handleCurrencySelect(currency.code)}
                 className={cn(
-                  "px-4 h-12 flex items-center gap-2 rounded-lg border border-transparent cursor-pointer transition-colors text-base font-normal",
-                  selectedCurrency === currency.code
-                    ? "bg-grayscale-500 border-black text-black"
-                    : "text-black/[0.72] hover:bg-gray-50",
+                  "px-4 h-12 flex items-center gap-2 rounded-sm cursor-pointer transition-colors text-base font-normal",
+                  selectedCurrency === currency.code ? "bg-black text-white" : "text-black/[0.72] hover:bg-gray-50",
                 )}
                 data-testid={`currency-filter-btn-${currency.symbol ?? currency.id ?? currency.code}`}
               >

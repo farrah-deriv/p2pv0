@@ -2,8 +2,7 @@
 
 
 import type React from "react"
-import { useState, useEffect, useMemo, useCallback, useRef } from "react"
-import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import Image from "next/image"
 import type { AdFormData } from "../types"
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -19,15 +18,9 @@ import { getCategoryDisplayName, formatPaymentMethodName } from "@/lib/utils"
 import { ProfileAPI } from "@/services/api"
 import AddPaymentMethodPanel from "@/app/profile/components/add-payment-method-panel"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
-import { useToast } from "@/hooks/use-toast"
 import { usePaymentSelection } from "./payment-selection-context"
 import { useTranslations } from "@/lib/i18n/use-translations"
-import {
-  flattenUserPaymentMethodsPages,
-  useAddPaymentMethod,
-  useUserPaymentMethods,
-  type PaymentMethodError,
-} from "@/hooks/use-api-queries"
+import { useAddPaymentMethod, type PaymentMethodError } from "@/hooks/use-api-queries"
 import { useRouter } from "next/navigation"
 import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
 import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
@@ -80,7 +73,7 @@ interface PaymentDetailsFormProps {
 
 /**
  * Buy-ad catalogue picker only. Rows are unique `AvailablePaymentMethod` templates
- * (one per `method` key), so same-key e-wallet disable is N/A here.
+ * (one per `method` key), so same-key e-wallet disable does not apply here.
  * Sell ads / user account instances use `PaymentSelectionContent` instead.
  */
 const FullPagePaymentSelection = ({
@@ -121,7 +114,7 @@ const FullPagePaymentSelection = ({
     return methods.filter((method) => method.display_name.toLowerCase().includes(query))
   }, [paymentMethods, searchQuery])
 
-  // Live selection order — selected methods pin to the top.
+  // Live sort: selected catalogue keys move to the top (mobile buy-sheet parity).
   const sortedFilteredMethods = useMemo(
     () =>
       sortSelectableItemsSelectedFirst(filteredMethods, localSelected, (method) =>
@@ -135,7 +128,7 @@ const FullPagePaymentSelection = ({
       if (isPaymentMethodIdSelected(prev, methodId)) {
         return prev.filter((id) => !isPaymentMethodIdSelected([id], methodId))
       } else if (prev.length < 3) {
-        return [normalizePaymentMethodId(methodId), ...prev]
+        return [...prev, normalizePaymentMethodId(methodId)]
       }
       return prev
     })
@@ -283,7 +276,6 @@ const PaymentSelectionContent = ({
   hideAlert,
   setSelectedPaymentMethods,
   handleAddPaymentMethodClick,
-  scrollToPaymentMethodId,
 }: {
   paymentMethods: (UserPaymentMethod | PaymentMethod)[]
   tempSelectedPaymentMethods: string[]
@@ -291,47 +283,18 @@ const PaymentSelectionContent = ({
   hideAlert: () => void
   setSelectedPaymentMethods: (methods: string[]) => void
   handleAddPaymentMethodClick?: (currentSelection: string[]) => void
-  scrollToPaymentMethodId?: string
 }) => {
   const { t } = useTranslations()
   const [selectedPMs, setSelectedPMs] = useState(tempSelectedPaymentMethods)
-  const lastScrolledPaymentMethodIdRef = useRef<string | null>(null)
-  const {
-    data: paymentMethodsPages,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useUserPaymentMethods()
-  const handleLoadMore = useCallback(() => {
-    void fetchNextPage()
-  }, [fetchNextPage])
-  const { scrollRootRef, sentinelRef } = useLoadMoreOnScroll(
-    !!hasNextPage,
-    handleLoadMore,
-    isFetchingNextPage,
-  )
 
   useEffect(() => {
     setSelectedPMs(tempSelectedPaymentMethods)
   }, [tempSelectedPaymentMethods])
 
-  // Live paginated list (alert props are a snapshot). Merge prop extras for just-created PMs.
-  const userMethods = useMemo(() => {
-    const live = flattenUserPaymentMethodsPages(paymentMethodsPages) as UserPaymentMethod[]
-    const fromProps = paymentMethods.filter(
-      (method): method is UserPaymentMethod => "id" in method,
-    )
-    if (live.length === 0) return fromProps
-
-    const byId = new Map(
-      live.map((method) => [normalizePaymentMethodId(method.id), method] as const),
-    )
-    for (const method of fromProps) {
-      const id = normalizePaymentMethodId(method.id)
-      if (!byId.has(id)) byId.set(id, method)
-    }
-    return Array.from(byId.values())
-  }, [paymentMethods, paymentMethodsPages])
+  const userMethods = useMemo(
+    () => paymentMethods.filter((method): method is UserPaymentMethod => "id" in method),
+    [paymentMethods],
+  )
 
   const handlePaymentMethodToggle = (methodId: string) => {
     setSelectedPMs((prev) => {
@@ -341,8 +304,7 @@ const PaymentSelectionContent = ({
       if (isUserPaymentMethodSelectionDisabled(userMethods, prev, methodId)) {
         return prev
       }
-      // Pin newly selected method to the top.
-      return [normalizePaymentMethodId(methodId), ...prev]
+      return [...prev, normalizePaymentMethodId(methodId)]
     })
   }
 
@@ -365,59 +327,23 @@ const PaymentSelectionContent = ({
     return formatPaymentMethodName(method.display_name, t)
   }
 
-  // Live selection order — selected methods pin to the top of the sheet.
   const sortedPaymentMethods = useMemo(
     () => sortPaymentMethodsSelectedFirst(userMethods, selectedPMs),
     [userMethods, selectedPMs],
   )
-
-  useEffect(() => {
-    if (!scrollToPaymentMethodId) return
-
-    const normalizedId = normalizePaymentMethodId(scrollToPaymentMethodId)
-    if (lastScrolledPaymentMethodIdRef.current === normalizedId) return
-
-    let cancelled = false
-    let attempts = 0
-    const maxAttempts = 30
-
-    const tryScroll = () => {
-      if (cancelled) return
-      const root = scrollRootRef.current
-      if (!root) {
-        if (attempts++ < maxAttempts) {
-          window.requestAnimationFrame(tryScroll)
-        }
-        return
-      }
-
-      // Instant — no smooth delay that lands after the toast.
-      root.scrollTop = 0
-      lastScrolledPaymentMethodIdRef.current = normalizedId
-    }
-
-    window.requestAnimationFrame(tryScroll)
-
-    return () => {
-      cancelled = true
-    }
-  }, [scrollToPaymentMethodId, scrollRootRef, sortedPaymentMethods.length])
 
   return (
     <div
       className="box-border flex h-full min-h-0 w-full min-w-0 max-w-full flex-1 flex-col overflow-hidden"
       data-testid="ad-form-sheet-payment-methods"
     >
-      {userMethods.length > 0 && (
+      {paymentMethods.length > 0 && (
         <div className="shrink-0 pb-4 text-grayscale-600">{t("paymentMethod.selectUpTo3")}</div>
       )}
-      <div
-        ref={scrollRootRef}
-        className="min-h-0 min-w-0 max-w-full flex-1 space-y-4 overflow-x-hidden overflow-y-auto"
-      >
-        {userMethods.length === 0 ? (
+      <div className="min-h-0 min-w-0 max-w-full flex-1 space-y-4 overflow-x-hidden overflow-y-auto">
+        {paymentMethods.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-neutral-7 mb-4">{t("adForm.noPaymentMethodsFound")}</p>
+            <p className="text-gray-600 mb-4">{t("adForm.noPaymentMethodsFound")}</p>
           </div>
         ) : (
           sortedPaymentMethods.map((method) => {
@@ -432,9 +358,9 @@ const PaymentSelectionContent = ({
             return (
               <div
                 key={methodId}
-                className={`box-border w-full max-w-full min-w-0 overflow-hidden rounded-lg bg-grayscale-500 p-4 cursor-pointer transition-colors ${isDisabled
-                  ? "opacity-30 cursor-not-allowed hover:bg-grayscale-300"
-                  : "hover:bg-grayscale-300"
+                className={`box-border w-full max-w-full min-w-0 overflow-hidden rounded-lg bg-grayscale-500 p-4 cursor-pointer transition-color ${isDisabled
+                  ? "opacity-30 cursor-not-allowed hover:bg-white"
+                  : ""
                   } ${isSelected ? "border border-black" : ""
                   }`}
                 onClick={() => !isDisabled && handlePaymentMethodToggle(methodId)}
@@ -467,18 +393,9 @@ const PaymentSelectionContent = ({
           })
         )}
 
-        {hasNextPage && (
-          <div ref={sentinelRef} className="h-1 w-full" data-testid="ad-form-payment-methods-sentinel" />
-        )}
-        {isFetchingNextPage && (
-          <div className="flex justify-center py-2">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-grayscale-400 border-t-slate-600" />
-          </div>
-        )}
-
         {handleAddPaymentMethodClick && (
           <div
-            className="box-border w-full max-w-full min-w-0 cursor-pointer rounded-lg bg-grayscale-500 p-4 transition-colors hover:bg-grayscale-300"
+            className="box-border w-full max-w-full min-w-0 cursor-pointer rounded-lg bg-grayscale-500 p-4 transition-colors hover:bg-gray-50"
             onClick={() => {
               handleAddPaymentMethodClick(selectedPMs)
             }}
@@ -494,7 +411,7 @@ const PaymentSelectionContent = ({
       <div className="box-border w-full min-w-0 max-w-full shrink-0 pt-4 pb-6 md:py-4">
         <Button
           className="w-full max-w-full min-w-0"
-          disabled={selectedPMs.length === 0}
+          disabled={selectedPMs.length == 0}
           onClick={() => {
             const confirmedSelection = resolveSelectedUserPaymentMethodIds(
               selectedPMs,
@@ -523,17 +440,14 @@ export default function PaymentDetailsForm({
   const router = useRouter()
   const isMobile = useIsMobile()
   const { mutateAsync: addPaymentMethod, isPending: isAddingPaymentMethod } = useAddPaymentMethod()
+  const [paymentMethods, setPaymentMethods] = useState<string[]>(initialData.paymentMethods || [])
   const [instructions, setInstructions] = useState(initialData.instructions || "")
   const [instructionsError, setInstructionsError] = useState("")
   const [touched, setTouched] = useState(false)
   const [tempSelectedPaymentMethods, setTempSelectedPaymentMethods] = useState<string[]>([])
   const [showAddPaymentPanel, setShowAddPaymentPanel] = useState(false)
   const [showFullPageModal, setShowFullPageModal] = useState(false)
-  // When true, Drawer/Dialog onOpenChange from programmatic hideAlert (add-PM
-  // transition) must not wipe the draft selection back to last confirmed.
-  const isTransitioningToAddPanelRef = useRef(false)
   const { hideAlert, showAlert } = useAlertDialog()
-  const { toast } = useToast()
   const { selectedPaymentMethodIds, setSelectedPaymentMethodIds } = usePaymentSelection()
 
   const validateInstructions = (value: string) => {
@@ -551,17 +465,12 @@ export default function PaymentDetailsForm({
 
   const handleAddPaymentMethodClick = useCallback((currentSelection: string[]) => {
     setTempSelectedPaymentMethods(currentSelection)
-    isTransitioningToAddPanelRef.current = true
     setShowAddPaymentPanel(true)
     hideAlert()
   }, [hideAlert])
 
   const openSellPaymentSelection = useCallback(
-    (
-      selectionOverride?: string[],
-      methodsOverride?: UserPaymentMethod[],
-      scrollToPaymentMethodId?: string,
-    ) => {
+    (selectionOverride?: string[], methodsOverride?: UserPaymentMethod[]) => {
       const currentSelection =
         selectionOverride ??
         (tempSelectedPaymentMethods.length > 0
@@ -580,20 +489,12 @@ export default function PaymentDetailsForm({
             setSelectedPaymentMethods={setSelectedPaymentMethodIds}
             hideAlert={hideAlert}
             handleAddPaymentMethodClick={handleAddPaymentMethodClick}
-            scrollToPaymentMethodId={scrollToPaymentMethodId}
           />
         ),
         // Dismissing without confirming (X, Escape, backdrop) discards the
         // draft back to the last confirmed selection, so reopening later
-        // doesn't reseed from a stale, never-confirmed draft. Skipped when
-        // transitioning to the add-payment panel so draft selections survive.
-        onClose: () => {
-          if (isTransitioningToAddPanelRef.current) {
-            isTransitioningToAddPanelRef.current = false
-            return
-          }
-          setTempSelectedPaymentMethods(selectedPaymentMethodIds)
-        },
+        // doesn't reseed from a stale, never-confirmed draft.
+        onClose: () => setTempSelectedPaymentMethods(selectedPaymentMethodIds),
       })
     },
     [
@@ -644,20 +545,7 @@ export default function PaymentDetailsForm({
         // synchronous tick (React batches these) so there is no frame where
         // neither overlay is mounted and the wizard's own Back/Close become
         // reachable underneath.
-        openSellPaymentSelection(nextSelection, nextUserPaymentMethods, createdId)
-
-        const createdMethodName = created?.display_name || formatPaymentMethodName(method, t)
-
-        toast({
-          description: (
-            <div className="flex items-center gap-2">
-              <Image src="/icons/tick.svg" alt={t("common.success")} width={24} height={24} className="text-white" />
-              <span>{t("profile.paymentMethodAddedWithName", { methodName: createdMethodName })}</span>
-            </div>
-          ),
-          className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
-          duration: 2500,
-        })
+        openSellPaymentSelection(nextSelection, nextUserPaymentMethods)
       }
 
       setShowAddPaymentPanel(false)
@@ -715,6 +603,7 @@ export default function PaymentDetailsForm({
 
   const getSelectedPaymentMethodsText = () => {
     const selectedIds = selectedPaymentMethodIds
+    const methods = initialData.type === "buy" ? availablePaymentMethods : userPaymentMethods
 
     if (selectedIds.length === 0) return t("adForm.selectPayment")
     return t("adForm.selected", { count: selectedIds.length })
@@ -748,7 +637,7 @@ export default function PaymentDetailsForm({
       bubbles: true,
     })
     document.dispatchEvent(event)
-  }, [selectedPaymentMethodIds, instructions, userPaymentMethods, initialData.type])
+  }, [paymentMethods, selectedPaymentMethodIds, instructions, userPaymentMethods, initialData.type])
 
   return (
     <>

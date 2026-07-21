@@ -1039,7 +1039,6 @@
     "notRatedYet": "Chưa có đánh giá",
     "notRecommendedYet": "Chưa có đề xuất",
     "paymentMethodAdded": "Đã thêm phương thức thanh toán.",
-    "paymentMethodAddedWithName": "Đã thêm phương thức thanh toán {methodName}.",
     "paymentMethodDeleted": "Đã xóa phương thức thanh toán.",
     "paymentMethodInUseByOrder": "Phương thức thanh toán này hiện đang được sử dụng bởi đơn hàng đang mở và không thể sửa đổi.",
     "paymentMethodLinkedToAd": "Phương thức thanh toán này được liên kết với một trong các quảng cáo của bạn và không thể bị xóa.",

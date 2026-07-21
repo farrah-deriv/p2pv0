@@ -95,36 +95,57 @@ export function getCreatedPaymentMethodId(data: unknown): string | undefined {
   return record.id != null ? String(record.id) : undefined
 }
 
-/** Mirrors mobile `UserPaymentMethod.isBankTransfer`. */
-export function isBankTransferMethod(method: { method: string }): boolean {
-  return method.method.toLowerCase() === "bank_transfer"
-}
-
-/**
- * Mirrors mobile `_hasSelectedEwalletWithSameKey` — banks may share a key;
- * e-wallets may not be selected twice for the same `method` key.
- */
-export function hasSelectedEwalletWithSameKey<
-  T extends { id: string | number; method: string },
->(methods: T[], selectedIds: (string | number)[], candidate: T): boolean {
-  if (isBankTransferMethod(candidate)) return false
-
-  const selectedKeys = new Set(
-    methods
-      .filter(
-        (method) =>
-          isPaymentMethodIdSelected(selectedIds, method.id) && !isBankTransferMethod(method),
-      )
-      .map((method) => method.method.toLowerCase()),
+/** Method keys (`method` slug) already represented in the current selection. */
+export function getSelectedPaymentMethodKeys<T extends { id: string | number; method: string }>(
+  methods: T[],
+  selectedIds: (string | number)[],
+): Set<string> {
+  const byId = new Map(
+    methods.map((method) => [
+      normalizePaymentMethodId(method.id),
+      method.method.toLowerCase(),
+    ]),
   )
+  const keys = new Set<string>()
 
-  return selectedKeys.has(candidate.method.toLowerCase())
+  for (const id of normalizePaymentMethodIds(selectedIds)) {
+    const key = byId.get(id)
+    if (key) keys.add(key)
+  }
+
+  return keys
+}
+
+/** Bank transfer accounts may be multi-selected; e-wallet method keys may not. */
+export function isUniquePaymentMethodKeyRequired(methodKey: string): boolean {
+  return methodKey.toLowerCase() !== "bank_transfer"
 }
 
 /**
- * Max-3 + same-key e-wallet guard — selected rows stay interactive so they can
- * be deselected. Mirrors mobile `_isSelectionDisabled`.
+ * True when another selected account already uses the same e-wallet `method` key
+ * (e.g. two Airtel accounts). Bank transfer is exempt. Deselecting the candidate
+ * itself returns false.
  */
+export function isPaymentMethodKeyAlreadySelected<T extends { id: string | number; method: string }>(
+  methods: T[],
+  selectedIds: (string | number)[],
+  candidateId: string | number,
+): boolean {
+  if (isPaymentMethodIdSelected(selectedIds, candidateId)) return false
+
+  const candidate = methods.find(
+    (method) =>
+      normalizePaymentMethodId(method.id) === normalizePaymentMethodId(candidateId),
+  )
+  if (!candidate) return false
+
+  const candidateKey = candidate.method.toLowerCase()
+  if (!isUniquePaymentMethodKeyRequired(candidateKey)) return false
+
+  return getSelectedPaymentMethodKeys(methods, selectedIds).has(candidateKey)
+}
+
+/** Max-3 or same-`method` key already taken — row should be non-interactive. */
 export function isUserPaymentMethodSelectionDisabled<
   T extends { id: string | number; method: string },
 >(
@@ -135,13 +156,7 @@ export function isUserPaymentMethodSelectionDisabled<
 ): boolean {
   if (isPaymentMethodIdSelected(selectedIds, methodId)) return false
   if (normalizePaymentMethodIds(selectedIds).length >= maxSelected) return true
-
-  const candidate = methods.find(
-    (method) => normalizePaymentMethodId(method.id) === normalizePaymentMethodId(methodId),
-  )
-  if (!candidate) return false
-
-  return hasSelectedEwalletWithSameKey(methods, selectedIds, candidate)
+  return isPaymentMethodKeyAlreadySelected(methods, selectedIds, methodId)
 }
 
 export function appendSelectedPaymentMethodId(
@@ -160,17 +175,14 @@ export function appendSelectedPaymentMethodId(
     return normalizedSelectedIds
   }
 
-  if (methods?.length) {
-    const created = methods.find(
-      (method) => normalizePaymentMethodId(method.id) === normalizedCreatedId,
-    )
-    if (created && hasSelectedEwalletWithSameKey(methods, selectedIds, created)) {
-      return normalizedSelectedIds
-    }
+  if (
+    methods &&
+    isPaymentMethodKeyAlreadySelected(methods, normalizedSelectedIds, createdId)
+  ) {
+    return normalizedSelectedIds
   }
 
-  // Newest selection first so the created method pins to the top of the sheet.
-  return [normalizedCreatedId, ...normalizedSelectedIds]
+  return [...normalizedSelectedIds, normalizedCreatedId]
 }
 
 export function sortPaymentMethodsSelectedFirst<T extends { id: string | number }>(

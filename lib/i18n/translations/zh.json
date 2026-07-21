@@ -995,7 +995,6 @@
     "notRatedYet": "还没有评分",
     "notRecommendedYet": "还没有推荐",
     "paymentMethodAdded": "添加了付款方式。",
-    "paymentMethodAddedWithName": "已添加 {methodName} 付款方式。",
     "paymentMethodDeleted": "付款方式已删除。",
     "paymentMethodInUseByOrder": "此付款方式当前正被未结订单使用，无法修改。",
     "paymentMethodLinkedToAd": "此付款方式与您的一个广告相关联，无法删除。",

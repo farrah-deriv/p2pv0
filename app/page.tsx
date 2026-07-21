@@ -14,7 +14,7 @@ import {
   evaluateRisk,
   type RiskWarningResult,
 } from "@/components/buy-sell/risk-warning/risk-warning-rules"
-import { HeaderSegmentedControl } from "@/components/header-segmented-control"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { CurrencyFilter } from "@/components/currency-filter/currency-filter"
 import { useCurrencyData } from "@/hooks/use-currency-data"
@@ -475,85 +475,91 @@ export default function BuySellPage() {
       <div className="flex flex-col h-full md:h-screen overflow-hidden">
         <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-y-none pb-4 scrollbar-hide px-3">
           <div className="flex flex-col min-h-full">
-          <div className="mb-4 md:mb-6 flex w-full flex-col gap-4 flex-shrink-0">
+          <div className="mb-4 md:mb-6 md:flex md:flex-col justify-between gap-4 flex-shrink-0">
             {/* Desktop only — maintenance + mobile balance banners live in main.tsx. */}
-            <div className="relative z-10 flex w-full flex-col bg-slate-1200 p-6 max-md:w-[calc(100%+24px)] max-md:-mx-3 max-md:mb-2 rounded-b-3xl md:rounded-3xl overflow-hidden [transform:translateZ(0)]">
-                <div data-testid="markets-text-balance">
-                  <BalanceSection balance={balance} currency={balanceCurrency} isLoading={isLoadingBalance} />
+            {/* Tuck the dark balance card under the banner's bottom edge via `-mb-8`. */}
+            <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div className="w-[calc(100%+24px)] md:w-full flex flex-row items-end gap-[16px] md:gap-[24px] bg-slate-1200 p-6 rounded-b-3xl md:rounded-3xl justify-between -mx-3 mb-4 md:m-0 overflow-hidden [transform:translateZ(0)]">
+                <div className="flex flex-col items-start flex-1 min-w-0 md:w-auto">
+                  <div data-testid="markets-text-balance">
+                    <BalanceSection balance={balance} currency={balanceCurrency} isLoading={isLoadingBalance} />
+                  </div>
+                  <Tabs value={activeTab} onValueChange={(value) => { if (value === "sell") track("ek_buy_markets"); else track("ek_sell_markets"); setActiveTab(value as "buy" | "sell") }}>
+                    <TabsList data-guide-id="guide-buy-sell-tabs" className="w-auto bg-transparent p-0 gap-4 rtl:w-full rtl:justify-end">
+                      <TabsTrigger
+                        className="w-auto text-base data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:rounded-none px-0"
+                        value="sell"
+                        variant="underline"
+                        data-testid="markets-tab-buy"
+                      >
+                        {t("market.buyTab")}
+                      </TabsTrigger>
+                      <TabsTrigger
+                        className="w-auto text-base data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:rounded-none px-0"
+                        value="buy"
+                        variant="underline"
+                        data-testid="markets-tab-sell"
+                      >
+                        {t("market.sellTab")}
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
                 </div>
-                <div className="mt-1 flex w-full items-end justify-between gap-4">
-                  <HeaderSegmentedControl
-                    value={activeTab}
-                    onValueChange={(value) => {
-                      if (value === "sell") track("ek_buy_markets")
-                      else track("ek_sell_markets")
-                      setActiveTab(value as "buy" | "sell")
-                    }}
-                    width={168}
-                    listDataGuideId="guide-buy-sell-tabs"
-                    segments={[
-                      { value: "sell", label: t("market.buyTab"), testId: "markets-tab-buy" },
-                      { value: "buy", label: t("market.sellTab"), testId: "markets-tab-sell" },
-                    ]}
-                  />
-                  {showCurrencyFilter && (
-                    <div
-                      className="flex shrink-0 flex-col items-end gap-1"
-                      data-guide-id="guide-currency-filter"
-                    >
-                      {activeTab === "sell" && (
-                        <span className="text-xs font-normal text-white opacity-72">
-                          {t("market.payWith")}:
-                        </span>
-                      )}
-                      {activeTab === "buy" && (
-                        <span className="text-xs font-normal text-white opacity-72">
-                          {t("market.receiveIn")}:
-                        </span>
-                      )}
-                      <CurrencyFilter
-                        currencies={currencies}
-                        selectedCurrency={displayCurrency}
-                        onCurrencySelect={handleCurrencySelect}
-                        disabled={isMaintenanceActive}
-                        title={activeTab === "sell" ? t("market.payWith") : t("market.receiveIn")}
-                        trigger={
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={isMaintenanceActive}
-                            className="h-10 min-h-10 max-h-10 gap-2 border border-[#ffffff3d] bg-transparent px-3 font-normal hover:bg-transparent rounded-3xl text-white"
-                            onClick={() => track("ek_payment_currency_markets")}
+                {showCurrencyFilter && (
+                  <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 shrink-0" data-guide-id="guide-currency-filter">
+                    {activeTab === "sell" && (
+                      <span className="text-xs font-normal text-white opacity-72">
+                        {t("market.payWith")}:
+                      </span>
+                    )}
+                    {activeTab === "buy" && (
+                      <span className="text-xs font-normal text-white opacity-72">
+                        {t("market.receiveIn")}:
+                      </span>
+                    )}
+                    <CurrencyFilter
+                      currencies={currencies}
+                      selectedCurrency={displayCurrency}
+                      onCurrencySelect={handleCurrencySelect}
+                      disabled={isMaintenanceActive}
+                      title={activeTab === "sell" ? t("market.payWith") : t("market.receiveIn")}
+                      trigger={
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={isMaintenanceActive}
+                          className="h-10 min-h-10 max-h-10 gap-2 border border-[#ffffff3d] bg-transparent px-3 font-normal hover:bg-transparent rounded-3xl text-white"
+                          onClick={() => track("ek_payment_currency_markets")}
 
-                          >
-                            {currencyFlagMapper[displayCurrency as keyof typeof currencyFlagMapper] && (
-                              <Image
-                                src={
-                                  currencyFlagMapper[displayCurrency as keyof typeof currencyFlagMapper] || "/placeholder.svg"
-                                }
-                                alt={`${displayCurrency} logo`}
-                                width={24}
-                                height={16}
-                                className="min-w-6 w-6 object-cover"
-                              />
-                            )}
-                            <span className="shrink-0">{displayCurrency}</span>
+                        >
+                          {currencyFlagMapper[displayCurrency as keyof typeof currencyFlagMapper] && (
                             <Image
-                              src="/icons/chevron-down-white.png"
-                              alt={t("common.arrow")}
+                              src={
+                                currencyFlagMapper[displayCurrency as keyof typeof currencyFlagMapper] || "/placeholder.svg"
+                              }
+                              alt={`${displayCurrency} logo`}
                               width={24}
-                              height={24}
-                              className="min-w-6 w-6 transition-transform duration-200"
+                              height={16}
+                              className="min-w-6 w-6 object-cover"
                             />
-                          </Button>
-                        }
-                      />
-                    </div>
-                  )}
-                </div>
+                          )}
+                          <span className="shrink-0">{displayCurrency}</span>
+                          <Image
+                            src="/icons/chevron-down-white.png"
+                            alt={t("common.arrow")}
+                            width={24}
+                            height={24}
+                            className="min-w-6 w-6 transition-transform duration-200"
+                          />
+                        </Button>
+                      }
+                    />
+                  </div>
+                )}
+              </div>
             </div>
             {tempBanUntil && !isMaintenanceActive && <TemporaryBanAlert tempBanUntil={tempBanUntil} />}
-            <div className="flex flex-wrap gap-2 md:gap-3 md:px-0 mt-3 md:mt-4 justify-end">
+            <div className="flex flex-wrap gap-2 md:gap-3 md:px-0 mt-4 md:mt-0 justify-end">
               <div className="flex gap-2 items-center ms-auto flex-1 md:flex-none">
                 {!isV1Signup && (
                   <div className="flex gap-2 mb-3 flex-1 hidden">

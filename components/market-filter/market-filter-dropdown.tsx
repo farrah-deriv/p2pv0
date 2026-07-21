@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { Label } from "@/components/ui/label"
 import type { MarketFilterOptions } from "./types"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { cn } from "@/lib/utils"
@@ -98,15 +99,17 @@ export default function MarketFilterDropdown({
   }
 
   const FilterContent = () => (
-    <div className="w-full">
-      <div className="space-y-3">
-        <h4 className="text-grayscale-text-muted text-sm">{t("filter.adTypes")}</h4>
-        <div className={cn(CHECKBOX_LABEL_ROW, "mb-4")}>
+    <div className="w-full h-full">
+      <div className="space-y-2 mb-2">
+        <div className="mb-2">
+          <h4 className="text-base font-normal text-grayscale-text-muted">{t("filter.adTypes")}</h4>
+        </div>
+        <div className={CHECKBOX_LABEL_ROW}>
           <Checkbox
             id="from-following"
             checked={filters.fromFollowing}
             onCheckedChange={(checked) => handleFilterChange("fromFollowing", checked as boolean)}
-            className="shrink-0 data-[state=checked]:bg-black"
+            className="shrink-0 border-2 border-grayscale-text-muted data-[state=checked]:bg-black"
             data-testid="market-filter-checkbox-following"
           />
           <label htmlFor="from-following" className="flex-1 min-w-0 cursor-pointer text-start text-sm text-grayscale-600">
@@ -114,43 +117,50 @@ export default function MarketFilterDropdown({
           </label>
         </div>
       </div>
-      <div className="space-y-3 border-t py-2">
-        <h4 className="text-grayscale-text-muted text-sm">{t("filter.sortBy")}</h4>
-        <RadioGroup value={sortBy} onValueChange={handleSortByChange} className="flex flex-col gap-3">
-          <div className={CHECKBOX_LABEL_ROW}>
-            <RadioGroupItem value="trade_band_rank" id="trade_band_rank" className="shrink-0 border-grayscale-100 text-black" data-testid="market-filter-radio-sort-tier" />
-            <label htmlFor="trade_band_rank" className="flex-1 min-w-0 cursor-pointer text-start text-sm text-grayscale-600">
-              {t("filter.tierLevelHighLow")}
-            </label>
-          </div>
-          <div className={CHECKBOX_LABEL_ROW}>
-            <RadioGroupItem value="exchange_rate" id="exchange_rate" className="shrink-0 border-grayscale-100 text-black" data-testid="market-filter-radio-sort-rate" />
-            <label htmlFor="exchange_rate" className="flex-1 min-w-0 cursor-pointer text-start text-sm text-grayscale-600">
-              {activeTab === "sell" ? t("filter.exchangeRateLowHigh") : t("filter.exchangeRateHighLow")}
-            </label>
-          </div>
-          <div className={CHECKBOX_LABEL_ROW}>
-            <RadioGroupItem
-              value="user_rating_average_lifetime"
-              id="user_rating_average_lifetime"
-              className="shrink-0 border-grayscale-100 text-black"
-              data-testid="market-filter-radio-sort-rating"
-            />
-            <label
-              htmlFor="user_rating_average_lifetime"
-              className="flex-1 min-w-0 cursor-pointer text-start text-sm text-grayscale-600"
-            >
-              {t("filter.userRatingHighLow")}
-            </label>
-          </div>
-        </RadioGroup>
+      <div className="mb-2">
+        <div className="border-t border-gray-200 pt-2">
+          <h4 className="text-base font-normal text-grayscale-text-muted mb-2">{t("filter.sortBy")}</h4>
+          <RadioGroup value={sortBy} onValueChange={handleSortByChange} className="gap-4">
+            <div className={CHECKBOX_LABEL_ROW}>
+              <RadioGroupItem value="trade_band_rank" id="trade_band_rank" className="shrink-0 border-grayscale-100 text-black" data-testid="market-filter-radio-sort-tier" />
+              <Label htmlFor="trade_band_rank" className="flex-1 min-w-0 cursor-pointer text-start text-sm font-normal text-grayscale-600">
+                {t("filter.tierLevelHighLow")}
+              </Label>
+            </div>
+            <div className={CHECKBOX_LABEL_ROW}>
+              <RadioGroupItem value="exchange_rate" id="exchange_rate" className="shrink-0 border-grayscale-100 text-black" data-testid="market-filter-radio-sort-rate" />
+              <Label htmlFor="exchange_rate" className="flex-1 min-w-0 cursor-pointer text-start text-sm font-normal text-grayscale-600">
+                {activeTab === "sell" ? t("filter.exchangeRateLowHigh") : t("filter.exchangeRateHighLow")}
+              </Label>
+            </div>
+            <div className={CHECKBOX_LABEL_ROW}>
+              <RadioGroupItem
+                value="user_rating_average_lifetime"
+                id="user_rating_average_lifetime"
+                className="shrink-0 border-grayscale-100 text-black"
+                data-testid="market-filter-radio-sort-rating"
+              />
+              <Label
+                htmlFor="user_rating_average_lifetime"
+                className="flex-1 min-w-0 cursor-pointer text-start text-sm font-normal text-grayscale-600"
+              >
+                {t("filter.userRatingHighLow")}
+              </Label>
+            </div>
+          </RadioGroup>
+        </div>
       </div>
       {isMobile && (
-        <div className="flex flex-col-reverse gap-3 mt-4">
-          <Button variant="outline" onClick={handleReset} className="flex-1 bg-transparent" size="default" data-testid="market-filter-btn-reset">
+        <div className="flex flex-col md:flex-row gap-3 mt-6">
+          <Button variant="outline" onClick={handleReset} className="rounded-full flex-1 bg-transparent" size="default" data-testid="market-filter-btn-reset">
             {t("filter.reset")}
           </Button>
-          <Button onClick={handleApply} className="flex-1" size="default" data-testid="market-filter-btn-apply">
+          <Button
+            onClick={handleApply}
+            className={`flex-1 rounded-full text-white hover:bg-gray-800 order-first`}
+            size="default"
+            data-testid="market-filter-btn-apply"
+          >
             {t("filter.apply")}
           </Button>
         </div>
@@ -186,7 +196,7 @@ export default function MarketFilterDropdown({
             )}
           </div>
         </DrawerTrigger>
-        <DrawerContent side="bottom" className="h-fit p-4 rounded-t-2xl">
+        <DrawerContent side="bottom" className="h-auto p-[16px] rounded-t-2xl">
           <div className="my-4">
             <h3 className="text-xl font-bold text-center">{t("filter.filter")}</h3>
           </div>
@@ -204,7 +214,7 @@ export default function MarketFilterDropdown({
           {hasActiveFilters && <div className="absolute top-[5px] right-[12px] w-2 h-2 bg-red-500 rounded-full"></div>}
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-4" align="end">
+      <PopoverContent className="w-fit h-fit py-2 px-4" align="end">
         <FilterContent />
       </PopoverContent>
     </Popover>

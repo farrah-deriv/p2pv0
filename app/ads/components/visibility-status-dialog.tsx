@@ -10,14 +10,12 @@ import { useTranslations } from "@/lib/i18n/use-translations"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useTrackers } from "@/analytics/useTrackers"
-import { editAdPath, type MyAdsTab } from "@/lib/ads/my-ads-tab"
 
 interface VisibilityStatusDialogProps {
   id: string
   open: boolean
   onOpenChange: (open: boolean) => void
   reasons: string[]
-  fromTab?: MyAdsTab
   onActivateAd?: () => void
   onEditAd?: () => void
   onAddPaymentMethod?: () => void
@@ -77,7 +75,6 @@ export function VisibilityStatusDialog({
   open,
   onOpenChange,
   reasons,
-  fromTab,
   onActivateAd,
 }: VisibilityStatusDialogProps) {
   const isMobile = useIsMobile()
@@ -96,7 +93,7 @@ export function VisibilityStatusDialog({
       case "edit":
       case "edit_schedule":
       case "edit_ad_visibility":
-        router.push(editAdPath(id, fromTab))
+        router.push(`/ads/edit/${id}`)
         onOpenChange(false)
         break
       case "view_profile":
@@ -129,7 +126,7 @@ export function VisibilityStatusDialog({
               return (
                 <li key={index} className={cn("text-base text-grayscale-600", reasons.length > 1 ? "" : "flex flex-col")}>
                   <span>{reasonContent.description}</span>
-                  {reasons.length === 1 && actionInfo && (
+                  {reasons.length == 1 && actionInfo && (
                     <Button onClick={() => handleAction(actionInfo.action)} className="w-full mt-8" variant="default">
                       {actionInfo.label}
                     </Button>

@@ -1005,7 +1005,6 @@
     "notRatedYet": "এখনো কোন রেটিং নেই",
     "notRecommendedYet": "এখনো কোন সুপারিশ নেই",
     "paymentMethodAdded": "পেমেন্ট পদ্ধতি যোগ করা হয়েছে।",
-    "paymentMethodAddedWithName": "{methodName} পেমেন্ট পদ্ধতি যোগ করা হয়েছে।",
     "paymentMethodDeleted": "পেমেন্ট পদ্ধতি মুছে ফেলা হয়েছে।",
     "paymentMethodInUseByOrder": "এই পেমেন্ট পদ্ধতিটি বর্তমানে একটি খোলা অর্ডার দ্বারা ব্যবহৃত হচ্ছে এবং পরিবর্তন করা যাবে না।",
     "paymentMethodLinkedToAd": "এই পেমেন্ট পদ্ধতি আপনার একটি বিজ্ঞাপনের সাথে সংযুক্ত এবং মুছে ফেলা যাবে না।",

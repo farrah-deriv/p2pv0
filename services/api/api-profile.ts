@@ -257,23 +257,13 @@ export const fetchUserStats = async (): Promise<UserStatsResponse> => {
   }
 }
 
-export async function getUserPaymentMethods(
-  page = 1,
-  perPage = 50,
-): Promise<{ data: PaymentMethod[] }> {
+export async function getUserPaymentMethods(): Promise<{ data: PaymentMethod[] }> {
   try {
     const headers = AUTH.getAuthHeader()
-    const queryParams = new URLSearchParams({
-      page: page.toString(),
-      per_page: perPage.toString(),
+    const response = await p2pFetch(`${API.baseUrl}/user-payment-methods`, {
+      headers,
+      credentials: "include",
     })
-    const response = await p2pFetch(
-      `${API.baseUrl}/user-payment-methods?${queryParams.toString()}`,
-      {
-        headers,
-        credentials: "include",
-      },
-    )
 
     if (!response.ok) {
       throw new Error(`Error fetching payment methods: ${response.statusText}`)

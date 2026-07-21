@@ -15,7 +15,6 @@ import { getCategoryDisplayName, formatPaymentMethodName, cn, getHomeUrl } from 
 import Image from "next/image"
 import AddPaymentMethodPanel from "@/app/profile/components/add-payment-method-panel"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
-import { useToast } from "@/hooks/use-toast"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { isRtlLocale } from "@/lib/i18n/config"
@@ -23,16 +22,8 @@ import { useTranslations } from "@/lib/i18n/use-translations"
 import { ExchangeRateDisplay } from "@/components/exchange-rate-display"
 import { ALERT_INLINE_FLEX, ALERT_INLINE_TEXT } from "@/lib/rtl"
 import { useWebSocketContext } from "@/contexts/websocket-context"
-import {
-  flattenUserPaymentMethodsPages,
-  useAddPaymentMethod,
-  useUserPaymentMethods,
-  queryKeys,
-  type PaymentMethodError,
-  type UserPaymentMethodsPage,
-} from "@/hooks/use-api-queries"
-import { useQueryClient, type InfiniteData } from "@tanstack/react-query"
-import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
+import { useAddPaymentMethod, useUserPaymentMethods, queryKeys, type PaymentMethodError } from "@/hooks/use-api-queries"
+import { useQueryClient } from "@tanstack/react-query"
 import RateChangeConfirmation from "./rate-change-confirmation"
 import AdUpdatedConfirmation from "./ad-updated-confirmation"
 import { useTrackers } from "@/analytics/useTrackers"
@@ -78,6 +69,11 @@ interface SellerPaymentMethod {
   method: string
 }
 
+interface PaymentMethodOption {
+  name: string
+  value: string
+}
+
 const areStringArraysEqual = (first: string[] = [], second: string[] = []) => {
   if (first.length !== second.length) return false
 
@@ -86,9 +82,13 @@ const areStringArraysEqual = (first: string[] = [], second: string[] = []) => {
   return sortedFirst.every((value, index) => value === sortedSecond[index])
 }
 
+const PAYMENT_METHOD_OPTIONS: PaymentMethodOption[] = [
+  { name: "eWallet", value: "ewallet" },
+  { name: "Bank transfer", value: "bank_transfer" },
+]
+
 const PaymentSelectionContent = ({
   userPaymentMethods,
-  acceptedPaymentMethods,
   tempSelectedPaymentMethods,
   hideAlert,
   setSelectedPaymentMethods,
@@ -96,10 +96,8 @@ const PaymentSelectionContent = ({
   handleAddPaymentMethodClick,
   sellerPaymentMethods,
   onAddPaymentMethodWithType,
-  scrollToPaymentMethodId,
 }: {
   userPaymentMethods: PaymentMethod[]
-  acceptedPaymentMethods?: string[]
   tempSelectedPaymentMethods: string[]
   hideAlert: () => void
   setSelectedPaymentMethods: (methods: string[]) => void
@@ -107,95 +105,28 @@ const PaymentSelectionContent = ({
   handleAddPaymentMethodClick: (currentSelection: string[]) => void
   sellerPaymentMethods: SellerPaymentMethod[]
   onAddPaymentMethodWithType?: (methodType: string) => void
-  scrollToPaymentMethodId?: string
 }) => {
   const { t } = useTranslations()
   const [selectedPMs, setSelectedPMs] = useState(tempSelectedPaymentMethods)
-  const lastScrolledPaymentMethodIdRef = useRef<string | null>(null)
-  const {
-    data: paymentMethodsPages,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useUserPaymentMethods()
-  const handleLoadMore = useCallback(() => {
-    void fetchNextPage()
-  }, [fetchNextPage])
-  const { scrollRootRef, sentinelRef } = useLoadMoreOnScroll(
-    !!hasNextPage,
-    handleLoadMore,
-    isFetchingNextPage,
-  )
 
   useEffect(() => {
     setSelectedPMs(tempSelectedPaymentMethods)
   }, [tempSelectedPaymentMethods])
 
-  // Live paginated list (alert props are a snapshot). Merge prop extras for just-created PMs.
-  const compatibleMethods = useMemo(() => {
-    const live = flattenUserPaymentMethodsPages(paymentMethodsPages) as PaymentMethod[]
-    const filteredLive = filterPaymentMethodsForAdvert(live, acceptedPaymentMethods)
-    const fromProps = userPaymentMethods
-    if (filteredLive.length === 0) return fromProps
-
-    const byId = new Map(
-      filteredLive.map((method) => [normalizePaymentMethodId(method.id), method] as const),
-    )
-    for (const method of fromProps) {
-      const id = normalizePaymentMethodId(method.id)
-      if (!byId.has(id)) byId.set(id, method)
-    }
-    return Array.from(byId.values())
-  }, [acceptedPaymentMethods, paymentMethodsPages, userPaymentMethods])
-
-  // Live selection order — selected methods pin to the top of the sheet.
   const sortedPaymentMethods = useMemo(
-    () => sortPaymentMethodsSelectedFirst(compatibleMethods, selectedPMs),
-    [compatibleMethods, selectedPMs],
+    () => sortPaymentMethodsSelectedFirst(userPaymentMethods, selectedPMs),
+    [userPaymentMethods, selectedPMs],
   )
-
-  useEffect(() => {
-    if (!scrollToPaymentMethodId) return
-
-    const normalizedId = normalizePaymentMethodId(scrollToPaymentMethodId)
-    if (lastScrolledPaymentMethodIdRef.current === normalizedId) return
-
-    let cancelled = false
-    let attempts = 0
-    const maxAttempts = 30
-
-    const tryScroll = () => {
-      if (cancelled) return
-      const root = scrollRootRef.current
-      if (!root) {
-        if (attempts++ < maxAttempts) {
-          window.requestAnimationFrame(tryScroll)
-        }
-        return
-      }
-
-      // Instant — no smooth delay that lands after the toast.
-      root.scrollTop = 0
-      lastScrolledPaymentMethodIdRef.current = normalizedId
-    }
-
-    window.requestAnimationFrame(tryScroll)
-
-    return () => {
-      cancelled = true
-    }
-  }, [scrollToPaymentMethodId, scrollRootRef, sortedPaymentMethods.length])
 
   const handlePaymentMethodToggle = (methodId: string | number) => {
     setSelectedPMs((prev) => {
       if (isPaymentMethodIdSelected(prev, methodId)) {
         return prev.filter((id) => !isPaymentMethodIdSelected([id], methodId))
       }
-      if (isUserPaymentMethodSelectionDisabled(compatibleMethods, prev, methodId)) {
+      if (isUserPaymentMethodSelectionDisabled(userPaymentMethods, prev, methodId)) {
         return prev
       }
-      // Pin newly selected method to the top.
-      return [normalizePaymentMethodId(methodId), ...prev]
+      return [...prev, normalizePaymentMethodId(methodId)]
     })
   }
 
@@ -217,11 +148,11 @@ const PaymentSelectionContent = ({
       data-testid="order-sidebar-modal-payment-methods"
       className="flex flex-col flex-1 min-h-0 h-full"
     >
-      {compatibleMethods.length > 0 && (
+      {userPaymentMethods.length > 0 && (
         <div className="shrink-0 pb-4 text-grayscale-600">{t("paymentMethod.selectUpTo3")}</div>
       )}
-      <div ref={scrollRootRef} className="flex-1 min-h-0 overflow-y-auto space-y-4">
-        {compatibleMethods.length === 0 ? (
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-4">
+        {userPaymentMethods.length === 0 ? (
           <div className="pb-4 space-y-4">
             <div>
               <div className="text-slate-1200">{t("paymentMethod.addCompatibleMethod")}</div>
@@ -232,7 +163,7 @@ const PaymentSelectionContent = ({
                   <div
                     key={method.method}
                     onClick={() => handleAcceptedMethodClick(method)}
-                    className="border border-grayscale-200 rounded-lg p-4 cursor-pointer hover:bg-grayscale-300 transition-colors"
+                    className="border border-grayscale-200 rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-center gap-2">
                       <Image src="/icons/plus_icon.png" alt={t("common.plus")} width={14} height={24} />
@@ -250,61 +181,52 @@ const PaymentSelectionContent = ({
             const methodId = normalizePaymentMethodId(method.id)
             const isSelected = isPaymentMethodIdSelected(selectedPMs, methodId)
             const isDisabled = isUserPaymentMethodSelectionDisabled(
-              compatibleMethods,
+              userPaymentMethods,
               selectedPMs,
               methodId,
             )
 
             return (
-              <div
-                key={methodId}
-                className={`bg-grayscale-500 rounded-lg p-4 cursor-pointer hover:bg-grayscale-300 transition-colors ${isSelected ? "border border-black" : ""
-                  } ${isDisabled
-                    ? "opacity-30 cursor-not-allowed hover:bg-grayscale-300"
-                    : ""
-                  }`}
-                onClick={() => {
-                  if (!isDisabled) {
-                    handlePaymentMethodToggle(methodId)
-                  }
-                }}
-              >
-                <div className="flex items-center justify-between gap-3 min-w-0">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <div
-                      className={`h-2 w-2 shrink-0 rounded-full ${method.type === "bank" ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"
-                        }`}
-                    />
-                    <div className="min-w-0 flex flex-col">
-                      <span className="text-base text-slate-1200">{getCategoryDisplayName(method.type, t)}</span>
-                      <span className="text-base text-grayscale-text-muted truncate">
-                        {formatPaymentMethodAccountLine(method.display_name, getAccountValue(method), t)}
-                      </span>
-                    </div>
-                  </div>
-                  <Checkbox
-                    data-testid={`order-sidebar-checkbox-payment-${methodId}`}
-                    checked={isSelected}
-                    onCheckedChange={() => handlePaymentMethodToggle(methodId)}
-                    disabled={isDisabled}
-                    className="shrink-0 border-neutral-7 data-[state=checked]:bg-black data-[state=checked]:border-black w-[20px] h-[20px] rounded-sm border-[2px] disabled:opacity-30 disabled:cursor-not-allowed pointer-events-none"
+            <div
+              key={methodId}
+              className={`bg-grayscale-500 rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-color ${isSelected ? "border border-black" : ""
+                } ${isDisabled
+                  ? "opacity-30 cursor-not-allowed hover:bg-white"
+                  : ""
+                }`}
+              onClick={() => {
+                if (!isDisabled) {
+                  handlePaymentMethodToggle(methodId)
+                }
+              }}
+            >
+              <div className="flex items-center justify-between gap-3 min-w-0">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div
+                    className={`h-2 w-2 shrink-0 rounded-full ${method.type === "bank" ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"
+                      }`}
                   />
+                  <div className="min-w-0 flex flex-col">
+                    <span className="text-base text-slate-1200">{getCategoryDisplayName(method.type, t)}</span>
+                    <span className="text-base text-grayscale-text-muted truncate">
+                      {formatPaymentMethodAccountLine(method.display_name, getAccountValue(method), t)}
+                    </span>
+                  </div>
                 </div>
+                <Checkbox
+                  data-testid={`order-sidebar-checkbox-payment-${methodId}`}
+                  checked={isSelected}
+                  onCheckedChange={() => handlePaymentMethodToggle(methodId)}
+                  disabled={isDisabled}
+                  className="shrink-0 border-neutral-7 data-[state=checked]:bg-black data-[state=checked]:border-black w-[20px] h-[20px] rounded-sm border-[2px] disabled:opacity-30 disabled:cursor-not-allowed pointer-events-none"
+                />
               </div>
+            </div>
             )
           })
         )}
 
-        {hasNextPage && (
-          <div ref={sentinelRef} className="h-1 w-full" data-testid="order-sidebar-payment-methods-sentinel" />
-        )}
-        {isFetchingNextPage && (
-          <div className="flex justify-center py-2">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-grayscale-400 border-t-slate-600" />
-          </div>
-        )}
-
-        {compatibleMethods.length > 0 && (
+        {userPaymentMethods.length > 0 && (
           <div
             data-testid="order-sidebar-link-add-payment"
             className="border border-grayscale-200 rounded-lg p-4 cursor-pointer transition-colors"
@@ -329,7 +251,7 @@ const PaymentSelectionContent = ({
           onClick={() => {
             const confirmedSelection = resolveSelectedUserPaymentMethodIds(
               selectedPMs,
-              compatibleMethods,
+              userPaymentMethods,
             )
             setSelectedPaymentMethods(confirmedSelection)
             setTempSelectedPaymentMethods(confirmedSelection)
@@ -359,7 +281,6 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
   const [sellerPaymentMethods, setSellerPaymentMethods] = useState<SellerPaymentMethod[]>([])
   const [tempSelectedPaymentMethods, setTempSelectedPaymentMethods] = useState<string[]>([])
   const { hideAlert, showAlert } = useAlertDialog()
-  const { toast } = useToast()
   const [showAddPaymentPanel, setShowAddPaymentPanel] = useState(false)
   const [selectedPaymentMethodType, setSelectedPaymentMethodType] = useState<string | undefined>()
   const userData = useUserDataStore((state) => state.userData)
@@ -510,11 +431,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
   }, [hideAlert])
 
   const openPaymentSelection = useCallback(
-    (
-      selectionOverride?: string[],
-      methodsOverride?: PaymentMethod[],
-      scrollToPaymentMethodId?: string,
-    ) => {
+    (selectionOverride?: string[], methodsOverride?: PaymentMethod[]) => {
       const currentSelection = selectionOverride ?? tempSelectedPaymentMethods
       const methodsForSheet = methodsOverride ?? userPaymentMethods
 
@@ -524,7 +441,6 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
         content: (
           <PaymentSelectionContent
             userPaymentMethods={methodsForSheet}
-            acceptedPaymentMethods={localAd?.payment_methods}
             tempSelectedPaymentMethods={currentSelection}
             setSelectedPaymentMethods={setSelectedPaymentMethods}
             hideAlert={hideAlert}
@@ -532,7 +448,6 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
             setTempSelectedPaymentMethods={setTempSelectedPaymentMethods}
             sellerPaymentMethods={sellerPaymentMethods}
             onAddPaymentMethodWithType={handleAddPaymentMethodWithType}
-            scrollToPaymentMethodId={scrollToPaymentMethodId}
           />
         ),
       })
@@ -541,7 +456,6 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
       handleAddPaymentMethodClick,
       handleAddPaymentMethodWithType,
       hideAlert,
-      localAd?.payment_methods,
       sellerPaymentMethods,
       showAlert,
       t,
@@ -733,11 +647,9 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
       const createdId = getCreatedPaymentMethodId(created)
       const acceptedMethods = localAd?.payment_methods
 
-      const refetchedMethods = flattenUserPaymentMethodsPages(
-        queryClient.getQueryData<InfiniteData<UserPaymentMethodsPage>>(
-          queryKeys.auth.userPaymentMethods(),
-        ),
-      ) as PaymentMethod[]
+      const refetchedMethods =
+        queryClient.getQueryData<{ data: PaymentMethod[] }>(queryKeys.auth.userPaymentMethods())
+          ?.data ?? []
 
       const refetchedCompatible = filterPaymentMethodsForAdvert(refetchedMethods, acceptedMethods)
       const baseList = refetchedCompatible.length > 0 ? refetchedCompatible : userPaymentMethods
@@ -763,20 +675,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
         setTempSelectedPaymentMethods(nextSelection)
       }
 
-      openPaymentSelection(nextSelection, nextUserPaymentMethods, createdId)
-
-      const createdMethodName = created?.display_name || formatPaymentMethodName(method, t)
-
-      toast({
-        description: (
-          <div className="flex items-center gap-2">
-            <Image src="/icons/tick.svg" alt={t("common.success")} width={24} height={24} className="text-white" />
-            <span>{t("profile.paymentMethodAddedWithName", { methodName: createdMethodName })}</span>
-          </div>
-        ),
-        className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
-        duration: 2500,
-      })
+      openPaymentSelection(nextSelection, nextUserPaymentMethods)
     } catch (err) {
       const error = err as PaymentMethodError
       const errorCode = error?.errors?.[0]?.code
@@ -837,11 +736,15 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
 
   // Filter and transform user payment methods based on ad's accepted methods
   const filteredPaymentMethods = useMemo(() => {
-    const allMethods = flattenUserPaymentMethodsPages(paymentMethodsResponse)
-    if (allMethods.length === 0 || !localAd?.payment_methods) return []
+    if (!paymentMethodsResponse?.data || !localAd?.payment_methods) return []
 
-    return filterPaymentMethodsForAdvert(allMethods, localAd.payment_methods)
-  }, [paymentMethodsResponse, localAd?.payment_methods])
+    const buyerAcceptedMethods = localAd.payment_methods || []
+    return paymentMethodsResponse.data.filter((method: any) => {
+      return buyerAcceptedMethods.some(
+        (buyerMethod: string) => method.method.toLowerCase() === buyerMethod.toLowerCase(),
+      )
+    })
+  }, [paymentMethodsResponse?.data, localAd?.payment_methods])
 
   // Set user payment methods and seller payment methods.
   // Always sync even when empty — clears stale choices when advert payment methods are removed.

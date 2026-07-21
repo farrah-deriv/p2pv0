@@ -27,7 +27,6 @@ import { useUserDataStore } from "@/stores/user-data-store"
 import { createKycOnboardingAlertConfig } from "@/components/kyc-onboarding-sheet"
 import { useDeleteAd, useToggleAdActiveStatus } from "@/hooks/use-api-queries"
 import { useTrackers } from "@/analytics/useTrackers"
-import { editAdPath } from "@/lib/ads/my-ads-tab"
 
 interface MyAdsTableProps {
   ads: Ad[]
@@ -168,7 +167,7 @@ export default function MyAdsTable({
     track("ek_edit_ad_manage_ad_sheet")
     setDrawerOpen(false)
     setOpenDropdownId(null)
-    router.push(editAdPath(ad.id, isActiveTab ? "active" : "inactive"))
+    router.push(`/ads/edit/${ad.id}`)
   }
 
   const handleToggleStatus = async (ad: Ad) => {
@@ -599,7 +598,6 @@ export default function MyAdsTable({
         open={visibilityDialogOpen}
         onOpenChange={setVisibilityDialogOpen}
         reasons={selectedVisibilityReasons}
-        fromTab={isActiveTab ? "active" : "inactive"}
         onActivateAd={() => selectedAd && handleToggleStatus(selectedAd)}
       />
     </>

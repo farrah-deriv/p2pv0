@@ -1025,7 +1025,6 @@
     "notRatedYet": "Еще нет оценок",
     "notRecommendedYet": "Еще нет рекомендаций",
     "paymentMethodAdded": "Способ оплаты добавлен.",
-    "paymentMethodAddedWithName": "Способ оплаты {methodName} добавлен.",
     "paymentMethodDeleted": "Способ оплаты удален.",
     "paymentMethodInUseByOrder": "Этот способ оплаты в настоящее время используется в открытом заказе и не может быть изменен.",
     "paymentMethodLinkedToAd": "Этот способ оплаты связан с одним из ваших объявлений и не может быть удален.",

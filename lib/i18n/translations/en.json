@@ -526,7 +526,6 @@
     "closedGroup": "Closed group",
     "addPaymentMethod": "Add payment method",
     "paymentMethodAdded": "Payment method added.",
-    "paymentMethodAddedWithName": "{methodName} payment method added.",
     "bronzeTier": "Bronze tier",
     "bronzeTierDescription": "Default tier for new users with basic trading limits.",
     "silverTier": "Silver tier",

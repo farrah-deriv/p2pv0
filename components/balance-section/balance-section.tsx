@@ -17,12 +17,12 @@ export function BalanceSection({ balance, currency, isLoading, className }: Bala
   const displayCurrency = currency || "USD"
 
   return (
-    <div className={className}>
-      <div className="text-white opacity-[0.72] text-xs mb-1">{t("wallet.estTotalValue")}</div>
+    <div className={className || "mb-4"}>
+      <div className="text-white opacity-[0.72] text-xs mb-2">{t("wallet.estTotalValue")}</div>
       {isLoading ? (
         <Skeleton className="h-7 w-32 bg-white/20" />
       ) : (
-        <div className="text-white text-[20px] font-extrabold leading-tight">{`${displayAmount} ${displayCurrency}`}</div>
+        <div className="text-white text-xl font-bold">{`${displayAmount} ${displayCurrency}`}</div>
       )}
     </div>
   )

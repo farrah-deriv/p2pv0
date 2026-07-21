@@ -173,7 +173,6 @@ export default function OrderChat({
   const [attachTooltipOpen, setAttachTooltipOpen] = useState(false)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const messageInputRef = useRef<HTMLInputElement>(null)
   const maxLength = 300
   const maxFileSizeBytes = 5 * 1024 * 1024 // 5 MB
   const isChatModerationEnabled = isP2POrderChatModerationEnabled()
@@ -252,12 +251,6 @@ export default function OrderChat({
     if (c) c.scrollTop = c.scrollHeight
   }, [messages])
 
-  const focusMessageInput = () => {
-    requestAnimationFrame(() => {
-      messageInputRef.current?.focus()
-    })
-  }
-
   const showOrderTempLockedAlert = () => {
     showAlert({
       title: t("order.tempLockedTitle"),
@@ -309,7 +302,6 @@ export default function OrderChat({
       }
     } finally {
       setIsSending(false)
-      focusMessageInput()
     }
   }
 
@@ -408,7 +400,6 @@ export default function OrderChat({
         if (fileInputRef.current) {
           fileInputRef.current.value = ""
         }
-        focusMessageInput()
       }
     }
   }
@@ -614,18 +605,17 @@ export default function OrderChat({
           <div className="space-y-2">
             <div className="relative">
               <Input
-                ref={messageInputRef}
                 value={message}
                 onChange={(e) => setMessage(e.target.value.slice(0, maxLength))}
                 onKeyDown={handleKeyDown}
                 placeholder={t("chat.enterMessage")}
+                disabled={isSending}
                 className="w-full rounded-[8px] pe-12 resize-none min-h-[56px] placeholder:text[#0000003D]"
                 data-testid="order-chat-input-message"
               />
               {message.trim() ? (
                 <Button
                   className="absolute end-3 top-1/2 transform -translate-y-1/2 p-1 text-grayscale-text-muted hover:text-slate-700 h-auto"
-                  onMouseDown={(e) => e.preventDefault()}
                   onClick={handleSendMessage}
                   variant="ghost"
                   size="sm"

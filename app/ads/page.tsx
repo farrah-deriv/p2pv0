@@ -3,7 +3,7 @@
 import { TooltipTrigger } from "@/components/ui/tooltip"
 
 import { useEffect, useState, useRef, useCallback, useMemo } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import MyAdsTable from "./components/my-ads-table"
 import { queryKeys, useUserAdverts, useHideMyAds } from "@/hooks/use-api-queries"
 import { useQueryClient } from "@tanstack/react-query"
@@ -11,7 +11,7 @@ import Image from "next/image"
 import type { MyAd } from "./types"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
-import { HeaderSegmentedControl } from "@/components/header-segmented-control"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import StatusBottomSheet from "./components/ui/status-bottom-sheet"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { Switch } from "@/components/ui/switch"
@@ -22,7 +22,6 @@ import { TemporaryBanAlert } from "@/components/temporary-ban-alert"
 import { createKycOnboardingAlertConfig } from "@/components/kyc-onboarding-sheet"
 import { useTrackers } from "@/analytics/useTrackers"
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
-import { MY_ADS_TAB_QUERY, parseMyAdsTab, type MyAdsTab } from "@/lib/ads/my-ads-tab"
 
 interface StatusData {
   success: "create" | "update"
@@ -30,6 +29,8 @@ interface StatusData {
   id: string
   showStatusModal: boolean
 }
+
+type MyAdsTab = "active" | "inactive"
 
 export default function AdsPage() {
   const { t } = useTranslations()
@@ -55,7 +56,6 @@ export default function AdsPage() {
 
   const isMobile = useIsMobile()
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   const sentinelRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -84,16 +84,12 @@ export default function AdsPage() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
     const shouldShowKyc = searchParams.get("show_kyc_popup") === "true"
     if (shouldShowKyc) {
       setShowKycPopup(true)
     }
-
-    const tabFromUrl = parseMyAdsTab(searchParams.get(MY_ADS_TAB_QUERY))
-    if (tabFromUrl) {
-      setActiveTab(tabFromUrl)
-    }
-  }, [searchParams])
+  }, [])
 
   useEffect(() => {
     if (showKycPopup) {
@@ -142,6 +138,7 @@ export default function AdsPage() {
   }, [userData?.adverts_are_listed])
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
     const success = searchParams.get("success")
     const type = searchParams.get("type")
     const id = searchParams.get("id")
@@ -175,7 +172,7 @@ export default function AdsPage() {
       queryClient.invalidateQueries({ queryKey: queryKeys.ads.allUserAdverts() })
       refetch()
     }
-  }, [searchParams, showAlert, isMobile, t, refetch, queryClient])
+  }, [showAlert, isMobile, t, refetch, queryClient])
 
   const handleAdUpdated = (status?: string) => {
     if (status === "deleted") {
@@ -287,16 +284,27 @@ export default function AdsPage() {
     <>
       <div className="flex flex-col h-full min-h-0 md:h-screen overflow-hidden bg-white px-3">
         <div className="flex-none container mx-auto">
-          <div className="relative z-10 w-[calc(100%+24px)] md:w-full min-h-[80px] flex items-center justify-start gap-4 bg-slate-1200 px-6 pb-6 pt-8 md:p-6 rounded-b-3xl md:rounded-3xl text-white -mx-3 mb-4 md:mx-0 md:mt-0">
-            <HeaderSegmentedControl
-              value={activeTab}
-              onValueChange={handleTabChange}
-              width={184}
-              segments={[
-                { value: "active", label: t("myAds.tabActive"), testId: "ads-tab-active" },
-                { value: "inactive", label: t("myAds.tabInactive"), testId: "ads-tab-inactive" },
-              ]}
-            />
+          <div className="relative z-10 w-[calc(100%+24px)] md:w-full h-[80px] flex items-center justify-start gap-4 bg-slate-1200 p-6 rounded-b-3xl md:rounded-3xl text-white -m-3 mb-4 md:mx-0 md:mt-0">
+            <Tabs value={activeTab} onValueChange={handleTabChange}>
+              <TabsList className="w-full bg-transparent p-0 gap-4">
+                <TabsTrigger
+                  value="active"
+                  className="w-auto text-base data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:rounded-none px-0"
+                  variant="underline"
+                  data-testid="ads-tab-active"
+                >
+                  {t("myAds.tabActive")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="inactive"
+                  className="w-auto text-base data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:rounded-none px-0"
+                  variant="underline"
+                  data-testid="ads-tab-inactive"
+                >
+                  {t("myAds.tabInactive")}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
           {tempBanUntil && !isMaintenanceActive && (
             <div data-testid="ads-alert-temp-ban">
@@ -338,7 +346,7 @@ export default function AdsPage() {
           )}
           {isFetchingNextPage && (
             <div className="flex justify-center py-4">
-              <div className="w-6 h-6 border-2 border-grayscale-400 border-t-slate-600 rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
             </div>
           )}
           <div ref={sentinelRef} className="h-1" data-testid="ads-sentinel-load-more" />

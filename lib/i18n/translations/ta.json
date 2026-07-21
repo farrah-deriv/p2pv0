@@ -995,7 +995,6 @@
     "notRatedYet": "இன்னும் மதிப்பீடுகள் இல்லை",
     "notRecommendedYet": "இதுவரை பரிந்துரைகள் இல்லை",
     "paymentMethodAdded": "கட்டண முறை சேர்க்கப்பட்டது.",
-    "paymentMethodAddedWithName": "{methodName} கட்டண முறை சேர்க்கப்பட்டது.",
     "paymentMethodDeleted": "கட்டண முறை நீக்கப்பட்டது.",
     "paymentMethodInUseByOrder": "இந்த கட்டண முறை தற்போது திறந்த ஆர்டரால் பயன்படுத்தப்படுகிறது மற்றும் மாற்ற முடியாது.",
     "paymentMethodLinkedToAd": "இந்தக் கட்டண முறை உங்களின் விளம்பரங்களில் ஒன்றோடு இணைக்கப்பட்டுள்ளது, அதை நீக்க முடியாது.",

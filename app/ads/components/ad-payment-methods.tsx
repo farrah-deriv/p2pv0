@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback, useRef } from "react"
+import { useState, useMemo } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { CustomShimmer } from "@/app/profile/components/ui/custom-shimmer"
@@ -9,13 +9,7 @@ import { getCategoryDisplayName, getMethodDisplayDetails, getPaymentMethodColour
 import Image from "next/image"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { usePaymentSelection } from "./payment-selection-context"
-import {
-  flattenUserPaymentMethodsPages,
-  useAddPaymentMethod,
-  useUserPaymentMethods,
-  type PaymentMethodError,
-} from "@/hooks/use-api-queries"
-import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
+import { useAddPaymentMethod, useUserPaymentMethods, type PaymentMethodError } from "@/hooks/use-api-queries"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useRouter } from "next/navigation"
 import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
@@ -47,30 +41,13 @@ const AdPaymentMethods = () => {
 
   // Use React Query hooks
   const addPaymentMethod = useAddPaymentMethod()
-  const {
-    data: paymentMethodsResponse,
-    isLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useUserPaymentMethods(true)
-  const handleLoadMore = useCallback(() => {
-    void fetchNextPage()
-  }, [fetchNextPage])
-  const { sentinelRef } = useLoadMoreOnScroll(!!hasNextPage, handleLoadMore, isFetchingNextPage)
-  const horizontalListRef = useRef<HTMLDivElement | null>(null)
+  const { data: paymentMethodsResponse, isLoading } = useUserPaymentMethods(true)
 
   // Transform API response to PaymentMethod format
-  const paymentMethods = useMemo(
-    () => flattenUserPaymentMethodsPages(paymentMethodsResponse) as PaymentMethod[],
-    [paymentMethodsResponse],
-  )
-
-  // Live selection order — selected methods pin to the top.
-  const sortedPaymentMethods = useMemo(
-    () => sortPaymentMethodsSelectedFirst(paymentMethods, selectedPaymentMethodIds),
-    [paymentMethods, selectedPaymentMethodIds],
-  )
+  const paymentMethods = useMemo(() => {
+    if (!paymentMethodsResponse?.data) return []
+    return paymentMethodsResponse.data
+  }, [paymentMethodsResponse?.data])
 
   const handleCheckboxChange = (methodId: number, checked: boolean) => {
     if (
@@ -87,10 +64,6 @@ const AdPaymentMethods = () => {
     try {
       await addPaymentMethod.mutateAsync({ method, fields })
       setShowAddPaymentPanel(false)
-      // Newly added methods sort to the selected/top group after refetch; reset scroll.
-      requestAnimationFrame(() => {
-        horizontalListRef.current?.scrollTo({ left: 0, behavior: "smooth" })
-      })
     } catch (err) {
       const error = err as PaymentMethodError
       const errorCode = error?.errors?.[0]?.code
@@ -167,14 +140,11 @@ const AdPaymentMethods = () => {
     <>
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-2">{t("paymentMethod.selectPaymentMethod")}</h3>
-        <p className="text-neutral-7 mb-4">{t("paymentMethod.selectUpTo3")}</p>
+        <p className="text-gray-600 mb-4">{t("paymentMethod.selectUpTo3")}</p>
 
         <div className="md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
-          <div
-            ref={horizontalListRef}
-            className="flex gap-4 overflow-x-auto pb-2 md:contents"
-          >
-            {sortedPaymentMethods.map((method) => {
+          <div className="flex gap-4 overflow-x-auto pb-2 md:contents">
+            {sortPaymentMethodsSelectedFirst(paymentMethods, selectedPaymentMethodIds).map((method) => {
               const isSelected = isPaymentMethodIdSelected(selectedPaymentMethodIds, method.id)
               const displayDetails = getMethodDisplayDetails(method)
               const isDisabled = isUserPaymentMethodSelectionDisabled(
@@ -189,7 +159,7 @@ const AdPaymentMethods = () => {
                   className={`cursor-pointer transition-all duration-200 flex-shrink-0 w-64 md:w-auto ${
                     isSelected ? "border-2 rounded-lg border-black" : "border-0"
                   } ${
-                    isDisabled ? "bg-grayscale-700 opacity-50 cursor-not-allowed" : "bg-grayscale-300"
+                    isDisabled ? "bg-gray-100 opacity-50 cursor-not-allowed" : "bg-grayscale-300"
                   } hover:shadow-md`}
                   onClick={() => !isDisabled && handleCheckboxChange(method.id, !isSelected)}
                 >
@@ -197,7 +167,7 @@ const AdPaymentMethods = () => {
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2 ms-2">
                         <div className={`${getPaymentMethodColour(method.type)} rounded-full w-3 h-3`} />
-                        <span className="font-bold text-sm text-neutral-7">{getCategoryDisplayName(method.type, t)}</span>
+                        <span className="font-bold tex-sm text-gray-700">{getCategoryDisplayName(method.type, t)}</span>
                       </div>
                       <div onClick={(e) => e.stopPropagation()} className="pointer-events-auto">
                         <Checkbox
@@ -236,16 +206,7 @@ const AdPaymentMethods = () => {
           </div>
         </div>
 
-        {hasNextPage && (
-          <div ref={sentinelRef} className="h-1 w-full" data-testid="ad-payment-methods-sentinel" />
-        )}
-        {isFetchingNextPage && (
-          <div className="flex justify-center py-2">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-grayscale-400 border-t-slate-600" />
-          </div>
-        )}
-
-        {paymentMethods.length === 0 && <p className="text-grayscale-text-muted italic">{t("paymentMethod.noPaymentMethodsAddedYet")}</p>}
+        {paymentMethods.length === 0 && <p className="text-gray-500 italic">{t("paymentMethod.noPaymentMethodsAddedYet")}</p>}
       </div>
 
       {showAddPaymentPanel && (
