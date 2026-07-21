@@ -995,6 +995,7 @@
     "notRatedYet": "Одоогоор үнэлгээ алга",
     "notRecommendedYet": "Одоогоор зөвлөмж байхгүй байна",
     "paymentMethodAdded": "Төлбөрийн аргыг нэмсэн.",
+    "paymentMethodAddedWithName": "{methodName} төлбөрийн аргыг нэмсэн.",
     "paymentMethodDeleted": "Төлбөрийн аргыг устгасан.",
     "paymentMethodInUseByOrder": "Энэ төлбөрийн аргыг одоогоор нээлттэй захиалгаар ашиглаж байгаа бөгөөд өөрчлөх боломжгүй.",
     "paymentMethodLinkedToAd": "Энэ төлбөрийн хэрэгсэл нь таны зартай холбогдсон тул устгах боломжгүй.",

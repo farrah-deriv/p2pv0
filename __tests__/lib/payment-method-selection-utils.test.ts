@@ -1,9 +1,9 @@
 import {
   appendSelectedPaymentMethodId,
   getCreatedPaymentMethodId,
-  getSelectedPaymentMethodKeys,
+  hasSelectedEwalletWithSameKey,
+  isBankTransferMethod,
   isPaymentMethodIdSelected,
-  isPaymentMethodKeyAlreadySelected,
   isUserPaymentMethodSelectionDisabled,
   mergeCreatedPaymentMethodIntoList,
   normalizePaymentMethodId,
@@ -48,42 +48,49 @@ describe("payment-method-selection-utils", () => {
     expect(getCreatedPaymentMethodId([{ id: "9" }])).toBe("9")
   })
 
+  it("identifies bank_transfer methods case-insensitively", () => {
+    expect(isBankTransferMethod({ method: "bank_transfer" })).toBe(true)
+    expect(isBankTransferMethod({ method: "Bank_Transfer" })).toBe(true)
+    expect(isBankTransferMethod({ method: "airtel" })).toBe(false)
+  })
+
   it("guards appendSelectedPaymentMethodId against max selection and duplicates", () => {
     expect(appendSelectedPaymentMethodId(["1", "2", "3"], "4")).toEqual(["1", "2", "3"])
     expect(appendSelectedPaymentMethodId(["1", "2"], "2")).toEqual(["1", "2"])
-    expect(appendSelectedPaymentMethodId(["1"], 2)).toEqual(["1", "2"])
+    expect(appendSelectedPaymentMethodId(["1"], 2)).toEqual(["2", "1"])
   })
 
-  it("guards appendSelectedPaymentMethodId against same e-wallet method key", () => {
+  it("blocks appending same-key e-wallet but allows multiple bank transfers", () => {
     const methods = [
       { id: 1, method: "airtel" },
       { id: 2, method: "airtel" },
       { id: 3, method: "bank_transfer" },
       { id: 4, method: "bank_transfer" },
+      { id: 5, method: "ecocash" },
     ]
 
     expect(appendSelectedPaymentMethodId(["1"], 2, 3, methods)).toEqual(["1"])
-    expect(appendSelectedPaymentMethodId(["1"], 3, 3, methods)).toEqual(["1", "3"])
-    expect(appendSelectedPaymentMethodId(["3"], 4, 3, methods)).toEqual(["3", "4"])
+    expect(appendSelectedPaymentMethodId(["1"], 5, 3, methods)).toEqual(["5", "1"])
+    expect(appendSelectedPaymentMethodId(["3"], 4, 3, methods)).toEqual(["4", "3"])
+    expect(hasSelectedEwalletWithSameKey(methods, ["1"], methods[1])).toBe(true)
+    expect(hasSelectedEwalletWithSameKey(methods, ["3"], methods[3])).toBe(false)
   })
 
-  it("blocks duplicate e-wallet method keys but allows multiple bank_transfer", () => {
+  it("disables unselected methods at max selection or same-key e-wallet", () => {
     const methods = [
       { id: 1, method: "airtel" },
       { id: 2, method: "Airtel" },
       { id: 3, method: "bank_transfer" },
       { id: 4, method: "bank_transfer" },
+      { id: 5, method: "ecocash" },
     ]
 
-    expect(getSelectedPaymentMethodKeys(methods, ["1"])).toEqual(new Set(["airtel"]))
-    expect(isPaymentMethodKeyAlreadySelected(methods, ["1"], 2)).toBe(true)
-    expect(isPaymentMethodKeyAlreadySelected(methods, ["1"], 3)).toBe(false)
-    expect(isPaymentMethodKeyAlreadySelected(methods, ["1"], 1)).toBe(false)
-    expect(isPaymentMethodKeyAlreadySelected(methods, ["3"], 4)).toBe(false)
     expect(isUserPaymentMethodSelectionDisabled(methods, ["1"], 2)).toBe(true)
+    expect(isUserPaymentMethodSelectionDisabled(methods, ["1"], 5)).toBe(false)
     expect(isUserPaymentMethodSelectionDisabled(methods, ["1"], 3)).toBe(false)
     expect(isUserPaymentMethodSelectionDisabled(methods, ["3"], 4)).toBe(false)
-    expect(isUserPaymentMethodSelectionDisabled(methods, ["1", "3", "4"], 2)).toBe(true)
+    expect(isUserPaymentMethodSelectionDisabled(methods, ["1", "3", "4"], 5)).toBe(true)
+    expect(isUserPaymentMethodSelectionDisabled(methods, ["1", "3", "4"], 1)).toBe(false)
   })
 
   it("merges created payment methods immediately for selector reopen", () => {

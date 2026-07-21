@@ -155,8 +155,8 @@ describe("CurrencyFilter", () => {
     const trigger = screen.getByText("Open Currency Filter")
     await userEvent.click(trigger)
 
-    const selectedCurrency = screen.getByText("USD - US Dollar")
-    expect(selectedCurrency).toHaveClass("bg-black text-white")
+    const selectedCurrencyItem = screen.getByTestId("currency-filter-btn-USD")
+    expect(selectedCurrencyItem).toHaveClass("bg-grayscale-500", "border-black", "text-black")
   })
 
   it("handles keyboard navigation", async () => {

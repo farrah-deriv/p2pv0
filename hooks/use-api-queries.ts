@@ -223,11 +223,28 @@ export function useWalletTransactions(currency?: string | null, enabled = true) 
   })
 }
 
+export const USER_PAYMENT_METHODS_PAGE_SIZE = 50
+
+export type UserPaymentMethodsPage = { data: any[] }
+
+/** Flatten infinite-query pages into a single payment-method list. */
+export function flattenUserPaymentMethodsPages(
+  data: { pages: UserPaymentMethodsPage[] } | undefined,
+): any[] {
+  return data?.pages.flatMap((page) => page.data ?? []) ?? []
+}
+
 export function useUserPaymentMethods(enabled = true) {
   const maintenanceBlocked = useP2PQueriesBlocked()
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: queryKeys.auth.userPaymentMethods(),
-    queryFn: () => ProfileAPI.getUserPaymentMethods(),
+    queryFn: ({ pageParam = 1 }) =>
+      ProfileAPI.getUserPaymentMethods(pageParam as number, USER_PAYMENT_METHODS_PAGE_SIZE),
+    getNextPageParam: (lastPage: UserPaymentMethodsPage, allPages) =>
+      (lastPage.data?.length ?? 0) < USER_PAYMENT_METHODS_PAGE_SIZE
+        ? undefined
+        : allPages.length + 1,
+    initialPageParam: 1,
     staleTime: 1000 * 60 * 5, // 5 minutes
     enabled: enabled && !maintenanceBlocked,
   })

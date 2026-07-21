@@ -20,7 +20,8 @@ export function PaymentSelectionProvider({ children }: { children: ReactNode }) 
             if (isSelected) {
                 return prev.filter((methodId) => methodId !== normalizedId)
             } else if (prev.length < 3) {
-                return [...prev, normalizedId]
+                // Pin newly selected method to the top of the list.
+                return [normalizedId, ...prev]
             }
             return prev
         })

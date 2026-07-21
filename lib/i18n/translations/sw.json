@@ -1003,6 +1003,7 @@
     "notRatedYet": "Hakuna tathmini bado",
     "notRecommendedYet": "Hakuna mapendekezo bado",
     "paymentMethodAdded": "Njia ya kulipa imeongezwa.",
+    "paymentMethodAddedWithName": "Njia ya kulipa {methodName} imeongezwa.",
     "paymentMethodDeleted": "Njia ya kulipa imefutwa.",
     "paymentMethodInUseByOrder": "Njia hii ya kulipa inatumika sasa na agizo inayofanya kazi na haiwezi kurekebishwa.",
     "paymentMethodLinkedToAd": "Njia hii ya kulipa imeunganishwa na mojawapo ya tangazo lako na haiwezi kufutwa.",

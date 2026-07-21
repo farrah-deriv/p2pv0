@@ -1007,6 +1007,7 @@
     "notRatedYet": "Jeszcze nie oceniony",
     "notRecommendedYet": "Jeszcze nie rekomendowany",
     "paymentMethodAdded": "Metoda płatności dodana.",
+    "paymentMethodAddedWithName": "Metoda płatności {methodName} dodana.",
     "paymentMethodDeleted": "Metoda płatności usunięta.",
     "paymentMethodInUseByOrder": "Ta metoda płatności jest aktualnie używana przez otwarte zamówienie i nie można jej modyfikować.",
     "paymentMethodLinkedToAd": "Ta metoda płatności jest powiązana z jednym z Twoich ogłoszeń i nie można jej usunąć.",

@@ -995,6 +995,7 @@
     "notRatedYet": "තවමත් ශ්‍රේණිගත කිරීම් නොමැත",
     "notRecommendedYet": "තවමත් නිර්දේශ නොමැත",
     "paymentMethodAdded": "ගෙවීම් ක්‍රමය එකතු කරන ලදී.",
+    "paymentMethodAddedWithName": "{methodName} ගෙවීම් ක්‍රමය එකතු කරන ලදී.",
     "paymentMethodDeleted": "ගෙවීම් ක්‍රමය මකා ඇත.",
     "paymentMethodInUseByOrder": "මෙම ගෙවීමේ ක්‍රමය දැනට විවෘත ඇණවුමක් මඟින් භාවිතා කරන අතර එය වෙනස් කළ නොහැක.",
     "paymentMethodLinkedToAd": "මෙම ගෙවීමේ ක්‍රමය ඔබගේ වෙළඳ දැන්වීම් වලින් එකකට සම්බන්ධ කර ඇති අතර මකා දැමිය නොහැක.",

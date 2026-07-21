@@ -1011,6 +1011,7 @@
     "notRatedYet": "Aún no calificado",
     "notRecommendedYet": "Aún no recomendado",
     "paymentMethodAdded": "Método de pago agregado.",
+    "paymentMethodAddedWithName": "Método de pago {methodName} agregado.",
     "paymentMethodDeleted": "Método de pago eliminado.",
     "paymentMethodInUseByOrder": "Este método de pago está siendo utilizado actualmente por una orden abierta y no se puede modificar.",
     "paymentMethodLinkedToAd": "Este método de pago está vinculado a uno de tus anuncios y no se puede eliminar.",
