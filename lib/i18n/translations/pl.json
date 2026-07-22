@@ -1119,52 +1119,65 @@
       "contactSupport": "Skontaktuj się z pomocą techniczną",
       "editAd": "Zaktualizuj ofertę",
       "editSchedule": "Edytuj harmonogram",
-      "viewProfile": "Wyświetl profil"
+      "viewProfile": "Wyświetl profil",
+      "updateBusinessHours": "Zaktualizuj godziny pracy",
+      "waitForLimitReset": "Poczekaj na zresetowanie limitu"
     },
     "adLinkCopied": "Link do reklamy skopiowany",
     "advertFloatRateDisabled": {
       "description": "Kursy zmienne nie są już dostępne dla tej pary walutowej. Przejdź na stałą stawkę, aby Twoja reklama była widoczna.",
-      "title": "Twoja reklama nie jest widoczna"
+      "title": "Twoja reklama nie jest widoczna",
+      "shortDescription": "Kursy zmienne nie są już dostępne dla tej pary walutowej."
     },
     "advertInactive": {
       "description": "Aktywuj swoją reklamę, aby była widoczna dla innych handlowców.",
-      "title": "Twoje ogłoszenie jest nieaktywne"
+      "title": "Twoje ogłoszenie jest nieaktywne",
+      "shortDescription": "Twoje ogłoszenie jest nieaktywne."
     },
     "advertNoPaymentMethods": {
       "description": "To ogłoszenie nie ma metody płatności. Dodaj jeden, aby był widoczny dla innych traderów.",
-      "title": "Twoja reklama nie jest widoczna"
+      "title": "Twoja reklama nie jest widoczna",
+      "shortDescription": "To ogłoszenie nie ma metody płatności."
     },
     "advertRemaining": {
-      "description": "Pozostała kwota w Twojej reklamie jest niższa od minimalnego zamówienia.",
-      "title": "Twoja reklama nie jest widoczna"
+      "description": "Pozostała kwota w Twojej reklamie ({remainingAmount} {currency}) jest niższa od minimalnego zamówienia.",
+      "title": "Twoja reklama nie jest widoczna",
+      "shortDescription": "Pozostała kwota w Twojej reklamie jest niższa od minimalnego zamówienia."
     },
     "advertiserAdvertsUnlisted": {
-      "description": "Wstrzymałeś wszystkie reklamy. Aktywuj swoje reklamy, aby były widoczne dla innych handlowców.",
-      "title": "Twoje reklamy nie są widoczne"
+      "description": "Zdecydowałeś się wstrzymać swoje ogłoszenia. Wyłącz przełącznik „Wstrzymaj moje ogłoszenia”, aby były widoczne dla innych handlowców.",
+      "title": "Twoje reklamy nie są widoczne",
+      "shortDescription": "Wstrzymałeś wszystkie reklamy."
     },
     "advertiserBalance": {
-      "description": "Twoje saldo jest niższe niż minimalne zamówienie w Twojej reklamie. Dodaj środki lub obniż minimalną kwotę, aby wystawić ogłoszenie.",
-      "title": "Twoja reklama nie jest widoczna"
+      "description": "Twoje saldo jest niższe niż minimalne zamówienie w Twojej reklamie wynoszące {minOrderAmount} {currency}. Dodaj środki lub obniż minimalną kwotę, aby wystawić ogłoszenie.",
+      "title": "Twoja reklama nie jest widoczna",
+      "shortDescription": "Twoje saldo jest niższe niż minimalne zamówienie w Twojej reklamie."
     },
     "advertiserDailyLimit": {
       "description": "Pozostały limit dzienny jest niższy od minimalnego zamówienia. Obniż minimum, aby wystawić ogłoszenie lub poczekaj, aż limit zostanie zresetowany w ciągu 24 godzin.",
-      "title": "Twoja reklama nie jest widoczna"
+      "title": "Twoja reklama nie jest widoczna",
+      "shortDescription": "Pozostały limit dzienny jest niższy od minimalnego zamówienia."
     },
     "advertiserNoPrivateGroups": {
-      "description": "Nie należysz już do poziomu Diamentowego, więc reklamy w grupach zamkniętych nie kwalifikują się już i są ukryte przed rynkiem. Aby wystawić to ogłoszenie na stronie rynku, zmień jego widoczność z Grupa zamknięta na Dla wszystkich.",
-      "title": "Twoja reklama nie jest widoczna"
+      "description": "Nie należysz już do poziomu Diamentowego, więc reklamy w grupach zamkniętych nie kwalifikują się już i są ukryte przed rynkiem.\n\nAby wystawić to ogłoszenie na stronie rynku, zmień jego widoczność z Grupa zamknięta na Dla wszystkich.",
+      "title": "Twoja reklama nie jest widoczna",
+      "shortDescription": "To ogłoszenie jest przeznaczone dla grup zamkniętych. Nie możesz już korzystać z tej funkcji."
     },
     "advertiserScheduleUnavailable": {
       "description": "To poza godzinami pracy. Zaktualizuj swój harmonogram lub poczekaj do aktywnych godzin.",
-      "title": "Twoja reklama nie jest widoczna"
+      "title": "Twoja reklama nie jest widoczna",
+      "shortDescription": "To poza godzinami pracy."
     },
     "advertiserStatus": {
       "description": "Skontaktuj się z nami za pośrednictwem czatu na żywo, aby uzyskać pomoc.",
-      "title": "Twoja reklama nie jest widoczna"
+      "title": "Twoja reklama nie jest widoczna",
+      "shortDescription": "Skontaktuj się z nami za pośrednictwem czatu na żywo, aby uzyskać pomoc."
     },
     "advertiserTempBan": {
       "description": "Twoje konto jest tymczasowo ograniczone. Sprawdź swój profil, aby poznać szczegóły.",
-      "title": "Twoja reklama nie jest widoczna"
+      "title": "Twoja reklama nie jest widoczna",
+      "shortDescription": "Twoje konto jest tymczasowo ograniczone. Sprawdź swój profil, aby poznać szczegóły."
     },
     "copyLink": "Skopiuj link",
     "failedToCopyLink": "Nie udało się skopiować linku",
@@ -1180,12 +1193,14 @@
     "shareImage": "Udostępnij obraz",
     "shareMessage": "Cześć! Chciałbym wymienić {currency} na {rate} na Deriv P2P. Jeśli jesteś zainteresowany sprawdź moje ogłoszenie {url}. Dzięki!",
     "shareTelegramMessage": "Cześć! Chciałbym wymienić {currency} na {rate} na Deriv P2P. Jeśli jesteś zainteresowany, sprawdź moje ogłoszenie. Dzięki!",
-    "sharedSuccessfully": "Udostępniono pomyślnie"
+    "sharedSuccessfully": "Udostępniono pomyślnie",
+    "unknownReason": "Skontaktuj się z nami za pośrednictwem czatu na żywo, aby uzyskać pomoc."
   },
   "wallet": {
     "all": "Wszystkie",
     "amount": "Kwota",
     "amountReceive": "Kwota do otrzymania",
+    "amountReceived": "Kwota otrzymana",
     "chooseCurrency": "Wybierz walutę",
     "chooseCurrencyDescription": "Wybierz walutę, którą chciałbyś {action}.",
     "contactUs": "Skontaktuj się z nami",
@@ -1199,6 +1214,7 @@
     "directWithdrawalDescription": "Withdraw funds directly to your bank account, e-wallet, or other payment methods.",
     "directWithdrawalTitle": "Wypłata",
     "endOfTransaction": "Koniec transakcji",
+    "loadMore": "Załaduj więcej",
     "estTotalAssetsTooltip": "To jest szacowane łączne saldo we wszystkich portfelach P2P, wyświetlane w USD.",
     "estTotalValue": "Saldo portfela P2P",
     "exceedsBalance": "Kwota nie może przekraczać dostępnego salda {amount} {currency}.",
@@ -1245,10 +1261,10 @@
     "transferAmount": "Kwota transferu",
     "transferErrorDuring": "Nie mogliśmy przetworzyć Twojego transferu. Spróbuj ponownie.",
     "transferFee": "Opłata za transfer",
-    "transferRouteP2pToP2p": "P2P {currency} → P2P {currency}",
-    "transferRouteP2pToWallet": "P2P {currency} → Portfel {currency}",
-    "transferRouteWalletOnly": "Portfel {currency}",
-    "transferRouteWalletToP2p": "Portfel {currency} → P2P {currency}",
+    "transferRouteP2pToP2p": "Portfel P2P → Portfel P2P",
+    "transferRouteP2pToWallet": "Portfel P2P → Portfel",
+    "transferRouteWalletOnly": "Portfel → Portfel",
+    "transferRouteWalletToP2p": "Portfel → Portfel P2P",
     "transferSuccessMessage": "{amount} {currency} przeniesione z Twojego {from} do Twojego {to}",
     "transferSuccessMessageMainToP2P": "{amount} {currency} jest w drodze do Twojego portfela {walletName} {currencyLabel}. Może minąć kilka minut, zanim zostanie to odzwierciedlone.",
     "transferSuccessful": "Transfer pomyślny",
@@ -1291,7 +1307,14 @@
     "withdraw": "Wypłata",
     "withdrawFromP2p": "Wypłata",
     "withdrawWith": "Wypłata za pomocą",
-    "youllReceive": "Otrzymasz"
+    "youllReceive": "Otrzymasz",
+    "amountReceiveInfoTitle": "Kwota do otrzymania",
+    "amountReceiveInfoBody": "Do tego transferu stosowana jest korekta w wysokości {amount} {currency}.",
+    "amountReceiveInfoBodyFree": "Nie obowiązuje opłata za transfer. Otrzymasz pełną kwotę przelewu.",
+    "transferValidateFailed": "Nie udało się obliczyć opłaty za transfer. Spróbuj ponownie.",
+    "mainWallet": "Portfel",
+    "p2pWallets": "Portfele P2P",
+    "amountReceiveInfoBodyApplied": "Do tego transferu zastosowano korektę w wysokości {amount} {currency}."
   },
   "guide": {
     "back": "Wstecz",

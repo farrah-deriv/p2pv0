@@ -1,6 +1,5 @@
 "use client"
 
-import Image from "next/image"
 import BalanceItem from "./balance-item"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import BuyCurrencies from "./buy-currencies"
@@ -24,15 +23,20 @@ export default function WalletBalances({ onBalanceClick, balances = [], isLoadin
   if (isLoading) {
     return (
       <div data-testid="wallet-skeleton" className="w-full">
-        <div className="flex flex-col md:grid md:grid-cols-2 gap-4">
+        <div className="mb-2 px-6">
+          <Skeleton className="h-6 w-32 bg-grayscale-500" />
+        </div>
+        <div className="flex w-full flex-col">
           {[1, 2].map((i) => (
-            <div key={i} className="flex items-center justify-between h-[72px] w-full relative">
-              <div className="flex items-center gap-4 ps-0 w-full">
-                <Skeleton className="h-7 w-7 rounded-full flex-shrink-0 bg-grayscale-500" />
-                <Skeleton className="h-5 w-24 bg-grayscale-500" />
+            <div key={i} className="relative w-full">
+              <div className="flex h-[72px] w-full items-center justify-between px-6">
+                <div className="flex min-w-0 items-center gap-4">
+                  <Skeleton className="h-7 w-7 flex-shrink-0 rounded-full bg-grayscale-500" />
+                  <Skeleton className="h-5 w-24 bg-grayscale-500" />
+                </div>
+                <Skeleton className="h-5 w-32 shrink-0 bg-grayscale-500" />
               </div>
-              <Skeleton className="h-5 w-32 bg-grayscale-500" />
-              <div className="absolute bottom-0 start-10 end-0 h-[1px] bg-grayscale-200" />
+              <div className="absolute bottom-0 start-16 end-0 h-px bg-grayscale-200" />
             </div>
           ))}
         </div>
@@ -41,12 +45,13 @@ export default function WalletBalances({ onBalanceClick, balances = [], isLoadin
   }
 
   if (balances.length === 0) {
-    return <div data-testid="wallet-empty-state"><BuyCurrencies /></div>
+    return <div data-testid="wallet-empty-state" className="px-6"><BuyCurrencies /></div>
   }
 
   return (
     <div className="w-full">
-      <div className="flex flex-col md:grid md:grid-cols-2 gap-4">
+      <h2 className="mb-2 px-6 text-base font-extrabold text-slate-1200">{t("wallet.p2pWallets")}</h2>
+      <div className="flex w-full flex-col">
         {balances
           .filter((wallet) => wallet.currency === "USD")
           .map((wallet) => (
@@ -54,7 +59,7 @@ export default function WalletBalances({ onBalanceClick, balances = [], isLoadin
               key={wallet.currency}
               currency={wallet.currency}
               amount={wallet.amount}
-              label={`P2P ${wallet.label}`}
+              label={wallet.label}
               currencyLabel={wallet.label}
               onClick={() => onBalanceClick?.(wallet.currency, wallet.amount)}
             />

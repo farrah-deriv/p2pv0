@@ -531,7 +531,7 @@
     "updateAdError": "更新廣告時發生錯誤。請再試一次。",
     "visibilityStatus": "您的廣告不可見",
     "visibilityStatusDescription": "其他人看不到您的廣告。原因如下：",
-    "visibilityStatusMultipleReasons": "由於以下原因，您的廣告未在電子市場上列出：",
+    "visibilityStatusMultipleReasons": "您的廣告未在電子市場上列出的原因如下：",
     "tabActive": "啟用中",
     "tabInactive": "停用中",
     "noInactiveAdsTitle": "沒有停用中的廣告",
@@ -1107,52 +1107,65 @@
       "contactSupport": "聯繫支援人員",
       "editAd": "更新廣告",
       "editSchedule": "編輯日程",
-      "viewProfile": "查看個人資料"
+      "viewProfile": "查看個人資料",
+      "updateBusinessHours": "更新營業時間",
+      "waitForLimitReset": "等待限制重置"
     },
     "adLinkCopied": "廣告連結已複製",
     "advertFloatRateDisabled": {
       "description": "該貨幣對不再適用浮動匯率。切換到固定費率以使您的廣告可見。",
-      "title": "您的廣告不可見"
+      "title": "您的廣告不可見",
+      "shortDescription": "該貨幣對不再適用浮動匯率。"
     },
     "advertInactive": {
       "description": "啟動您的廣告，使其對其他交易者可見。",
-      "title": "您的廣告無效。"
+      "title": "您的廣告無效。",
+      "shortDescription": "您的廣告無效。"
     },
     "advertNoPaymentMethods": {
       "description": "該廣告沒有付款方式。新增一項以使其對其他交易者可見。",
-      "title": "您的廣告不可見"
+      "title": "您的廣告不可見",
+      "shortDescription": "該廣告沒有付款方式。"
     },
     "advertRemaining": {
-      "description": "您的廣告剩餘金額低於最低訂單量。",
-      "title": "您的廣告不可見"
+      "description": "您廣告的剩餘金額 ({remainingAmount} {currency}) 低於最低訂單。",
+      "title": "您的廣告不可見",
+      "shortDescription": "您的廣告剩餘金額低於最低訂單量。"
     },
     "advertiserAdvertsUnlisted": {
-      "description": "您已暫停所有廣告。啟動您的廣告，使其對其他交易者可見。",
-      "title": "您的廣告不可見"
+      "description": "您已選擇暫停您的廣告。關閉「暫停我的廣告」開關，使其對其他交易者可見。",
+      "title": "您的廣告不可見",
+      "shortDescription": "您已暫停所有廣告。"
     },
     "advertiserBalance": {
-      "description": "您的餘額低於廣告的最低訂單量。增加資金或降低展示廣告的最低金額。",
-      "title": "您的廣告不可見"
+      "description": "您的餘額低於廣告的最低訂單 {minOrderAmount} {currency}。增加資金或降低展示廣告的最低金額。",
+      "title": "您的廣告不可見",
+      "shortDescription": "您的餘額低於廣告的最低訂單量。"
     },
     "advertiserDailyLimit": {
       "description": "您剩餘的每日限額低於最低訂單量。降低展示廣告的最低限額或等待限制在 24 小時內重設。",
-      "title": "您的廣告不可見"
+      "title": "您的廣告不可見",
+      "shortDescription": "您剩餘的每日限額低於最低訂單量。"
     },
     "advertiserNoPrivateGroups": {
-      "description": "您不再處於鑽石級別，因此封閉式群組廣告不再符合資格，也不會出現在市場中。要在市場頁面上列出此廣告，請將其可見性從“封閉組”更改為“所有人”。",
-      "title": "您的廣告不可見"
+      "description": "您不再屬於鑽石級，因此封閉式群組廣告不再符合資格，也不會出現在市場中。\n\n要在市場頁面上列出此廣告，請將其可見性從“封閉組”更改為“所有人”。",
+      "title": "您的廣告不可見",
+      "shortDescription": "此廣告是為封閉群體而設置的。您將不再被允許使用該功能。"
     },
     "advertiserScheduleUnavailable": {
       "description": "現在不在您的工作時間。更新您的日程安排或等到您的活動時間。",
-      "title": "您的廣告不可見"
+      "title": "您的廣告不可見",
+      "shortDescription": "現在不在您的工作時間。"
     },
     "advertiserStatus": {
       "description": "透過即時聊天聯絡我們尋求協助。",
-      "title": "您的廣告不可見"
+      "title": "您的廣告不可見",
+      "shortDescription": "透過即時聊天聯絡我們尋求協助。"
     },
     "advertiserTempBan": {
       "description": "您的帳戶暫時受到限制。檢查您的個人資料以了解詳細資訊。",
-      "title": "您的廣告不可見"
+      "title": "您的廣告不可見",
+      "shortDescription": "您的帳戶暫時受到限制。檢查您的個人資料以了解詳細資訊。"
     },
     "copyLink": "複製連結",
     "failedToCopyLink": "複製連結失敗",
@@ -1168,12 +1181,14 @@
     "shareImage": "分享圖片",
     "shareMessage": "嗨！我想交換{currency}在{rate}在 __TOKEN90__ 上。有興趣的話可以看看我的廣告{url}。謝謝！",
     "shareTelegramMessage": "嗨！我想交換{currency}在{rate}在 __TOKEN90__ 上。如果您有興趣，請查看我的廣告。謝謝！",
-    "sharedSuccessfully": "分享成功"
+    "sharedSuccessfully": "分享成功",
+    "unknownReason": "透過即時聊天聯絡我們尋求協助。"
   },
   "wallet": {
     "all": "全部",
     "amount": "金額",
     "amountReceive": "收到金額",
+    "amountReceived": "已收金額",
     "chooseCurrency": "選擇貨幣",
     "chooseCurrencyDescription": "選擇您想要{action} 的貨幣。",
     "contactUs": "聯絡我們",
@@ -1187,6 +1202,7 @@
     "directWithdrawalDescription": "Withdraw funds directly to your bank account, e-wallet, or other payment methods.",
     "directWithdrawalTitle": "撤回",
     "endOfTransaction": "交易結束",
+    "loadMore": "加載更多",
     "estTotalAssetsTooltip": "這是您所有 P2P 錢包的預估合併餘額，以美元顯示。",
     "estTotalValue": "P2P錢包餘額",
     "exceedsBalance": "金額不能超過可用餘額 {amount} {currency}。",
@@ -1233,10 +1249,10 @@
     "transferAmount": "轉帳金額",
     "transferErrorDuring": "我們無法處理您的轉帳。請再試一次。",
     "transferFee": "轉讓費",
-    "transferRouteP2pToP2p": "P2P {currency} → P2P {currency}",
-    "transferRouteP2pToWallet": "P2P {currency} → {currency} 錢包",
-    "transferRouteWalletOnly": "{currency} 錢包",
-    "transferRouteWalletToP2p": "{currency} 錢包 → P2P {currency}",
+    "transferRouteP2pToP2p": "P2P 錢包 → P2P 錢包",
+    "transferRouteP2pToWallet": "P2P 錢包 → 錢包",
+    "transferRouteWalletOnly": "錢包 → 錢包",
+    "transferRouteWalletToP2p": "錢包 → P2P 錢包",
     "transferSuccessMessage": "{amount} {currency} 從您的 {from} 轉移到您的 {to}",
     "transferSuccessMessageMainToP2P": "{amount} {currency} 正在轉入您的 {walletName} {currencyLabel} 錢包。可能需要幾分鐘才能顯示。",
     "transferSuccessful": "轉帳成功",
@@ -1279,7 +1295,14 @@
     "withdraw": "撤回",
     "withdrawFromP2p": "撤回",
     "withdrawWith": "撤回與",
-    "youllReceive": "您將收到"
+    "youllReceive": "您將收到",
+    "amountReceiveInfoTitle": "收到金額",
+    "amountReceiveInfoBody": "本次轉帳將套用 {amount} {currency} 的調整。",
+    "amountReceiveInfoBodyFree": "不收取轉帳手續費。您將收到全部轉帳金額。",
+    "transferValidateFailed": "無法計算轉帳手續費。請重試。",
+    "mainWallet": "錢包",
+    "p2pWallets": "P2P 錢包",
+    "amountReceiveInfoBodyApplied": "本次轉帳已套用 {amount} {currency} 的調整。"
   },
   "guide": {
     "back": "返回",

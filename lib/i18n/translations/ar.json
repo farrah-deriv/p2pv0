@@ -531,7 +531,7 @@
     "updateAdError": "حدث خطأ عند تحديث الإعلان. يرجى المحاولة مرة أخرى.",
     "visibilityStatus": "إعلانك غير مرئي",
     "visibilityStatusDescription": "إعلانك غير مرئي للآخرين. إليك السبب:",
-    "visibilityStatusMultipleReasons": "إعلانك غير مدرج في السوق للأسباب التالية:",
+    "visibilityStatusMultipleReasons": "إعلانك غير مدرج في Market لهذا السبب (الأسباب):",
     "tabActive": "نشط",
     "tabInactive": "غير نشط",
     "noInactiveAdsTitle": "لا توجد إعلانات غير نشطة",
@@ -1107,52 +1107,65 @@
       "contactSupport": "التواصل مع الدعم",
       "editAd": "تحديث الإعلان",
       "editSchedule": "تعديل الجدول الزمني",
-      "viewProfile": "عرض الملف الشخصي"
+      "viewProfile": "عرض الملف الشخصي",
+      "updateBusinessHours": "تحديث ساعات العمل",
+      "waitForLimitReset": "انتظر إعادة تعيين الحد"
     },
     "adLinkCopied": "تم نسخ رابط الإعلان",
     "advertFloatRateDisabled": {
       "description": "لم تعد الأسعار العائمة متاحة لزوج العملات هذا. قم بالتبديل إلى سعر ثابت لجعل إعلانك مرئيًا.",
-      "title": "إعلانك غير مرئي"
+      "title": "إعلانك غير مرئي",
+      "shortDescription": "لم تعد الأسعار العائمة متاحة لزوج العملات هذا."
     },
     "advertInactive": {
       "description": "قم بتنشيط إعلانك لجعله مرئيًا للمتداولين الآخرين.",
-      "title": "إعلانك غير نشط"
+      "title": "إعلانك غير نشط",
+      "shortDescription": "إعلانك غير نشط."
     },
     "advertNoPaymentMethods": {
       "description": "لا يحتوي هذا الإعلان على طريقة دفع. أضف واحدًا لجعله مرئيًا للمتداولين الآخرين.",
-      "title": "إعلانك غير مرئي"
+      "title": "إعلانك غير مرئي",
+      "shortDescription": "لا يحتوي هذا الإعلان على طريقة دفع."
     },
     "advertRemaining": {
-      "description": "المبلغ المتبقي لإعلانك أقل من الحد الأدنى للطلب.",
-      "title": "إعلانك غير مرئي"
+      "description": "المبلغ المتبقي لإعلانك ({remainingAmount} {currency}) أقل من الحد الأدنى للطلب.",
+      "title": "إعلانك غير مرئي",
+      "shortDescription": "المبلغ المتبقي لإعلانك أقل من الحد الأدنى للطلب."
     },
     "advertiserAdvertsUnlisted": {
-      "description": "لقد أوقفت جميع إعلاناتك. فعّل إعلاناتك لجعلها مرئية للمتداولين الآخرين.",
-      "title": "إعلاناتك غير مرئية"
+      "description": "لقد اخترت إيقاف إعلاناتك مؤقتًا. قم بإيقاف تشغيل زر \"إيقاف إعلاناتي مؤقتًا\" لجعلها مرئية للمتداولين الآخرين.",
+      "title": "إعلاناتك غير مرئية",
+      "shortDescription": "لقد أوقفت جميع إعلاناتك مؤقتًا."
     },
     "advertiserBalance": {
-      "description": "رصيدك أقل من الحد الأدنى للطلب في إعلانك. أضف أموالاً أو خفّض الحد الأدنى لإدراج إعلانك.",
-      "title": "إعلانك غير مرئي"
+      "description": "رصيدك أقل من الحد الأدنى لطلب إعلانك وهو {minOrderAmount} {currency}. قم بإضافة الأموال أو خفض الحد الأدنى لإدراج إعلانك.",
+      "title": "إعلانك غير مرئي",
+      "shortDescription": "رصيدك أقل من الحد الأدنى لطلب إعلانك."
     },
     "advertiserDailyLimit": {
       "description": "الحد اليومي المتبقي لديك أقل من الحد الأدنى للطلب. قم بخفض الحد الأدنى لإدراج إعلانك أو انتظر إعادة تعيين الحد خلال 24 ساعة.",
-      "title": "إعلانك غير مرئي"
+      "title": "إعلانك غير مرئي",
+      "shortDescription": "الحد اليومي المتبقي لديك أقل من الحد الأدنى للطلب."
     },
     "advertiserNoPrivateGroups": {
-      "description": "لم تعد في الفئة الماسية، لذا إعلانات المجموعة المغلقة غير مؤهلة وتم إخفاؤها من السوق. لإدراج هذا الإعلان في صفحة السوق، قم بتغيير رؤيته من المجموعة المغلقة إلى الجميع.",
-      "title": "إعلانك غير مرئي"
+      "description": "لم تعد ضمن الفئة الماسية، لذا لم تعد إعلانات المجموعة المغلقة مؤهلة ومخفية عن السوق.\n\nلإدراج هذا الإعلان في صفحة السوق، قم بتغيير مستوى رؤيته من المجموعة المغلقة إلى الجميع.",
+      "title": "إعلانك غير مرئي",
+      "shortDescription": "تم إعداد هذا الإعلان للمجموعات المغلقة. لم يعد مسموحًا لك باستخدام هذه الميزة."
     },
     "advertiserScheduleUnavailable": {
       "description": "إنه خارج ساعات عملك. قم بتحديث جدولك الزمني أو انتظر حتى ساعات العمل النشطة.",
-      "title": "إعلانك غير مرئي"
+      "title": "إعلانك غير مرئي",
+      "shortDescription": "إنه خارج ساعات عملك."
     },
     "advertiserStatus": {
       "description": "اتصل بنا عبر الدردشة المباشرة للحصول على المساعدة.",
-      "title": "إعلانك غير مرئي"
+      "title": "إعلانك غير مرئي",
+      "shortDescription": "اتصل بنا عبر الدردشة المباشرة للحصول على المساعدة."
     },
     "advertiserTempBan": {
       "description": "حسابك مقيد مؤقتا. تحقق من ملفك الشخصي للحصول على التفاصيل.",
-      "title": "إعلانك غير مرئي"
+      "title": "إعلانك غير مرئي",
+      "shortDescription": "حسابك مقيد مؤقتا. تحقق من ملفك الشخصي للحصول على التفاصيل."
     },
     "copyLink": "نسخ الرابط",
     "failedToCopyLink": "فشل نسخ الرابط",
@@ -1168,12 +1181,14 @@
     "shareImage": "مشاركة الصورة",
     "shareMessage": "مرحباً! أريد تبادل {currency} بسعر {rate} على Deriv P2P. إذا كنت مهتماً، تحقق من إعلاني {url}. شكراً!",
     "shareTelegramMessage": "مرحباً! أريد تبادل {currency} بسعر {rate} على Deriv P2P. إذا كنت مهتماً، تحقق من إعلاني. شكراً!",
-    "sharedSuccessfully": "تمت المشاركة بنجاح"
+    "sharedSuccessfully": "تمت المشاركة بنجاح",
+    "unknownReason": "اتصل بنا عبر الدردشة المباشرة للحصول على المساعدة."
   },
   "wallet": {
     "all": "الكل",
     "amount": "المبلغ",
     "amountReceive": "المبلغ المستلم",
+    "amountReceived": "المبلغ المستلم",
     "chooseCurrency": "اختر العملة",
     "chooseCurrencyDescription": "اختر العملة التي تريد {action}ها.",
     "contactUs": "اتصل بنا",
@@ -1187,6 +1202,7 @@
     "directWithdrawalDescription": "اسحب الأموال مباشرة إلى حسابك البنكي أو محفظتك الإلكترونية أو طرق دفع أخرى.",
     "directWithdrawalTitle": "انسحاب",
     "endOfTransaction": "نهاية المعاملة",
+    "loadMore": "تحميل المزيد",
     "estTotalAssetsTooltip": "هذا هو رصيدك التقديري المجمع عبر جميع محافظ P2P، معروضًا بالدولار الأمريكي.",
     "estTotalValue": "رصيد محفظة P2P",
     "exceedsBalance": "لا يمكن أن يتجاوز المبلغ الرصيد المتاح {amount} {currency}.",
@@ -1233,10 +1249,10 @@
     "transferAmount": "تحويل المبلغ",
     "transferErrorDuring": "لم نتمكن من معالجة عملية النقل الخاصة بك. يرجى المحاولة مرة أخرى.",
     "transferFee": "رسوم التحويل",
-    "transferRouteP2pToP2p": "P2P {currency} → P2P {currency}",
-    "transferRouteP2pToWallet": "P2P {currency} → محفظة {currency}",
-    "transferRouteWalletOnly": "محفظة {currency}",
-    "transferRouteWalletToP2p": "محفظة {currency} → P2P {currency}",
+    "transferRouteP2pToP2p": "محفظة P2P → محفظة P2P",
+    "transferRouteP2pToWallet": "محفظة P2P → محفظة",
+    "transferRouteWalletOnly": "محفظة → محفظة",
+    "transferRouteWalletToP2p": "محفظة → محفظة P2P",
     "transferSuccessMessage": "تم تحويل {amount} {currency} من {from} إلى {to}",
     "transferSuccessMessageMainToP2P": "{amount} {currency} في طريقه إلى محفظة {walletName} {currencyLabel} الخاصة بك. قد يستغرق الأمر بضع دقائق حتى يظهر.",
     "transferSuccessful": "تم النقل بنجاح",
@@ -1279,7 +1295,14 @@
     "withdraw": "انسحاب",
     "withdrawFromP2p": "انسحاب",
     "withdrawWith": "السحب بـ",
-    "youllReceive": "سوف تتلقى"
+    "youllReceive": "سوف تتلقى",
+    "amountReceiveInfoTitle": "المبلغ المستلم",
+    "amountReceiveInfoBody": "يُطبَّق تعديل بمبلغ {amount} {currency} على هذا التحويل.",
+    "amountReceiveInfoBodyFree": "لا تُطبَّق رسوم تحويل. ستتلقى كامل مبلغ التحويل.",
+    "transferValidateFailed": "تعذر حساب رسوم التحويل. يرجى المحاولة مرة أخرى.",
+    "mainWallet": "محفظة",
+    "p2pWallets": "محافظ P2P",
+    "amountReceiveInfoBodyApplied": "طُبِّق تعديل بمبلغ {amount} {currency} على هذا التحويل."
   },
   "guide": {
     "back": "رجوع",

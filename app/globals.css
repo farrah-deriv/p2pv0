@@ -5,6 +5,8 @@
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-rgb: 255, 255, 255;
+  --component-segmentedControl-bg-single-body: rgba(255, 255, 255, 0.04);
+  --component-segmentedControl-bg-single-selected: rgba(255, 255, 255, 0.16);
 }
 
 body {

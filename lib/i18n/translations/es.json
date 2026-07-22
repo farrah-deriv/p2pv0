@@ -540,7 +540,7 @@
     "updateAdError": "Hubo un error al actualizar el anuncio. Por favor, inténtalo de nuevo.",
     "visibilityStatus": "Tu anuncio no es visible",
     "visibilityStatusDescription": "Su anuncio no es visible para otros. He aquí por qué:",
-    "visibilityStatusMultipleReasons": "Tu anuncio no aparece en el Mercado debido a las siguientes razones:",
+    "visibilityStatusMultipleReasons": "Su anuncio no aparece en Market por estos motivos:",
     "tabActive": "Activo",
     "tabInactive": "Inactivo",
     "noInactiveAdsTitle": "No hay anuncios inactivos",
@@ -1125,52 +1125,65 @@
       "contactSupport": "Contactar con soporte",
       "editAd": "Actualizar anuncio",
       "editSchedule": "Editar horario",
-      "viewProfile": "Ver perfil"
+      "viewProfile": "Ver perfil",
+      "updateBusinessHours": "Actualizar horario comercial",
+      "waitForLimitReset": "Esperar a que se restablezca el límite"
     },
     "adLinkCopied": "Enlace del anuncio copiado",
     "advertFloatRateDisabled": {
       "description": "Los tipos flotantes ya no están disponibles para este par de divisas. Cambie a una tarifa fija para que su anuncio sea visible.",
-      "title": "Tu anuncio no es visible"
+      "title": "Tu anuncio no es visible",
+      "shortDescription": "Los tipos flotantes ya no están disponibles para este par de divisas."
     },
     "advertInactive": {
       "description": "Active su anuncio para que sea visible para otros comerciantes.",
-      "title": "Su anuncio está inactivo"
+      "title": "Su anuncio está inactivo",
+      "shortDescription": "Su anuncio está inactivo."
     },
     "advertNoPaymentMethods": {
       "description": "Este anuncio no tiene método de pago. Agregue uno para que sea visible para otros comerciantes.",
-      "title": "Tu anuncio no es visible"
+      "title": "Tu anuncio no es visible",
+      "shortDescription": "Este anuncio no tiene método de pago."
     },
     "advertRemaining": {
-      "description": "El monto restante de su anuncio está por debajo del pedido mínimo.",
-      "title": "Tu anuncio no es visible"
+      "description": "El monto restante de su anuncio ({remainingAmount} {currency}) está por debajo del pedido mínimo.",
+      "title": "Tu anuncio no es visible",
+      "shortDescription": "El monto restante de su anuncio está por debajo del pedido mínimo."
     },
     "advertiserAdvertsUnlisted": {
-      "description": "Has pausado todos tus anuncios. Active sus anuncios para hacerlos visibles para otros comerciantes.",
-      "title": "Tus anuncios no son visibles"
+      "description": "Ha elegido pausar sus anuncios. Desactive la opción \"Pausar mis anuncios\" para que otros operadores puedan verlos.",
+      "title": "Tus anuncios no son visibles",
+      "shortDescription": "Has pausado todos tus anuncios."
     },
     "advertiserBalance": {
-      "description": "Su saldo es inferior al pedido mínimo de su anuncio. Agregue fondos o reduzca el mínimo para publicar su anuncio.",
-      "title": "Tu anuncio no es visible"
+      "description": "Su saldo es inferior al pedido mínimo de su anuncio de {minOrderAmount} {currency}. Agregue fondos o reduzca el mínimo para publicar su anuncio.",
+      "title": "Tu anuncio no es visible",
+      "shortDescription": "Su saldo es inferior al pedido mínimo de su anuncio."
     },
     "advertiserDailyLimit": {
       "description": "Su límite diario restante está por debajo del pedido mínimo. Reduzca el mínimo para publicar su anuncio o espere a que el límite se restablezca dentro de las 24 horas.",
-      "title": "Tu anuncio no es visible"
+      "title": "Tu anuncio no es visible",
+      "shortDescription": "Su límite diario restante está por debajo del pedido mínimo."
     },
     "advertiserNoPrivateGroups": {
-      "description": "Ya no estás en el nivel Diamante, por lo que los anuncios de grupos cerrados ya no son elegibles y están ocultos del mercado. Para incluir este anuncio en la página del mercado, cambie su visibilidad de Grupo cerrado a Todos.",
-      "title": "Tu anuncio no es visible"
+      "description": "Ya no estás en el nivel Diamante, por lo que los anuncios de grupos cerrados ya no son elegibles y están ocultos del mercado.\n\nPara incluir este anuncio en la página del mercado, cambie su visibilidad de Grupo cerrado a Todos.",
+      "title": "Tu anuncio no es visible",
+      "shortDescription": "Este anuncio está configurado para grupos cerrados. Ya no puedes usar esa función."
     },
     "advertiserScheduleUnavailable": {
       "description": "Está fuera de su horario comercial. Actualiza tu agenda o espera hasta tus horas activas.",
-      "title": "Tu anuncio no es visible"
+      "title": "Tu anuncio no es visible",
+      "shortDescription": "Está fuera de su horario comercial."
     },
     "advertiserStatus": {
       "description": "Contáctenos a través del chat en vivo para obtener ayuda.",
-      "title": "Tu anuncio no es visible"
+      "title": "Tu anuncio no es visible",
+      "shortDescription": "Contáctenos a través del chat en vivo para obtener ayuda."
     },
     "advertiserTempBan": {
       "description": "Su cuenta está temporalmente restringida. Consulta tu perfil para obtener más detalles.",
-      "title": "Tu anuncio no es visible"
+      "title": "Tu anuncio no es visible",
+      "shortDescription": "Su cuenta está temporalmente restringida. Consulta tu perfil para obtener más detalles."
     },
     "copyLink": "Copiar enlace",
     "failedToCopyLink": "No se pudo copiar el enlace",
@@ -1186,12 +1199,14 @@
     "shareImage": "Compartir imagen",
     "shareMessage": "¡Hola! Me gustaría intercambiar {currency} por {rate} en Deriv P2P. Si está interesado, consulte mi anuncio {url}. ¡Gracias!",
     "shareTelegramMessage": "¡Hola! Me gustaría intercambiar {currency} por {rate} en Deriv P2P. Si estás interesado, mira mi anuncio. ¡Gracias!",
-    "sharedSuccessfully": "Compartido exitosamente"
+    "sharedSuccessfully": "Compartido exitosamente",
+    "unknownReason": "Contáctenos a través del chat en vivo para obtener ayuda."
   },
   "wallet": {
     "all": "Todas",
     "amount": "Monto",
     "amountReceive": "Monto a recibir",
+    "amountReceived": "Monto recibido",
     "chooseCurrency": "Elegir moneda",
     "chooseCurrencyDescription": "Elige qué moneda te gustaría {action}.",
     "contactUs": "Contáctenos",
@@ -1205,6 +1220,7 @@
     "directWithdrawalDescription": "Withdraw funds directly to your bank account, e-wallet, or other payment methods.",
     "directWithdrawalTitle": "Retirar",
     "endOfTransaction": "Fin de transacción",
+    "loadMore": "Cargar más",
     "estTotalAssetsTooltip": "Este es su saldo combinado estimado en todas las billeteras P2P, mostrado en USD.",
     "estTotalValue": "Saldo de billetera P2P",
     "exceedsBalance": "El monto no puede exceder el saldo disponible {amount} {currency}.",
@@ -1251,10 +1267,10 @@
     "transferAmount": "Monto de transferencia",
     "transferErrorDuring": "No pudimos procesar tu transferencia. Por favor, inténtalo de nuevo.",
     "transferFee": "Comisión de transferencia",
-    "transferRouteP2pToP2p": "P2P {currency} → P2P {currency}",
-    "transferRouteP2pToWallet": "P2P {currency} → Billetera {currency}",
-    "transferRouteWalletOnly": "Billetera {currency}",
-    "transferRouteWalletToP2p": "Billetera {currency} → P2P {currency}",
+    "transferRouteP2pToP2p": "Billetera P2P → Billetera P2P",
+    "transferRouteP2pToWallet": "Billetera P2P → Cartera",
+    "transferRouteWalletOnly": "Cartera → Cartera",
+    "transferRouteWalletToP2p": "Cartera → Billetera P2P",
     "transferSuccessMessage": "{amount} {currency} transferido de tu {from} a tu {to}",
     "transferSuccessMessageMainToP2P": "{amount} {currency} está en camino a tu cartera {walletName} {currencyLabel}. Puede tardar unos minutos en reflejarse.",
     "transferSuccessful": "Transferencia exitosa",
@@ -1297,7 +1313,14 @@
     "withdraw": "Retirar",
     "withdrawFromP2p": "Retirar",
     "withdrawWith": "Retirar con",
-    "youllReceive": "Recibirás"
+    "youllReceive": "Recibirás",
+    "amountReceiveInfoTitle": "Monto a recibir",
+    "amountReceiveInfoBody": "Se aplica un ajuste de {amount} {currency} a esta transferencia.",
+    "amountReceiveInfoBodyFree": "No se aplica ninguna comisión de transferencia. Recibirás el monto completo de la transferencia.",
+    "transferValidateFailed": "No se pudo calcular la comisión de transferencia. Inténtalo de nuevo.",
+    "mainWallet": "Cartera",
+    "p2pWallets": "Carteras P2P",
+    "amountReceiveInfoBodyApplied": "Se aplicó un ajuste de {amount} {currency} a esta transferencia."
   },
   "guide": {
     "back": "Atrás",

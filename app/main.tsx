@@ -226,10 +226,10 @@ export default function Main({
       <P2PAnnouncementController />
       <div className="hidden md:flex px-6 h-screen overflow-hidden m-auto relative max-w-[1232px]">
         {isHeaderVisible && <Sidebar className="hidden md:flex" />}
-        <div className="flex-1 py-6">
-          <div className="container mx-auto">
+        <div className="flex flex-1 flex-col min-h-0 py-6 overflow-hidden">
+          <div className="container mx-auto flex flex-1 flex-col min-h-0 h-full">
             {showMaintenanceBanner && (
-              <div className="relative z-0 md:-mb-8 md:px-3">
+              <div className="relative z-0 md:-mb-8 md:px-3 flex-shrink-0">
                 <P2PSystemMaintenanceBanner />
               </div>
             )}
@@ -242,7 +242,7 @@ export default function Main({
         {isHeaderVisible && <Header className="flex-shrink-0" />}
         <main
           className={cn(
-            "flex flex-col flex-1 min-h-0",
+            "flex flex-col flex-1 min-h-0 w-full",
             pathname.startsWith("/profile") ? "overflow-y-auto overscroll-y-none" : "overflow-hidden",
           )}
         >

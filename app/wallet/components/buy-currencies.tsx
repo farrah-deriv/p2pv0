@@ -3,7 +3,7 @@
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "@/lib/i18n/use-translations"
-import { currencyLogoMapper } from "@/lib/utils"
+import { currency3dLogoMapper } from "@/lib/utils"
 import { useAccountCurrencies } from "@/hooks/use-account-currencies"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -14,7 +14,8 @@ interface CurrencyCardProps {
 }
 
 function CurrencyCard({ code, name, onClick }: CurrencyCardProps) {
-  const logo = currencyLogoMapper[code as keyof typeof currencyLogoMapper]
+  // Empty-state currency picker: 3D icons (mobile deposit/withdraw list parity).
+  const logo = currency3dLogoMapper[code as keyof typeof currency3dLogoMapper]
 
   return (
     <button type="button" onClick={onClick} className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-black/[0.04] transition-colors cursor-pointer w-full text-center">

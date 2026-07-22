@@ -481,8 +481,9 @@ export default function BuySellPage() {
                 <div data-testid="markets-text-balance">
                   <BalanceSection balance={balance} currency={balanceCurrency} isLoading={isLoadingBalance} />
                 </div>
-                <div className="mt-1 flex w-full items-end justify-between gap-4">
+                <div className="mt-1 flex w-full min-w-0 flex-wrap items-end justify-between gap-x-4 gap-y-2">
                   <HeaderSegmentedControl
+                    className="shrink-0"
                     value={activeTab}
                     onValueChange={(value) => {
                       if (value === "sell") track("ek_buy_markets")
@@ -498,16 +499,16 @@ export default function BuySellPage() {
                   />
                   {showCurrencyFilter && (
                     <div
-                      className="flex shrink-0 flex-col items-end gap-1"
+                      className="flex shrink-0 flex-col items-start gap-1"
                       data-guide-id="guide-currency-filter"
                     >
                       {activeTab === "sell" && (
-                        <span className="text-xs font-normal text-white opacity-72">
+                        <span className="text-start text-xs font-normal text-white opacity-72">
                           {t("market.payWith")}:
                         </span>
                       )}
                       {activeTab === "buy" && (
-                        <span className="text-xs font-normal text-white opacity-72">
+                        <span className="text-start text-xs font-normal text-white opacity-72">
                           {t("market.receiveIn")}:
                         </span>
                       )}

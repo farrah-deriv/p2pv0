@@ -20,41 +20,48 @@ export default function BalanceItem({ currency, amount, label, currencyLabel, on
     <div
       onClick={onClick}
       data-testid={`wallet-card-balance-${currency}`}
-      className="flex items-center justify-between h-[72px] w-full cursor-pointer transition-colors relative"
+      className="relative w-full cursor-pointer transition-colors"
     >
-      <div className="flex items-center gap-4 ps-0">
-        <div className="flex-shrink-0 relative w-7 h-7">
-          <Image src="/icons/p2p-black.png" alt="P2P" width={28} height={28} className="w-7 h-7 rounded-full" />
+      {/* Content pad matches WalletSummary `p-6` (1.5rem); separator below is full-bleed. */}
+      <div className="flex h-[72px] w-full items-center justify-between px-6">
+        <div className="flex min-w-0 items-center gap-4">
+          <div className="relative h-7 w-7 flex-shrink-0">
+            <Image src="/icons/p2p-black.png" alt="P2P" width={28} height={28} className="h-7 w-7 rounded-full" />
 
-          <div className="absolute -bottom-1 start-1/2 -translate-x-1/2">
-            {logo ? (
-              <div className="w-[14px] h-[14px] rounded-full bg-white flex items-center justify-center p-[2px]">
-                <Image
-                  src={logo}
-                  alt={`${currency} logo`}
-                  width={12}
-                  height={12}
-                  className="w-3 h-3 rounded-full object-contain"
-                />
-              </div>
-            ) : (
-              <div className="w-[14px] h-[14px] rounded-full bg-white flex items-center justify-center p-[2px]">
-                <div className="w-3 h-3 rounded-full bg-gray-200 flex items-center justify-center text-[8px] font-semibold text-gray-600">
-                  {currency.charAt(0)}
+            <div className="absolute -bottom-1 start-1/2 -translate-x-1/2">
+              {logo ? (
+                <div className="flex h-[14px] w-[14px] items-center justify-center rounded-full bg-white p-[2px]">
+                  <Image
+                    src={logo}
+                    alt={`${currency} logo`}
+                    width={12}
+                    height={12}
+                    className="h-3 w-3 rounded-full object-contain"
+                  />
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="flex h-[14px] w-[14px] items-center justify-center rounded-full bg-white p-[2px]">
+                  <div className="flex h-3 w-3 items-center justify-center rounded-full bg-gray-200 text-[8px] font-semibold text-gray-600">
+                    {currency.charAt(0)}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
+
+          <div className="text-base font-normal text-slate-1200">{label || currency}</div>
         </div>
 
-        <div className="text-slate-1200 text-base font-normal">{label || currency}</div>
+        <div
+          data-testid={`wallet-text-balance-${currency}`}
+          className="shrink-0 text-base font-normal text-slate-1200"
+        >
+          {displayAmount} {currency}
+        </div>
       </div>
 
-      <div data-testid={`wallet-text-balance-${currency}`} className="text-slate-1200 text-base font-normal pe-6">
-        {displayAmount} {currency}
-      </div>
-
-      <div className="absolute bottom-0 start-10 end-0 h-[1px] bg-grayscale-200" />
+      {/* Full-bleed trailing edge; indent past icon cluster (pad 24 + icon ~28 + gap). */}
+      <div className="absolute bottom-0 start-16 end-0 h-px bg-grayscale-200" />
     </div>
   )
 }

@@ -558,7 +558,7 @@
     "updateAdError": "Beim Aktualisieren der Anzeige ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
     "visibilityStatus": "Ihre Anzeige ist nicht sichtbar",
     "visibilityStatusDescription": "Ihre Anzeige ist für andere nicht sichtbar. Hier ist der Grund:",
-    "visibilityStatusMultipleReasons": "Ihre Anzeige wird auf dem Markt nicht aufgelistet aus folgenden Gründen:",
+    "visibilityStatusMultipleReasons": "Ihre Anzeige ist aus folgenden Gründen nicht auf Market gelistet:",
     "tabActive": "Aktiv",
     "tabInactive": "Inaktiv",
     "noInactiveAdsTitle": "Keine inaktiven Anzeigen",
@@ -1134,52 +1134,65 @@
       "contactSupport": "Kontaktieren Sie den Support",
       "editAd": "Anzeige aktualisieren",
       "editSchedule": "Zeitplan bearbeiten",
-      "viewProfile": "Profil anzeigen"
+      "viewProfile": "Profil anzeigen",
+      "updateBusinessHours": "Geschäftszeiten aktualisieren",
+      "waitForLimitReset": "Warten Sie auf das Zurücksetzen des Limits"
     },
     "adLinkCopied": "Anzeigenlink kopiert",
     "advertFloatRateDisabled": {
       "description": "Für dieses Währungspaar sind keine variablen Kurse mehr verfügbar. Wechseln Sie zu einem Festpreis, um Ihre Anzeige sichtbar zu machen.",
-      "title": "Ihre Anzeige ist nicht sichtbar"
+      "title": "Ihre Anzeige ist nicht sichtbar",
+      "shortDescription": "Für dieses Währungspaar sind keine variablen Kurse mehr verfügbar."
     },
     "advertInactive": {
       "description": "Aktivieren Sie Ihre Anzeige, um sie für andere Händler sichtbar zu machen.",
-      "title": "Ihre Anzeige ist inaktiv"
+      "title": "Ihre Anzeige ist inaktiv",
+      "shortDescription": "Ihre Anzeige ist inaktiv."
     },
     "advertNoPaymentMethods": {
       "description": "Für diese Anzeige gibt es keine Zahlungsmethode. Fügen Sie eine hinzu, um sie für andere Händler sichtbar zu machen.",
-      "title": "Ihre Anzeige ist nicht sichtbar"
+      "title": "Ihre Anzeige ist nicht sichtbar",
+      "shortDescription": "Für diese Anzeige gibt es keine Zahlungsmethode."
     },
     "advertRemaining": {
-      "description": "Der Restbetrag Ihrer Anzeige liegt unter der Mindestbestellmenge.",
-      "title": "Ihre Anzeige ist nicht sichtbar"
+      "description": "Der Restbetrag Ihrer Anzeige ({remainingAmount} {currency}) liegt unter der Mindestbestellmenge.",
+      "title": "Ihre Anzeige ist nicht sichtbar",
+      "shortDescription": "Der Restbetrag Ihrer Anzeige liegt unter der Mindestbestellmenge."
     },
     "advertiserAdvertsUnlisted": {
-      "description": "Sie haben Ihre gesamte Anzeige pausiert. Aktivieren Sie Ihre Anzeigen, um sie für andere Händler sichtbar zu machen.",
-      "title": "Ihre Anzeigen sind nicht sichtbar"
+      "description": "Sie haben sich dafür entschieden, Ihre Anzeigen zu pausieren. Deaktivieren Sie den Schalter „Meine Anzeigen pausieren“, um sie für andere Händler sichtbar zu machen.",
+      "title": "Ihre Anzeigen sind nicht sichtbar",
+      "shortDescription": "Sie haben alle Ihre Anzeigen pausiert."
     },
     "advertiserBalance": {
-      "description": "Ihr Guthaben liegt unter dem Mindestbestellwert Ihrer Anzeige. Fügen Sie Geld hinzu oder senken Sie den Mindestbetrag für die Schaltung Ihrer Anzeige.",
-      "title": "Ihre Anzeige ist nicht sichtbar"
+      "description": "Ihr Guthaben liegt unter der Mindestbestellmenge Ihrer Anzeige von {minOrderAmount} {currency}. Fügen Sie Geld hinzu oder senken Sie den Mindestbetrag für die Schaltung Ihrer Anzeige.",
+      "title": "Ihre Anzeige ist nicht sichtbar",
+      "shortDescription": "Ihr Guthaben liegt unter dem Mindestbestellwert Ihrer Anzeige."
     },
     "advertiserDailyLimit": {
       "description": "Ihr verbleibendes Tageslimit liegt unter der Mindestbestellmenge. Senken Sie den Mindestwert für die Schaltung Ihrer Anzeige oder warten Sie, bis das Limit innerhalb von 24 Stunden zurückgesetzt wird.",
-      "title": "Ihre Anzeige ist nicht sichtbar"
+      "title": "Ihre Anzeige ist nicht sichtbar",
+      "shortDescription": "Ihr verbleibendes Tageslimit liegt unter der Mindestbestellmenge."
     },
     "advertiserNoPrivateGroups": {
-      "description": "Sie befinden sich nicht mehr in der Diamond-Stufe, daher sind geschlossene Gruppenanzeigen nicht mehr berechtigt und werden vom Markt ausgeblendet. Um diese Anzeige auf der Marktseite aufzulisten, ändern Sie ihre Sichtbarkeit von „Geschlossene Gruppe“ auf „Jeder“.",
-      "title": "Ihre Anzeige ist nicht sichtbar"
+      "description": "Sie befinden sich nicht mehr in der Diamond-Stufe, daher sind geschlossene Gruppenanzeigen nicht mehr berechtigt und werden vom Markt ausgeblendet.\n\nUm diese Anzeige auf der Marktseite aufzulisten, ändern Sie ihre Sichtbarkeit von „Geschlossene Gruppe“ auf „Jeder“.",
+      "title": "Ihre Anzeige ist nicht sichtbar",
+      "shortDescription": "Diese Anzeige ist für geschlossene Gruppen bestimmt. Sie dürfen diese Funktion nicht mehr verwenden."
     },
     "advertiserScheduleUnavailable": {
       "description": "Es ist außerhalb Ihrer Geschäftszeiten. Aktualisieren Sie Ihren Zeitplan oder warten Sie, bis Ihre aktiven Stunden erreicht sind.",
-      "title": "Ihre Anzeige ist nicht sichtbar"
+      "title": "Ihre Anzeige ist nicht sichtbar",
+      "shortDescription": "Es ist außerhalb Ihrer Geschäftszeiten."
     },
     "advertiserStatus": {
       "description": "Kontaktieren Sie uns per Live-Chat für Hilfe.",
-      "title": "Ihre Anzeige ist nicht sichtbar"
+      "title": "Ihre Anzeige ist nicht sichtbar",
+      "shortDescription": "Kontaktieren Sie uns per Live-Chat für Hilfe."
     },
     "advertiserTempBan": {
       "description": "Ihr Konto ist vorübergehend gesperrt. Weitere Informationen finden Sie in Ihrem Profil.",
-      "title": "Ihre Anzeige ist nicht sichtbar"
+      "title": "Ihre Anzeige ist nicht sichtbar",
+      "shortDescription": "Ihr Konto ist vorübergehend gesperrt. Weitere Informationen finden Sie in Ihrem Profil."
     },
     "copyLink": "Link kopieren",
     "failedToCopyLink": "Link konnte nicht kopiert werden",
@@ -1195,12 +1208,14 @@
     "shareImage": "Bild teilen",
     "shareMessage": "Hallo! Ich möchte {currency} zu {rate} auf Deriv P2P tauschen. Wenn Sie interessiert sind, schauen Sie sich meine Anzeige an {url}. Danke!",
     "shareTelegramMessage": "Hallo! Ich möchte {currency} zu {rate} auf Deriv P2P tauschen. Wenn Sie interessiert sind, schauen Sie sich meine Anzeige an. Danke!",
-    "sharedSuccessfully": "Erfolgreich geteilt"
+    "sharedSuccessfully": "Erfolgreich geteilt",
+    "unknownReason": "Kontaktieren Sie uns per Live-Chat für Hilfe."
   },
   "wallet": {
     "all": "Alle",
     "amount": "Betrag",
     "amountReceive": "Erhaltener Betrag",
+    "amountReceived": "Erhaltener Betrag",
     "chooseCurrency": "Währung wählen",
     "chooseCurrencyDescription": "Wählen Sie, welche Währung Sie {action} möchten.",
     "contactUs": "Kontaktieren Sie uns",
@@ -1214,6 +1229,7 @@
     "directWithdrawalDescription": "Heben Sie Geld direkt auf Ihr Bankkonto, E-Wallet oder andere Zahlungsmethoden ab.",
     "directWithdrawalTitle": "Abheben",
     "endOfTransaction": "Ende der Transaktion",
+    "loadMore": "Mehr laden",
     "estTotalAssetsTooltip": "Dies ist Ihr geschätztes Gesamtguthaben über alle P2P-Wallets, angezeigt in USD.",
     "estTotalValue": "P2P-Wallet-Guthaben",
     "exceedsBalance": "Der Betrag darf das verfügbare Guthaben von {amount} {currency} nicht überschreiten.",
@@ -1260,10 +1276,10 @@
     "transferAmount": "Übertragungsbetrag",
     "transferErrorDuring": "Wir konnten Ihre Übertragung nicht verarbeiten. Bitte versuchen Sie es erneut.",
     "transferFee": "Übertragungsgebühr",
-    "transferRouteP2pToP2p": "P2P {currency} → P2P {currency}",
-    "transferRouteP2pToWallet": "P2P {currency} → {currency}-Wallet",
-    "transferRouteWalletOnly": "{currency}-Wallet",
-    "transferRouteWalletToP2p": "{currency}-Wallet → P2P {currency}",
+    "transferRouteP2pToP2p": "P2P-Wallet → P2P-Wallet",
+    "transferRouteP2pToWallet": "P2P-Wallet → Wallet",
+    "transferRouteWalletOnly": "Wallet → Wallet",
+    "transferRouteWalletToP2p": "Wallet → P2P-Wallet",
     "transferSuccessMessage": "{amount} {currency} von Ihrer {from} auf Ihre {to} übertragen",
     "transferSuccessMessageMainToP2P": "{amount} {currency} ist auf dem Weg zu Ihrer {walletName} {currencyLabel} Wallet. Es kann einige Minuten dauern, bis es angezeigt wird.",
     "transferSuccessful": "Übertragung erfolgreich",
@@ -1306,7 +1322,14 @@
     "withdraw": "Abheben",
     "withdrawFromP2p": "Abheben",
     "withdrawWith": "Abheben mit",
-    "youllReceive": "Sie erhalten"
+    "youllReceive": "Sie erhalten",
+    "amountReceiveInfoTitle": "Erhaltener Betrag",
+    "amountReceiveInfoBody": "Für diese Übertragung wird eine Anpassung von {amount} {currency} vorgenommen.",
+    "amountReceiveInfoBodyFree": "Es fällt keine Übertragungsgebühr an. Sie erhalten den vollen Übertragungsbetrag.",
+    "transferValidateFailed": "Übertragungsgebühr konnte nicht berechnet werden. Bitte erneut versuchen.",
+    "mainWallet": "Wallet",
+    "p2pWallets": "P2P-Wallets",
+    "amountReceiveInfoBodyApplied": "Für diese Übertragung wurde eine Anpassung von {amount} {currency} vorgenommen."
   },
   "guide": {
     "back": "Zurück",

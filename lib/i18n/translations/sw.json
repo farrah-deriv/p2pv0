@@ -539,7 +539,7 @@
     "updateRate": "Sasisha kiwango",
     "visibilityStatus": "Tangazo lako halionekani",
     "visibilityStatusDescription": "Tangazo lako halionekani kwa wengine. Hii ndio sababu:",
-    "visibilityStatusMultipleReasons": "Tangazo lako halijaorodheshwa kwenye Soko kwa sababu zifuatazo:",
+    "visibilityStatusMultipleReasons": "Tangazo lako halijaorodheshwa kwenye Soko kwa sababu hizi:",
     "tabActive": "Hai",
     "tabInactive": "Haifanyi kazi",
     "noInactiveAdsTitle": "Hakuna matangazo yasiyotumika",
@@ -1115,52 +1115,65 @@
       "contactSupport": "Wasiliana na usaidizi",
       "editAd": "Sasisha tangazo",
       "editSchedule": "Hariri ratiba",
-      "viewProfile": "Angalia wasifu"
+      "viewProfile": "Angalia wasifu",
+      "updateBusinessHours": "Sasisha saa za kazi",
+      "waitForLimitReset": "Subiri kikomo kiweke upya"
     },
     "adLinkCopied": "Kiungo cha tangazo kimenakiliwa",
     "advertFloatRateDisabled": {
       "description": "Viwango vinavyoelea havipatikani tena kwa jozi hii ya sarafu. Badili hadi kiwango kisichobadilika ili kufanya tangazo lako lionekane.",
-      "title": "Tangazo lako halionekani"
+      "title": "Tangazo lako halionekani",
+      "shortDescription": "Viwango vinavyoelea havipatikani tena kwa jozi hii ya sarafu."
     },
     "advertInactive": {
       "description": "Washa tangazo lako ili lionekane kwa wafanyabiashara wengine.",
-      "title": "Tangazo lako halitumiki"
+      "title": "Tangazo lako halitumiki",
+      "shortDescription": "Tangazo lako halitumiki."
     },
     "advertNoPaymentMethods": {
       "description": "Tangazo hili halina njia ya kulipa. Ongeza moja ili ionekane kwa wafanyabiashara wengine.",
-      "title": "Tangazo lako halionekani"
+      "title": "Tangazo lako halionekani",
+      "shortDescription": "Tangazo hili halina njia ya kulipa."
     },
     "advertRemaining": {
-      "description": "Kiasi kilichosalia cha tangazo lako kiko chini ya kiwango cha chini cha agizo.",
-      "title": "Tangazo lako halionekani"
+      "description": "Kiasi kilichosalia cha tangazo lako ({remainingAmount} {currency}) kiko chini ya kiwango cha juu zaidi cha agizo.",
+      "title": "Tangazo lako halionekani",
+      "shortDescription": "Kiasi kilichosalia cha tangazo lako kiko chini ya kiwango cha chini cha agizo."
     },
     "advertiserAdvertsUnlisted": {
-      "description": "Umesitisha tangazo lako lote. Washa matangazo yako ili kuifanya ionekane kwa wafanyabiashara wengine.",
-      "title": "Matangazo yako hayaonekani"
+      "description": "Umechagua kusitisha matangazo yako. Zima kigeuzi cha \"Sitisha matangazo yangu\" ili kuyafanya yaonekane na wafanyabiashara wengine.",
+      "title": "Matangazo yako hayaonekani",
+      "shortDescription": "Umesitisha matangazo yako yote."
     },
     "advertiserBalance": {
-      "description": "Salio lako ni la chini kuliko agizo lako la chini kabisa la tangazo. Ongeza pesa au upunguze kiwango cha chini zaidi ili kuorodhesha tangazo lako.",
-      "title": "Tangazo lako halionekani"
+      "description": "Salio lako ni la chini kuliko agizo lako la chini kabisa la {minOrderAmount} {currency}. Ongeza pesa au upunguze kiwango cha chini zaidi ili kuorodhesha tangazo lako.",
+      "title": "Tangazo lako halionekani",
+      "shortDescription": "Salio lako ni la chini kuliko agizo lako la chini kabisa la tangazo."
     },
     "advertiserDailyLimit": {
       "description": "Kikomo chako cha kila siku kilichosalia ni chini ya agizo la chini zaidi. Punguza kiwango cha chini zaidi ili kuorodhesha tangazo lako au usubiri kikomo kiweke upya ndani ya saa 24.",
-      "title": "Tangazo lako halionekani"
+      "title": "Tangazo lako halionekani",
+      "shortDescription": "Kikomo chako cha kila siku kilichosalia ni chini ya agizo la chini zaidi."
     },
     "advertiserNoPrivateGroups": {
-      "description": "Haupo tena katika kiwango cha Diamond, kwa hivyo matangazo ya vikundi vilivyofungwa hayastahiki tena na yamefichwa kwenye soko. Ili kuorodhesha tangazo hili kwenye ukurasa wa soko, badilisha mwonekano wake kutoka kwa Kikundi Kilichofungwa hadi kwa Kila Mtu.",
-      "title": "Tangazo lako halionekani"
+      "description": "Haupo tena katika kiwango cha Almasi, kwa hivyo matangazo ya vikundi vilivyofungwa hayastahiki tena na yamefichwa kwenye soko.\n\nIli kuorodhesha tangazo hili kwenye ukurasa wa soko, badilisha mwonekano wake kutoka kwa Kikundi Kilichofungwa hadi kwa Kila Mtu.",
+      "title": "Tangazo lako halionekani",
+      "shortDescription": "Tangazo hili limewekwa kwa ajili ya vikundi vilivyofungwa. Huruhusiwi tena kutumia kipengele hicho."
     },
     "advertiserScheduleUnavailable": {
       "description": "Ni nje ya saa zako za kazi. Sasisha ratiba yako au usubiri hadi saa zako za kazi.",
-      "title": "Tangazo lako halionekani"
+      "title": "Tangazo lako halionekani",
+      "shortDescription": "Ni nje ya saa zako za kazi."
     },
     "advertiserStatus": {
       "description": "Wasiliana nasi kupitia gumzo la moja kwa moja kwa usaidizi.",
-      "title": "Tangazo lako halionekani"
+      "title": "Tangazo lako halionekani",
+      "shortDescription": "Wasiliana nasi kupitia gumzo la moja kwa moja kwa usaidizi."
     },
     "advertiserTempBan": {
       "description": "Akaunti yako imezuiwa kwa muda. Angalia wasifu wako kwa maelezo.",
-      "title": "Tangazo lako halionekani"
+      "title": "Tangazo lako halionekani",
+      "shortDescription": "Akaunti yako imezuiwa kwa muda. Angalia wasifu wako kwa maelezo."
     },
     "copyLink": "Nakili kiungo",
     "failedToCopyLink": "Imeshindwa kunakili kiungo",
@@ -1176,12 +1189,14 @@
     "shareImage": "Shiriki picha",
     "shareMessage": "Habari! Ningependa kubadilisha {currency} kwa {rate} kwenye Deriv P2P. Ikiwa una nia, angalia tangazo langu {url}. Asante!",
     "shareTelegramMessage": "Habari! Ningependa kubadilisha {currency} kwa {rate} kwenye Deriv P2P. Ikiwa una nia, angalia tangazo langu. Asante!",
-    "sharedSuccessfully": "Imeshirikiwa kwa mafanikio"
+    "sharedSuccessfully": "Imeshirikiwa kwa mafanikio",
+    "unknownReason": "Wasiliana nasi kupitia gumzo la moja kwa moja kwa usaidizi."
   },
   "wallet": {
     "all": "Zote",
     "amount": "Kiasi",
     "amountReceive": "Kiasi utakapokea",
+    "amountReceived": "Kiasi kilichopokelewa",
     "chooseCurrency": "Chagua waluta",
     "chooseCurrencyDescription": "Chagua waluta gani unataka {action}.",
     "contactUs": "Wasiliana nasi",
@@ -1195,6 +1210,7 @@
     "directWithdrawalDescription": "Withdraw funds directly to your bank account, e-wallet, or other payment methods.",
     "directWithdrawalTitle": "Toa pesa",
     "endOfTransaction": "Mwisho wa miamala",
+    "loadMore": "Pakia zaidi",
     "estTotalAssetsTooltip": "Hii ni salio lako la makadirio lililounganishwa katika pochi zote za P2P, linaonyeshwa kwa USD.",
     "estTotalValue": "Salio la Mkoba wa P2P",
     "exceedsBalance": "Kiasi hakiwezi kuzidi salio linalopatikana {amount} {currency}.",
@@ -1241,10 +1257,10 @@
     "transferAmount": "Kiasi cha uhamisho",
     "transferErrorDuring": "Hatukuweza kuchakata uhamisho wako. Tafadhali jaribu tena.",
     "transferFee": "Ada ya uhamisho",
-    "transferRouteP2pToP2p": "P2P {currency} → P2P {currency}",
-    "transferRouteP2pToWallet": "P2P {currency} → Pochi ya {currency}",
-    "transferRouteWalletOnly": "Pochi ya {currency}",
-    "transferRouteWalletToP2p": "Pochi ya {currency} → P2P {currency}",
+    "transferRouteP2pToP2p": "Pochi ya P2P → Pochi ya P2P",
+    "transferRouteP2pToWallet": "Pochi ya P2P → Pochi",
+    "transferRouteWalletOnly": "Pochi → Pochi",
+    "transferRouteWalletToP2p": "Pochi → Pochi ya P2P",
     "transferSuccessMessage": "{amount} {currency} imehamishwa kutoka {from} kwenda {to}",
     "transferSuccessMessageMainToP2P": "{amount} {currency} iko njiani kwenda kwenye pochi yako ya {walletName} {currencyLabel}. Inaweza kuchukua dakika chache kuonekana.",
     "transferSuccessful": "Uhamisho umefanikia",
@@ -1287,7 +1303,14 @@
     "withdraw": "Toa pesa",
     "withdrawFromP2p": "Toa pesa",
     "withdrawWith": "Toa pesa kwa",
-    "youllReceive": "Utapokea"
+    "youllReceive": "Utapokea",
+    "amountReceiveInfoTitle": "Kiasi utakapokea",
+    "amountReceiveInfoBody": "Marekebisho ya {amount} {currency} yanatumika kwa uhamisho huu.",
+    "amountReceiveInfoBodyFree": "Hakuna ada ya uhamisho. Utapokea kiasi kamili cha uhamisho.",
+    "transferValidateFailed": "Imeshindikana kukokotoa ada ya uhamisho. Tafadhali jaribu tena.",
+    "mainWallet": "Pochi",
+    "p2pWallets": "Pochi za P2P",
+    "amountReceiveInfoBodyApplied": "Marekebisho ya {amount} {currency} yalitumika kwa uhamisho huu."
   },
   "guide": {
     "back": "Rudi",

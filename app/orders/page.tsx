@@ -286,11 +286,12 @@ export default function OrdersPage() {
       {showKycPopup && <span data-testid="orders-alert-kyc" aria-hidden="true" className="hidden" />}
       <div className="flex flex-col flex-1 min-h-0 h-full md:h-screen px-3 overflow-hidden">
         <div className="flex flex-col flex-shrink-0">
-          <div className="relative z-10 w-[calc(100%+24px)] md:w-full min-h-[80px] flex flex-row items-center gap-[16px] md:gap-[24px] bg-slate-1200 px-6 pb-6 pt-8 md:p-6 rounded-b-3xl md:rounded-3xl justify-between -mx-3 mb-0 md:m-0">
+          <div className="relative z-10 w-[calc(100%+24px)] md:w-full min-h-[80px] flex flex-row flex-wrap items-center gap-x-4 gap-y-2 md:gap-x-6 bg-slate-1200 px-6 pb-6 pt-8 md:p-6 rounded-b-3xl md:rounded-3xl justify-between -mx-3 mb-0 md:m-0">
             <HeaderSegmentedControl
               value={activeTab}
               onValueChange={handleTabChange}
               width={168}
+              className="shrink-0"
               segments={[
                 { value: "active", label: t("orders.active"), testId: "orders-tab-active" },
                 { value: "past", label: t("orders.past"), testId: "orders-tab-past" },
@@ -300,7 +301,7 @@ export default function OrdersPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-white font-normal hover:text-white hover:bg-transparent "
+                className="shrink-0 text-white font-normal hover:text-white hover:bg-transparent "
                 onClick={handleCheckPreviousOrders}
                 data-testid="orders-btn-check-previous"
               >

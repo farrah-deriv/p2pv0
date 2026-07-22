@@ -28,7 +28,7 @@ describe("HeaderSegmentedControl", () => {
     expect(onValueChange).toHaveBeenCalledWith("past")
   })
 
-  it("applies fixed width class", () => {
+  it("applies minimum width class", () => {
     const { container } = render(
       <HeaderSegmentedControl
         value="active"
@@ -38,7 +38,25 @@ describe("HeaderSegmentedControl", () => {
       />,
     )
 
-    expect(container.querySelector('[role="tablist"]')).toHaveClass("w-[184px]")
+    expect(container.querySelector('[role="tablist"]')).toHaveClass("min-w-[184px]")
+    expect(container.querySelector('[role="tablist"]')).toHaveClass("w-max")
+  })
+
+  it("renders long segment labels without clipping visible text", () => {
+    render(
+      <HeaderSegmentedControl
+        value="active"
+        onValueChange={() => {}}
+        segments={[
+          { value: "active", label: "Đang hoạt động", testId: "tab-active" },
+          { value: "past", label: "Không hoạt động", testId: "tab-past" },
+        ]}
+        width={168}
+      />,
+    )
+
+    expect(screen.getByTestId("tab-active")).toHaveTextContent("Đang hoạt động")
+    expect(screen.getByTestId("tab-past")).toHaveTextContent("Không hoạt động")
   })
 
   it("renders sliding selection indicator", () => {

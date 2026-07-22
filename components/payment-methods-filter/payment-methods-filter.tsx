@@ -163,8 +163,15 @@ export default function PaymentMethodsFilter({
 
     return Object.entries(groupedMethods)
       .sort(([typeA], [typeB]) => typeA.localeCompare(typeB))
-      .map(([type, methods]) => (
-        <div key={type} className="space-y-3 border-t py-2">
+      .map(([type, methods], index, entries) => (
+        <div
+          key={type}
+          className={cn(
+            "space-y-3",
+            index > 0 && "border-t pt-4",
+            index < entries.length - 1 && "pb-4",
+          )}
+        >
           <h4 className="text-grayscale-text-muted text-sm">{getGroupTitle(type)}</h4>
           <div className="flex flex-col gap-3">
             {methods.map((method) => (

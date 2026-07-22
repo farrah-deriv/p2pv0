@@ -864,9 +864,12 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
         </>
       ) : (
         <form onSubmit={(e) => e.preventDefault()}>
-          <div className="fixed w-full h-full bg-white top-0 left-0 md:px-[24px] md:overflow-y-auto">
-            <div className="md:max-w-[620px] mx-auto pb-12 md:pb-0 mt-0 progress-steps-container overflow-x-hidden md:overflow-visible h-full md:h-auto md:px-0">
-              <div className="sticky top-0 z-10 bg-white">
+          {/* Responsive: column shell — sticky header + scroll middle + sticky footer.
+              Desktop (md+): page scroll with sticky header/footer as before. */}
+          <div className="fixed inset-0 flex flex-col bg-white md:overflow-y-auto md:px-[24px]">
+            <div className="flex min-h-0 flex-1 flex-col md:mx-auto md:h-auto md:min-h-full md:w-full md:max-w-[620px] md:overflow-visible md:px-0 progress-steps-container overflow-x-hidden">
+              {/* Top: close/back + progress (and desktop titles) — not part of scroll */}
+              <div className="shrink-0 bg-white md:sticky md:top-0 md:z-10">
                 <Navigation
                   isBackBtnVisible={currentStep != 0}
                   isVisible={false}
@@ -882,15 +885,36 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
                 <ProgressSteps
                   currentStep={currentStep}
                   steps={steps}
-                  className="px-6 my-6"
-                  title={{
-                    label: getPageTitle(),
-                    stepTitle: steps[currentStep].title,
-                  }}
+                  className="px-6 pt-6 md:pt-0 md:my-6"
                 />
+                <div
+                  className="hidden md:block px-6 mb-6"
+                  data-testid="ad-form-step-titles"
+                >
+                  <div className="text-base font-normal text-slate-1200">
+                    {getPageTitle()}
+                  </div>
+                  <div className="text-[32px] font-extrabold text-black mt-1">
+                    {steps[currentStep].title}
+                  </div>
+                </div>
               </div>
 
-              <div className="relative mb-16 md:mb-0 mx-6">
+              {/* Middle: only this region scrolls on responsive */}
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain md:overflow-visible md:flex-none pb-4 md:pb-0">
+                <div
+                  className="md:hidden px-6 mt-6 mb-4"
+                  data-testid="ad-form-step-titles"
+                >
+                  <div className="text-base font-normal text-slate-1200">
+                    {getPageTitle()}
+                  </div>
+                  <div className="text-xl font-extrabold text-black mt-1">
+                    {steps[currentStep].title}
+                  </div>
+                </div>
+
+                <div className="relative mx-6 md:mb-0">
                 {currentStep === 0 ? (
                   <AdDetailsForm
                     onNext={handleAdDetailsNext}
@@ -1148,10 +1172,12 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
                     </div>)}
                   </div>
                 )}
+                </div>
               </div>
 
+              {/* Bottom: Next / Create stays pinned on responsive */}
               {isMobile ? (
-                <div className="fixed bottom-0 left-0 w-full bg-white mt-4 py-4 md:mb-0 border-t border-gray-200">
+                <div className="shrink-0 w-full bg-white py-4 border-t border-gray-200">
                   <div className="mx-6">
                     <Button
                       type="button"

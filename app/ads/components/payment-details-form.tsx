@@ -4,6 +4,7 @@
 import type React from "react"
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
+import { useScrollToTopOnMaxSelection } from "@/hooks/use-scroll-to-top-on-max-selection"
 import Image from "next/image"
 import type { AdFormData } from "../types"
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -14,7 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { ModalHeaderRow } from "@/components/ui/modal-header-row"
 import { isRtlLocale } from "@/lib/i18n/config"
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
+import { Drawer, DrawerContent } from "@/components/ui/drawer"
 import { getCategoryDisplayName, formatPaymentMethodName } from "@/lib/utils"
 import { ProfileAPI } from "@/services/api"
 import AddPaymentMethodPanel from "@/app/profile/components/add-payment-method-panel"
@@ -102,6 +103,7 @@ const FullPagePaymentSelection = ({
   const [localSelected, setLocalSelected] = useState<string[]>(selectedPaymentMethods)
   const [searchQuery, setSearchQuery] = useState("")
   const [isSearchFocused, setIsSearchFocused] = useState(false)
+  const listScrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (isOpen) {
@@ -130,6 +132,10 @@ const FullPagePaymentSelection = ({
     [filteredMethods, localSelected],
   )
 
+  useScrollToTopOnMaxSelection(listScrollRef, localSelected.length, {
+    listVersion: localSelected.join(","),
+  })
+
   const handleToggle = (methodId: string) => {
     setLocalSelected((prev) => {
       if (isPaymentMethodIdSelected(prev, methodId)) {
@@ -148,12 +154,7 @@ const FullPagePaymentSelection = ({
 
   const content = (
     <div className="box-border flex min-h-0 min-w-0 w-full max-w-full flex-1 flex-col overflow-hidden">
-      {isMobile && (
-        <div className="shrink-0 px-4 pb-4 text-center">
-          <p className="text-base text-grayscale-600">{t("paymentMethod.selectUpTo3")}</p>
-        </div>
-      )}
-      <div className={`shrink-0 ${isMobile ? "px-4 pb-6" : ""}`}>
+      <div className={`shrink-0 pb-4 ${isMobile ? "px-4" : ""}`}>
         <div className="relative">
           <Image
             src="/icons/search-icon-custom.png"
@@ -184,12 +185,13 @@ const FullPagePaymentSelection = ({
           )}
         </div>
       </div>
-      {!isMobile && sortedFilteredMethods.length > 0 && (
-        <div className="shrink-0 my-0">
-          <p className="text-base text-slate-1200">{t("paymentMethod.selectUpTo3")}</p>
-        </div>
-      )}
-      <div className="min-h-0 min-w-0 max-w-full flex-1 space-y-2 overflow-x-hidden overflow-y-auto px-4 md:px-0">
+      <div className={`shrink-0 pb-4 ${isMobile ? "px-4" : ""}`}>
+        <p className="text-base text-slate-1200">{t("paymentMethod.selectUpTo3")}</p>
+      </div>
+      <div
+        ref={listScrollRef}
+        className="min-h-0 min-w-0 max-w-full flex-1 space-y-2 overflow-x-hidden overflow-y-auto px-4 md:px-0"
+      >
         {sortedFilteredMethods.length === 0 ? (
           <div className="text-center pt-0 pb-4 md:pt-4 md:pb-8 flex flex-col items-center">
             <Image src="/icons/magnifier.png" alt={t("common.noResults")} width={88} height={88} className="mb-0" />
@@ -246,10 +248,22 @@ const FullPagePaymentSelection = ({
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onClose}>
-        <DrawerContent dir={dir} className="max-h-[90vh] flex flex-col overflow-hidden" data-testid="ad-form-sheet-payment-methods">
-          <DrawerHeader className="shrink-0 pb-[10px] text-start">
-            <DrawerTitle className="text-[20px] font-bold text-start">{t("paymentMethod.title")}</DrawerTitle>
-          </DrawerHeader>
+        <DrawerContent
+          dir={dir}
+          hideHandle
+          className="max-h-[90vh] flex flex-col overflow-hidden"
+          data-testid="ad-form-sheet-payment-methods"
+        >
+          <ModalHeaderRow
+            title={t("paymentMethod.title")}
+            onClose={onClose}
+            closeAriaLabel={t("common.close")}
+            titleClassName="text-[20px] font-extrabold"
+            closeIconSrc="/icons/button-close.png"
+            closeIconSize={48}
+            closeButtonClassName="hover:bg-transparent hover:opacity-80 px-0 min-w-[48px]"
+            className="shrink-0 px-4 pt-4 pb-0"
+          />
           {content}
         </DrawerContent>
       </Drawer>
@@ -258,7 +272,7 @@ const FullPagePaymentSelection = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent dir={dir} className="flex min-h-0 min-w-0 w-full max-w-xl max-h-[90vh] flex-col overflow-hidden rounded-[32px] p-8" data-testid="ad-form-sheet-payment-methods">
+      <DialogContent dir={dir} className="flex min-h-0 min-w-0 w-full max-w-xl max-h-[90vh] flex-col overflow-hidden rounded-[32px] px-8 pt-6 pb-8" data-testid="ad-form-sheet-payment-methods">
         <ModalHeaderRow
           asDialog
           title={t("paymentMethod.title")}
@@ -268,7 +282,7 @@ const FullPagePaymentSelection = ({
           closeIconSrc="/icons/button-close.png"
           closeIconSize={48}
           closeButtonClassName="hover:bg-transparent hover:opacity-80 px-0 min-w-[48px]"
-          className="mb-4"
+          className="mb-2"
         />
         {content}
       </DialogContent>
@@ -310,6 +324,10 @@ const PaymentSelectionContent = ({
     handleLoadMore,
     isFetchingNextPage,
   )
+
+  useScrollToTopOnMaxSelection(scrollRootRef, selectedPMs.length, {
+    listVersion: selectedPMs.join(","),
+  })
 
   useEffect(() => {
     setSelectedPMs(tempSelectedPaymentMethods)

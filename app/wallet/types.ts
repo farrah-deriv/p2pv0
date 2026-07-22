@@ -21,6 +21,9 @@ export interface Transaction {
     transaction_currency: string
     transaction_gross_amount: string
     transaction_net_amount: string
+    transaction_fee_amount?: string
+    /** Configured fee % from backend — do not derive from fee/gross (rounding). */
+    transaction_fee_percentage?: number | string
     transaction_status: string
     wallet_transaction_type: string
   }

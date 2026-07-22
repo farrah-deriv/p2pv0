@@ -33,6 +33,7 @@ import {
 } from "@/hooks/use-api-queries"
 import { useQueryClient, type InfiniteData } from "@tanstack/react-query"
 import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
+import { useScrollToTopOnMaxSelection } from "@/hooks/use-scroll-to-top-on-max-selection"
 import RateChangeConfirmation from "./rate-change-confirmation"
 import AdUpdatedConfirmation from "./ad-updated-confirmation"
 import { useTrackers } from "@/analytics/useTrackers"
@@ -126,6 +127,10 @@ const PaymentSelectionContent = ({
     handleLoadMore,
     isFetchingNextPage,
   )
+
+  useScrollToTopOnMaxSelection(scrollRootRef, selectedPMs.length, {
+    listVersion: selectedPMs.join(","),
+  })
 
   useEffect(() => {
     setSelectedPMs(tempSelectedPaymentMethods)

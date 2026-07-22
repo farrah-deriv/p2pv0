@@ -39,7 +39,6 @@ export default function WalletPage() {
   const [totalBalance, setTotalBalance] = useState("0.00")
   const [balanceCurrency, setBalanceCurrency] = useState("USD")
   const [p2pBalances, setP2pBalances] = useState<Balance[]>([])
-  const [currenciesData, setCurrenciesData] = useState<Record<string, any>>({})
   const [hasCheckedSignup, setHasCheckedSignup] = useState(false)
   const [hasBalance, setHasBalance] = useState(false)
   const [showKycPopup, setShowKycPopup] = useState(false)
@@ -123,9 +122,7 @@ export default function WalletPage() {
   }, [userData?.signup, router])
 
   useEffect(() => {
-    const currencies = currenciesResponse || {}
-    setCurrenciesData(currencies)
-    processBalanceData(currencies, balanceData)
+    processBalanceData(currenciesResponse || {}, balanceData)
   }, [balanceData, currenciesResponse, processBalanceData])
 
   // Subscribe to WebSocket updates for users/me to get real-time balance updates
@@ -192,9 +189,10 @@ export default function WalletPage() {
     )
   }
 
+  // Fill Main content height (desktop + mobile flex chain from shell).
   return (
-    <div data-testid="wallet-container" className="flex flex-col h-full min-h-0 md:min-h-screen overflow-hidden bg-background px-0 md:ps-[16px]">
-      <div className="flex flex-col flex-1 min-h-0 w-full items-center">
+    <div data-testid="wallet-container" className="flex flex-col flex-1 min-h-0 w-full overflow-hidden bg-background px-0 md:ps-[16px]">
+      <div className="flex flex-col flex-1 min-h-0 w-full">
         <div className="w-full mt-0 flex-shrink-0">
           <WalletSummary
             isBalancesView={displayBalances || !!selectedTransaction}
@@ -225,7 +223,19 @@ export default function WalletPage() {
             <TemporaryBanAlert tempBanUntil={tempBanUntil} />
           </div>
         )}
-        <div className="flex flex-col flex-1 min-h-0 w-full mt-6 mx-4 md:mx-4 px-6 md:px-0">
+        <div
+          className={`flex flex-col flex-1 min-h-0 min-w-0 self-stretch ${
+            selectedTransaction
+              ? // Responsive: full-bleed section cards (Figma).
+                "mx-0 px-0 mt-0"
+              : // List: no wrapper pad — rows use same p-6 as WalletSummary so amounts
+                // line up with header actions. Separators stay full-bleed in the row parent.
+                displayBalances
+                  ? // Full-bleed list — title/row content pad themselves; separator reaches edge.
+                    "mx-0 px-0 mt-4 md:mt-4"
+                  : "mx-0 px-0 mt-0"
+          }`}
+        >
           {isMaintenanceActive ? (
             <div data-testid="wallet-empty-transactions"><EmptyState title={t("wallet.noTransactions")} /></div>
           ) : displayBalances ? (
@@ -233,7 +243,6 @@ export default function WalletPage() {
           ) : (
             <TransactionsTab
               selectedCurrency={selectedCurrency}
-              currencies={currenciesData}
               selectedTransaction={selectedTransaction}
               onTransactionSelect={setSelectedTransaction}
             />

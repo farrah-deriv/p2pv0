@@ -16,22 +16,22 @@ export interface HeaderSegmentedControlProps {
   value: string
   onValueChange: (value: string) => void
   segments: HeaderSegmentItem[]
-  /** Fixed width keeps the control a compact pill — matches mobile header tabs. */
+  /** Minimum pill width — control grows to fit longer segment labels (i18n). */
   width?: HeaderSegmentedControlWidth
   className?: string
   listClassName?: string
   listDataGuideId?: string
 }
 
-const WIDTH_CLASS: Record<HeaderSegmentedControlWidth, string> = {
-  168: "w-[168px]",
-  184: "w-[184px]",
+const MIN_WIDTH_CLASS: Record<HeaderSegmentedControlWidth, string> = {
+  168: "min-w-[168px]",
+  184: "min-w-[184px]",
 }
 
 const TRACK_PADDING = "0.25rem"
 
 const triggerClassName =
-  "relative z-[1] flex-1 h-8 min-w-0 rounded-full border-0 bg-transparent px-2 py-0 text-sm font-normal text-white/60 shadow-none transition-colors " +
+  "relative z-[1] flex-1 h-8 min-w-0 rounded-full border-0 bg-transparent px-3 py-0 text-sm font-normal text-white/60 shadow-none transition-colors whitespace-nowrap text-center " +
   "data-[state=active]:bg-transparent data-[state=active]:font-bold data-[state=active]:text-white " +
   "data-[state=active]:shadow-none focus-visible:ring-white/30"
 
@@ -57,19 +57,19 @@ export function HeaderSegmentedControl({
   const indicatorInset = `calc(${TRACK_PADDING} + ${selectedIndex} * ${segmentSpan})`
 
   return (
-    <Tabs value={value} onValueChange={onValueChange} className={cn("flex justify-start", className)}>
+    <Tabs value={value} onValueChange={onValueChange} className={cn("flex min-w-0 max-w-full justify-start", className)}>
       <TabsList
         data-guide-id={listDataGuideId}
         className={cn(
-          "relative inline-flex h-10 shrink-0 rounded-full bg-white/10 p-1 gap-0",
-          WIDTH_CLASS[width],
+          "relative inline-flex h-10 w-max max-w-full shrink-0 rounded-full bg-[var(--component-segmentedControl-bg-single-body,rgba(255,255,255,0.04))] p-1 gap-0",
+          MIN_WIDTH_CLASS[width],
           RTL_TABS_LIST,
           listClassName,
         )}
       >
         <span
           aria-hidden
-          className="pointer-events-none absolute inset-y-1 rounded-full bg-white/20 transition-[inset-inline-start] duration-200 ease-out motion-reduce:transition-none"
+          className="pointer-events-none absolute inset-y-1 rounded-full bg-[var(--component-segmentedControl-bg-single-selected,rgba(255,255,255,0.16))] transition-[inset-inline-start] duration-200 ease-out motion-reduce:transition-none"
           style={{
             width: `calc(${segmentSpan})`,
             insetInlineStart: indicatorInset,
@@ -81,8 +81,9 @@ export function HeaderSegmentedControl({
             value={segment.value}
             data-testid={segment.testId}
             className={triggerClassName}
+            title={segment.label}
           >
-            {segment.label}
+            <span className="block truncate">{segment.label}</span>
           </TabsTrigger>
         ))}
       </TabsList>

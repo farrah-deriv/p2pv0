@@ -29,11 +29,11 @@ export class AdsCreatePage {
 
     /**
      * Step 0 title: "Set ad and rate type".
-     * Scoped to the visible ProgressSteps container to avoid matching the hidden layout copy.
+     * Responsive + desktop each render a titles block; pick the visible one.
      */
     get stepSetAdAndRateTypeTitle(): Locator {
         return this.page
-            .getByTestId("ad-form-progress")
+            .getByTestId("ad-form-step-titles")
             .filter({ visible: true })
             .getByText("Set ad and rate type", { exact: true });
     }
@@ -41,7 +41,7 @@ export class AdsCreatePage {
     /** Step 1 title: "Set payment details" */
     get stepSetPaymentDetailsTitle(): Locator {
         return this.page
-            .getByTestId("ad-form-progress")
+            .getByTestId("ad-form-step-titles")
             .filter({ visible: true })
             .getByText("Set payment details", { exact: true });
     }
@@ -49,7 +49,7 @@ export class AdsCreatePage {
     /** Step 2 title: "Set ad conditions" */
     get stepSetAdConditionsTitle(): Locator {
         return this.page
-            .getByTestId("ad-form-progress")
+            .getByTestId("ad-form-step-titles")
             .filter({ visible: true })
             .getByText("Set ad conditions", { exact: true });
     }

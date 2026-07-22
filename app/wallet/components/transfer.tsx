@@ -5,12 +5,15 @@ import type React from "react"
 import { useState, useEffect, useCallback, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   fetchWalletsList,
   walletTransfer,
   fetchExchangeRate,
   walletExchangeTransfer,
+  validateTransfer,
+  type TransferValidateDetails,
 } from "@/services/api/api-wallets"
 import * as WalletsAPI from "@/services/api/api-wallets"
 import { currencyLogoMapper, formatAmountWithDecimals } from "@/lib/utils"
@@ -22,6 +25,8 @@ import { useTranslations } from "@/lib/i18n/use-translations"
 import { useTrackers } from "@/analytics/useTrackers"
 import { getWalletTransferRejectionInfo, type WalletTransferApiError, type WalletWithdrawalRejectionAmounts, type WalletWithdrawalRejectionCode, type WalletWithdrawalRejectionCta } from "@/lib/wallet-transfer"
 import type { Transaction } from "../types"
+import { InfoCircleIcon } from "@/components/icons/info-circle"
+import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface TransferProps {
   currencySelected?: string
@@ -110,6 +115,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
   const [step, setStep] = useState<TransferStep>(stepVal)
   const [wallets, setWallets] = useState<ProcessedWallet[]>([])
+  const [isWalletsLoading, setIsWalletsLoading] = useState(true)
   const [currencies, setCurrencies] = useState<Currency[]>([])
   const [currenciesData, setCurrenciesData] = useState<CurrenciesResponse | null>(null)
   const [selectedCurrency, setSelectedCurrency] = useState<string | null>(currencySelected || "USD")
@@ -140,15 +146,64 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
   const [destinationMinAmount, setDestinationMinAmount] = useState<number>(0)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isValidatePreviewLoading, setIsValidatePreviewLoading] = useState(false)
+  const [validateError, setValidateError] = useState<string | null>(null)
+  const [transferValidateQuote, setTransferValidateQuote] = useState<TransferValidateDetails | null>(null)
+  const [showAmountReceiveInfoSheet, setShowAmountReceiveInfoSheet] = useState(false)
+  /** After info sheet closes on mobile, reopen Review confirm (never stack both sheets). */
+  const [pendingMobileConfirmAfterInfo, setPendingMobileConfirmAfterInfo] = useState(false)
   const [selectedPercentage, setSelectedPercentage] = useState<number | null>(null)
+  const validateRequestIdRef = useRef(0)
 
   const toEnterAmount = () => setStep("enterAmount")
   const toConfirm = () => {
     if (window.innerWidth >= 768) {
+      setShowAmountReceiveInfoSheet(false)
+      setPendingMobileConfirmAfterInfo(false)
       setShowDesktopConfirmPopup(true)
-    } else {
+      return
+    }
+    // Mobile: only one bottom sheet at a time — wait for info sheet to close first.
+    if (showAmountReceiveInfoSheet) {
+      setPendingMobileConfirmAfterInfo(true)
+      return
+    }
+    setPendingMobileConfirmAfterInfo(false)
+    setShowMobileConfirmSheet(true)
+  }
+
+  const openAmountReceiveInfoSheet = () => {
+    if (showMobileConfirmSheet) {
+      setShowMobileConfirmSheet(false)
+      setPendingMobileConfirmAfterInfo(true)
+    }
+    setShowAmountReceiveInfoSheet(true)
+  }
+
+  const closeAmountReceiveInfoSheet = () => {
+    setShowAmountReceiveInfoSheet(false)
+    if (pendingMobileConfirmAfterInfo) {
+      setPendingMobileConfirmAfterInfo(false)
       setShowMobileConfirmSheet(true)
     }
+  }
+
+  const hasTransferFee = (quote: TransferValidateDetails) => {
+    const feePercentage = quote.fee?.percentage ?? 0
+    const feeAmount = Number.parseFloat(quote.fee?.amount ?? "0") || 0
+    return feePercentage > 0 || feeAmount > 0
+  }
+
+  const getAmountReceiveInfoBody = (quote: TransferValidateDetails) => {
+    if (!hasTransferFee(quote)) {
+      return t("wallet.amountReceiveInfoBodyFree")
+    }
+    const feeCurrency = quote.fee?.currency || quote.source?.currency || ""
+    const feeAmount = formatAmountByCurrency(quote.fee?.amount ?? "0", feeCurrency)
+    return t("wallet.amountReceiveInfoBody", {
+      amount: feeAmount,
+      currency: feeCurrency,
+    })
   }
   const toSuccess = () => setStep("success")
   const toUnsuccessful = () => setStep("unsuccessful")
@@ -192,9 +247,13 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
   }, [currenciesResponse])
 
   useEffect(() => {
-    if (!selectedCurrency || !currenciesData) return
+    if (!selectedCurrency || !currenciesData) {
+      setIsWalletsLoading(true)
+      return
+    }
 
     const loadWallets = async () => {
+      setIsWalletsLoading(true)
       try {
         const response = await fetchWalletsList()
 
@@ -204,7 +263,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
           response.data.wallets.forEach((wallet: any) => {
             const isP2p = (wallet.type || "").toLowerCase() === "p2p"
             const currencyLabel = currenciesData?.[selectedCurrency]?.label || selectedCurrency
-            const walletName = isP2p ? `P2P ${currencyLabel}` : t("wallet.walletName", { currency: currencyLabel })
+            const walletName = isP2p ? t("wallet.p2pWallet") : t("wallet.mainWallet")
             const balances = wallet.balances ?? []
 
             const currencyBalance = balances.find((b: any) => b.currency === selectedCurrency)
@@ -226,45 +285,42 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
           const nonP2pWallet = processedWallets.find((w) => w.type?.toLowerCase() !== "p2p")
 
           // Only auto-select on initial load — don't override user's manual selection.
+          // P2P balance > 0 → From P2P, To Main. P2P balance 0 → From Main, To P2P.
           if (p2pWallet && !hasAutoSelectedRef.current) {
             hasAutoSelectedRef.current = true
             const p2pHasBalance = parseFloat(p2pWallet.balance) > 0
+            const toWalletData = (wallet: ProcessedWallet): WalletData => ({
+              id: wallet.wallet_id,
+              name: wallet.name,
+              currency: wallet.currency,
+              balance: wallet.balance,
+              type: wallet.type,
+            })
 
             if (p2pHasBalance) {
-              setSourceWalletData({
-                id: p2pWallet.wallet_id,
-                name: p2pWallet.name,
-                currency: p2pWallet.currency,
-                balance: p2pWallet.balance,
-                type: p2pWallet.type,
-              })
-            } else {
-              setDestinationWalletData({
-                id: p2pWallet.wallet_id,
-                name: p2pWallet.name,
-                currency: p2pWallet.currency,
-                balance: p2pWallet.balance,
-                type: p2pWallet.type,
-              })
+              setSourceWalletData(toWalletData(p2pWallet))
               if (nonP2pWallet) {
-                setSourceWalletData({
-                  id: nonP2pWallet.wallet_id,
-                  name: nonP2pWallet.name,
-                  currency: nonP2pWallet.currency,
-                  balance: nonP2pWallet.balance,
-                  type: nonP2pWallet.type,
-                })
+                setDestinationWalletData(toWalletData(nonP2pWallet))
+              }
+            } else {
+              setDestinationWalletData(toWalletData(p2pWallet))
+              if (nonP2pWallet) {
+                setSourceWalletData(toWalletData(nonP2pWallet))
               }
             }
           }
         }
       } catch (error) {
         console.error("Error fetching wallets:", error)
+      } finally {
+        setIsWalletsLoading(false)
       }
     }
 
     loadWallets()
   }, [selectedCurrency, currenciesData])
+
+  const isWalletSelectionLoading = isCurrenciesLoading || isWalletsLoading
 
   const calculateTransferFee = useCallback((): { feeAmount: number; feePercentage: number } | null => {
     if (!currenciesData || !sourceWalletData || !destinationWalletData || !transferAmount) {
@@ -464,8 +520,94 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     }
   }, [])
 
+  const fetchTransferValidateQuote = useCallback(async (): Promise<TransferValidateDetails | null> => {
+    if (!transferAmount || !sourceWalletData || !destinationWalletData) {
+      return null
+    }
+
+    const result = await validateTransfer({
+      source_type: (sourceWalletData.type || "main").toLowerCase(),
+      destination_type: (destinationWalletData.type || "main").toLowerCase(),
+      amount: transferAmount,
+      balance: String(sourceWalletData.balance ?? "0"),
+      source_id: sourceWalletData.id,
+      destination_id: destinationWalletData.id,
+      source_currency: sourceWalletData.currency,
+      destination_currency: destinationWalletData.currency,
+    })
+
+    const apiErrorMessage = result?.errors?.[0]?.message
+    if (apiErrorMessage || !result?.data?.is_valid || !result?.data?.details) {
+      throw new Error(apiErrorMessage || t("wallet.transferValidateFailed"))
+    }
+
+    return result.data.details
+  }, [transferAmount, sourceWalletData, destinationWalletData, t])
+
+  useEffect(() => {
+    if (
+      step !== "enterAmount" ||
+      !transferAmount ||
+      transferAmount.trim() === "" ||
+      !sourceWalletData ||
+      !destinationWalletData ||
+      !isAmountValid(transferAmount)
+    ) {
+      validateRequestIdRef.current += 1
+      setIsValidatePreviewLoading(false)
+      setTransferValidateQuote(null)
+      return
+    }
+
+    const requestId = ++validateRequestIdRef.current
+    setIsValidatePreviewLoading(true)
+    setValidateError(null)
+
+    const timer = window.setTimeout(async () => {
+      try {
+        const details = await fetchTransferValidateQuote()
+        if (requestId !== validateRequestIdRef.current) return
+        setTransferValidateQuote(details)
+      } catch (error) {
+        if (requestId !== validateRequestIdRef.current) return
+        setTransferValidateQuote(null)
+        setValidateError(
+          error instanceof Error && error.message
+            ? error.message
+            : t("wallet.transferValidateFailed"),
+        )
+      } finally {
+        if (requestId === validateRequestIdRef.current) {
+          setIsValidatePreviewLoading(false)
+        }
+      }
+    }, 400)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+    // isAmountValid reads current wallet/currency state; deps cover those inputs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional debounce on amount/wallets
+  }, [
+    step,
+    transferAmount,
+    sourceWalletData?.id,
+    sourceWalletData?.balance,
+    sourceWalletData?.currency,
+    sourceWalletData?.type,
+    destinationWalletData?.id,
+    destinationWalletData?.currency,
+    destinationWalletData?.type,
+    fetchTransferValidateQuote,
+    t,
+  ])
+
   const handleTransferClick = () => {
     track("ek_transfer_transfer")
+    if (!transferAmount || !sourceWalletData || !destinationWalletData || !transferValidateQuote) {
+      return
+    }
+    setValidateError(null)
     toConfirm()
   }
 
@@ -482,6 +624,8 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     setTransferRejectionAmounts(rejectionInfo?.amounts ?? {})
     setShowDesktopConfirmPopup(false)
     setShowMobileConfirmSheet(false)
+    setShowAmountReceiveInfoSheet(false)
+    setPendingMobileConfirmAfterInfo(false)
     track("ek_transfer_failed_confirm_transfer_sheet", {
       error_code: overrideErrorCode ?? rejectionInfo?.code ?? "transfer_failed",
       error_message: errorMessage,
@@ -497,6 +641,8 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     queryClient.invalidateQueries({ queryKey: queryKeys.wallet.all })
     setShowDesktopConfirmPopup(false)
     setShowMobileConfirmSheet(false)
+    setShowAmountReceiveInfoSheet(false)
+    setPendingMobileConfirmAfterInfo(false)
     track("ek_transfer_successful_confirm_transfer_sheet")
     toSuccess()
   }
@@ -633,6 +779,8 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
     setTransferAmount("")
     setSelectedAmountCurrency("source")
+    setValidateError(null)
+    setTransferValidateQuote(null)
 
     setShowMobileSheet(null)
     setShowDesktopWalletPopup(null)
@@ -646,6 +794,8 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
     setTransferAmount("")
     setSelectedAmountCurrency("source")
+    setValidateError(null)
+    setTransferValidateQuote(null)
   }
 
   const formatAmountByCurrency = useCallback(
@@ -761,6 +911,75 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     return wallets
   }
 
+  const renderWalletPickerSkeletons = () => (
+    <div data-testid="transfer-wallet-picker-skeleton" className="space-y-4">
+      {[1, 2].map((i) => (
+        <div
+          key={i}
+          className="h-[76px] px-4 py-2 flex items-center self-stretch rounded-lg bg-grayscale-500"
+        >
+          <Skeleton className="h-8 w-8 rounded-full flex-shrink-0 bg-grayscale-200" />
+          <div className="flex-1 ms-4 space-y-2">
+            <Skeleton className="h-4 w-32 bg-grayscale-200" />
+            <Skeleton className="h-3 w-20 bg-grayscale-200" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+
+  const renderWalletAccountCardSkeleton = (label: string) => (
+    <>
+      <div className="absolute top-4 start-6 flex flex-col items-start gap-1.5">
+        <div className="text-grayscale-text-muted text-base font-normal">{label}</div>
+        <Skeleton className="h-6 w-6 rounded-full mt-1 bg-grayscale-200" />
+      </div>
+      <div className="flex-1 min-w-0 mt-6 ms-10 pe-8 text-start space-y-2">
+        <Skeleton className="h-5 w-36 bg-grayscale-200" />
+        <Skeleton className="h-4 w-24 bg-grayscale-200" />
+      </div>
+    </>
+  )
+
+  /** Confirm From/To icons — P2P sized slightly above flat currency (28 vs 24). */
+  const renderConfirmWalletIcon = (wallet: { type?: string; currency: string }) => {
+    if (wallet.type?.toLowerCase() === "p2p") {
+      return (
+        <div className="relative w-7 h-7 flex-shrink-0">
+          <Image
+            src="/icons/p2p-black.png"
+            alt={t("common.p2p")}
+            width={28}
+            height={28}
+            className="w-7 h-7 rounded-full"
+          />
+          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
+            <div className="w-3.5 h-3.5 rounded-full bg-white flex items-center justify-center">
+              <Image
+                src={getCurrencyImage(wallet.currency)}
+                alt={wallet.currency}
+                width={12}
+                height={12}
+                className="w-3 h-3 rounded-full"
+              />
+            </div>
+          </div>
+        </div>
+      )
+    }
+    return (
+      <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+        <Image
+          src={getCurrencyImage(wallet.currency)}
+          alt={wallet.currency}
+          width={24}
+          height={24}
+          className="w-full h-full object-cover"
+        />
+      </div>
+    )
+  }
+
   const renderMobileSheet = (type: WalletSelectorType) => {
     if (showMobileSheet !== type) return null
 
@@ -772,9 +991,13 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     const tradingWallets = filteredWallets.filter((w) => w.type?.toLowerCase() !== "p2p")
 
     return (
-      <div data-testid="transfer-sheet-wallet-picker" className="fixed inset-0 bg-black/50 z-50 md:hidden" onClick={() => setShowMobileSheet(null)}>
+      <div
+        data-testid="transfer-sheet-wallet-picker"
+        className="fixed inset-0 bg-black/50 z-50 md:hidden animate-in fade-in-0 duration-200"
+        onClick={() => setShowMobileSheet(null)}
+      >
         <div
-          className="absolute bottom-0 inset-x-0 bg-white rounded-t-2xl max-h-[80vh] overflow-hidden"
+          className="absolute bottom-0 inset-x-0 bg-white rounded-t-2xl max-h-[80vh] overflow-hidden animate-in slide-in-from-bottom duration-300"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="p-4">
@@ -783,54 +1006,60 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
             </div>
             <h2 className="text-slate-1200 text-[20px] font-extrabold mb-6 text-center">{title}</h2>
             <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-              {p2pWallets.length > 0 && (
+              {isWalletSelectionLoading ? (
+                renderWalletPickerSkeletons()
+              ) : (
                 <>
-                  <h3 className="text-base font-normal text-slate-1200">{t("wallet.p2pWallet")}</h3>
-                  {p2pWallets.map((wallet) => (
-                    <div
-                      key={wallet.wallet_id}
-                      data-testid={`transfer-btn-wallet-${wallet.wallet_id ?? wallet.currency}`}
-                      className="cursor-pointer"
-                      onClick={() => {
-                        handleWalletSelect(wallet, type)
-                        setShowMobileSheet(null)
-                      }}
-                    >
-                      <WalletDisplay
-                        name={wallet.name}
-                        amount={formatAmountWithDecimals(wallet.balance)}
-                        currency={wallet.currency}
-                        isP2PWallet={wallet.type?.toLowerCase() === "p2p"}
-                        isSelected={selectedWalletName === wallet.name}
-                        onClick={() => { }}
-                      />
-                    </div>
-                  ))}
-                </>
-              )}
-              {tradingWallets.length > 0 && (
-                <>
-                  <h3 className="text-base font-normal text-slate-1200 mt-2">{t("wallet.tradingWallet")}</h3>
-                  {tradingWallets.map((wallet) => (
-                    <div
-                      key={wallet.wallet_id}
-                      data-testid={`transfer-btn-wallet-${wallet.wallet_id ?? wallet.currency}`}
-                      className="cursor-pointer"
-                      onClick={() => {
-                        handleWalletSelect(wallet, type)
-                        setShowMobileSheet(null)
-                      }}
-                    >
-                      <WalletDisplay
-                        name={wallet.name}
-                        amount={formatAmountWithDecimals(wallet.balance)}
-                        currency={wallet.currency}
-                        isP2PWallet={wallet.type?.toLowerCase() === "p2p"}
-                        isSelected={selectedWalletName === wallet.name}
-                        onClick={() => { }}
-                      />
-                    </div>
-                  ))}
+                  {p2pWallets.length > 0 && (
+                    <>
+                      <h3 className="text-base font-normal text-slate-1200">{t("wallet.p2pWallet")}</h3>
+                      {p2pWallets.map((wallet) => (
+                        <div
+                          key={wallet.wallet_id}
+                          data-testid={`transfer-btn-wallet-${wallet.wallet_id ?? wallet.currency}`}
+                          className="cursor-pointer"
+                          onClick={() => {
+                            handleWalletSelect(wallet, type)
+                            setShowMobileSheet(null)
+                          }}
+                        >
+                          <WalletDisplay
+                            name={wallet.name}
+                            amount={formatAmountWithDecimals(wallet.balance)}
+                            currency={wallet.currency}
+                            isP2PWallet={wallet.type?.toLowerCase() === "p2p"}
+                            isSelected={selectedWalletName === wallet.name}
+                            onClick={() => { }}
+                          />
+                        </div>
+                      ))}
+                    </>
+                  )}
+                  {tradingWallets.length > 0 && (
+                    <>
+                      <h3 className="text-base font-normal text-slate-1200 mt-2">{t("wallet.tradingWallet")}</h3>
+                      {tradingWallets.map((wallet) => (
+                        <div
+                          key={wallet.wallet_id}
+                          data-testid={`transfer-btn-wallet-${wallet.wallet_id ?? wallet.currency}`}
+                          className="cursor-pointer"
+                          onClick={() => {
+                            handleWalletSelect(wallet, type)
+                            setShowMobileSheet(null)
+                          }}
+                        >
+                          <WalletDisplay
+                            name={wallet.name}
+                            amount={formatAmountWithDecimals(wallet.balance)}
+                            currency={wallet.currency}
+                            isP2PWallet={wallet.type?.toLowerCase() === "p2p"}
+                            isSelected={selectedWalletName === wallet.name}
+                            onClick={() => { }}
+                          />
+                        </div>
+                      ))}
+                    </>
+                  )}
                 </>
               )}
             </div>
@@ -865,61 +1094,67 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
             size="default"
             className="absolute top-4 end-4 min-w-0 px-0"
             onClick={() => setShowDesktopWalletPopup(null)}
-            aria-label="Close"
+            aria-label={t("common.close")}
           >
             <Image src="/icons/button-close.png" alt={t("common.close")} width={48} height={48} />
           </Button>
           <div className="p-8">
             <h2 className="text-slate-1200 text-[24px] font-extrabold mb-6">{title}</h2>
             <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-              {p2pWallets.length > 0 && (
+              {isWalletSelectionLoading ? (
+                renderWalletPickerSkeletons()
+              ) : (
                 <>
-                  <h3 className="text-base font-normal text-slate-1200">{t("wallet.p2pWallet")}</h3>
-                  {p2pWallets.map((wallet) => (
-                    <div
-                      key={wallet.wallet_id}
-                      data-testid={`transfer-btn-wallet-${wallet.wallet_id ?? wallet.currency}`}
-                      className="cursor-pointer"
-                      onClick={() => {
-                        handleWalletSelect(wallet, type)
-                        setShowDesktopWalletPopup(null)
-                      }}
-                    >
-                      <WalletDisplay
-                        name={wallet.name}
-                        amount={formatAmountWithDecimals(wallet.balance)}
-                        currency={wallet.currency}
-                        isP2PWallet={wallet.type?.toLowerCase() === "p2p"}
-                        isSelected={selectedWalletName === wallet.name}
-                        onClick={() => { }}
-                      />
-                    </div>
-                  ))}
-                </>
-              )}
-              {tradingWallets.length > 0 && (
-                <>
-                  <h3 className="text-base font-normal text-slate-1200 mt-2">{t("wallet.tradingWallet")}</h3>
-                  {tradingWallets.map((wallet) => (
-                    <div
-                      key={wallet.wallet_id}
-                      data-testid={`transfer-btn-wallet-${wallet.wallet_id ?? wallet.currency}`}
-                      className="cursor-pointer"
-                      onClick={() => {
-                        handleWalletSelect(wallet, type)
-                        setShowDesktopWalletPopup(null)
-                      }}
-                    >
-                      <WalletDisplay
-                        name={wallet.name}
-                        amount={formatAmountWithDecimals(wallet.balance)}
-                        currency={wallet.currency}
-                        isP2PWallet={wallet.type?.toLowerCase() === "p2p"}
-                        isSelected={selectedWalletName === wallet.name}
-                        onClick={() => { }}
-                      />
-                    </div>
-                  ))}
+                  {p2pWallets.length > 0 && (
+                    <>
+                      <h3 className="text-base font-normal text-slate-1200">{t("wallet.p2pWallet")}</h3>
+                      {p2pWallets.map((wallet) => (
+                        <div
+                          key={wallet.wallet_id}
+                          data-testid={`transfer-btn-wallet-${wallet.wallet_id ?? wallet.currency}`}
+                          className="cursor-pointer"
+                          onClick={() => {
+                            handleWalletSelect(wallet, type)
+                            setShowDesktopWalletPopup(null)
+                          }}
+                        >
+                          <WalletDisplay
+                            name={wallet.name}
+                            amount={formatAmountWithDecimals(wallet.balance)}
+                            currency={wallet.currency}
+                            isP2PWallet={wallet.type?.toLowerCase() === "p2p"}
+                            isSelected={selectedWalletName === wallet.name}
+                            onClick={() => { }}
+                          />
+                        </div>
+                      ))}
+                    </>
+                  )}
+                  {tradingWallets.length > 0 && (
+                    <>
+                      <h3 className="text-base font-normal text-slate-1200 mt-2">{t("wallet.tradingWallet")}</h3>
+                      {tradingWallets.map((wallet) => (
+                        <div
+                          key={wallet.wallet_id}
+                          data-testid={`transfer-btn-wallet-${wallet.wallet_id ?? wallet.currency}`}
+                          className="cursor-pointer"
+                          onClick={() => {
+                            handleWalletSelect(wallet, type)
+                            setShowDesktopWalletPopup(null)
+                          }}
+                        >
+                          <WalletDisplay
+                            name={wallet.name}
+                            amount={formatAmountWithDecimals(wallet.balance)}
+                            currency={wallet.currency}
+                            isP2PWallet={wallet.type?.toLowerCase() === "p2p"}
+                            isSelected={selectedWalletName === wallet.name}
+                            onClick={() => { }}
+                          />
+                        </div>
+                      ))}
+                    </>
+                  )}
                 </>
               )}
             </div>
@@ -929,16 +1164,180 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     )
   }
 
+  const renderYoullReceiveInfoControl = () => {
+    if (!transferValidateQuote || !hasTransferFee(transferValidateQuote)) return null
+
+    const infoBody = getAmountReceiveInfoBody(transferValidateQuote)
+    const infoIconClassName = "size-[1.5rem] h-[1.5rem] w-[1.5rem]"
+    const infoButtonClassName =
+      "size-[1.5rem] h-[1.5rem] w-[1.5rem] min-h-[1.5rem] max-h-[1.5rem] min-w-[1.5rem] max-w-[1.5rem] p-0 text-grayscale-text-muted hover:text-slate-1200 hover:bg-transparent [&_svg]:!size-[1.5rem] [&_svg]:!h-[1.5rem] [&_svg]:!w-[1.5rem]"
+
+    return (
+      <>
+        <div className="hidden md:inline-flex">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  data-testid="transfer-btn-amount-receive-info"
+                  className={infoButtonClassName}
+                  aria-label={t("wallet.amountReceiveInfoTitle")}
+                >
+                  <InfoCircleIcon className={infoIconClassName} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-[296px] text-white/70">
+                <p>{infoBody}</p>
+                <TooltipArrow className="fill-black" />
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          data-testid="transfer-btn-amount-receive-info-mobile"
+          className={`inline-flex md:hidden ${infoButtonClassName}`}
+          aria-label={t("wallet.amountReceiveInfoTitle")}
+          onClick={(e) => {
+            e.stopPropagation()
+            openAmountReceiveInfoSheet()
+          }}
+        >
+          <InfoCircleIcon className={infoIconClassName} />
+        </Button>
+      </>
+    )
+  }
+
+  const getQuotedReceiveDisplay = () => {
+    const receiveCurrency =
+      transferValidateQuote?.destination?.currency || destinationWalletData?.currency || selectedCurrency || "USD"
+    if (!transferValidateQuote?.destination?.amount) {
+      return isValidatePreviewLoading ? "-" : null
+    }
+    return `${formatAmountWithDecimals(Number.parseFloat(transferValidateQuote.destination.amount))} ${receiveCurrency}`
+  }
+
+  const renderConfirmAmountRows = ({
+    fullBleedSeparators = false,
+  }: {
+    fullBleedSeparators?: boolean
+  } = {}) => {
+    const transferCurrency =
+      transferValidateQuote?.source?.currency || sourceWalletData?.currency || selectedCurrency || "USD"
+    const receiveDisplay =
+      getQuotedReceiveDisplay() ||
+      `${formatAmountWithDecimals(Number.parseFloat(transferAmount || "0"))} ${transferCurrency}`
+
+    const separatorClass = fullBleedSeparators
+      ? "h-1 w-full bg-slate-75"
+      : "h-px w-full bg-grayscale-200"
+    const rowPaddingClass = fullBleedSeparators ? "px-6 py-4" : "py-4"
+
+    return (
+      <>
+        <div className={`${separatorClass} mt-4`} />
+        <div className={rowPaddingClass}>
+          <div className="flex items-center justify-between w-full gap-4">
+            <span className="text-base font-normal text-grayscale-text-muted">{t("wallet.transferAmount")}</span>
+            <span className="text-base font-normal text-slate-1200 text-end">
+              {formatAmountWithDecimals(Number.parseFloat(transferAmount || "0"))} {transferCurrency}
+            </span>
+          </div>
+        </div>
+        <div className={separatorClass} />
+        <div className={rowPaddingClass}>
+          <div className="flex items-center justify-between w-full gap-4">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-base font-normal text-grayscale-text-muted whitespace-nowrap">
+                {t("wallet.youllReceive")}
+              </span>
+              {renderYoullReceiveInfoControl()}
+            </div>
+            <span className="text-base font-normal text-slate-1200 text-end">{receiveDisplay}</span>
+          </div>
+        </div>
+        <div className={separatorClass} />
+      </>
+    )
+  }
+
+  const renderEnterAmountYoullReceive = () => {
+    const receiveDisplay = getQuotedReceiveDisplay()
+    if (!receiveDisplay && !isValidatePreviewLoading) return null
+
+    return (
+      <div
+        data-testid="transfer-youll-receive-preview"
+        className="flex items-center justify-between w-full gap-3"
+      >
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-sm font-normal text-grayscale-text-muted whitespace-nowrap">
+            {t("wallet.youllReceive")}
+          </span>
+          {transferValidateQuote && renderYoullReceiveInfoControl()}
+        </div>
+        <span
+          className={`text-sm font-normal text-end ${
+            receiveDisplay && receiveDisplay !== "-" ? "text-slate-1200" : "text-grayscale-text-muted"
+          }`}
+        >
+          {receiveDisplay || "-"}
+        </span>
+      </div>
+    )
+  }
+
+  const renderAmountReceiveInfoSheet = () => {
+    if (!showAmountReceiveInfoSheet || !transferValidateQuote) return null
+
+    return (
+      <div
+        data-testid="transfer-sheet-amount-receive-info"
+        className="fixed inset-0 bg-black/50 z-[60] md:hidden animate-in fade-in-0 duration-200"
+        onClick={closeAmountReceiveInfoSheet}
+      >
+        <div
+          className="absolute bottom-0 inset-x-0 bg-white rounded-t-2xl overflow-hidden animate-in slide-in-from-bottom duration-300"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="pt-2 px-6 pb-8">
+            <div className="flex justify-center mb-6">
+              <div className="w-12 h-1 bg-gray-300 rounded-full" />
+            </div>
+            <p className="text-base font-normal text-grayscale-600 mb-8">
+              {getAmountReceiveInfoBody(transferValidateQuote)}
+            </p>
+            <Button
+              data-testid="transfer-btn-amount-receive-info-got-it"
+              onClick={closeAmountReceiveInfoSheet}
+              className="w-full h-12"
+            >
+              {t("wallet.gotIt")}
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const renderDesktopConfirmPopup = () => {
     if (!showDesktopConfirmPopup) return null
-
-    const hasTransferFee = transferFeeCalculation !== null
 
     return (
       <div
         data-testid="transfer-sheet-confirm"
         className="fixed inset-0 bg-black/50 z-50 hidden md:flex items-center justify-center"
-        onClick={() => setShowDesktopConfirmPopup(false)}
+        onClick={() => {
+          setShowDesktopConfirmPopup(false)
+          setShowAmountReceiveInfoSheet(false)
+          setPendingMobileConfirmAfterInfo(false)
+        }}
       >
         <div
           className="bg-white rounded-[32px] w-[512px] min-w-[512px] max-w-[512px] overflow-hidden relative"
@@ -949,193 +1348,46 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
             variant="ghost"
             size="default"
             className="absolute top-4 end-4 min-w-0 px-0"
-            onClick={() => setShowDesktopConfirmPopup(false)}
-            aria-label="Close"
+            onClick={() => {
+              setShowDesktopConfirmPopup(false)
+              setShowAmountReceiveInfoSheet(false)
+              setPendingMobileConfirmAfterInfo(false)
+            }}
+            aria-label={t("common.close")}
           >
             <Image src="/icons/button-close.png" alt={t("common.close")} width={48} height={48} />
           </Button>
           <div className="p-8">
-            <h2 className="text-slate-1200 text-[24px] font-extrabold mb-12 text-start">
+            <h2 className="text-slate-1200 text-[24px] font-extrabold mb-8 text-start pe-10">
               {t("wallet.reviewAndConfirm")}
             </h2>
             <div className="mb-6">
-              <div className="mb-4">
+              <div className="mb-2">
                 <div className="flex items-center justify-between">
                   <span className="text-base font-normal text-grayscale-text-muted">{t("wallet.from")}</span>
                   <div className="flex items-center gap-3">
-                    {sourceWalletData &&
-                      (sourceWalletData.type?.toLowerCase() === "p2p" ? (
-                        <div className="relative w-[21px] h-[21px] flex-shrink-0">
-                          <Image
-                            src="/icons/p2p-black.png"
-                            alt={t("common.p2p")}
-                            width={21}
-                            height={21}
-                            className="w-[21px] h-[21px] rounded-full"
-                          />
-                          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
-                            <div className="w-[10.5px] h-[10.5px] rounded-full bg-white flex items-center justify-center">
-                              <Image
-                                src={
-                                  getCurrencyImage(sourceWalletData.currency)}
-                                alt={sourceWalletData.currency}
-                                width={9}
-                                height={9}
-                                className="w-[9px] h-[9px] rounded-full"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mb-3 mt-1">
-                          <Image
-                            src={
-                              getCurrencyImage(sourceWalletData.currency)}
-                            alt={sourceWalletData.currency}
-                            width={24}
-                            height={24}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
+                    {sourceWalletData && renderConfirmWalletIcon(sourceWalletData)}
                     <span className="text-base font-normal text-slate-1200">{sourceWalletData?.name}</span>
                   </div>
                 </div>
               </div>
-              <div className="mb-4">
+              <div className="mb-0">
                 <div className="flex items-center justify-between">
                   <span className="text-base font-normal text-grayscale-text-muted">{t("wallet.to")}</span>
                   <div className="flex items-center gap-3">
-                    {destinationWalletData &&
-                      (destinationWalletData.type?.toLowerCase() === "p2p" ? (
-                        <div className="relative w-[21px] h-[21px] flex-shrink-0">
-                          <Image
-                            src="/icons/p2p-black.png"
-                            alt={t("common.p2p")}
-                            width={21}
-                            height={21}
-                            className="w-[21px] h-[21px] rounded-full"
-                          />
-                          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
-                            <div className="w-[10.5px] h-[10.5px] rounded-full bg-white flex items-center justify-center">
-                              <Image
-                                src={
-                                  getCurrencyImage(destinationWalletData.currency)}
-                                alt={destinationWalletData.currency}
-                                width={9}
-                                height={9}
-                                className="w-[9px] h-[9px] rounded-full"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mb-3 mt-1">
-                          <Image
-                            src={
-                              getCurrencyImage(destinationWalletData.currency)}
-                            alt={destinationWalletData.currency}
-                            width={24}
-                            height={24}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
+                    {destinationWalletData && renderConfirmWalletIcon(destinationWalletData)}
                     <span className="text-base font-normal text-slate-1200">{destinationWalletData?.name}</span>
                   </div>
                 </div>
               </div>
 
-              {hasTransferFee && transferFeeCalculation && (
-                <>
-                  <div className="h-1 bg-[#F6F7F8] mt-4 mb-0"></div>
-                  <div className="flex flex-col justify-center gap-2 py-4">
-                    <div className="flex items-center justify-between w-full">
-                      <span className="text-base font-normal text-grayscale-text-muted">
-                        {t("wallet.transferAmount")}
-                      </span>
-                      <span className="text-base font-normal text-slate-1200">
-                        {formatAmountByCurrency(
-                          transferFeeCalculation.transferAmount,
-                          selectedAmountCurrency === "source"
-                            ? sourceWalletData?.currency || ""
-                            : destinationWalletData?.currency || "",
-                        )}{" "}
-                        {selectedAmountCurrency === "source"
-                          ? sourceWalletData?.currency
-                          : destinationWalletData?.currency}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between w-full">
-                      <span className="text-base font-normal text-grayscale-text-muted">
-                        {t("wallet.transferFee")} ({transferFeeCalculation.feePercentage}%)
-                      </span>
-                      <span className="text-base font-normal text-slate-1200">
-                        {formatAmountByCurrency(transferFeeCalculation.transferFee, sourceWalletData?.currency || "")}{" "}
-                        {sourceWalletData?.currency}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="h-1 bg-[#F6F7F8]"></div>
-                  <div className="py-4">
-                    <div className="flex items-start justify-between w-full">
-                      <span className="text-base font-normal text-grayscale-text-muted">
-                        {t("wallet.youllReceive")}
-                      </span>
-                      <div className="text-end">
-                        <div className="text-base font-normal text-slate-1200">
-                          ≈
-                          {formatAmountByCurrency(
-                            transferFeeCalculation.youllReceive,
-                            destinationWalletData?.currency || "",
-                          )}{" "}
-                          {destinationWalletData?.currency} ({countdown}s)
-                        </div>
-                        <div className="text-base font-normal text-grayscale-text-muted mt-1">
-                          {formatAmountByCurrency(
-                            transferFeeCalculation.youllReceiveConverted,
-                            sourceWalletData?.currency || "",
-                          )}{" "}
-                          {sourceWalletData?.currency}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {!hasTransferFee && (
-                <>
-                  <div className="h-1 bg-[#F6F7F8] mt-4 mb-0"></div>
-                  <div className="h-[72px] flex items-center">
-                    <div className="flex items-center justify-between w-full">
-                      <span className="text-base font-normal text-grayscale-text-muted">
-                        {t("wallet.transferAmount")}
-                      </span>
-                      <span className="text-base font-normal text-slate-1200">
-                        {formatAmountWithDecimals(Number.parseFloat(transferAmount || "0"))} {selectedCurrency || "USD"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="h-1 bg-[#F6F7F8]"></div>
-                  <div className="h-[72px] flex items-center">
-                    <div className="flex items-center justify-between w-full">
-                      <span className="text-base font-normal text-grayscale-text-muted">
-                        {t("wallet.amountReceive")}
-                      </span>
-                      <span className="text-base font-normal text-slate-1200">
-                        {formatAmountWithDecimals(Number.parseFloat(transferAmount || "0"))} {selectedCurrency || "USD"}
-                      </span>
-                    </div>
-                  </div>
-                </>
-              )}
+              {renderConfirmAmountRows()}
             </div>
             <div className="space-y-2 mt-12">
               <Button
                 data-testid="transfer-btn-confirm"
                 onClick={handleConfirmTransfer}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !transferValidateQuote}
                 className="w-full h-12 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2"
               >
                 {isSubmitting ? (
@@ -1152,201 +1404,54 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
   }
 
   const renderMobileConfirmSheet = () => {
-    if (!showMobileConfirmSheet) return null
-
-    const hasTransferFee = transferFeeCalculation !== null
+    // Never stack with the amount-receive info sheet — reopen after info closes.
+    if (!showMobileConfirmSheet || showAmountReceiveInfoSheet) return null
 
     return (
-      <div data-testid="transfer-sheet-confirm" className="fixed inset-0 bg-black/50 z-50 md:hidden" onClick={() => setShowMobileConfirmSheet(false)}>
+      <div
+        data-testid="transfer-sheet-confirm"
+        className="fixed inset-0 bg-black/50 z-50 md:hidden animate-in fade-in-0 duration-200"
+        onClick={() => {
+          setShowMobileConfirmSheet(false)
+          setShowAmountReceiveInfoSheet(false)
+          setPendingMobileConfirmAfterInfo(false)
+        }}
+      >
         <div
-          className="absolute bottom-0 inset-x-0 bg-white rounded-t-2xl max-h-[80vh] overflow-hidden"
+          className="absolute bottom-0 inset-x-0 bg-white rounded-t-2xl max-h-[80vh] overflow-hidden animate-in slide-in-from-bottom duration-300"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="pt-2 px-4 pb-8">
-            <div className="flex justify-center mb-10">
-              <div data-testid="transfer-sheet-confirm-grip" className="w-12 h-1 bg-gray-300 rounded-full"></div>
+          <div className="relative pt-2 pb-8">
+            <div className="flex justify-center mb-4">
+              <div data-testid="transfer-sheet-confirm-grip" className="w-12 h-1 bg-gray-300 rounded-full" />
             </div>
-            <h1 className="text-slate-1200 text-center text-[20px] font-extrabold mb-8 ms-4 ">
+            <h1 className="text-slate-1200 text-start text-[20px] font-extrabold px-6 mb-6">
               {t("wallet.reviewAndConfirm")}
             </h1>
-            <div className="mb-6 px-4">
-              <div className="mb-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-base font-normal text-grayscale-text-muted">{t("wallet.from")}</span>
-                  <div className="flex items-center gap-3">
-                    {sourceWalletData &&
-                      (sourceWalletData.type?.toLowerCase() === "p2p" ? (
-                        <div className="relative w-[21px] h-[21px] flex-shrink-0">
-                          <Image
-                            src="/icons/p2p-black.png"
-                            alt={t("common.p2p")}
-                            width={21}
-                            height={21}
-                            className="w-[21px] h-[21px] rounded-full"
-                          />
-                          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
-                            <div className="w-[10.5px] h-[10.5px] rounded-full bg-white flex items-center justify-center">
-                              <Image
-                                src={
-                                  getCurrencyImage(sourceWalletData.currency)}
-                                alt={sourceWalletData.currency}
-                                width={9}
-                                height={9}
-                                className="w-[9px] h-[9px] rounded-full"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mb-3 mt-1">
-                          <Image
-                            src={
-                              getCurrencyImage(sourceWalletData.currency)}
-                            alt={sourceWalletData.currency}
-                            width={24}
-                            height={24}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                    <span className="text-base font-normal text-slate-1200">{sourceWalletData?.name}</span>
-                  </div>
+            <div className="px-6 flex flex-col gap-2 mb-0">
+              <div className="flex items-center justify-between">
+                <span className="text-base font-normal text-grayscale-text-muted">{t("wallet.from")}</span>
+                <div className="flex items-center gap-3">
+                  {sourceWalletData && renderConfirmWalletIcon(sourceWalletData)}
+                  <span className="text-base font-normal text-slate-1200">{sourceWalletData?.name}</span>
                 </div>
               </div>
-              <div className="mb-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-base font-normal text-grayscale-text-muted">{t("wallet.to")}</span>
-                  <div className="flex items-center gap-3">
-                    {destinationWalletData &&
-                      (destinationWalletData.type?.toLowerCase() === "p2p" ? (
-                        <div className="relative w-[21px] h-[21px] flex-shrink-0">
-                          <Image
-                            src="/icons/p2p-black.png"
-                            alt={t("common.p2p")}
-                            width={21}
-                            height={21}
-                            className="w-[21px] h-[21px] rounded-full"
-                          />
-                          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
-                            <div className="w-[10.5px] h-[10.5px] rounded-full bg-white flex items-center justify-center">
-                              <Image
-                                src={
-                                  getCurrencyImage(destinationWalletData.currency)}
-                                alt={destinationWalletData.currency}
-                                width={9}
-                                height={9}
-                                className="w-[9px] h-[9px] rounded-full"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mb-3 mt-1">
-                          <Image
-                            src={
-                              getCurrencyImage(destinationWalletData.currency)}
-                            alt={destinationWalletData.currency}
-                            width={24}
-                            height={24}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                    <span className="text-base font-normal text-slate-1200">{destinationWalletData?.name}</span>
-                  </div>
+              <div className="flex items-center justify-between">
+                <span className="text-base font-normal text-grayscale-text-muted">{t("wallet.to")}</span>
+                <div className="flex items-center gap-3">
+                  {destinationWalletData && renderConfirmWalletIcon(destinationWalletData)}
+                  <span className="text-base font-normal text-slate-1200">{destinationWalletData?.name}</span>
                 </div>
               </div>
-
-              {hasTransferFee && transferFeeCalculation && (
-                <>
-                  <div className="h-1 bg-[#F6F7F8] mt-4 mb-0"></div>
-                  <div className="flex flex-col justify-center gap-2 py-4">
-                    <div className="flex items-center justify-between w-full">
-                      <span className="text-base font-normal text-grayscale-text-muted">
-                        {t("wallet.transferAmount")}
-                      </span>
-                      <span className="text-base font-normal text-slate-1200">
-                        {formatAmountByCurrency(
-                          transferFeeCalculation.transferAmount,
-                          selectedAmountCurrency === "source"
-                            ? sourceWalletData?.currency || ""
-                            : destinationWalletData?.currency || "",
-                        )}{" "}
-                        {selectedAmountCurrency === "source"
-                          ? sourceWalletData?.currency
-                          : destinationWalletData?.currency}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between w-full">
-                      <span className="text-base font-normal text-grayscale-text-muted">
-                        {t("wallet.transferFee")} ({transferFeeCalculation.feePercentage}%)
-                      </span>
-                      <span className="text-base font-normal text-slate-1200">
-                        {formatAmountByCurrency(transferFeeCalculation.transferFee, sourceWalletData?.currency || "")}{" "}
-                        {sourceWalletData?.currency}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="h-1 bg-[#F6F7F8]"></div>
-                  <div className="py-4">
-                    <div className="flex items-start justify-between w-full">
-                      <span className="text-base font-normal text-grayscale-text-muted">
-                        {t("wallet.youllReceive")}
-                      </span>
-                      <div className="text-end">
-                        <div className="text-base font-normal text-slate-1200">
-                          ≈
-                          {formatAmountByCurrency(
-                            transferFeeCalculation.youllReceive,
-                            destinationWalletData?.currency || "",
-                          )}{" "}
-                          {destinationWalletData?.currency} ({countdown}s)
-                        </div>
-                        <div className="text-base font-normal text-grayscale-text-muted mt-1">
-                          {formatAmountByCurrency(
-                            transferFeeCalculation.youllReceiveConverted,
-                            sourceWalletData?.currency || "",
-                          )}{" "}
-                          {sourceWalletData?.currency}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {!hasTransferFee && (
-                <>
-                  <div className="h-1 bg-[#F6F7F8] mt-4 mb-0"></div>
-                  <div className="h-[72px] flex items-center">
-                    <div className="flex items-center justify-between w-full">
-                      <span className="text-base font-normal text-grayscale-text-muted">
-                        {t("wallet.transferAmount")}
-                      </span>
-                      <span className="text-base font-normal text-slate-1200">
-                        {formatAmountWithDecimals(Number.parseFloat(transferAmount || "0"))} {selectedCurrency || "USD"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="h-1 bg-[#F6F7F8]"></div>
-                  <div className="h-[72px] flex items-center">
-                    <div className="flex items-center justify-between w-full">
-                      <span className="text-base font-normal text-grayscale-text-muted">
-                        {t("wallet.amountReceive")}
-                      </span>
-                      <span className="text-base font-normal text-slate-1200">
-                        {formatAmountWithDecimals(Number.parseFloat(transferAmount || "0"))} {selectedCurrency || "USD"}
-                      </span>
-                    </div>
-                  </div>
-                </>
-              )}
             </div>
-            <div className="space-y-3 mt-8">
+
+            {renderConfirmAmountRows({ fullBleedSeparators: true })}
+
+            <div className="px-6 mt-8">
               <Button
                 data-testid="transfer-btn-confirm"
                 onClick={handleConfirmTransfer}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !transferValidateQuote}
                 className="w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2"
               >
                 {isSubmitting ? (
@@ -1373,6 +1478,8 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
+    setValidateError(null)
+    setTransferValidateQuote(null)
 
     if (value === "") {
       setTransferAmount("")
@@ -1405,6 +1512,8 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     } else {
       setTransferAmount(calculatedAmount.toFixed(2))
     }
+    setValidateError(null)
+    setTransferValidateQuote(null)
     setSelectedPercentage(percentage)
   }
 
@@ -1422,21 +1531,37 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
   if (step === "enterAmount") {
     return (
-      <div data-testid="transfer-container" className="absolute inset-0 flex flex-col h-full p-4 md:pt-5">
-        <div className="flex justify-end items-center mb-6 md:max-w-[608px] md:mx-auto md:w-full">
-          <Button data-testid="transfer-btn-close" variant="ghost" size="sm" className="px-0" onClick={() => { track("ek_close_transfer"); onClose() }} aria-label="Close">
-            <Image src="/icons/close-circle-secondary.png" alt={t("common.close")} width={32} height={32} />
+      <div
+        data-testid="transfer-container"
+        className="absolute inset-0 flex flex-col h-full px-4 pt-6 pb-4 md:pt-5"
+      >
+        <div className="flex justify-start items-center mb-6 md:max-w-[608px] md:mx-auto md:w-full px-2">
+          <Button
+            data-testid="transfer-btn-back"
+            variant="ghost"
+            size="sm"
+            className="px-0"
+            onClick={() => {
+              track("ek_close_transfer")
+              onClose()
+            }}
+            aria-label={t("common.back")}
+          >
+            <Image src="/icons/back-circle.png" alt={t("common.back")} width={32} height={32} />
           </Button>
         </div>
         <div className="md:max-w-[608px] md:mx-auto md:w-full flex-1 flex flex-col">
-          <h1 className="text-slate-1200 text-xl md:text-[32px] font-extrabold mt-6 mb-6 px-2">
+          <h1 className="text-slate-1200 text-xl md:text-[32px] font-extrabold mb-6 px-2">
             {t("wallet.transfer")}
           </h1>
-          <div className="relative mb-6 px-2">
+          <div className="relative mb-6 px-2" data-testid={isWalletSelectionLoading ? "transfer-wallet-skeleton" : undefined}>
             <div
               data-testid={sourceWalletData ? "transfer-btn-account-from" : "transfer-btn-select-from"}
-              className="bg-grayscale-500 p-4 px-6 flex items-center gap-1 rounded-2xl cursor-pointer h-[100px] relative"
+              className={`bg-grayscale-500 p-4 px-6 flex items-center gap-1 rounded-2xl h-[100px] relative ${
+                isWalletSelectionLoading ? "cursor-default pointer-events-none" : "cursor-pointer"
+              }`}
               onClick={() => {
+                if (isWalletSelectionLoading) return
                 track("ek_from_wallet_transfer")
                 if (window.innerWidth < 768) {
                   setShowMobileSheet("from")
@@ -1445,60 +1570,69 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                 }
               }}
             >
-              <div className="absolute top-4 start-6 flex flex-col items-start gap-1.5">
-                <div className="text-grayscale-text-muted text-base font-normal">{t("wallet.from")}</div>
-                {sourceWalletData &&
-                  (sourceWalletData.type?.toLowerCase() === "p2p" ? (
-                    <div className="relative w-[21px] h-[21px] flex-shrink-0 mt-1">
-                      <Image
-                        src="/icons/p2p-black.png"
-                        alt={t("common.p2p")}
-                        width={21}
-                        height={21}
-                        className="w-[21px] h-[21px] rounded-full"
-                      />
-                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
-                        <div className="w-[10.5px] h-[10.5px] rounded-full bg-white flex items-center justify-center">
+              {isWalletSelectionLoading ? (
+                renderWalletAccountCardSkeleton(t("wallet.from"))
+              ) : (
+                <>
+                  <div className="absolute top-4 start-6 flex flex-col items-start gap-1.5">
+                    <div className="text-grayscale-text-muted text-base font-normal">{t("wallet.from")}</div>
+                    {sourceWalletData &&
+                      (sourceWalletData.type?.toLowerCase() === "p2p" ? (
+                        <div className="relative w-[21px] h-[21px] flex-shrink-0 mt-1">
                           <Image
-                            src={
-                              getCurrencyImage(sourceWalletData.currency)}
+                            src="/icons/p2p-black.png"
+                            alt={t("common.p2p")}
+                            width={21}
+                            height={21}
+                            className="w-[21px] h-[21px] rounded-full"
+                          />
+                          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
+                            <div className="w-[10.5px] h-[10.5px] rounded-full bg-white flex items-center justify-center">
+                              <Image
+                                src={
+                                  getCurrencyImage(sourceWalletData.currency)}
+                                alt={sourceWalletData.currency}
+                                width={9}
+                                height={9}
+                                className="w-[9px] h-[9px] rounded-full"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mb-3 mt-1">
+                          <Image
+                            src={getCurrencyImage(sourceWalletData.currency)}
                             alt={sourceWalletData.currency}
-                            width={9}
-                            height={9}
-                            className="w-[9px] h-[9px] rounded-full"
+                            width={24}
+                            height={24}
+                            className="w-full h-full object-cover"
                           />
                         </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mb-3 mt-1">
-                      <Image
-                        src={getCurrencyImage(sourceWalletData.currency)}
-                        alt={sourceWalletData.currency}
-                        width={24}
-                        height={24}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ))}
-              </div>
-              <div className="flex-1 min-w-0 mt-6 ms-10 pe-8 text-start">
-                {sourceWalletData ? (
-                  <>
-                    <div className="text-slate-1200 text-base font-bold">{sourceWalletData.name}</div>
-                    <div className="text-grayscale-600 text-sm font-normal">{getSourceWalletAmount()}</div>
-                  </>
-                ) : (
-                  <div className="text-grayscale-text-placeholder text-base font-normal whitespace-nowrap">{t("wallet.select")}</div>
-                )}
-              </div>
-              <Image src="/icons/chevron-down.png" alt={t("common.dropdown")} width={24} height={24} />
+                      ))}
+                  </div>
+                  <div className="flex-1 min-w-0 mt-6 ms-10 pe-8 text-start">
+                    {sourceWalletData ? (
+                      <>
+                        <div className="text-slate-1200 text-base font-bold">{sourceWalletData.name}</div>
+                        <div className="text-grayscale-600 text-sm font-normal">{getSourceWalletAmount()}</div>
+                      </>
+                    ) : (
+                      <div className="text-grayscale-text-placeholder text-base font-normal whitespace-nowrap">{t("wallet.select")}</div>
+                    )}
+                  </div>
+                  <Image src="/icons/chevron-down.png" alt={t("common.dropdown")} width={24} height={24} />
+                </>
+              )}
             </div>
             <div className="h-2"></div>
             <div
               data-testid={destinationWalletData ? "transfer-btn-account-to" : "transfer-btn-select-to"}
-              className="bg-grayscale-500 p-4 px-6 flex items-center gap-1 rounded-2xl cursor-pointer h-[100px] relative"
+              className={`bg-grayscale-500 p-4 px-6 flex items-center gap-1 rounded-2xl h-[100px] relative ${
+                isWalletSelectionLoading ? "cursor-default pointer-events-none" : "cursor-pointer"
+              }`}
               onClick={() => {
+                if (isWalletSelectionLoading) return
                 track("ek_to_wallet_transfer")
                 if (window.innerWidth < 768) {
                   setShowMobileSheet("to")
@@ -1507,65 +1641,78 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                 }
               }}
             >
-              <div className="absolute top-4 start-6 flex flex-col items-start gap-1.5">
-                <div className="text-grayscale-text-muted text-base font-normal">{t("wallet.to")}</div>
-                {destinationWalletData &&
-                  (destinationWalletData.type?.toLowerCase() === "p2p" ? (
-                    <div className="relative w-[21px] h-[21px] flex-shrink-0 mt-1">
-                      <Image
-                        src="/icons/p2p-black.png"
-                        alt={t("common.p2p")}
-                        width={21}
-                        height={21}
-                        className="w-[21px] h-[21px] rounded-full"
-                      />
-                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
-                        <div className="w-[10.5px] h-[10.5px] rounded-full bg-white flex items-center justify-center">
+              {isWalletSelectionLoading ? (
+                renderWalletAccountCardSkeleton(t("wallet.to"))
+              ) : (
+                <>
+                  <div className="absolute top-4 start-6 flex flex-col items-start gap-1.5">
+                    <div className="text-grayscale-text-muted text-base font-normal">{t("wallet.to")}</div>
+                    {destinationWalletData &&
+                      (destinationWalletData.type?.toLowerCase() === "p2p" ? (
+                        <div className="relative w-[21px] h-[21px] flex-shrink-0 mt-1">
+                          <Image
+                            src="/icons/p2p-black.png"
+                            alt={t("common.p2p")}
+                            width={21}
+                            height={21}
+                            className="w-[21px] h-[21px] rounded-full"
+                          />
+                          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
+                            <div className="w-[10.5px] h-[10.5px] rounded-full bg-white flex items-center justify-center">
+                              <Image
+                                src={
+                                  getCurrencyImage(destinationWalletData.currency)}
+                                alt={destinationWalletData.currency}
+                                width={9}
+                                height={9}
+                                className="w-[9px] h-[9px] rounded-full"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mb-3 mt-1">
                           <Image
                             src={
                               getCurrencyImage(destinationWalletData.currency)}
                             alt={destinationWalletData.currency}
-                            width={9}
-                            height={9}
-                            className="w-[9px] h-[9px] rounded-full"
+                            width={24}
+                            height={24}
+                            className="w-full h-full object-cover"
                           />
                         </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mb-3 mt-1">
-                      <Image
-                        src={
-                          getCurrencyImage(destinationWalletData.currency)}
-                        alt={destinationWalletData.currency}
-                        width={24}
-                        height={24}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ))}
-              </div>
-              <div className="flex-1 min-w-0 mt-6 ms-10 pe-8 text-start">
-                {destinationWalletData ? (
-                  <>
-                    <div className="text-slate-1200 text-base font-bold">{destinationWalletData.name}</div>
-                    <div className="text-grayscale-600 text-sm font-normal">{getDestinationWalletAmount()}</div>
-                  </>
-                ) : (
-                  <div className="text-grayscale-text-placeholder text-base font-normal whitespace-nowrap">{t("wallet.select")}</div>
-                )}
-              </div>
-              <Image src="/icons/chevron-down.png" alt={t("common.dropdown")} width={24} height={24} />
+                      ))}
+                  </div>
+                  <div className="flex-1 min-w-0 mt-6 ms-10 pe-8 text-start">
+                    {destinationWalletData ? (
+                      <>
+                        <div className="text-slate-1200 text-base font-bold">{destinationWalletData.name}</div>
+                        <div className="text-grayscale-600 text-sm font-normal">{getDestinationWalletAmount()}</div>
+                      </>
+                    ) : (
+                      <div className="text-grayscale-text-placeholder text-base font-normal whitespace-nowrap">{t("wallet.select")}</div>
+                    )}
+                  </div>
+                  <Image src="/icons/chevron-down.png" alt={t("common.dropdown")} width={24} height={24} />
+                </>
+              )}
             </div>
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
               <Button
                 data-testid="transfer-btn-swap"
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={handleInterchange}
-                className="p-0 bg-white rounded-full shadow-sm"
+                disabled={isWalletSelectionLoading}
+                className="pointer-events-auto size-12 h-12 w-12 min-h-12 max-h-12 p-0 bg-transparent hover:bg-transparent shadow-none disabled:opacity-40"
               >
-                <Image src="/icons/button-switch.png" alt={t("common.switch")} width={48} height={48} />
+                <Image
+                  src="/icons/button-switch.png"
+                  alt={t("common.switch")}
+                  width={48}
+                  height={48}
+                  className="size-12"
+                />
               </Button>
             </div>
           </div>
@@ -1610,13 +1757,13 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                     <TabsList className="bg-transparent h-full gap-1 w-full p-0">
                       <TabsTrigger
                         value="source"
-                        className="text-base px-3 h-full rounded-lg border-0 shadow-none data-[state=active]:bg-white data-[state=inactive]:bg-transparent hover:bg-white/50 text-[#181C25] font-normal flex-1"
+                        className="text-base px-3 h-full rounded-lg border-0 shadow-none data-[state=active]:bg-white data-[state=inactive]:bg-transparent hover:bg-white/50 text-slate-1200 font-normal flex-1"
                       >
                         {sourceWalletData?.currency}
                       </TabsTrigger>
                       <TabsTrigger
                         value="destination"
-                        className="text-base px-3 h-full rounded-lg border-0 shadow-none data-[state=active]:bg-white data-[state=inactive]:bg-transparent hover:bg-white/50 text-[#181C25] font-normal flex-1"
+                        className="text-base px-3 h-full rounded-lg border-0 shadow-none data-[state=active]:bg-white data-[state=inactive]:bg-transparent hover:bg-white/50 text-slate-1200 font-normal flex-1"
                       >
                         {destinationWalletData?.currency}
                       </TabsTrigger>
@@ -1683,7 +1830,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
               <div className="mt-6 space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-black/50 text-xs font-normal">{t("wallet.transferAmount")}</span>
-                  <span className="text-[#181C25] text-xs font-normal">
+                  <span className="text-slate-1200 text-xs font-normal">
                     {transferFeeCalculation
                       ? `${formatAmountByCurrency(
                         transferFeeCalculation.transferAmount,
@@ -1698,7 +1845,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                   <span className="text-black/50 text-xs font-normal">
                     {t("wallet.transferFee")} ({transferFeeCalculation?.feePercentage || 0}%)
                   </span>
-                  <span className="text-[#181C25] text-xs font-normal">
+                  <span className="text-slate-1200 text-xs font-normal">
                     {transferFeeCalculation
                       ? `${formatAmountByCurrency(transferFeeCalculation.transferFee, sourceWalletData?.currency || "")} ${sourceWalletData?.currency}`
                       : "-"}
@@ -1707,7 +1854,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                 <div className="flex justify-between items-start">
                   <span className="text-black/50 text-xs font-normal">{t("wallet.youllReceive")}:</span>
                   <div className="text-end">
-                    <div className="text-[#181C25] text-xs font-normal">
+                    <div className="text-slate-1200 text-xs font-normal">
                       {transferFeeCalculation && exchangeRateData
                         ? `${formatAmountByCurrency(transferFeeCalculation.youllReceive, destinationWalletData?.currency || "")} ${destinationWalletData?.currency} (${countdown}s)`
                         : "-"}
@@ -1726,38 +1873,64 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
               </div>
             )}
 
-            <div className="hidden md:block absolute top-full end-0 mt-6">
+          </div>
+          <div className="hidden md:flex px-2 mt-6 items-center justify-between gap-6">
+            <div className="min-w-0 flex-1">{renderEnterAmountYoullReceive()}</div>
+            <div className="flex flex-col items-end gap-2 shrink-0">
+              {validateError && (
+                <p className="text-sm text-error-text text-end max-w-xs" role="alert">
+                  {validateError}
+                </p>
+              )}
               <Button
                 data-testid="transfer-btn-submit"
                 onClick={handleTransferClick}
                 disabled={
+                  isValidatePreviewLoading ||
                   !transferAmount ||
                   transferAmount.trim() === "" ||
                   !sourceWalletData ||
                   !destinationWalletData ||
-                  !isAmountValid(transferAmount)
+                  !isAmountValid(transferAmount) ||
+                  !transferValidateQuote
                 }
                 className="flex h-12 min-h-12 max-h-12 px-7 justify-center items-center gap-2"
               >
-                {t("wallet.transfer")}
+                {isValidatePreviewLoading ? (
+                  <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
+                ) : (
+                  t("wallet.transfer")
+                )}
               </Button>
             </div>
           </div>
           <div className="flex-1"></div>
-          <div className="mt-auto md:hidden">
+          <div className="mt-auto md:hidden space-y-4 px-2">
+            {renderEnterAmountYoullReceive()}
+            {validateError && (
+              <p className="text-sm text-error-text text-start" role="alert">
+                {validateError}
+              </p>
+            )}
             <Button
               data-testid="transfer-btn-submit"
               onClick={handleTransferClick}
               disabled={
+                isValidatePreviewLoading ||
                 !transferAmount ||
                 transferAmount.trim() === "" ||
                 !sourceWalletData ||
                 !destinationWalletData ||
-                !isAmountValid(transferAmount)
+                !isAmountValid(transferAmount) ||
+                !transferValidateQuote
               }
               className="w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2"
             >
-              {t("wallet.transfer")}
+              {isValidatePreviewLoading ? (
+                <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
+              ) : (
+                t("wallet.transfer")
+              )}
             </Button>
           </div>
         </div>
@@ -1767,6 +1940,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
         {renderDesktopWalletPopup("to")}
         {renderMobileConfirmSheet()}
         {renderDesktopConfirmPopup()}
+        {renderAmountReceiveInfoSheet()}
       </div>
     )
   }
@@ -1780,7 +1954,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
       ? t("wallet.transferSuccessMessageMainToP2P", {
           amount: formatAmountWithDecimals(Number.parseFloat(transferAmount || "0")),
           currency: selectedCurrency || "USD",
-          walletName: destinationWalletData?.type?.toUpperCase() || "P2P",
+          walletName: destinationWalletData?.name || t("wallet.p2pWallet"),
           currencyLabel: currenciesData?.[selectedCurrency || "USD"]?.label || selectedCurrency || "USD",
         })
       : t("wallet.transferSuccessMessage", {

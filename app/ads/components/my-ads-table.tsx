@@ -595,10 +595,11 @@ export default function MyAdsTable({
       </Drawer>
 
       <VisibilityStatusDialog
-        id={selectedAd?.id}
+        id={selectedAd?.id ?? ""}
         open={visibilityDialogOpen}
         onOpenChange={setVisibilityDialogOpen}
         reasons={selectedVisibilityReasons}
+        ad={selectedAd}
         fromTab={isActiveTab ? "active" : "inactive"}
         onActivateAd={() => selectedAd && handleToggleStatus(selectedAd)}
       />

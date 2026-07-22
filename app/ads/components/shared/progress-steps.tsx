@@ -27,7 +27,10 @@ export function ProgressSteps({ currentStep, steps, className = "", title }: Pro
       {title && (
         <div className="mt-6">
           <div className="text-base font-normal text-slate-1200">{title.label}</div>
-          <div className="text-[32px] font-bold text-black mt-1">{title.stepTitle}</div>
+          {/* Responsive: 20px to match mobile headingMedium; desktop keeps 32px */}
+          <div className="text-xl md:text-[32px] font-extrabold text-black mt-1">
+            {title.stepTitle}
+          </div>
         </div>
       )}
     </div>

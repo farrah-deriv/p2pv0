@@ -1,20 +1,42 @@
 import { useUserDataStore } from "@/stores/user-data-store"
 import { p2pFetch } from "./p2p-fetch"
 import { getCoreUrl } from "@/lib/get-core-url"
+import {
+  extractWalletTransactionsNextCursor,
+  WALLET_TRANSACTIONS_PAGE_SIZE,
+  type WalletTransactionsPageResult,
+} from "@/lib/wallet-transactions-pagination"
+
+export type { WalletTransactionsPageResult } from "@/lib/wallet-transactions-pagination"
+export { WALLET_TRANSACTIONS_PAGE_SIZE } from "@/lib/wallet-transactions-pagination"
 
 const getAuthHeader = () => ({
   "Content-Type": "application/json",
 })
 
-export async function fetchTransactions(selectedCurrencyCode?: string) {
+export async function fetchTransactions(
+  selectedCurrencyCode?: string,
+  pageCursor?: string,
+): Promise<WalletTransactionsPageResult> {
   const userData = useUserDataStore.getState().userData
 
   const walletId = userData?.wallet_id
-
-  let url = `${getCoreUrl()}/v1/wallets/transactions?wallet_id=${walletId}`
-  if (selectedCurrencyCode) {
-    url += `&transaction_currency=${selectedCurrencyCode}`
+  if (!walletId) {
+    return { transactions: [], nextCursor: null }
   }
+
+  const params = new URLSearchParams({
+    wallet_id: walletId,
+    per_page: String(WALLET_TRANSACTIONS_PAGE_SIZE),
+  })
+  if (selectedCurrencyCode) {
+    params.set("transaction_currency", selectedCurrencyCode)
+  }
+  if (pageCursor) {
+    params.set("page_cursor", pageCursor)
+  }
+
+  const url = `${getCoreUrl()}/v1/wallets/transactions?${params.toString()}`
 
   return p2pFetch(url, {
     method: "GET",
@@ -24,8 +46,13 @@ export async function fetchTransactions(selectedCurrencyCode?: string) {
     },
   })
     .then((res) => res.json())
-    .then((data) => {
-      return data
+    .then((data: Record<string, unknown>) => {
+      const nested = data?.data as { transactions?: unknown[] } | undefined
+      const transactions = nested?.transactions ?? []
+      return {
+        transactions,
+        nextCursor: extractWalletTransactionsNextCursor(data ?? {}),
+      }
     })
     .catch((err) => {
       console.error("❌ Error:", err)
@@ -69,6 +96,78 @@ export async function getCurrencies(): Promise<any> {
   } catch (error) {
     return null
   }
+}
+
+export type TransferValidateWalletType = "main" | "p2p" | "partners" | "platform"
+
+export interface ValidateTransferParams {
+  source_type: string
+  destination_type: string
+  amount: string
+  balance: string
+  source_id: string
+  destination_id: string
+  source_currency: string
+  destination_currency: string
+  source_platform_name?: string
+  destination_platform_name?: string
+}
+
+export interface TransferValidateFee {
+  percentage: number
+  currency: string
+  amount: string
+  source?: string
+}
+
+export interface TransferValidateDetails {
+  transfer: {
+    is_cross_currency: boolean
+    type: string
+  }
+  source: {
+    id: string
+    currency: string
+    type: string
+    net_amount: string
+    amount: string
+  }
+  fee: TransferValidateFee
+  destination: {
+    type: string
+    amount: string
+    id: string
+    estimated: boolean
+    currency: string
+  }
+}
+
+export interface TransferValidateResponse {
+  data?: {
+    is_valid: boolean
+    details: TransferValidateDetails
+  }
+  errors?: Array<{ code?: string; message?: string }>
+}
+
+export async function validateTransfer(
+  params: ValidateTransferParams,
+): Promise<TransferValidateResponse> {
+  const url = `${getCoreUrl()}/v1/core/business/config/transfer/validate`
+  const response = await p2pFetch(url, {
+    method: "POST",
+    headers: getAuthHeader(),
+    credentials: "include",
+    body: JSON.stringify(params),
+  })
+
+  if (!response.ok) {
+    const text = await response.text()
+    throw new Error(`validate transfer failed: ${response.status} ${text}`)
+  }
+
+  const data = (await response.json()) as TransferValidateResponse
+  return data
 }
 
 export async function walletTransfer(params: {

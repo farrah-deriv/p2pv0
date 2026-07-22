@@ -574,7 +574,7 @@
     "updateAdError": "Đã xảy ra lỗi khi cập nhật quảng cáo. Vui lòng thử lại.",
     "visibilityStatus": "Quảng cáo của bạn không hiển thị",
     "visibilityStatusDescription": "Quảng cáo của bạn không hiển thị cho người khác. Đây là lý do tại sao:",
-    "visibilityStatusMultipleReasons": "Quảng cáo của bạn không được liệt kê trên Thị trường vì những lý do sau:",
+    "visibilityStatusMultipleReasons": "Quảng cáo của bạn không được liệt kê trên Market vì (các) lý do sau:",
     "tabActive": "Đang hoạt động",
     "tabInactive": "Không hoạt động",
     "noInactiveAdsTitle": "Không có quảng cáo không hoạt động",
@@ -1151,52 +1151,65 @@
       "contactSupport": "Liên hệ hỗ trợ",
       "editAd": "Cập nhật quảng cáo",
       "editSchedule": "Chỉnh sửa lịch trình",
-      "viewProfile": "Xem hồ sơ"
+      "viewProfile": "Xem hồ sơ",
+      "updateBusinessHours": "Cập nhật giờ làm việc",
+      "waitForLimitReset": "Chờ thiết lập lại giới hạn"
     },
     "adLinkCopied": "Đã sao chép liên kết quảng cáo",
     "advertFloatRateDisabled": {
       "description": "Tỷ giá thả nổi không còn áp dụng cho cặp tiền tệ này. Chuyển sang tỷ lệ cố định để hiển thị quảng cáo của bạn.",
-      "title": "Quảng cáo của bạn không hiển thị"
+      "title": "Quảng cáo của bạn không hiển thị",
+      "shortDescription": "Tỷ giá thả nổi không còn áp dụng cho cặp tiền tệ này."
     },
     "advertInactive": {
       "description": "Kích hoạt quảng cáo của bạn để hiển thị cho các nhà giao dịch khác.",
-      "title": "Quảng cáo của bạn không hoạt động"
+      "title": "Quảng cáo của bạn không hoạt động",
+      "shortDescription": "Quảng cáo của bạn không hoạt động."
     },
     "advertNoPaymentMethods": {
       "description": "Quảng cáo này không có phương thức thanh toán. Thêm một cái để các nhà giao dịch khác có thể nhìn thấy nó.",
-      "title": "Quảng cáo của bạn không hiển thị"
+      "title": "Quảng cáo của bạn không hiển thị",
+      "shortDescription": "Quảng cáo này không có phương thức thanh toán."
     },
     "advertRemaining": {
-      "description": "Số tiền còn lại của quảng cáo của bạn thấp hơn mức đặt hàng tối thiểu.",
-      "title": "Quảng cáo của bạn không hiển thị"
+      "description": "Số tiền còn lại của quảng cáo của bạn ({remainingAmount} {currency}) thấp hơn mức đặt hàng tối thiểu.",
+      "title": "Quảng cáo của bạn không hiển thị",
+      "shortDescription": "Số tiền còn lại của quảng cáo của bạn thấp hơn mức đặt hàng tối thiểu."
     },
     "advertiserAdvertsUnlisted": {
-      "description": "Bạn đã tạm dừng tất cả quảng cáo của mình. Kích hoạt quảng cáo của bạn để hiển thị cho các nhà giao dịch khác.",
-      "title": "Quảng cáo của bạn không hiển thị"
+      "description": "Bạn đã chọn tạm dừng quảng cáo của mình. Tắt nút chuyển đổi \"Tạm dừng quảng cáo của tôi\" để hiển thị chúng cho các nhà giao dịch khác.",
+      "title": "Quảng cáo của bạn không hiển thị",
+      "shortDescription": "Bạn đã tạm dừng tất cả quảng cáo của mình."
     },
     "advertiserBalance": {
-      "description": "Số dư của bạn thấp hơn đơn hàng tối thiểu của quảng cáo. Thêm tiền hoặc giảm mức tối thiểu để liệt kê quảng cáo của bạn.",
-      "title": "Quảng cáo của bạn không hiển thị"
+      "description": "Số dư của bạn thấp hơn đơn hàng tối thiểu của quảng cáo là {minOrderAmount} {currency}. Thêm tiền hoặc giảm mức tối thiểu để liệt kê quảng cáo của bạn.",
+      "title": "Quảng cáo của bạn không hiển thị",
+      "shortDescription": "Số dư của bạn thấp hơn đơn hàng tối thiểu của quảng cáo."
     },
     "advertiserDailyLimit": {
       "description": "Giới hạn hàng ngày còn lại của bạn thấp hơn mức đặt hàng tối thiểu. Giảm mức tối thiểu để liệt kê quảng cáo của bạn hoặc đợi giới hạn được đặt lại trong vòng 24 giờ.",
-      "title": "Quảng cáo của bạn không hiển thị"
+      "title": "Quảng cáo của bạn không hiển thị",
+      "shortDescription": "Giới hạn hàng ngày còn lại của bạn thấp hơn mức đặt hàng tối thiểu."
     },
     "advertiserNoPrivateGroups": {
-      "description": "Bạn không còn ở cấp Kim cương nữa nên quảng cáo nhóm kín không còn đủ điều kiện và bị ẩn khỏi thị trường. Để liệt kê quảng cáo này trên trang thị trường, hãy thay đổi chế độ hiển thị của nó từ Nhóm kín thành Mọi người.",
-      "title": "Quảng cáo của bạn không hiển thị"
+      "description": "Bạn không còn ở cấp Kim cương nữa nên quảng cáo nhóm kín không còn đủ điều kiện và bị ẩn khỏi thị trường.\n\nĐể liệt kê quảng cáo này trên trang thị trường, hãy thay đổi chế độ hiển thị của nó từ Nhóm kín thành Mọi người.",
+      "title": "Quảng cáo của bạn không hiển thị",
+      "shortDescription": "Quảng cáo này được đặt cho các nhóm kín. Bạn không còn được phép sử dụng tính năng đó nữa."
     },
     "advertiserScheduleUnavailable": {
       "description": "Nó nằm ngoài giờ làm việc của bạn. Cập nhật lịch trình của bạn hoặc đợi đến giờ hoạt động của bạn.",
-      "title": "Quảng cáo của bạn không hiển thị"
+      "title": "Quảng cáo của bạn không hiển thị",
+      "shortDescription": "Nó nằm ngoài giờ làm việc của bạn."
     },
     "advertiserStatus": {
       "description": "Liên hệ với chúng tôi qua trò chuyện trực tiếp để được trợ giúp.",
-      "title": "Quảng cáo của bạn không hiển thị"
+      "title": "Quảng cáo của bạn không hiển thị",
+      "shortDescription": "Liên hệ với chúng tôi qua trò chuyện trực tiếp để được trợ giúp."
     },
     "advertiserTempBan": {
       "description": "Tài khoản của bạn tạm thời bị hạn chế. Kiểm tra hồ sơ của bạn để biết chi tiết.",
-      "title": "Quảng cáo của bạn không hiển thị"
+      "title": "Quảng cáo của bạn không hiển thị",
+      "shortDescription": "Tài khoản của bạn tạm thời bị hạn chế. Kiểm tra hồ sơ của bạn để biết chi tiết."
     },
     "copyLink": "Sao chép liên kết",
     "failedToCopyLink": "Không thể sao chép liên kết",
@@ -1212,12 +1225,14 @@
     "shareImage": "Chia sẻ hình ảnh",
     "shareMessage": "Xin chào! Tôi muốn trao đổi {currency} với tỷ giá {rate} trên Deriv P2P. Nếu bạn quan tâm, hãy xem quảng cáo của tôi {url}. Cảm ơn!",
     "shareTelegramMessage": "Xin chào! Tôi muốn trao đổi {currency} với tỷ giá {rate} trên Deriv P2P. Nếu bạn quan tâm, hãy xem quảng cáo của tôi. Cảm ơn!",
-    "sharedSuccessfully": "Đã chia sẻ thành công"
+    "sharedSuccessfully": "Đã chia sẻ thành công",
+    "unknownReason": "Liên hệ với chúng tôi qua trò chuyện trực tiếp để được trợ giúp."
   },
   "wallet": {
     "all": "Tất cả",
     "amount": "Số tiền",
     "amountReceive": "Số tiền nhận",
+    "amountReceived": "Số tiền đã nhận",
     "chooseCurrency": "Chọn loại tiền tệ",
     "chooseCurrencyDescription": "Chọn loại tiền tệ bạn muốn {action}.",
     "contactUs": "Liên hệ chúng tôi",
@@ -1231,6 +1246,7 @@
     "directWithdrawalDescription": "Withdraw funds directly to your bank account, e-wallet, or other payment methods.",
     "directWithdrawalTitle": "Rút tiền",
     "endOfTransaction": "Kết thúc giao dịch",
+    "loadMore": "Tải thêm",
     "estTotalAssetsTooltip": "Đây là số dư ước tính tổng hợp trên tất cả ví P2P của bạn, hiển thị bằng USD.",
     "estTotalValue": "Số dư ví P2P",
     "exceedsBalance": "Số tiền không được vượt quá số dư khả dụng {amount} {currency}.",
@@ -1277,10 +1293,10 @@
     "transferAmount": "Số tiền chuyển",
     "transferErrorDuring": "Chúng tôi không thể xử lý giao dịch chuyển khoản của bạn. Vui lòng thử lại.",
     "transferFee": "Phí chuyển khoản",
-    "transferRouteP2pToP2p": "P2P {currency} → P2P {currency}",
-    "transferRouteP2pToWallet": "P2P {currency} → Ví {currency}",
-    "transferRouteWalletOnly": "Ví {currency}",
-    "transferRouteWalletToP2p": "Ví {currency} → P2P {currency}",
+    "transferRouteP2pToP2p": "Ví P2P → Ví P2P",
+    "transferRouteP2pToWallet": "Ví P2P → Ví",
+    "transferRouteWalletOnly": "Ví → Ví",
+    "transferRouteWalletToP2p": "Ví → Ví P2P",
     "transferSuccessMessage": "{amount} {currency} đã được chuyển từ {from} sang {to} của bạn",
     "transferSuccessMessageMainToP2P": "{amount} {currency} đang trên đường đến ví {walletName} {currencyLabel} của bạn. Có thể mất vài phút để phản ánh.",
     "transferSuccessful": "Chuyển khoản thành công",
@@ -1323,7 +1339,14 @@
     "withdraw": "Rút tiền",
     "withdrawFromP2p": "Rút tiền",
     "withdrawWith": "Rút tiền bằng",
-    "youllReceive": "Bạn sẽ nhận được"
+    "youllReceive": "Bạn sẽ nhận được",
+    "amountReceiveInfoTitle": "Số tiền nhận",
+    "amountReceiveInfoBody": "Khoản điều chỉnh {amount} {currency} được áp dụng cho lần chuyển này.",
+    "amountReceiveInfoBodyFree": "Không có phí chuyển khoản. Bạn sẽ nhận toàn bộ số tiền chuyển.",
+    "transferValidateFailed": "Không thể tính phí chuyển khoản. Vui lòng thử lại.",
+    "mainWallet": "Ví",
+    "p2pWallets": "Ví P2P",
+    "amountReceiveInfoBodyApplied": "Khoản điều chỉnh {amount} {currency} đã được áp dụng cho lần chuyển này."
   },
   "guide": {
     "back": "Quay lại",

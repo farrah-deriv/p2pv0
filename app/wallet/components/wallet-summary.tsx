@@ -105,9 +105,9 @@ export default function WalletSummary({
     const currencyLabel = getCurrencyLabel(transaction.metadata.transaction_currency)
 
     if (sourceWalletType === "p2p") {
-      return `P2P ${currencyLabel}`
+      return t("wallet.p2pWallet")
     } else if (sourceWalletType === "main") {
-      return t("wallet.walletName", { currency: currencyLabel })
+      return t("wallet.mainWallet")
     } else if (sourceWalletType === "system") {
       return transaction.metadata.payout_method || t("wallet.external")
     }
@@ -119,9 +119,9 @@ export default function WalletSummary({
     const currencyLabel = getCurrencyLabel(transaction.metadata.transaction_currency)
 
     if (destinationWalletType === "p2p") {
-      return `P2P ${currencyLabel}`
+      return t("wallet.p2pWallet")
     } else if (destinationWalletType === "main") {
-      return t("wallet.walletName", { currency: currencyLabel })
+      return t("wallet.mainWallet")
     } else if (destinationWalletType === "system") {
       return transaction.metadata.payout_method || t("wallet.external")
     }
@@ -334,9 +334,14 @@ export default function WalletSummary({
     <>
       <div
         className={cn(
+          // Solid bg + z-index so list content clips cleanly under the header edge.
           "relative z-10 w-full p-6 flex flex-col",
           isBalancesView && !isShowingTransactionDetails ? "bg-slate-1200 md:h-[140px] h-auto" : "bg-slate-75 md:h-[180px] h-auto",
-          isMobile ? (isBalancesView && !isShowingTransactionDetails ? "rounded-b-3xl" : "rounded-b-none") : "rounded-3xl",
+          // Transaction list: flat bottom so rows can scroll under the header.
+          // Balances + details: rounded bottom for separation from content below.
+          isBalancesView || isShowingTransactionDetails
+            ? "rounded-b-3xl md:rounded-3xl"
+            : "rounded-b-none md:rounded-t-3xl md:rounded-b-none",
         )}
       >
         {!isBalancesView && (
@@ -372,7 +377,7 @@ export default function WalletSummary({
               <p className={`text-[28px] font-extrabold ${getTransactionDisplay(selectedTransaction).amountColor}`}>
                 {getTransactionDisplay(selectedTransaction).amount}
               </p>
-              <p className={`text-sm font-normal ${getTransactionDisplay(selectedTransaction).subtitleColor}`}>
+              <p className={`mt-2 text-base font-normal ${getTransactionDisplay(selectedTransaction).subtitleColor}`}>
                 {getTransactionDisplay(selectedTransaction).subtitle}
               </p>
             </div>
@@ -556,8 +561,8 @@ export default function WalletSummary({
       )}
 
       {currentStep === "transactionDetails" && selectedTransaction && (
-        <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
-          <div className="p-6">
+        <div className="fixed inset-0 z-50 bg-slate-75 overflow-y-auto overflow-x-hidden">
+          <div className="p-6 bg-slate-75">
             <div className="flex justify-start items-center mb-6">
               <button
                 onClick={handleCloseTransactionDetails}
@@ -567,8 +572,8 @@ export default function WalletSummary({
                 <Image src="/icons/back-circle.png" alt={t("common.back")} width={32} height={32} />
               </button>
             </div>
-            <TransactionDetails transaction={selectedTransaction} currencies={currenciesResponse} onClose={handleCloseTransactionDetails} />
           </div>
+          <TransactionDetails transaction={selectedTransaction} onClose={handleCloseTransactionDetails} />
         </div>
       )}
 

@@ -287,11 +287,12 @@ export default function AdsPage() {
     <>
       <div className="flex flex-col h-full min-h-0 md:h-screen overflow-hidden bg-white px-3">
         <div className="flex-none container mx-auto">
-          <div className="relative z-10 w-[calc(100%+24px)] md:w-full min-h-[80px] flex items-center justify-start gap-4 bg-slate-1200 px-6 pb-6 pt-8 md:p-6 rounded-b-3xl md:rounded-3xl text-white -mx-3 mb-4 md:mx-0 md:mt-0">
+          <div className="relative z-10 w-[calc(100%+24px)] md:w-full min-h-[80px] flex min-w-0 flex-wrap items-center justify-start gap-4 bg-slate-1200 px-6 pb-6 pt-8 md:p-6 rounded-b-3xl md:rounded-3xl text-white -mx-3 mb-4 md:mx-0 md:mt-0">
             <HeaderSegmentedControl
               value={activeTab}
               onValueChange={handleTabChange}
               width={184}
+              className="shrink-0"
               segments={[
                 { value: "active", label: t("myAds.tabActive"), testId: "ads-tab-active" },
                 { value: "inactive", label: t("myAds.tabInactive"), testId: "ads-tab-inactive" },

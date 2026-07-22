@@ -642,6 +642,7 @@
     "all": "All",
     "today": "Today",
     "endOfTransaction": "End of transaction",
+    "loadMore": "Load more",
     "noTransactions": "No transactions found",
     "noTransactionsForCurrency": "No transactions for the selected currency",
     "noDepositTransactions": "No deposit transactions found",
@@ -662,6 +663,7 @@
     "failed": "Failed",
     "cancelled": "Cancelled",
     "walletName": "{currency} Wallet",
+    "mainWallet": "Wallet",
     "external": "External",
     "chooseCurrency": "Choose currency",
     "chooseCurrencyDescription": "Choose which currency you would like to {action}.",
@@ -671,6 +673,7 @@
     "transferFee": "Transfer fee",
     "youllReceive": "You'll receive",
     "amountReceive": "Amount receive",
+    "amountReceived": "Amount received",
     "reviewAndConfirm": "Review and confirm",
     "transferSuccessful": "Transfer successful",
     "transferUnsuccessful": "Transfer unsuccessful",
@@ -684,6 +687,7 @@
     "contactUs": "Contact us",
     "depositNow": "Deposit now",
     "p2pWallet": "P2P Wallet",
+    "p2pWallets": "P2P Wallets",
     "tradingWallet": "Trading Wallet",
     "minimumTransfer": "Minimum transfer is {amount} {currency}",
     "minimumTransferAmount": "Minimum transfer amount is {amount} {currency}.",
@@ -729,12 +733,17 @@
     "marketplaceTitle": "Marketplace",
     "select": "Select",
     "transferErrorDuring": "An error occurred during the transfer.",
-    "transferRouteP2pToP2p": "P2P {currency} → P2P {currency}",
-    "transferRouteP2pToWallet": "P2P {currency} → {currency} Wallet",
-    "transferRouteWalletOnly": "{currency} Wallet",
-    "transferRouteWalletToP2p": "{currency} Wallet → P2P {currency}",
+    "transferRouteP2pToP2p": "P2P Wallet → P2P Wallet",
+    "transferRouteP2pToWallet": "P2P Wallet → Wallet",
+    "transferRouteWalletOnly": "Wallet → Wallet",
+    "transferRouteWalletToP2p": "Wallet → P2P Wallet",
     "transferUnexpectedError": "An unexpected error occurred. Please try again.",
-    "withdrawFromP2p": "Withdraw from P2P"
+    "withdrawFromP2p": "Withdraw from P2P",
+    "amountReceiveInfoTitle": "Amount receive",
+    "amountReceiveInfoBody": "A {amount} {currency} adjustment applies to this transfer.",
+    "amountReceiveInfoBodyApplied": "A {amount} {currency} adjustment was applied to this transfer.",
+    "amountReceiveInfoBodyFree": "No transfer fee applies. You'll receive the full transfer amount.",
+    "transferValidateFailed": "Unable to calculate transfer fee. Please try again."
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
@@ -798,7 +807,7 @@
     "updateAdError": "There was an error when updating the advert. Please try again.",
     "visibilityStatus": "Your ad isn't visible",
     "visibilityStatusDescription": "Your ad isn't visible to others. Here's why:",
-    "visibilityStatusMultipleReasons": "Your ad isn't listed on Market due to the following reasons:",
+    "visibilityStatusMultipleReasons": "Your ad isn't listed on Market for these reason(s):",
     "tabActive": "Active",
     "tabInactive": "Inactive",
     "noInactiveAdsTitle": "No inactive ads",
@@ -807,47 +816,58 @@
   "visibilityStatus": {
     "advertInactive": {
       "title": "Your ad is inactive",
-      "description": "Activate your ad to make it visible to other traders."
+      "description": "Activate your ad to make it visible to other traders.",
+      "shortDescription": "Your ad is inactive."
     },
     "advertRemaining": {
       "title": "Your ad isn't visible",
-      "description": "Your ad's remaining amount is below the minimum order."
+      "description": "Your ad's remaining amount ({remainingAmount} {currency}) is below the minimum order.",
+      "shortDescription": "Your ad's remaining amount is below the minimum order."
     },
     "advertiserDailyLimit": {
       "title": "Your ad isn't visible",
-      "description": "Your remaining daily limit is below the minimum order. Lower the minimum to list your ad or wait for the limit to reset within 24 hours."
+      "description": "Your remaining daily limit is below the minimum order. Lower the minimum to list your ad or wait for the limit to reset within 24 hours.",
+      "shortDescription": "Your remaining daily limit is below the minimum order."
     },
     "advertiserBalance": {
       "title": "Your ad isn't visible",
-      "description": "Your balance is lower than your ad's minimum order. Add funds or lower the minimum to list your ad."
+      "description": "Your balance is lower than your ad's minimum order of {minOrderAmount} {currency}. Add funds or lower the minimum to list your ad.",
+      "shortDescription": "Your balance is lower than your ad's minimum order."
     },
     "advertiserAdvertsUnlisted": {
       "title": "Your ads aren't visible",
-      "description": "You've paused all your ad. Activate your ads to make it visible to other traders."
+      "description": "You've chosen to pause your ads. Turn off the \"Pause my ads\" toggle to make them visible to other traders.",
+      "shortDescription": "You've paused all your ads."
     },
     "advertiserStatus": {
       "title": "Your ad isn't visible",
-      "description": "Contact us via live chat for help."
+      "description": "Contact us via live chat for help.",
+      "shortDescription": "Contact us via live chat for help."
     },
     "advertiserScheduleUnavailable": {
       "title": "Your ad isn't visible",
-      "description": "It's outside your business hours. Update your schedule or wait until your active hours."
+      "description": "It's outside your business hours. Update your schedule or wait until your active hours.",
+      "shortDescription": "It's outside your business hours."
     },
     "advertiserTempBan": {
       "title": "Your ad isn't visible",
-      "description": "Your account is temporarily restricted. Check your profile for details."
+      "description": "Your account is temporarily restricted. Check your profile for details.",
+      "shortDescription": "Your account is temporarily restricted. Check your profile for details."
     },
     "advertiserNoPrivateGroups": {
       "title": "Your ad isn't visible",
-      "description": "You’re no longer in the Diamond tier, so closed group ads are no longer eligible and are hidden from the market. To list this ad on the market page, change its visibility from Closed Group to Everyone."
+      "description": "You're no longer in the Diamond tier, so closed group ads are no longer eligible and are hidden from the market.\n\nTo list this ad on the market page, change its visibility from Closed Group to Everyone.",
+      "shortDescription": "This ad is set for closed groups. You're no longer allowed to use that feature."
     },
     "advertFloatRateDisabled": {
       "title": "Your ad isn't visible",
-      "description": "Floating rates are no longer available for this currency pair. Switch to a fixed rate to make your ad visible."
+      "description": "Floating rates are no longer available for this currency pair. Switch to a fixed rate to make your ad visible.",
+      "shortDescription": "Floating rates are no longer available for this currency pair."
     },
     "advertNoPaymentMethods": {
       "title": "Your ad isn't visible",
-      "description": "This ad doesn't have a payment method. Add one to make it visible to other traders."
+      "description": "This ad doesn't have a payment method. Add one to make it visible to other traders.",
+      "shortDescription": "This ad doesn't have a payment method."
     },
     "actions": {
       "activateAd": "Activate ad",
@@ -858,7 +878,9 @@
       "contactSupport": "Contact support",
       "editSchedule": "Edit schedule",
       "viewProfile": "View profile",
-      "addPaymentMethod": "Add payment method"
+      "addPaymentMethod": "Add payment method",
+      "updateBusinessHours": "Update business hours",
+      "waitForLimitReset": "Wait for limit reset"
     },
     "shareMessage": "Hi! I'd like to exchange {currency} at {rate} on Deriv P2P. If you're interested, check out my ad {url}. Thanks!",
     "shareTelegramMessage": "Hi! I'd like to exchange {currency} at {rate} on Deriv P2P. If you're interested, check out my ad. Thanks!",
@@ -874,7 +896,8 @@
     "sharedSuccessfully": "Shared successfully",
     "copyLink": "Copy link",
     "saveImage": "Save image",
-    "shareImage": "Share image"
+    "shareImage": "Share image",
+    "unknownReason": "Contact us via live chat for help."
   },
   "orders": {
     "title": "Orders",

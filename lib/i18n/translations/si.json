@@ -531,7 +531,7 @@
     "updateAdError": "දැන්වීම යාවත්කාලීන කිරීමේදී දෝෂයක් ඇති විය. කරුණාකර නැවත උත්සාහ කරන්න.",
     "visibilityStatus": "ඔබේ දැන්වීම නොපෙනේ",
     "visibilityStatusDescription": "ඔබේ දැන්වීම අන් අයට නොපෙනේ. මෙන්න හේතුව:",
-    "visibilityStatusMultipleReasons": "පහත හේතු නිසා ඔබේ වෙළඳ දැන්වීම වෙළඳපොලේ ලැයිස්තුගත කර නොමැත:",
+    "visibilityStatusMultipleReasons": "මෙම හේතු(ය) නිසා ඔබේ දැන්වීම වෙළඳපොලේ ලැයිස්තුගත කර නොමැත:",
     "tabActive": "සක්‍රිය",
     "tabInactive": "අක්‍රිය",
     "noInactiveAdsTitle": "අක්‍රිය දැන්වීම් නැත",
@@ -1107,52 +1107,65 @@
       "contactSupport": "සහාය අමතන්න",
       "editAd": "දැන්වීම යාවත්කාලීන කරන්න",
       "editSchedule": "කාලසටහන සංස්කරණය කරන්න",
-      "viewProfile": "පැතිකඩ බලන්න"
+      "viewProfile": "පැතිකඩ බලන්න",
+      "updateBusinessHours": "ව්‍යාපාරික වේලාවන් යාවත්කාලීන කරන්න",
+      "waitForLimitReset": "සීමාව යළි පිහිටුවීම සඳහා රැඳී සිටින්න"
     },
     "adLinkCopied": "දැන්වීම් සබැඳිය පිටපත් කර ඇත",
     "advertFloatRateDisabled": {
       "description": "මෙම මුදල් යුගල සඳහා පාවෙන ගාස්තු තවදුරටත් නොමැත. ඔබේ දැන්වීම දෘශ්‍යමාන කිරීමට ස්ථාවර ගාස්තුවකට මාරු වන්න.",
-      "title": "ඔබේ දැන්වීම නොපෙනේ"
+      "title": "ඔබේ දැන්වීම නොපෙනේ",
+      "shortDescription": "මෙම මුදල් යුගල සඳහා පාවෙන ගාස්තු තවදුරටත් නොමැත."
     },
     "advertInactive": {
       "description": "ඔබගේ දැන්වීම අනෙකුත් වෙළෙන්දන්ට දෘශ්‍යමාන කිරීමට සක්‍රිය කරන්න.",
-      "title": "ඔබේ දැන්වීම අක්‍රියයි"
+      "title": "ඔබේ දැන්වීම අක්‍රියයි",
+      "shortDescription": "ඔබේ දැන්වීම අක්‍රියයි."
     },
     "advertNoPaymentMethods": {
       "description": "මෙම දැන්වීමට ගෙවීමේ ක්‍රමයක් නොමැත. වෙනත් වෙළෙන්දන්ට එය දෘශ්‍යමාන කිරීමට එකක් එක් කරන්න.",
-      "title": "ඔබේ දැන්වීම නොපෙනේ"
+      "title": "ඔබේ දැන්වීම නොපෙනේ",
+      "shortDescription": "මෙම දැන්වීමට ගෙවීමේ ක්‍රමයක් නොමැත."
     },
     "advertRemaining": {
-      "description": "ඔබේ දැන්වීමේ ඉතිරි මුදල අවම ඇණවුමට වඩා අඩුය.",
-      "title": "ඔබේ දැන්වීම නොපෙනේ"
+      "description": "ඔබේ දැන්වීමේ ඉතිරි මුදල ({remainingAmount} {currency}) අවම ඇණවුමට වඩා අඩුය.",
+      "title": "ඔබේ දැන්වීම නොපෙනේ",
+      "shortDescription": "ඔබේ දැන්වීමේ ඉතිරි මුදල අවම ඇණවුමට වඩා අඩුය."
     },
     "advertiserAdvertsUnlisted": {
-      "description": "ඔබ ඔබේ සියලු දැන්වීම විරාම කර ඇත. වෙනත් වෙළඳුන්ට දෘශ්‍යමාන කිරීමට ඔබේ දැන්වීම් සක්‍රිය කරන්න.",
-      "title": "ඔබේ දැන්වීම් දෘශ්‍යමාන නොවේ"
+      "description": "ඔබ ඔබේ දැන්වීම් විරාම කිරීමට තෝරාගෙන ඇත. වෙනත් වෙළඳුන්ට ඒවා දෘශ්‍යමාන කිරීමට \"මගේ දැන්වීම් විරාම කරන්න\" ටොගලය ක්‍රියාවිරහිත කරන්න.",
+      "title": "ඔබේ දැන්වීම් දෘශ්‍යමාන නොවේ",
+      "shortDescription": "ඔබ ඔබේ සියලුම දැන්වීම් විරාම කර ඇත."
     },
     "advertiserBalance": {
-      "description": "ඔබේ ශේෂය ඔබේ දැන්වීමේ අවම ඇණවුමට වඩා අඩුය. ඔබේ දැන්වීම ලැයිස්තුගත කිරීමට අරමුදල් එකතු කරන්න හෝ අවමය අඩු කරන්න.",
-      "title": "ඔබේ දැන්වීම නොපෙනේ"
+      "description": "ඔබේ ශේෂය ඔබේ දැන්වීමේ අවම අනුපිළිවෙල වන {minOrderAmount} {currency} ට වඩා අඩුය. ඔබේ දැන්වීම ලැයිස්තුගත කිරීමට අරමුදල් එකතු කරන්න හෝ අවමය අඩු කරන්න.",
+      "title": "ඔබේ දැන්වීම නොපෙනේ",
+      "shortDescription": "ඔබේ ශේෂය ඔබේ දැන්වීමේ අවම ඇණවුමට වඩා අඩුය."
     },
     "advertiserDailyLimit": {
       "description": "ඔබගේ ඉතිරි දෛනික සීමාව අවම ඇණවුමට වඩා අඩුය. ඔබේ දැන්වීම ලැයිස්තුගත කිරීමට අවම අගය අඩු කරන්න හෝ සීමාව පැය 24ක් ඇතුළත යළි පිහිටුවීමට රැඳී සිටින්න.",
-      "title": "ඔබේ දැන්වීම නොපෙනේ"
+      "title": "ඔබේ දැන්වීම නොපෙනේ",
+      "shortDescription": "ඔබගේ ඉතිරි දෛනික සීමාව අවම ඇණවුමට වඩා අඩුය."
     },
     "advertiserNoPrivateGroups": {
-      "description": "ඔබ තවදුරටත් දියමන්ති ස්ථරයේ නැත, එබැවින් සංවෘත කණ්ඩායම් දැන්වීම් තවදුරටත් සුදුසුකම් නොලබන අතර වෙළඳපොළෙන් සඟවනු ලැබේ. වෙළඳපොළ පිටුවේ මෙම දැන්වීම ලැයිස්තුගත කිරීමට, එහි දෘශ්‍යතාව සංවෘත සමූහයේ සිට සැමට වෙනස් කරන්න.",
-      "title": "ඔබේ දැන්වීම නොපෙනේ"
+      "description": "ඔබ තවදුරටත් දියමන්ති ස්ථරයේ නැත, එබැවින් සංවෘත කණ්ඩායම් දැන්වීම් තවදුරටත් සුදුසුකම් නොලබන අතර වෙළඳපොළෙන් සඟවනු ලැබේ.\n\nවෙළඳපොළ පිටුවේ මෙම දැන්වීම ලැයිස්තුගත කිරීමට, එහි දෘශ්‍යතාව සංවෘත සමූහයේ සිට සැමට වෙනස් කරන්න.",
+      "title": "ඔබේ දැන්වීම නොපෙනේ",
+      "shortDescription": "මෙම දැන්වීම සංවෘත කණ්ඩායම් සඳහා සකසා ඇත. ඔබට තවදුරටත් එම විශේෂාංගය භාවිත කිරීමට අවසර නැත."
     },
     "advertiserScheduleUnavailable": {
       "description": "එය ඔබේ ව්‍යාපාරික වේලාවෙන් පිටත ය. ඔබගේ කාලසටහන යාවත්කාලීන කරන්න හෝ ඔබගේ ක්‍රියාකාරී වේලාවන් තෙක් රැඳී සිටින්න.",
-      "title": "ඔබේ දැන්වීම නොපෙනේ"
+      "title": "ඔබේ දැන්වීම නොපෙනේ",
+      "shortDescription": "එය ඔබේ ව්‍යාපාරික වේලාවෙන් පිටත ය."
     },
     "advertiserStatus": {
       "description": "උදව් සඳහා සජීවී කතාබස් හරහා අප හා සම්බන්ධ වන්න.",
-      "title": "ඔබේ දැන්වීම නොපෙනේ"
+      "title": "ඔබේ දැන්වීම නොපෙනේ",
+      "shortDescription": "උදව් සඳහා සජීවී කතාබස් හරහා අප හා සම්බන්ධ වන්න."
     },
     "advertiserTempBan": {
       "description": "ඔබගේ ගිණුම තාවකාලිකව සීමා කර ඇත. විස්තර සඳහා ඔබේ පැතිකඩ පරීක්ෂා කරන්න.",
-      "title": "ඔබේ දැන්වීම නොපෙනේ"
+      "title": "ඔබේ දැන්වීම නොපෙනේ",
+      "shortDescription": "ඔබගේ ගිණුම තාවකාලිකව සීමා කර ඇත. විස්තර සඳහා ඔබේ පැතිකඩ පරීක්ෂා කරන්න."
     },
     "copyLink": "සබැඳිය පිටපත් කරන්න",
     "failedToCopyLink": "සබැඳිය පිටපත් කිරීමට අසමත් විය",
@@ -1168,12 +1181,14 @@
     "shareImage": "රූපය බෙදාගන්න",
     "shareMessage": "හායි! මම හුවමාරු කර ගැනීමට කැමතියි{currency}දී{rate}__TOKEN90__ මත. ඔබ කැමති නම්, මගේ දැන්වීම බලන්න{url}. ස්තුතියි!",
     "shareTelegramMessage": "හායි! මම හුවමාරු කර ගැනීමට කැමතියි{currency}දී{rate}__TOKEN90__ මත. ඔබ කැමති නම්, මගේ දැන්වීම බලන්න. ස්තුතියි!",
-    "sharedSuccessfully": "සාර්ථකව බෙදා ගන්නා ලදී"
+    "sharedSuccessfully": "සාර්ථකව බෙදා ගන්නා ලදී",
+    "unknownReason": "උදව් සඳහා සජීවී කතාබස් හරහා අප හා සම්බන්ධ වන්න."
   },
   "wallet": {
     "all": "සියල්ල",
     "amount": "මුදල",
     "amountReceive": "ලැබෙන මුදල",
+    "amountReceived": "ලැබුණු මුදල",
     "chooseCurrency": "මුදල් තෝරන්න",
     "chooseCurrencyDescription": "ඔබ {action} කිරීමට කැමති මුදල් වර්ගය තෝරන්න.",
     "contactUs": "අප හා සම්බන්ධ වන්න",
@@ -1187,6 +1202,7 @@
     "directWithdrawalDescription": "Withdraw funds directly to your bank account, e-wallet, or other payment methods.",
     "directWithdrawalTitle": "ආපසු ගන්න",
     "endOfTransaction": "ගනුදෙනුවේ අවසානය",
+    "loadMore": "වැඩිපුර පටවන්න",
     "estTotalAssetsTooltip": "මෙය සියලු P2P පසුම්බි වලින් ඔබේ ඇස්තමේන්තුගත සංයුක්ත ශේෂය වන අතර USD වලින් පෙන්වයි.",
     "estTotalValue": "P2P පසුම්බි ශේෂය",
     "exceedsBalance": "මුදල පවතින ශේෂය {amount} {currency} ඉක්මවිය නොහැක.",
@@ -1233,10 +1249,10 @@
     "transferAmount": "මාරු මුදල",
     "transferErrorDuring": "අපට ඔබේ මාරු කිරීම ක්‍රියාවට නැංවීමට නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.",
     "transferFee": "මාරු ගාස්තුව",
-    "transferRouteP2pToP2p": "P2P {currency} → P2P {currency}",
-    "transferRouteP2pToWallet": "P2P {currency} → {currency} පසුම්බිය",
-    "transferRouteWalletOnly": "{currency} පසුම්බිය",
-    "transferRouteWalletToP2p": "{currency} පසුම්බිය → P2P {currency}",
+    "transferRouteP2pToP2p": "P2P පසුම්බිය → P2P පසුම්බිය",
+    "transferRouteP2pToWallet": "P2P පසුම්බිය → පසුම්බිය",
+    "transferRouteWalletOnly": "පසුම්බිය → පසුම්බිය",
+    "transferRouteWalletToP2p": "පසුම්බිය → P2P පසුම්බිය",
     "transferSuccessMessage": "{amount} {currency} ඔබේ {from} සිට ඔබේ {to} වෙත මාරු කර ඇත",
     "transferSuccessMessageMainToP2P": "{amount} {currency} ඔබේ {walletName} {currencyLabel} පසුම්බිය වෙත යමින් පවතී. පිළිබිඹු වීමට විනාඩි කිහිපයක් ගතවිය හැකිය.",
     "transferSuccessful": "මාරු කිරීම සාර්ථකයි",
@@ -1279,7 +1295,14 @@
     "withdraw": "ආපසු ගන්න",
     "withdrawFromP2p": "ආපසු ගන්න",
     "withdrawWith": "සමඟ ආපසු ගන්න",
-    "youllReceive": "ඔබට ලැබෙනු ඇත"
+    "youllReceive": "ඔබට ලැබෙනු ඇත",
+    "amountReceiveInfoTitle": "ලැබෙන මුදල",
+    "amountReceiveInfoBody": "මෙම මාරුවට {amount} {currency} ගැලපුමක් අදාළ වේ.",
+    "amountReceiveInfoBodyFree": "මාරු ගාස්තුවක් අදාළ නොවේ. ඔබට සම්පූර්ණ මාරු මුදල ලැබෙනු ඇත.",
+    "transferValidateFailed": "මාරු ගාස්තුව ගණනය කළ නොහැක. කරුණාකර නැවත උත්සාහ කරන්න.",
+    "mainWallet": "පසුම්බිය",
+    "p2pWallets": "P2P පසුම්බි",
+    "amountReceiveInfoBodyApplied": "මෙම මාරුවට {amount} {currency} ගැලපුමක් යොදා ඇත."
   },
   "guide": {
     "back": "ආපසු",

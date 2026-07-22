@@ -99,46 +99,49 @@ export default function MarketFilterDropdown({
 
   const FilterContent = () => (
     <div className="w-full">
-      <div className="space-y-3">
+      <div className="space-y-3 pb-4">
         <h4 className="text-grayscale-text-muted text-sm">{t("filter.adTypes")}</h4>
-        <div className={cn(CHECKBOX_LABEL_ROW, "mb-4")}>
+        <div className={cn(CHECKBOX_LABEL_ROW, "items-start")}>
           <Checkbox
             id="from-following"
             checked={filters.fromFollowing}
             onCheckedChange={(checked) => handleFilterChange("fromFollowing", checked as boolean)}
-            className="shrink-0 data-[state=checked]:bg-black"
+            className="mt-0.5 shrink-0 data-[state=checked]:bg-black"
             data-testid="market-filter-checkbox-following"
           />
-          <label htmlFor="from-following" className="flex-1 min-w-0 cursor-pointer text-start text-sm text-grayscale-600">
+          <label
+            htmlFor="from-following"
+            className="flex-1 min-w-0 cursor-pointer text-start text-sm text-grayscale-600 break-words"
+          >
             {t("filter.adsFromFollowing")}
           </label>
         </div>
       </div>
-      <div className="space-y-3 border-t py-2">
+      <div className="space-y-3 border-t pt-4">
         <h4 className="text-grayscale-text-muted text-sm">{t("filter.sortBy")}</h4>
         <RadioGroup value={sortBy} onValueChange={handleSortByChange} className="flex flex-col gap-3">
-          <div className={CHECKBOX_LABEL_ROW}>
-            <RadioGroupItem value="trade_band_rank" id="trade_band_rank" className="shrink-0 border-grayscale-100 text-black" data-testid="market-filter-radio-sort-tier" />
-            <label htmlFor="trade_band_rank" className="flex-1 min-w-0 cursor-pointer text-start text-sm text-grayscale-600">
+          <div className={cn(CHECKBOX_LABEL_ROW, "items-start")}>
+            <RadioGroupItem value="trade_band_rank" id="trade_band_rank" className="mt-0.5 shrink-0 border-grayscale-100 text-black" data-testid="market-filter-radio-sort-tier" />
+            <label htmlFor="trade_band_rank" className="flex-1 min-w-0 cursor-pointer text-start text-sm text-grayscale-600 break-words">
               {t("filter.tierLevelHighLow")}
             </label>
           </div>
-          <div className={CHECKBOX_LABEL_ROW}>
-            <RadioGroupItem value="exchange_rate" id="exchange_rate" className="shrink-0 border-grayscale-100 text-black" data-testid="market-filter-radio-sort-rate" />
-            <label htmlFor="exchange_rate" className="flex-1 min-w-0 cursor-pointer text-start text-sm text-grayscale-600">
+          <div className={cn(CHECKBOX_LABEL_ROW, "items-start")}>
+            <RadioGroupItem value="exchange_rate" id="exchange_rate" className="mt-0.5 shrink-0 border-grayscale-100 text-black" data-testid="market-filter-radio-sort-rate" />
+            <label htmlFor="exchange_rate" className="flex-1 min-w-0 cursor-pointer text-start text-sm text-grayscale-600 break-words">
               {activeTab === "sell" ? t("filter.exchangeRateLowHigh") : t("filter.exchangeRateHighLow")}
             </label>
           </div>
-          <div className={CHECKBOX_LABEL_ROW}>
+          <div className={cn(CHECKBOX_LABEL_ROW, "items-start")}>
             <RadioGroupItem
               value="user_rating_average_lifetime"
               id="user_rating_average_lifetime"
-              className="shrink-0 border-grayscale-100 text-black"
+              className="mt-0.5 shrink-0 border-grayscale-100 text-black"
               data-testid="market-filter-radio-sort-rating"
             />
             <label
               htmlFor="user_rating_average_lifetime"
-              className="flex-1 min-w-0 cursor-pointer text-start text-sm text-grayscale-600"
+              className="flex-1 min-w-0 cursor-pointer text-start text-sm text-grayscale-600 break-words"
             >
               {t("filter.userRatingHighLow")}
             </label>

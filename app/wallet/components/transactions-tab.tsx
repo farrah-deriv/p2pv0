@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
-import { useWalletTransactions } from "@/hooks/use-api-queries"
+import { useCallback, useMemo, useState } from "react"
+import { flattenWalletTransactionsPages, useWalletTransactions } from "@/hooks/use-api-queries"
+import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
 import Image from "next/image"
 import TransactionDetails from "./transaction-details"
 import { formatAppDate } from "@/lib/format-date"
@@ -9,31 +10,56 @@ import { formatAmountWithDecimals } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useTranslations } from "@/lib/i18n/use-translations"
-import type { CurrenciesResponse } from "@/services/api/api-auth"
 import type { Transaction } from "../types"
 
 interface TransactionsTabProps {
   selectedCurrency?: string | null
-  currencies?: CurrenciesResponse
   selectedTransaction?: Transaction | null
   onTransactionSelect?: (transaction: Transaction | null) => void
 }
 
 export default function TransactionsTab({
   selectedCurrency,
-  currencies = {},
   selectedTransaction: parentSelectedTransaction,
   onTransactionSelect
 }: TransactionsTabProps) {
   const { t, locale } = useTranslations()
   const [activeFilter, setActiveFilter] = useState(t("wallet.all"))
   const [localSelectedTransaction, setLocalSelectedTransaction] = useState<Transaction | null>(null)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
 
-  const { data, isLoading: loading } = useWalletTransactions(
+  const {
+    data,
+    isLoading: loading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useWalletTransactions(
     selectedCurrency,
     parentSelectedTransaction == null
   )
-  const transactions = data?.data?.transactions ?? []
+  const transactions = useMemo(
+    () => flattenWalletTransactionsPages(data) as Transaction[],
+    [data],
+  )
+
+  const isShowingLoadMore = isFetchingNextPage || isLoadingMore
+
+  const maybeLoadMore = useCallback(async () => {
+    if (!hasNextPage || isShowingLoadMore) return
+    setIsLoadingMore(true)
+    try {
+      await fetchNextPage()
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }, [fetchNextPage, hasNextPage, isShowingLoadMore])
+
+  const { scrollRootRef, sentinelRef } = useLoadMoreOnScroll(
+    !!hasNextPage && !loading,
+    maybeLoadMore,
+    isShowingLoadMore,
+  )
 
   // Use parent's transaction if provided, otherwise use local state
   const selectedTransaction = parentSelectedTransaction !== undefined ? parentSelectedTransaction : localSelectedTransaction
@@ -136,23 +162,14 @@ export default function TransactionsTab({
   }
 
   const getTransferDestinationText = (transaction: Transaction) => {
-    const { source_wallet_type, destination_wallet_type, transaction_currency } = transaction.metadata
+    const { source_wallet_type, destination_wallet_type } = transaction.metadata
 
     const isSourceP2P = source_wallet_type?.toLowerCase() === "p2p"
     const isDestinationP2P = destination_wallet_type?.toLowerCase() === "p2p"
+    const fromName = isSourceP2P ? t("wallet.p2pWallet") : t("wallet.mainWallet")
+    const toName = isDestinationP2P ? t("wallet.p2pWallet") : t("wallet.mainWallet")
 
-    const currencyLabel = currencies[transaction_currency]?.label || transaction_currency
-
-    if (isSourceP2P && !isDestinationP2P) {
-      return t("wallet.transferRouteP2pToWallet", { currency: currencyLabel })
-    }
-    if (!isSourceP2P && isDestinationP2P) {
-      return t("wallet.transferRouteWalletToP2p", { currency: currencyLabel })
-    }
-    if (isSourceP2P && isDestinationP2P) {
-      return t("wallet.transferRouteP2pToP2p", { currency: currencyLabel })
-    }
-    return t("wallet.transferRouteWalletOnly", { currency: currencyLabel })
+    return `${fromName} → ${toName}`
   }
 
   const filteredTransactions = transactions.filter((transaction) => {
@@ -195,7 +212,9 @@ export default function TransactionsTab({
 
   return (
     <>
-      <div className="py-0 space-y-6">
+      {/* Fill remaining page height under WalletSummary — avoid fixed vh (leaves a gap /
+          clips mid-row). Parent wallet page owns the bounded height. */}
+      <div className="flex flex-col flex-1 min-h-0 h-full py-0">
         <div className="hidden gap-2">
           {filters.map((filter) => (
             <Button
@@ -212,99 +231,139 @@ export default function TransactionsTab({
         </div>
 
         {!selectedTransaction && (
-          <div className="space-y-6 h-[calc(100vh-16rem)] md:h-[calc(100vh-18rem)] overflow-y-auto pb-16">
-            {Object.entries(groupedTransactions).map(([dateKey, dateTransactions]) => (
-              <div key={dateKey} className="space-y-0">
-                <h3 className="text-xs font-medium text-grayscale-text-muted">{dateKey}</h3>
+          <div className="flex flex-col flex-1 min-h-0">
+            <div
+              ref={scrollRootRef}
+              className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain space-y-6 pt-6 pb-6"
+            >
+              {Object.entries(groupedTransactions).map(([dateKey, dateTransactions]) => (
+                <div key={dateKey} className="space-y-0">
+                  <h3 className="px-6 text-xs font-medium text-grayscale-text-muted">{dateKey}</h3>
 
-                <div className="space-y-0">
-                  {dateTransactions.map((transaction, index) => {
-                    const display = getTransactionDisplay(transaction)
-                    const isTransfer = display.type === t("wallet.transfer")
-                    const isOrder = display.type === t("wallet.buyOrder") || display.type === t("wallet.sellOrder")
+                  <div className="space-y-0">
+                    {dateTransactions.map((transaction, index) => {
+                      const display = getTransactionDisplay(transaction)
+                      const isTransfer = display.type === t("wallet.transfer")
+                      const isOrder = display.type === t("wallet.buyOrder") || display.type === t("wallet.sellOrder")
 
-                    return (
-                      <div key={transaction.transaction_id} data-testid={`wallet-row-tx-${transaction.transaction_id}`} className="relative">
-                        <div
-                          className={`flex items-center justify-between min-h-[72px] py-3 cursor-pointer transition-colors ${"hover:bg-gray-50"
-                            }`}
-                          onClick={() => handleTransactionClick(transaction)}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="flex-shrink-0">
-                              {display.iconSrc && (
-                                <Image
-                                  src={display.iconSrc || "/placeholder.svg"}
-                                  alt={`${display.type} icon`}
-                                  width={24}
-                                  height={24}
-                                  className="w-6 h-6 object-contain"
-                                  priority={index < 3}
-                                />
-                              )}
+                      return (
+                        <div key={transaction.transaction_id} data-testid={`wallet-row-tx-${transaction.transaction_id}`} className="relative">
+                          {/* px-6 matches WalletSummary `p-6` so trailing amounts align with header. */}
+                          <div
+                            className="flex items-center justify-between min-h-[72px] py-3 px-6 cursor-pointer transition-colors hover:bg-gray-50"
+                            onClick={() => handleTransactionClick(transaction)}
+                          >
+                            <div className="flex items-center gap-4 min-w-0">
+                              <div className="flex-shrink-0">
+                                {display.iconSrc && (
+                                  <Image
+                                    src={display.iconSrc || "/placeholder.svg"}
+                                    alt={`${display.type} icon`}
+                                    width={24}
+                                    height={24}
+                                    className="w-6 h-6 object-contain"
+                                    priority={index < 3}
+                                  />
+                                )}
+                              </div>
+
+                              <div className="flex flex-col gap-1 min-w-0">
+                                <div data-testid={`wallet-badge-tx-type-${transaction.transaction_id}`} className="text-slate-1200 text-base font-normal">{display.type}</div>
+                                {isTransfer && (
+                                  <div className="text-xs font-normal text-grayscale-text-muted">
+                                    {getTransferDestinationText(transaction)}
+                                  </div>
+                                )}
+                                {isOrder && (
+                                  <div className="text-xs font-normal text-grayscale-text-muted">
+                                    {getOrderCounterpartyText(transaction)}
+                                  </div>
+                                )}
+                              </div>
                             </div>
 
-                            <div className="flex flex-col gap-1">
-                              <div data-testid={`wallet-badge-tx-type-${transaction.transaction_id}`} className="text-slate-1200 text-base font-normal">{display.type}</div>
-                              {isTransfer && (
-                                <div className="text-xs font-normal text-grayscale-text-muted">
-                                  {getTransferDestinationText(transaction)}
-                                </div>
-                              )}
-                              {isOrder && (
-                                <div className="text-xs font-normal text-grayscale-text-muted">
-                                  {getOrderCounterpartyText(transaction)}
-                                </div>
-                              )}
+                            <div className="flex flex-col items-end gap-1 shrink-0">
+                              <div data-testid={`wallet-text-tx-amount-${transaction.transaction_id}`} className={`${display.amountColor} text-base font-normal`}>
+                                {formatAmountWithDecimals(transaction.metadata.transaction_net_amount)}{" "}
+                                {transaction.metadata.transaction_currency}
+                              </div>
+                              {getStatusBadge(transaction.metadata.transaction_status)}
                             </div>
                           </div>
 
-                          <div className="flex flex-col items-end me-6 gap-1">
-                            <div data-testid={`wallet-text-tx-amount-${transaction.transaction_id}`} className={`${display.amountColor} text-base font-normal`}>
-                              {formatAmountWithDecimals(transaction.metadata.transaction_net_amount)}{" "}
-                              {transaction.metadata.transaction_currency}
-                            </div>
-                            {getStatusBadge(transaction.metadata.transaction_status)}
-                          </div>
+                          {/* indent past pad(24)+icon(24)+gap(16)=64; no end inset (full-bleed trailing). */}
+                          <div className="h-px bg-grayscale-200 ms-16" />
                         </div>
-
-                        <div className="h-px bg-grayscale-200 ms-10" />
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
 
-            {filteredTransactions.length === 0 && !loading && (
-              <div data-testid="wallet-empty-transactions" className="text-center py-8 text-gray-500">
-                {selectedCurrency
-                  ? t("wallet.noTransactionsForCurrency")
-                  : activeFilter === t("wallet.all")
-                    ? t("wallet.noTransactions")
-                    : activeFilter === t("wallet.deposit")
-                      ? t("wallet.noDepositTransactions")
-                      : activeFilter === t("wallet.withdraw")
-                        ? t("wallet.noWithdrawTransactions")
-                        : t("wallet.noTransferTransactions")}
-              </div>
-            )}
+              {filteredTransactions.length === 0 && !loading && (
+                <div data-testid="wallet-empty-transactions" className="text-center py-8 text-gray-500">
+                  {selectedCurrency
+                    ? t("wallet.noTransactionsForCurrency")
+                    : activeFilter === t("wallet.all")
+                      ? t("wallet.noTransactions")
+                      : activeFilter === t("wallet.deposit")
+                        ? t("wallet.noDepositTransactions")
+                        : activeFilter === t("wallet.withdraw")
+                          ? t("wallet.noWithdrawTransactions")
+                          : t("wallet.noTransferTransactions")}
+                </div>
+              )}
 
-            {filteredTransactions.length > 0 && (
-              <div data-testid="wallet-sentinel-load-more" className="text-center text-xs font-normal pt-0 text-grayscale-text-placeholder">
-                {t("wallet.endOfTransaction")}
+              {hasNextPage && filteredTransactions.length > 0 && (
+                <div
+                  ref={sentinelRef}
+                  className="h-1 w-full shrink-0"
+                  data-testid="wallet-sentinel-load-more"
+                />
+              )}
+
+              {!isShowingLoadMore && hasNextPage && filteredTransactions.length > 0 && (
+                <div className="flex w-full shrink-0 justify-center px-4 pb-2">
+                  <Button
+                    data-testid="wallet-btn-load-more-transactions"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      void maybeLoadMore()
+                    }}
+                  >
+                    {t("wallet.loadMore")}
+                  </Button>
+                </div>
+              )}
+
+              {!hasNextPage && filteredTransactions.length > 0 && (
+                <div className="w-full shrink-0 text-center text-xs font-normal pt-6 pb-2 text-grayscale-text-placeholder">
+                  {t("wallet.endOfTransaction")}
+                </div>
+              )}
+            </div>
+
+            {/* Outside scrollport — stays fully visible at panel bottom (responsive clip fix). */}
+            {isShowingLoadMore && (
+              <div
+                data-testid="wallet-loading-more-transactions"
+                className="flex w-full shrink-0 justify-center py-4 bg-background"
+              >
+                <div
+                  className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"
+                  role="status"
+                  aria-label={t("common.loading")}
+                />
               </div>
             )}
           </div>
         )}
 
         {selectedTransaction && (
-          <div className="space-y-6 h-[calc(100vh-16rem)] md:h-[calc(100vh-18rem)] overflow-y-auto pb-16">
-            <div className="bg-white">
-              <div className="space-y-6">
-                <TransactionDetails transaction={selectedTransaction} currencies={currencies} />
-              </div>
-            </div>
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pb-8">
+            {/* Full-bleed slate canvas + white p-24 cards (Figma 12645:44337) */}
+            <TransactionDetails transaction={selectedTransaction} />
           </div>
         )}
       </div>

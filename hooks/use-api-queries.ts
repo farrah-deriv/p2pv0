@@ -7,6 +7,7 @@ import * as AuthAPI from '@/services/api/api-auth'
 import * as AdsAPI from '@/services/api/api-my-ads'
 import * as ProfileAPI from '@/services/api/api-profile'
 import * as WalletsAPI from '@/services/api/api-wallets'
+import { flattenWalletTransactionPages } from '@/lib/wallet-transactions-pagination'
 import { useUserDataStore } from '@/stores/user-data-store'
 import { useP2PQueriesBlocked } from '@/hooks/use-p2p-system-maintenance'
 import { isP2PWebSocketEligibleFromState } from '@/lib/p2p-websocket-eligibility'
@@ -215,12 +216,22 @@ export function useCurrencies() {
 // Wallet Hooks
 export function useWalletTransactions(currency?: string | null, enabled = true) {
   const maintenanceBlocked = useP2PQueriesBlocked()
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: queryKeys.wallet.transactions(currency),
-    queryFn: () => WalletsAPI.fetchTransactions(currency ?? undefined),
+    queryFn: ({ pageParam }) =>
+      WalletsAPI.fetchTransactions(currency ?? undefined, pageParam),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     staleTime: 1000 * 60 * 2, // 2 minutes — matches balance hooks
     enabled: enabled && !maintenanceBlocked,
   })
+}
+
+/** Flatten infinite-query pages into a single wallet transaction list. */
+export function flattenWalletTransactionsPages(
+  data: { pages: WalletsAPI.WalletTransactionsPageResult[] } | undefined,
+) {
+  return flattenWalletTransactionPages(data)
 }
 
 export const USER_PAYMENT_METHODS_PAGE_SIZE = 50

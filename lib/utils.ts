@@ -469,8 +469,9 @@ export function preventSwipeNavigation(): () => void {
   }
 }
 
+/** Flat wallet currency icons (mobile parity). Prefer over 3D outside empty states. */
 export const currencyLogoMapper = {
-  USD: "/icons/ic-usd-wallet.svg",
+  USD: "/icons/usd-flag.png",
   BTC: "/icons/bitcoin-logo.png",
   ETH: "/icons/ethereum-logo.png",
   LTC: "/icons/litecoin-logo.png",
@@ -481,6 +482,12 @@ export const currencyLogoMapper = {
   AED: "/icons/aed-logo.png",
   USDT: "/icons/eusdt-logo.png",
   TRX: "/icons/trx-logo.png",
+}
+
+/** 3D currency icons — only for empty "buy currencies" / add-currency lists. */
+export const currency3dLogoMapper = {
+  ...currencyLogoMapper,
+  USD: "/icons/ic-usd-wallet.svg",
 }
 
 export const currencyFlagMapper = {
