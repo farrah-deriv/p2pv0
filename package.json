@@ -98,6 +98,7 @@
     "@faker-js/faker": "^10.5.0",
     "@playwright/test": "1.61.1",
     "@svgr/webpack": "^8.1.0",
+    "@testdino/playwright": "^2.0.0",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
