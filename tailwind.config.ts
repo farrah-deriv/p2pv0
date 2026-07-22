@@ -183,6 +183,8 @@ const config: Config = {
           withdraw: "#E6190E",
           50: "#e6190e14",
         },
+        "notification-badge": "#FF444F",
+        "header-icon": "rgba(255,255,255,0.04)",
         "onboarding-gradient": {
           "dark-red": "#6A0000",
           "medium-red": "#E12E3A",

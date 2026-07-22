@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"
 import { BackArrowIcon } from "@/components/ui/back-arrow-icon"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
-import { NovuNotifications } from "@/components/novu-notifications"
+import { NovuBellLink } from "@/components/novu-notifications"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { cn } from "@/lib/utils"
 
@@ -62,7 +62,7 @@ export default function Navigation({
             </div>
             {showNotificationIcon && (
               <div className="text-slate-600 hover:text-slate-700">
-                <NovuNotifications />
+                <NovuBellLink />
               </div>
             )}
           </div>

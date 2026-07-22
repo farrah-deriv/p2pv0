@@ -1,50 +1,17 @@
 "use client"
 
 import { Inbox } from "@novu/nextjs"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { useUserDataStore } from "@/stores/user-data-store"
 import { useTranslations } from "@/lib/i18n/use-translations"
-import { getCoreUrl } from "@/lib/get-core-url"
 import "../../styles/globals.css"
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
-import { p2pFetch } from "@/services/api/p2p-fetch"
-
-const API = {
-  notificationUrl: `${getCoreUrl()}/notifications/v1`,
-}
-
-const AUTH = {
-  getNotificationHeader: () => ({
-    "Content-Type": "application/json",
-  }),
-}
+import { useNovuSubscriber } from "@/hooks/use-novu-subscriber"
 
 const NOTIFICATIONS = {
   applicationId: process.env.NEXT_PUBLIC_NOTIFICATION_APPLICATION_ID,
-}
-
-async function fetchSubscriberHash() {
-  try {
-    const url = `${API.notificationUrl}/hash`
-    const response = await p2pFetch(url, {
-      method: "POST",
-      credentials: "include",
-      headers: AUTH.getNotificationHeader(),
-    })
-    if (!response.ok) throw new Error(`Failed to fetch subscriber hash: ${response.status}`)
-    const responseData = await response.json()
-    const subscriberData = responseData.data?.subscriber || responseData.subscriber
-    if (!subscriberData) throw new Error("Invalid response structure: missing subscriber data")
-    return {
-      subscriberHash: subscriberData.subscriberHash,
-      subscriberId: subscriberData.subscriberId,
-    }
-  } catch (error) {
-    return null
-  }
 }
 
 const APPEARANCE_VARIABLES = {
@@ -101,16 +68,12 @@ interface NovuNotificationsProps {
 function NovuNotifications({ disabled = false }: NovuNotificationsProps) {
   const router = useRouter()
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
-  const [subscriberHash, setSubscriberHash] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [subscriberId, setSubscriberId] = useState<string | null>(null)
   const isMobile = useIsMobile()
-  const userId = useUserDataStore((state) => state.userId)
-  const userIdFallback = userId || ""
   const applicationIdentifier = NOTIFICATIONS.applicationId
   const { t, locale } = useTranslations()
   const isDisabled = disabled || isMaintenanceActive
+
+  const { subscriberHash, subscriberId, isLoading, error } = useNovuSubscriber(isDisabled)
 
   const appearance = useMemo(() => ({
     icons: {
@@ -127,39 +90,6 @@ function NovuNotifications({ disabled = false }: NovuNotificationsProps) {
     variables: APPEARANCE_VARIABLES,
     elements: APPEARANCE_ELEMENTS,
   }), [isMobile, t])
-
-  useEffect(() => {
-    if (isDisabled) {
-      setIsLoading(false)
-      return
-    }
-
-    if (!userIdFallback) {
-      setError(t("notifications.noUserId"))
-      setIsLoading(false)
-      return
-    }
-
-    const getSubscriberHash = async () => {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const result = await fetchSubscriberHash()
-        if (result) {
-          setSubscriberHash(result.subscriberHash)
-          setSubscriberId(result.subscriberId)
-        } else {
-          setError(t("notifications.fetchFailed"))
-        }
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : String(err))
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    getSubscriberHash()
-  }, [isDisabled, userIdFallback, t])
 
   if (isDisabled) {
     return (
@@ -207,8 +137,9 @@ function NovuNotifications({ disabled = false }: NovuNotificationsProps) {
         colorScheme="light"
         i18n={{ lang: locale, poweredBy: t("notifications.poweredBy") }}
         onNotificationClick={(notification) => {
-          if (notification.data?.order_id) {
-            router.push(`/orders/${notification.data.order_id}`)
+          const data = notification.data as Record<string, unknown>
+          if (typeof data?.order_id === "string") {
+            router.push(`/orders/${data.order_id}`)
           }
 
           // FRAGILE: @novu/nextjs@3.17.0 exposes no imperative API to close the popover.

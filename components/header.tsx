@@ -7,7 +7,7 @@ import Image from "next/image"
 import { cn } from "@/lib/utils"
 import SearchIconWhite from "@/public/icons/search-icon-white.svg"
 import { useUserDataStore } from "@/stores/user-data-store"
-import { NovuNotifications } from "./novu-notifications"
+import { NovuBellLink } from "./novu-notifications"
 import { MobileSidebarTrigger } from "./mobile-sidebar-wrapper"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useChatVisibilityStore } from "@/stores/chat-visibility-store"
@@ -125,7 +125,7 @@ export default function Header() {
               variant="ghost"
               size="icon"
               aria-label={t("common.search")}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#ffffff0a] p-0 hover:bg-[#ffffff0a] [&_svg]:size-6"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-header-icon p-0 hover:bg-header-icon [&_svg]:size-6"
             >
               <SearchIconWhite width={24} height={24} aria-hidden="true" />
             </Button>
@@ -134,9 +134,11 @@ export default function Header() {
             <div
               data-testid="header-btn-notifications"
               className="flex h-8 w-8 shrink-0 items-center justify-center text-slate-600 hover:text-slate-700"
-              onClick={() => guardP2PNavigation(isMaintenanceActive, () => track("ek_notifications_markets"))}
             >
-              <NovuNotifications disabled={isMaintenanceActive} />
+              <NovuBellLink
+                disabled={isMaintenanceActive}
+                onClick={() => guardP2PNavigation(isMaintenanceActive, () => track("ek_notifications_markets"))}
+              />
             </div>
           )}
         </div>

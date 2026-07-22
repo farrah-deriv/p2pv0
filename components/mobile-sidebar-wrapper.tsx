@@ -28,7 +28,7 @@ export function MobileSidebarTrigger({ "data-testid": testId }: { "data-testid"?
         variant="ghost"
         size="icon"
         aria-label={t("common.back")}
-        className="h-8 w-8 rounded-full bg-[#ffffff0a] hover:bg-[#ffffff0a] [&_svg]:size-6"
+        className="h-8 w-8 rounded-full bg-header-icon hover:bg-header-icon [&_svg]:size-6"
         data-testid={testId}
       >
         <ArrowBackIcon width={24} height={24} aria-hidden="true" />
@@ -40,7 +40,7 @@ export function MobileSidebarTrigger({ "data-testid": testId }: { "data-testid"?
     <Link
       href="/profile"
       aria-label={t("common.profile")}
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#ffffff0a] hover:bg-[#ffffff0a]"
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-header-icon hover:bg-header-icon"
       data-testid={testId}
     >
       <ProfileIconWhite width={24} height={24} aria-hidden="true" />
