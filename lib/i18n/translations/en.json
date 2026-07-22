@@ -739,8 +739,8 @@
     "transferRouteWalletToP2p": "Wallet → P2P Wallet",
     "transferUnexpectedError": "An unexpected error occurred. Please try again.",
     "withdrawFromP2p": "Withdraw from P2P",
-    "amountReceiveInfoTitle": "Amount receive",
-    "amountReceiveInfoBody": "A {amount} {currency} adjustment applies to this transfer.",
+    "amountReceiveInfoTitle": "Transfer adjustment",
+    "amountReceiveInfoBody": "This transfer includes an adjustment of {amount} {currency}.",
     "amountReceiveInfoBodyApplied": "A {amount} {currency} adjustment was applied to this transfer.",
     "amountReceiveInfoBodyFree": "No transfer fee applies. You'll receive the full transfer amount.",
     "transferValidateFailed": "Unable to calculate transfer fee. Please try again."

@@ -307,8 +307,10 @@ export default function BuySellPage() {
     if (userId && verificationStatus?.phone_verified && !isPoiExpired && !isPoaExpired) {
       router.push(`/advertiser/${advertiserId}`)
     } else {
-      showAlert(createKycOnboardingAlertConfig({ route: "markets",
-        onClose: hideAlert }))
+      showAlert(createKycOnboardingAlertConfig({
+        route: "markets",
+        onClose: hideAlert
+      }))
     }
   }
 
@@ -342,8 +344,10 @@ export default function BuySellPage() {
       setSelectedAd(ad)
       setIsOrderSidebarOpen(true)
     } else {
-      showAlert(createKycOnboardingAlertConfig({ route: "markets",
-        onClose: hideAlert }))
+      showAlert(createKycOnboardingAlertConfig({
+        route: "markets",
+        onClose: hideAlert
+      }))
     }
   }
 
@@ -465,8 +469,10 @@ export default function BuySellPage() {
     const shouldShowKyc = searchParams.get("show_kyc_popup") === "true"
     if (shouldShowKyc && !showKycPopup) {
       setShowKycPopup(true)
-      showAlert(createKycOnboardingAlertConfig({ route: "markets",
-        onClose: hideAlert }))
+      showAlert(createKycOnboardingAlertConfig({
+        route: "markets",
+        onClose: hideAlert
+      }))
     }
   }, [searchParams, showKycPopup, showAlert, t])
 
@@ -475,13 +481,13 @@ export default function BuySellPage() {
       <div className="flex flex-col h-full md:h-screen overflow-hidden">
         <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-y-none pb-4 scrollbar-hide px-3">
           <div className="flex flex-col min-h-full">
-          <div className="mb-4 md:mb-6 flex w-full flex-col gap-4 flex-shrink-0">
-            {/* Desktop only — maintenance + mobile balance banners live in main.tsx. */}
-            <div className="relative z-10 flex w-full flex-col bg-slate-1200 p-6 max-md:w-[calc(100%+24px)] max-md:-mx-3 max-md:mb-2 rounded-b-3xl md:rounded-3xl overflow-hidden [transform:translateZ(0)]">
+            <div className="mb-4 md:mb-6 flex w-full flex-col gap-4 flex-shrink-0">
+              {/* Desktop only — maintenance + mobile balance banners live in main.tsx. */}
+              <div className="relative z-10 flex w-full flex-col bg-slate-1200 p-6 max-md:w-[calc(100%+24px)] max-md:-mx-3 max-md:mb-2 rounded-b-3xl md:rounded-3xl overflow-hidden [transform:translateZ(0)]">
                 <div data-testid="markets-text-balance">
                   <BalanceSection balance={balance} currency={balanceCurrency} isLoading={isLoadingBalance} />
                 </div>
-                <div className="mt-1 flex w-full min-w-0 flex-wrap items-end justify-between gap-x-4 gap-y-2">
+                <div className="md:mt-4 flex w-full min-w-0 flex-wrap items-end justify-between gap-x-4 gap-y-2">
                   <HeaderSegmentedControl
                     className="shrink-0"
                     value={activeTab}
@@ -499,7 +505,7 @@ export default function BuySellPage() {
                   />
                   {showCurrencyFilter && (
                     <div
-                      className="flex shrink-0 flex-col items-start gap-1"
+                      className="flex shrink-0 flex-col items-start gap-1 md:flex-row md:items-center md:gap-2"
                       data-guide-id="guide-currency-filter"
                     >
                       {activeTab === "sell" && (
@@ -552,368 +558,368 @@ export default function BuySellPage() {
                     </div>
                   )}
                 </div>
-            </div>
-            {tempBanUntil && !isMaintenanceActive && <TemporaryBanAlert tempBanUntil={tempBanUntil} />}
-            <div className="flex flex-wrap gap-2 md:gap-3 md:px-0 mt-3 md:mt-4 justify-end">
-              <div className="flex gap-2 items-center ms-auto flex-1 md:flex-none">
-                {!isV1Signup && (
-                  <div className="flex gap-2 mb-3 flex-1 hidden">
-                    {accountCurrencies.map((curr) => (
-                      <Button
-                        key={curr.code}
-                        variant={selectedAccountCurrency === curr.code ? "black" : "outline"}
-                        onClick={() => setSelectedAccountCurrency(curr.code)}
-                        className={cn(
-                          "px-4 py-2 rounded-full font-normal border-slate-800",
-                          selectedAccountCurrency === curr.code
-                            ? ""
-                            : "text-grayscale-600 hover:bg-transparent border-gray-300",
-                        )}
-                        size="sm"
-                      >
-                        {curr.code}
-                      </Button>
-                    ))}
+              </div>
+              {tempBanUntil && !isMaintenanceActive && <TemporaryBanAlert tempBanUntil={tempBanUntil} />}
+              <div className="flex flex-wrap gap-2 md:gap-3 md:px-0 md:mt-4 md:justify-end">
+                <div className="flex gap-2 items-center md:ms-auto md:flex-none">
+                  {!isV1Signup && (
+                    <div className="flex gap-2 mb-3 flex-1 hidden">
+                      {accountCurrencies.map((curr) => (
+                        <Button
+                          key={curr.code}
+                          variant={selectedAccountCurrency === curr.code ? "black" : "outline"}
+                          onClick={() => setSelectedAccountCurrency(curr.code)}
+                          className={cn(
+                            "px-4 py-2 rounded-full font-normal border-slate-800",
+                            selectedAccountCurrency === curr.code
+                              ? ""
+                              : "text-grayscale-600 hover:bg-transparent border-gray-300",
+                          )}
+                          size="sm"
+                        >
+                          {curr.code}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                  <div className="md:flex md:items-center md:gap-2 md:flex-none">
+                    <PaymentMethodsFilter
+                      paymentMethods={paymentMethods}
+                      selectedMethods={selectedPaymentMethods}
+                      onSelectionChange={setSelectedPaymentMethods}
+                      isLoading={isLoadingPaymentMethods}
+                      disabled={isMaintenanceActive}
+                      trigger={
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={isMaintenanceActive}
+                          className={cn(
+                            "rounded-md border border-input font-normal justify-between px-3 rounded-3xl min-w-48 md:min-w-0",
+                            hasFilteredPaymentMethods
+                              ? "bg-black hover:bg-black text-white"
+                              : "bg-transparent hover:bg-transparent",
+                          )}
+                          onClick={() => track("ek_payment_method_filter_markets")}
+                          data-guide-id="guide-payment-method-filter"
+                        >
+                          <span className="truncate overflow-hidden text-ellipsis whitespace-nowrap">
+                            {getPaymentMethodsDisplayText()}
+                          </span>
+                          {hasFilteredPaymentMethods ? (
+                            <Image
+                              src="/icons/chevron-down-white.png"
+                              alt={t("common.arrow")}
+                              width={24}
+                              height={24}
+                              className="transition-transform duration-200"
+                            />
+                          ) : (
+                            <Image
+                              src="/icons/chevron-down.png"
+                              alt={t("common.arrow")}
+                              width={24}
+                              height={24}
+                              className="transition-transform duration-200"
+                            />
+                          )}
+                        </Button>
+                      }
+                    />
                   </div>
-                )}
-                <div className="flex-1 md:flex md:items-center md:gap-2 md:flex-none">
-                  <PaymentMethodsFilter
-                    paymentMethods={paymentMethods}
-                    selectedMethods={selectedPaymentMethods}
-                    onSelectionChange={setSelectedPaymentMethods}
-                    isLoading={isLoadingPaymentMethods}
-                    disabled={isMaintenanceActive}
-                    trigger={
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={isMaintenanceActive}
-                        className={cn(
-                          "rounded-md border border-input font-normal w-full justify-between px-3 rounded-3xl",
-                          hasFilteredPaymentMethods
-                            ? "bg-black hover:bg-black text-white"
-                            : "bg-transparent hover:bg-transparent",
-                        )}
-                        onClick={() => track("ek_payment_method_filter_markets")}
-                        data-guide-id="guide-payment-method-filter"
-                      >
-                        <span className="truncate overflow-hidden text-ellipsis whitespace-nowrap">
-                          {getPaymentMethodsDisplayText()}
-                        </span>
-                        {hasFilteredPaymentMethods ? (
-                          <Image
-                            src="/icons/chevron-down-white.png"
-                            alt={t("common.arrow")}
-                            width={24}
-                            height={24}
-                            className="transition-transform duration-200"
-                          />
-                        ) : (
-                          <Image
-                            src="/icons/chevron-down.png"
-                            alt={t("common.arrow")}
-                            width={24}
-                            height={24}
-                            className="transition-transform duration-200"
-                          />
-                        )}
-                      </Button>
-                    }
-                  />
-                </div>
 
-                <div className="filter-dropdown-container flex-shrink-0">
-                  <MarketFilterDropdown
-                    activeTab={activeTab}
-                    onApply={handleFilterApply}
-                    initialFilters={filterOptions}
-                    initialSortBy={sortBy}
-                    hasActiveFilters={hasActiveFilters}
-                    disabled={isMaintenanceActive}
-                    trigger={
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={isMaintenanceActive}
-                        className={cn(
-                          "rounded-md border border-input font-normal px-3  focus:border-black min-w-fit rounded-3xl",
-                          hasActiveFilters ? "bg-black hover:bg-black" : "bg-transparent hover:bg-transparent",
-                        )}
-                        onClick={() => track("ek_filter_markets")}
-                        data-guide-id="guide-advanced-filter"
-                      >
-                        {hasActiveFilters ? (
-                          <Image src="/icons/filter-icon-white.png" alt={t("common.filter")} width={16} height={16} />
-                        ) : (
-                          <Image src="/icons/filter-icon.png" alt={t("common.filter")} width={20} height={20} />
-                        )}
-                      </Button>
-                    }
-                  />
+                  <div className="filter-dropdown-container flex-shrink-0">
+                    <MarketFilterDropdown
+                      activeTab={activeTab}
+                      onApply={handleFilterApply}
+                      initialFilters={filterOptions}
+                      initialSortBy={sortBy}
+                      hasActiveFilters={hasActiveFilters}
+                      disabled={isMaintenanceActive}
+                      trigger={
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={isMaintenanceActive}
+                          className={cn(
+                            "rounded-md border border-input font-normal px-3  focus:border-black min-w-fit rounded-3xl",
+                            hasActiveFilters ? "bg-black hover:bg-black" : "bg-transparent hover:bg-transparent",
+                          )}
+                          onClick={() => track("ek_filter_markets")}
+                          data-guide-id="guide-advanced-filter"
+                        >
+                          {hasActiveFilters ? (
+                            <Image src="/icons/filter-icon-white.png" alt={t("common.filter")} width={16} height={16} />
+                          ) : (
+                            <Image src="/icons/filter-icon.png" alt={t("common.filter")} width={20} height={20} />
+                          )}
+                        </Button>
+                      }
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          {isMaintenanceActive ? (
-            <div className="flex-1 min-h-0 flex items-center md:items-start justify-center md:pt-16">
-              <EmptyState title={t("market.noAdsMaintenanceTitle")} route={null} />
-            </div>
-          ) : isLoading || (adverts.length === 0 && !currency) || (fetchedAdverts.length > 0 && adverts.length === 0) ? (
-            <div className="md:block" data-testid="markets-skeleton-ads">
-              <Table>
-                <TableHeader className="hidden lg:table-header-group border-b sticky top-0 bg-white z-[1]">
-                  <TableRow className="text-xs">
-                    <TableHead className="text-start py-4 px-4 lg:ps-0 text-slate-600 font-normal">
-                      <Skeleton className="bg-grayscale-500 h-5 w-32" />
-                    </TableHead>
-                    <TableHead className="text-start py-4 px-4 text-slate-600 font-normal">
-                      <Skeleton className="bg-grayscale-500 h-5 w-32" />
-                    </TableHead>
-                    <TableHead className="text-start py-4 px-4 text-slate-600 hidden sm:table-cell font-normal">
-                      <Skeleton className="bg-grayscale-500 h-5 w-32" />
-                    </TableHead>
-                    <TableHead className="text-end py-4 px-4 lg:pe-0"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody className="bg-white lg:divide-y lg:divide-slate-200 font-normal text-sm">
-                  {[...Array(2)].map((_, index) => (
-                    <TableRow
-                      key={index}
-                      className="grid grid-cols-[1fr_auto] lg:flex flex-col border-b lg:table-row lg:border-x-[0] lg:border-t-[0] lg:mb-[0] py-3 lg:p-0"
-                    >
-                      <TableCell className="p-2 lg:p-4 lg:ps-0 align-top row-start-1 col-span-full whitespace-nowrap">
-                        <div className="flex items-center">
-                          <Skeleton className="bg-grayscale-500 h-[40px] w-[40px] flex-shrink-0 rounded-full me-[8px]" />
-                          <div className="flex-1">
-                            <Skeleton className="bg-grayscale-500 h-4 w-32 mb-2" />
-                            <Skeleton className="bg-grayscale-500 h-3 w-48" />
-                            <Skeleton className="bg-grayscale-500 h-3 w-24 mt-2" />
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="p-2 lg:p-4 align-top row-start-2 col-span-full">
-                        <Skeleton className="bg-grayscale-500 h-5 w-32 mb-2" />
-                        <Skeleton className="bg-grayscale-500 h-3 w-48" />
-                      </TableCell>
-                      <TableCell className="p-2 lg:p-4 sm:table-cell align-top row-start-3">
-                        <div className="flex flex-col gap-2">
-                          <Skeleton className="bg-grayscale-500 h-3 w-24" />
-                          <Skeleton className="bg-grayscale-500 h-3 w-28" />
-                        </div>
-                      </TableCell>
-                      <TableCell className="p-2 lg:p-4 lg:pe-0 text-end align-middle row-start-3 whitespace-nowrap">
-                        <Skeleton className="bg-grayscale-500 h-8 w-20 ms-auto" />
-                      </TableCell>
+            {isMaintenanceActive ? (
+              <div className="flex-1 min-h-0 flex items-center md:items-start justify-center md:pt-16">
+                <EmptyState title={t("market.noAdsMaintenanceTitle")} route={null} />
+              </div>
+            ) : isLoading || (adverts.length === 0 && !currency) || (fetchedAdverts.length > 0 && adverts.length === 0) ? (
+              <div className="md:block" data-testid="markets-skeleton-ads">
+                <Table>
+                  <TableHeader className="hidden lg:table-header-group border-b sticky top-0 bg-white z-[1]">
+                    <TableRow className="text-xs">
+                      <TableHead className="text-start py-4 px-4 lg:ps-0 text-slate-600 font-normal">
+                        <Skeleton className="bg-grayscale-500 h-5 w-32" />
+                      </TableHead>
+                      <TableHead className="text-start py-4 px-4 text-slate-600 font-normal">
+                        <Skeleton className="bg-grayscale-500 h-5 w-32" />
+                      </TableHead>
+                      <TableHead className="text-start py-4 px-4 text-slate-600 hidden sm:table-cell font-normal">
+                        <Skeleton className="bg-grayscale-500 h-5 w-32" />
+                      </TableHead>
+                      <TableHead className="text-end py-4 px-4 lg:pe-0"></TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : error ? (
-            <div className="text-center py-8 text-red-500">
-              {error.message || t("market.failedToLoadAdvertisements")}
-            </div>
-          ) : adverts.length === 0 ? (
-            <div className="flex-1 min-h-0 flex items-center md:items-start justify-center md:pt-16" data-testid="markets-empty-state">
-              <EmptyState
-                title={t("market.noAdsTitle", { currency: currency })}
-                description={t("market.noAdsDescription", { currency: currency })}
-                redirectToAds={true}
-                adType={activeTab}
-                route="markets"
-              />
-            </div>
-          ) : (
-            <div className="md:block">
-              <Table>
-                <TableHeader className="hidden lg:table-header-group border-b sticky top-0 bg-white z-[1]">
-                  <TableRow className="text-xs">
-                    <TableHead className="text-start py-4 px-4 lg:ps-0 text-slate-600 font-normal">
-                      {t("market.advertisers")}
-                    </TableHead>
-                    <TableHead className="text-start py-4 px-4 text-slate-600 font-normal">
-                      {t("market.rates")}
-                    </TableHead>
-                    <TableHead className="text-start py-4 px-4 text-slate-600 hidden sm:table-cell font-normal">
-                      {t("market.paymentMethods")}
-                    </TableHead>
-                    <TableHead className="text-end py-4 px-4 lg:pe-0"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody className="bg-white lg:divide-y lg:divide-slate-200 font-normal text-sm" data-testid="markets-list-ads">
+                  </TableHeader>
+                  <TableBody className="bg-white lg:divide-y lg:divide-slate-200 font-normal text-sm">
+                    {[...Array(2)].map((_, index) => (
+                      <TableRow
+                        key={index}
+                        className="grid grid-cols-[1fr_auto] lg:flex flex-col border-b lg:table-row lg:border-x-[0] lg:border-t-[0] lg:mb-[0] py-3 lg:p-0"
+                      >
+                        <TableCell className="p-2 lg:p-4 lg:ps-0 align-top row-start-1 col-span-full whitespace-nowrap">
+                          <div className="flex items-center">
+                            <Skeleton className="bg-grayscale-500 h-[40px] w-[40px] flex-shrink-0 rounded-full me-[8px]" />
+                            <div className="flex-1">
+                              <Skeleton className="bg-grayscale-500 h-4 w-32 mb-2" />
+                              <Skeleton className="bg-grayscale-500 h-3 w-48" />
+                              <Skeleton className="bg-grayscale-500 h-3 w-24 mt-2" />
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="p-2 lg:p-4 align-top row-start-2 col-span-full">
+                          <Skeleton className="bg-grayscale-500 h-5 w-32 mb-2" />
+                          <Skeleton className="bg-grayscale-500 h-3 w-48" />
+                        </TableCell>
+                        <TableCell className="p-2 lg:p-4 sm:table-cell align-top row-start-3">
+                          <div className="flex flex-col gap-2">
+                            <Skeleton className="bg-grayscale-500 h-3 w-24" />
+                            <Skeleton className="bg-grayscale-500 h-3 w-28" />
+                          </div>
+                        </TableCell>
+                        <TableCell className="p-2 lg:p-4 lg:pe-0 text-end align-middle row-start-3 whitespace-nowrap">
+                          <Skeleton className="bg-grayscale-500 h-8 w-20 ms-auto" />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : error ? (
+              <div className="text-center py-8 text-red-500">
+                {error.message || t("market.failedToLoadAdvertisements")}
+              </div>
+            ) : adverts.length === 0 ? (
+              <div className="flex-1 min-h-0 flex items-center md:items-start justify-center md:pt-16" data-testid="markets-empty-state">
+                <EmptyState
+                  title={t("market.noAdsTitle", { currency: currency })}
+                  description={t("market.noAdsDescription", { currency: currency })}
+                  redirectToAds={true}
+                  adType={activeTab}
+                  route="markets"
+                />
+              </div>
+            ) : (
+              <div className="md:block">
+                <Table>
+                  <TableHeader className="hidden lg:table-header-group border-b sticky top-0 bg-white z-[1]">
+                    <TableRow className="text-xs">
+                      <TableHead className="text-start py-4 px-4 lg:ps-0 text-slate-600 font-normal">
+                        {t("market.advertisers")}
+                      </TableHead>
+                      <TableHead className="text-start py-4 px-4 text-slate-600 font-normal">
+                        {t("market.rates")}
+                      </TableHead>
+                      <TableHead className="text-start py-4 px-4 text-slate-600 hidden sm:table-cell font-normal">
+                        {t("market.paymentMethods")}
+                      </TableHead>
+                      <TableHead className="text-end py-4 px-4 lg:pe-0"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody className="bg-white lg:divide-y lg:divide-slate-200 font-normal text-sm" data-testid="markets-list-ads">
 
-                  {adverts.map((ad, adIndex) => (
-                    <TableRow
-                      className="grid grid-cols-[1fr_auto] lg:flex flex-col border-b lg:table-row lg:border-x-[0] lg:border-t-[0] lg:mb-[0] py-3 lg:p-0"
-                      key={ad.id}
-                      data-testid={`markets-card-ad-${ad.id}`}
-                    >
-                      <TableCell className="p-2 lg:p-4 lg:ps-0 align-top row-start-1 col-span-full whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="relative h-[40px] w-[40px] flex-shrink-0 rounded-full bg-black flex items-center justify-center text-white font-bold text-2xl me-[8px]">
-                            {(ad.user?.nickname || "").charAt(0).toUpperCase()}
-                            <div
-                              className={`absolute bottom-0 end-0 h-[10px] w-[10px] rounded-full border border-white ${ad.user?.is_online ? "bg-buy" : "bg-gray-400"
-                                }`}
-                            />
-                          </div>
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => handleAdvertiserClick(ad.user?.id || 0)}
-                                className="hover:underline cursor-pointer"
-                                data-testid={`markets-link-advertiser-${ad.advertiser_id ?? ad.user?.id}`}
-                              >
-                                {ad.user?.nickname}
-                              </button>
-                              <VerifiedBadge size={20} />
-                              {ad.user.trade_band && (
-                                <TradeBandBadge
-                                  tradeBand={ad.user.trade_band}
-                                  showLearnMore={true}
-                                  size={20}
-                                />
-                              )}
-                              {IS_CLOSED_GROUP_ENABLED && ad.is_private && (
-                                <Image
-                                  src="/icons/closed-group.svg"
-                                  alt={t("common.closedGroup")}
-                                  width={32}
-                                  height={32}
-                                  className="cursor-pointer me-1"
-                                />
-                              )}
-                              {ad.user?.is_favourite && (
-                                <span className="px-[8px] py-[4px] bg-blue-50 text-blue-100 text-xs rounded-[4px]">
-                                  {t("market.following")}
-                                </span>
-                              )}
-                            </div>
-                            <PresenceLastSeen
-                              isOnline={ad.user?.is_online}
-                              lastOnlineAt={ad.user?.last_online_at}
-                              className="text-xs text-slate-500 block"
-                            />
-                          </div>
-                        </div>
-                        <div className="flex items-center text-xs text-slate-500 mt-[4px]">
-                          {ad.user.rating_average_lifetime && (
-                            <span className="flex items-center">
-                              <Image
-                                src="/icons/star-active.svg"
-                                alt={t("common.rating")}
-                                width={16}
-                                height={16}
-                                className="me-1"
+                    {adverts.map((ad, adIndex) => (
+                      <TableRow
+                        className="grid grid-cols-[1fr_auto] lg:flex flex-col border-b lg:table-row lg:border-x-[0] lg:border-t-[0] lg:mb-[0] py-3 lg:p-0"
+                        key={ad.id}
+                        data-testid={`markets-card-ad-${ad.id}`}
+                      >
+                        <TableCell className="p-2 lg:p-4 lg:ps-0 align-top row-start-1 col-span-full whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="relative h-[40px] w-[40px] flex-shrink-0 rounded-full bg-black flex items-center justify-center text-white font-bold text-2xl me-[8px]">
+                              {(ad.user?.nickname || "").charAt(0).toUpperCase()}
+                              <div
+                                className={`absolute bottom-0 end-0 h-[10px] w-[10px] rounded-full border border-white ${ad.user?.is_online ? "bg-buy" : "bg-gray-400"
+                                  }`}
                               />
-                              <span className="text-pending-text-secondary">
-                                {ad.user.rating_average_lifetime.toFixed(2)}
-                              </span>
-                            </span>
-                          )}
-                          {ad.user.order_count_lifetime > 0 && (
-                            <div className="flex flex-row items-center justify-start gap-[8px] mx-[8px]">
-                              {ad.user.rating_average_lifetime && <div className="h-1 w-1 rounded-full bg-slate-500"></div>}
-                              <span>
-                                {ad.user.order_count_lifetime} {t("market.orders")}
-                              </span>
                             </div>
-                          )}
-                          {ad.user.completion_rate_all_30day > 0 && (
-                            <div className="flex flex-row items-center justify-start gap-[8px]">
-                              <div className="h-1 w-1 rounded-full bg-slate-500"></div>
-                              <span>
-                                {ad.user.completion_rate_all_30day}% {t("market.completion")}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        {!isMobile && <div className="flex items-center text-xs text-slate-500 mt-2">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="flex items-center bg-gray-100 text-slate-500 rounded-sm px-2 py-1 cursor-pointer">
-                                  <Image src="/icons/clock.png" alt={t("common.time")} width={12} height={12} className="me-2" />
-                                  <span>
-                                    {ad.order_expiry_period} {t("market.min")}
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleAdvertiserClick(ad.user?.id || 0)}
+                                  className="hover:underline cursor-pointer"
+                                  data-testid={`markets-link-advertiser-${ad.advertiser_id ?? ad.user?.id}`}
+                                >
+                                  {ad.user?.nickname}
+                                </button>
+                                <VerifiedBadge size={20} />
+                                {ad.user.trade_band && (
+                                  <TradeBandBadge
+                                    tradeBand={ad.user.trade_band}
+                                    showLearnMore={true}
+                                    size={20}
+                                  />
+                                )}
+                                {IS_CLOSED_GROUP_ENABLED && ad.is_private && (
+                                  <Image
+                                    src="/icons/closed-group.svg"
+                                    alt={t("common.closedGroup")}
+                                    width={32}
+                                    height={32}
+                                    className="cursor-pointer me-1"
+                                  />
+                                )}
+                                {ad.user?.is_favourite && (
+                                  <span className="px-[8px] py-[4px] bg-blue-50 text-blue-100 text-xs rounded-[4px]">
+                                    {t("market.following")}
                                   </span>
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent align="start" className="max-w-[328px] text-wrap">
-                                <p>{t("order.paymentTimeTooltip", { minutes: ad.order_expiry_period })}</p>
-                                <TooltipArrow className="fill-black" />
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                        }
-                      </TableCell>
-                      <TableCell className="p-2 pt-0 lg:p-4 align-top row-start-2 col-span-full text-start">
-                        <div className="font-bold text-base flex items-center justify-start text-start" data-testid={`markets-text-rate-${ad.id}`}>
-                          <ExchangeRateDisplay
-                            rate={ad.effective_rate_display}
-                            paymentCurrency={ad.payment_currency}
-                            mutedClassName="text-xs text-slate-500 font-normal"
-                          />
-                        </div>
-                        <div className="mt-1 text-xs" data-testid={`markets-text-limits-${ad.id}`}>{`${t("market.orderLimits")}: ${ad.minimum_order_amount || "N/A"} - ${ad.actual_maximum_order_amount || "N/A"
-                          }  ${ad.account_currency}`}</div>
-                        {isMobile && <div className="flex w-full items-center justify-start text-start text-xs text-slate-500 mt-2">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="flex items-center justify-start bg-gray-100 text-slate-500 rounded-sm px-2 py-1 cursor-pointer text-start">
-                                  <Image src="/icons/clock.png" alt={t("common.time")} width={12} height={12} className="me-2" />
-                                  <span>
-                                    {ad.order_expiry_period} {t("market.min")}
-                                  </span>
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent align="start" className="max-w-[328px] text-wrap">
-                                <p>{t("order.paymentTimeTooltip", { minutes: ad.order_expiry_period })}</p>
-                                <TooltipArrow className="fill-black" />
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>}
-                      </TableCell>
-                      <TableCell className="p-2 lg:p-4 sm:table-cell align-top row-start-3">
-                        <div className="flex flex-row lg:flex-col flex-wrap gap-2 h-full">
-                          {ad.payment_methods?.map((method, index) => (
-                            <div key={index} className="flex items-center">
-                              {method && (
-                                <div
-                                  className={`h-2 w-2 rounded-full me-2 ${method.toLowerCase().includes("bank")
-                                    ? "bg-paymentMethod-bank"
-                                    : "bg-paymentMethod-ewallet"
-                                    }`}
-                                ></div>
-                              )}
-                              <span className="text-xs">{formatPaymentMethodName(method, t)}</span>
+                                )}
+                              </div>
+                              <PresenceLastSeen
+                                isOnline={ad.user?.is_online}
+                                lastOnlineAt={ad.user?.last_online_at}
+                                className="text-xs text-slate-500 block"
+                              />
                             </div>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell className="p-2 lg:p-4 lg:pe-0 text-end align-middle row-start-3 whitespace-nowrap">
-                        {Number(userId) !== ad.user.id && (
-                          <Button
-                            variant={ad.type === "buy" ? "destructive" : "secondary"}
-                            size="sm"
-                            onClick={() => handleOrderClick(ad)}
-                            disabled={!!tempBanUntil || isMaintenanceActive}
-                            data-testid={ad.type === "buy" ? `markets-btn-sell-${ad.id}` : `markets-btn-buy-${ad.id}`}
-                            {...(adIndex === firstTradeableAdIndex ? { "data-guide-id": "guide-trade-button" } : {})}
-                          >
-                            {ad.type === "buy" ? t("common.sell") : t("common.buy")} {ad.account_currency}
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+                          </div>
+                          <div className="flex items-center text-xs text-slate-500 mt-[4px]">
+                            {ad.user.rating_average_lifetime && (
+                              <span className="flex items-center">
+                                <Image
+                                  src="/icons/star-active.svg"
+                                  alt={t("common.rating")}
+                                  width={16}
+                                  height={16}
+                                  className="me-1"
+                                />
+                                <span className="text-pending-text-secondary">
+                                  {ad.user.rating_average_lifetime.toFixed(2)}
+                                </span>
+                              </span>
+                            )}
+                            {ad.user.order_count_lifetime > 0 && (
+                              <div className="flex flex-row items-center justify-start gap-[8px] mx-[8px]">
+                                {ad.user.rating_average_lifetime && <div className="h-1 w-1 rounded-full bg-slate-500"></div>}
+                                <span>
+                                  {ad.user.order_count_lifetime} {t("market.orders")}
+                                </span>
+                              </div>
+                            )}
+                            {ad.user.completion_rate_all_30day > 0 && (
+                              <div className="flex flex-row items-center justify-start gap-[8px]">
+                                <div className="h-1 w-1 rounded-full bg-slate-500"></div>
+                                <span>
+                                  {ad.user.completion_rate_all_30day}% {t("market.completion")}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          {!isMobile && <div className="flex items-center text-xs text-slate-500 mt-2">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex items-center bg-gray-100 text-slate-500 rounded-sm px-2 py-1 cursor-pointer">
+                                    <Image src="/icons/clock.png" alt={t("common.time")} width={12} height={12} className="me-2" />
+                                    <span>
+                                      {ad.order_expiry_period} {t("market.min")}
+                                    </span>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent align="start" className="max-w-[328px] text-wrap">
+                                  <p>{t("order.paymentTimeTooltip", { minutes: ad.order_expiry_period })}</p>
+                                  <TooltipArrow className="fill-black" />
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                          }
+                        </TableCell>
+                        <TableCell className="p-2 pt-0 lg:p-4 align-top row-start-2 col-span-full text-start">
+                          <div className="font-bold text-base flex items-center justify-start text-start" data-testid={`markets-text-rate-${ad.id}`}>
+                            <ExchangeRateDisplay
+                              rate={ad.effective_rate_display}
+                              paymentCurrency={ad.payment_currency}
+                              mutedClassName="text-xs text-slate-500 font-normal"
+                            />
+                          </div>
+                          <div className="mt-1 text-xs" data-testid={`markets-text-limits-${ad.id}`}>{`${t("market.orderLimits")}: ${ad.minimum_order_amount || "N/A"} - ${ad.actual_maximum_order_amount || "N/A"
+                            }  ${ad.account_currency}`}</div>
+                          {isMobile && <div className="flex w-full items-center justify-start text-start text-xs text-slate-500 mt-2">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex items-center justify-start bg-gray-100 text-slate-500 rounded-sm px-2 py-1 cursor-pointer text-start">
+                                    <Image src="/icons/clock.png" alt={t("common.time")} width={12} height={12} className="me-2" />
+                                    <span>
+                                      {ad.order_expiry_period} {t("market.min")}
+                                    </span>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent align="start" className="max-w-[328px] text-wrap">
+                                  <p>{t("order.paymentTimeTooltip", { minutes: ad.order_expiry_period })}</p>
+                                  <TooltipArrow className="fill-black" />
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>}
+                        </TableCell>
+                        <TableCell className="p-2 lg:p-4 sm:table-cell align-top row-start-3">
+                          <div className="flex flex-row lg:flex-col flex-wrap gap-2 h-full">
+                            {ad.payment_methods?.map((method, index) => (
+                              <div key={index} className="flex items-center">
+                                {method && (
+                                  <div
+                                    className={`h-2 w-2 rounded-full me-2 ${method.toLowerCase().includes("bank")
+                                      ? "bg-paymentMethod-bank"
+                                      : "bg-paymentMethod-ewallet"
+                                      }`}
+                                  ></div>
+                                )}
+                                <span className="text-xs">{formatPaymentMethodName(method, t)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell className="p-2 lg:p-4 lg:pe-0 text-end align-middle row-start-3 whitespace-nowrap">
+                          {Number(userId) !== ad.user.id && (
+                            <Button
+                              variant={ad.type === "buy" ? "destructive" : "secondary"}
+                              size="sm"
+                              onClick={() => handleOrderClick(ad)}
+                              disabled={!!tempBanUntil || isMaintenanceActive}
+                              data-testid={ad.type === "buy" ? `markets-btn-sell-${ad.id}` : `markets-btn-buy-${ad.id}`}
+                              {...(adIndex === firstTradeableAdIndex ? { "data-guide-id": "guide-trade-button" } : {})}
+                            >
+                              {ad.type === "buy" ? t("common.sell") : t("common.buy")} {ad.account_currency}
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </div>
           {isFetchingNextPage && (
             <div className="sticky bottom-0 flex justify-center py-4 bg-background">

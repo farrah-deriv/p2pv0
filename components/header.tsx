@@ -61,7 +61,17 @@ export default function Header() {
   // Hide header on advertiser page, order detail page, ad create/edit pages, wallet transaction list, and when viewing chat on mobile
   const isOrderDetailPage = pathname.match(/^\/orders\/[^/]+$/)
   const isAdFormPage = pathname === "/ads/create" || pathname.startsWith("/ads/edit/")
-  if (pathname.startsWith("/advertiser") || isOrderDetailPage || isAdFormPage || isTransactionListVisible || (isMobile && isOrderDetailPage && isChatVisible)) return null
+  if (pathname.startsWith("/advertiser") || isOrderDetailPage || isAdFormPage || isTransactionListVisible || (isMobile && isOrderDetailPage && isChatVisible)) {
+    // Keep NovuBellLink mounted in a hidden element so its <Inbox> session is never
+    // destroyed and recreated on navigation to/from these pages — each remount calls
+    // /v1/inbox/session and repeated navigations exhaust the rate limit.
+    if (!userId) return null
+    return (
+      <div className="hidden" aria-hidden="true">
+        <NovuBellLink disabled={isMaintenanceActive} />
+      </div>
+    )
+  }
 
   const handleAskAmy = () => {
     track("ek_ask_amy_markets")

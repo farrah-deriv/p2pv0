@@ -142,12 +142,27 @@ export interface TransferValidateDetails {
   }
 }
 
+export interface TransferValidateErrorDetails {
+  amount?: number
+  amount_in_usd?: number
+  min_amount_usd?: number
+  source_currency?: string
+}
+
+export interface TransferValidateErrorItem {
+  code?: string
+  details?: TransferValidateErrorDetails
+  i18n_key?: string
+  message?: string
+  status?: number
+}
+
 export interface TransferValidateResponse {
   data?: {
     is_valid: boolean
     details: TransferValidateDetails
   }
-  errors?: Array<{ code?: string; message?: string }>
+  errors?: Array<TransferValidateErrorItem>
 }
 
 export async function validateTransfer(
@@ -162,8 +177,18 @@ export async function validateTransfer(
   })
 
   if (!response.ok) {
-    const text = await response.text()
-    throw new Error(`validate transfer failed: ${response.status} ${text}`)
+    try {
+      const errorBody = await response.json()
+      if (Array.isArray(errorBody) && errorBody.length > 0) {
+        return { errors: errorBody }
+      }
+      if (errorBody?.errors && Array.isArray(errorBody.errors) && errorBody.errors.length > 0) {
+        return { errors: errorBody.errors }
+      }
+    } catch {
+      // JSON parse failed — fall through
+    }
+    return { errors: [{ message: `validate transfer failed: ${response.status}` }] }
   }
 
   const data = (await response.json()) as TransferValidateResponse

@@ -538,9 +538,23 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
       destination_currency: destinationWalletData.currency,
     })
 
-    const apiErrorMessage = result?.errors?.[0]?.message
-    if (apiErrorMessage || !result?.data?.is_valid || !result?.data?.details) {
-      throw new Error(apiErrorMessage || t("wallet.transferValidateFailed"))
+    const apiError = result?.errors?.[0]
+    if (apiError || !result?.data?.is_valid || !result?.data?.details) {
+      const minUsd = apiError?.details?.min_amount_usd
+      if (minUsd !== undefined && minUsd > 0) {
+        const amountInUsd = apiError?.details?.amount_in_usd ?? 0
+        const amountInSource = Number(apiError?.details?.amount) || 0
+        if (amountInUsd > 0 && amountInSource > 0) {
+          setSourceMinAmount((minUsd * amountInSource) / amountInUsd)
+          // Return null so validateError stays blank; isAmountValid will become
+          // false on the next render and show the inline minimum-amount message.
+          return null
+        }
+        // Conversion ratio unavailable — fall through to throw so the API's
+        // own descriptive message appears via validateError instead of a
+        // raw USD value displayed in the wrong currency.
+      }
+      throw new Error(apiError?.message || t("wallet.transferValidateFailed"))
     }
 
     return result.data.details
@@ -790,6 +804,8 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     setSelectedAmountCurrency("source")
     setValidateError(null)
     setTransferValidateQuote(null)
+    setSourceMinAmount(0)
+    setDestinationMinAmount(0)
 
     setShowMobileSheet(null)
     setShowDesktopWalletPopup(null)
@@ -805,6 +821,8 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     setSelectedAmountCurrency("source")
     setValidateError(null)
     setTransferValidateQuote(null)
+    setSourceMinAmount(0)
+    setDestinationMinAmount(0)
   }
 
   const formatAmountByCurrency = useCallback(
@@ -841,16 +859,10 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
   const isAmountValid = (amount: string): boolean => {
     const numAmount = Number.parseFloat(amount)
     const sourceBalance = getSourceWalletBalance()
+    const effectiveMinAmount =
+      selectedAmountCurrency === "source" ? sourceMinAmount : destinationMinAmount
 
-    if (!isNaN(numAmount) && selectedCurrency && currenciesData) {
-      const currencyData = currenciesData[selectedCurrency]
-      const minAmount = currencyData?.limit?.transfer?.min_amount_per_transaction || 0
-
-      const effectiveMinAmount =
-        selectedAmountCurrency === "source"
-          ? Math.max(minAmount, sourceMinAmount)
-          : Math.max(minAmount, destinationMinAmount)
-
+    if (!isNaN(numAmount) && effectiveMinAmount > 0) {
       return numAmount > 0 && numAmount >= effectiveMinAmount && numAmount <= sourceBalance
     }
 
@@ -868,17 +880,9 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
       selectedAmountCurrency === "source" ? sourceWalletData?.currency : destinationWalletData?.currency
 
     if (numAmount < effectiveMinAmount && effectiveMinAmount > 0) {
-      return t("wallet.minimumTransfer", {
-        amount: formatAmountByCurrency(effectiveMinAmount),
-        currency: effectiveCurrency || "",
-      })
-    }
-
-    const minAmount = getMinimumAmount()
-    if (numAmount < minAmount) {
       return t("wallet.minimumTransferAmount", {
-        amount: formatAmountWithDecimals(minAmount),
-        currency: selectedCurrency || "USD",
+        amount: formatAmountByCurrency(effectiveMinAmount, effectiveCurrency || selectedCurrency || "USD"),
+        currency: effectiveCurrency || "",
       })
     }
 
@@ -890,12 +894,6 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     }
 
     return ""
-  }
-
-  const getMinimumAmount = (): number => {
-    if (!selectedCurrency || !currenciesData) return 0
-    const currencyData = currenciesData[selectedCurrency]
-    return currencyData?.limit?.transfer?.min_amount_per_transaction || 0
   }
 
   const getSourceWalletAmount = (): string => {
@@ -1324,6 +1322,9 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
             <div className="flex justify-center mb-6">
               <div className="w-12 h-1 bg-gray-300 rounded-full" />
             </div>
+            <h2 className="text-slate-1200 text-xl font-extrabold mb-4">
+              {t("wallet.amountReceiveInfoTitle")}
+            </h2>
             <p className="text-base font-normal text-grayscale-600 mb-8">
               {getAmountReceiveInfoBody(transferValidateQuote)}
             </p>
