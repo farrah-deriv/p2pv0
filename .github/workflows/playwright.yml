@@ -50,17 +50,15 @@ on:
       platform:
         description: 'Platform to test'
         required: true
-        default: 'chromium-all'
+        default: 'all'
         type: choice
         options:
           - all
           - chromium
           - chromium-mobile
-          - chromium-all
           - firefox
           - webkit
           - webkit-mobile
-          - webkit-all
       spec_file:
         description: 'Spec file name (e.g. verify-login-via-email-password.spec.ts). Leave blank to run the full suite'
         required: false
@@ -149,15 +147,10 @@ jobs:
       - name: Resolve matrix platforms
         id: resolve-matrix
         run: |
-          # fields: platform, name, browser, grep_tag
           ALL='[{"platform":"chromium","name":"Chromium","browser":"chromium","grep_tag":"desktop"},{"platform":"chromium-mobile","name":"Chromium Mobile","browser":"chromium","grep_tag":"mobile"},{"platform":"firefox","name":"Firefox","browser":"firefox","grep_tag":"desktop"},{"platform":"webkit","name":"WebKit","browser":"webkit","grep_tag":"desktop"},{"platform":"webkit-mobile","name":"WebKit Mobile","browser":"webkit","grep_tag":"mobile"}]'
           SELECTED="${{ inputs.platform || github.event.inputs.platform || 'all' }}"
           if [ "${{ github.event_name }}" = "schedule" ] || [ "$SELECTED" = "all" ]; then
             MATRIX="$ALL"
-          elif [ "$SELECTED" = "chromium-all" ]; then
-            MATRIX=$(echo "$ALL" | jq -c '[.[] | select(.browser == "chromium")]')
-          elif [ "$SELECTED" = "webkit-all" ]; then
-            MATRIX=$(echo "$ALL" | jq -c '[.[] | select(.browser == "webkit")]')
           else
             MATRIX=$(echo "$ALL" | jq -c --arg sel "$SELECTED" '[.[] | select(.platform == $sel)]')
           fi
@@ -222,7 +215,6 @@ jobs:
           TEST_SUITE: ${{ needs.validate-inputs.outputs.cron_suite || inputs.test_suite || github.event.inputs.test_suite || 'smoke' }}
           RESOLVED_SPEC: ${{ needs.validate-inputs.outputs.resolved_spec }}
           GREP_TAG: ${{ matrix.grep_tag }}
-          TESTDINO_TOKEN: ${{ secrets.TESTDINO_TOKEN }}
         run: |
           RESOLVED_SPEC="${RESOLVED_SPEC//[[:space:]]/}"
           if [ -n "$RESOLVED_SPEC" ]; then
@@ -239,6 +231,28 @@ jobs:
             npx playwright test --project=${{ matrix.platform }} --grep "$GREP_PATTERN"
           fi
 
+      - name: Upload TestDino Report
+        if: always()
+        continue-on-error: true
+        env:
+          TESTDINO_TOKEN: ${{ secrets.TESTDINO_TOKEN }}
+          TEST_ENV: ${{ needs.validate-inputs.outputs.cron_env || inputs.test_env || github.event.inputs.test_env || 'staging' }}
+        run: |
+          if [ -z "$TESTDINO_TOKEN" ]; then
+            echo "::warning::TESTDINO_TOKEN is not set; skipping upload."
+            exit 0
+          fi
+          RESULT=$(npx tdpw@1.0.36 upload ./playwright/playwright-report \
+            --token="$TESTDINO_TOKEN" \
+            --environment="$TEST_ENV" \
+            --tag="${{ matrix.platform }}" \
+            --upload-full-json \
+            --json)
+          URL=$(echo "$RESULT" | jq -r '.data.url // empty')
+          RUN_ID=$(echo "$RESULT" | jq -r '.data.testRunId // empty')
+          echo "TESTDINO_RUN_URL=${URL}" >> $GITHUB_ENV
+          echo "TESTDINO_RUN_ID=${RUN_ID}" >> $GITHUB_ENV
+
       - name: Publish TestDino Summary
         if: always()
         continue-on-error: true
@@ -246,7 +260,6 @@ jobs:
           TESTDINO_ACCESS_TOKEN: ${{ secrets.TESTDINO_ACCESS_TOKEN }}
           TESTDINO_PROJECT_ID: ${{ vars.TESTDINO_PROJECT_ID }}
           TESTDINO_ORG_ID: ${{ vars.TESTDINO_ORG_ID }}
-          PLATFORM: ${{ matrix.platform }}
         run: node playwright/e2e-tests-core/scripts/github-summary-testdino.js
 
       - name: Upload Playwright Report
@@ -274,7 +287,8 @@ jobs:
           RESULT_OUTPUT_PATH: playwright/agent/.healing/slack-results/_result-${{ matrix.platform }}.json
           TESTDINO_ACCESS_TOKEN: ${{ secrets.TESTDINO_ACCESS_TOKEN }}
           TESTDINO_PROJECT_ID: ${{ vars.TESTDINO_PROJECT_ID }}
-          TESTDINO_ORG_ID: ${{ vars.TESTDINO_ORG_ID }}
+          TESTDINO_RUN_ID: ${{ env.TESTDINO_RUN_ID }}
+          TESTDINO_RUN_URL: ${{ env.TESTDINO_RUN_URL }}
           TEST_ENV: ${{ needs.validate-inputs.outputs.cron_env || inputs.test_env || github.event.inputs.test_env || 'staging' }}
           TEST_SUITE: ${{ needs.validate-inputs.outputs.cron_suite || inputs.test_suite || github.event.inputs.test_suite || 'smoke' }}
           PLATFORM: ${{ matrix.platform }}
