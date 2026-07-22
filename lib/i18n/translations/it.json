@@ -1320,7 +1320,7 @@
     "transferValidateFailed": "Impossibile calcolare la commissione di trasferimento. Riprova.",
     "mainWallet": "Portafoglio",
     "p2pWallets": "Portafogli P2P",
-    "amountReceiveInfoBodyApplied": "A questo trasferimento è stata applicata una rettifica di {amount} {currency}."
+    "amountReceiveInfoBodyApplied": "Questo trasferimento includeva una rettifica di {amount} {currency}."
   },
   "guide": {
     "back": "Indietro",

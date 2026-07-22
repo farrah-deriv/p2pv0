@@ -1334,7 +1334,7 @@
     "transferValidateFailed": "Не удалось рассчитать комиссию за перевод. Попробуйте ещё раз.",
     "mainWallet": "Кошелёк",
     "p2pWallets": "P2P-кошельки",
-    "amountReceiveInfoBodyApplied": "К этому переводу была применена корректировка на {amount} {currency}."
+    "amountReceiveInfoBodyApplied": "Этот перевод включал корректировку на {amount} {currency}."
   },
   "guide": {
     "back": "Назад",

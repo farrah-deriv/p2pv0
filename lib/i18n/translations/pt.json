@@ -1324,7 +1324,7 @@
     "transferValidateFailed": "Não foi possível calcular a taxa de transferência. Tente novamente.",
     "mainWallet": "Carteira",
     "p2pWallets": "Carteiras P2P",
-    "amountReceiveInfoBodyApplied": "Um ajuste de {amount} {currency} foi aplicado a esta transferência."
+    "amountReceiveInfoBodyApplied": "Esta transferência incluiu um ajuste de {amount} {currency}."
   },
   "guide": {
     "back": "Voltar",

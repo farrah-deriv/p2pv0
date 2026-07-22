@@ -1329,7 +1329,7 @@
     "transferValidateFailed": "Übertragungsgebühr konnte nicht berechnet werden. Bitte erneut versuchen.",
     "mainWallet": "Wallet",
     "p2pWallets": "P2P-Wallets",
-    "amountReceiveInfoBodyApplied": "Für diese Übertragung wurde eine Anpassung von {amount} {currency} vorgenommen."
+    "amountReceiveInfoBodyApplied": "Diese Übertragung enthielt eine Anpassung von {amount} {currency}."
   },
   "guide": {
     "back": "Zurück",

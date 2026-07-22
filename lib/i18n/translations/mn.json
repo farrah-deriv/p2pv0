@@ -1302,7 +1302,7 @@
     "transferValidateFailed": "Шилжүүлгийн хураамжийг тооцоолох боломжгүй. Дахин оролдоно уу.",
     "mainWallet": "Түрийвч",
     "p2pWallets": "P2P түрийвчүүд",
-    "amountReceiveInfoBodyApplied": "Энэ шилжүүлэгт {amount} {currency}-ийн тохируулга хэрэгжсэн."
+    "amountReceiveInfoBodyApplied": "Энэ шилжүүлэг {amount} {currency}-ийн тохируулга агуулсан."
   },
   "guide": {
     "back": "Буцах",

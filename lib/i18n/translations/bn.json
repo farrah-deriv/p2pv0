@@ -1312,7 +1312,7 @@
     "transferValidateFailed": "ট্রান্সফার ফি হিসাব করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।",
     "mainWallet": "ওয়ালেট",
     "p2pWallets": "P2P ওয়ালেট",
-    "amountReceiveInfoBodyApplied": "এই ট্রান্সফারে {amount} {currency} সমন্বয় প্রয়োগ করা হয়েছিল।"
+    "amountReceiveInfoBodyApplied": "এই ট্রান্সফারে {amount} {currency} সমন্বয় অন্তর্ভুক্ত ছিল।"
   },
   "guide": {
     "back": "পিছনে",

@@ -1302,7 +1302,7 @@
     "transferValidateFailed": "பரிமாற்றக் கட்டணத்தைக் கணக்கிட முடியவில்லை. மீண்டும் முயற்சிக்கவும்.",
     "mainWallet": "பணப்பை",
     "p2pWallets": "P2P பணப்பைகள்",
-    "amountReceiveInfoBodyApplied": "இந்தப் பரிமாற்றத்திற்கு {amount} {currency} சரிசெய்தல் பயன்படுத்தப்பட்டது."
+    "amountReceiveInfoBodyApplied": "இந்தப் பரிமாற்றத்தில் {amount} {currency} சரிசெய்தல் சேர்க்கப்பட்டது."
   },
   "guide": {
     "back": "திரும்பு",

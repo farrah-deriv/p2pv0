@@ -1351,7 +1351,7 @@
     "transferValidateFailed": "이체 수수료를 계산할 수 없습니다. 다시 시도해 주세요.",
     "mainWallet": "지갑",
     "p2pWallets": "P2P 지갑",
-    "amountReceiveInfoBodyApplied": "이 이체에 {amount} {currency} 조정이 적용되었습니다."
+    "amountReceiveInfoBodyApplied": "이 이체에 {amount} {currency} 조정이 포함되었습니다."
   },
   "guide": {
     "back": "이전",

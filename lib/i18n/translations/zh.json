@@ -1302,7 +1302,7 @@
     "transferValidateFailed": "无法计算转账手续费。请重试。",
     "mainWallet": "钱包",
     "p2pWallets": "P2P 钱包",
-    "amountReceiveInfoBodyApplied": "本次转账已应用 {amount} {currency} 的调整。"
+    "amountReceiveInfoBodyApplied": "本次转账包含 {amount} {currency} 的调整。"
   },
   "guide": {
     "back": "返回",

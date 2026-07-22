@@ -1302,7 +1302,7 @@
     "transferValidateFailed": "මාරු ගාස්තුව ගණනය කළ නොහැක. කරුණාකර නැවත උත්සාහ කරන්න.",
     "mainWallet": "පසුම්බිය",
     "p2pWallets": "P2P පසුම්බි",
-    "amountReceiveInfoBodyApplied": "මෙම මාරුවට {amount} {currency} ගැලපුමක් යොදා ඇත."
+    "amountReceiveInfoBodyApplied": "මෙම මාරු {amount} {currency} ගැලපීමක් ඇතුළත් විය."
   },
   "guide": {
     "back": "ආපසු",

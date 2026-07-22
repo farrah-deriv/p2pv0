@@ -1314,7 +1314,7 @@
     "transferValidateFailed": "Nie udało się obliczyć opłaty za transfer. Spróbuj ponownie.",
     "mainWallet": "Portfel",
     "p2pWallets": "Portfele P2P",
-    "amountReceiveInfoBodyApplied": "Do tego transferu zastosowano korektę w wysokości {amount} {currency}."
+    "amountReceiveInfoBodyApplied": "Ten transfer zawierał korektę w wysokości {amount} {currency}."
   },
   "guide": {
     "back": "Wstecz",

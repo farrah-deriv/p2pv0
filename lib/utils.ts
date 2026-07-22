@@ -625,6 +625,7 @@ export const currencyFlagMapper = {
   GIP: "/icons/flag-gibraltar.svg",
   MKD: "/icons/flag-macedonia.svg",
   MDL: "/icons/flag-moldova.svg",
+  SYP: "/icons/flag-syria.svg",
 }
 
 const getCookieValue = (name: string): string | undefined => {

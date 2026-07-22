@@ -1302,7 +1302,7 @@
     "transferValidateFailed": "تعذر حساب رسوم التحويل. يرجى المحاولة مرة أخرى.",
     "mainWallet": "محفظة",
     "p2pWallets": "محافظ P2P",
-    "amountReceiveInfoBodyApplied": "طُبِّق تعديل بمبلغ {amount} {currency} على هذا التحويل."
+    "amountReceiveInfoBodyApplied": "تضمَّن هذا التحويل تعديلاً بمبلغ {amount} {currency}."
   },
   "guide": {
     "back": "رجوع",

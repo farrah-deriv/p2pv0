@@ -1310,7 +1310,7 @@
     "transferValidateFailed": "Imeshindikana kukokotoa ada ya uhamisho. Tafadhali jaribu tena.",
     "mainWallet": "Pochi",
     "p2pWallets": "Pochi za P2P",
-    "amountReceiveInfoBodyApplied": "Marekebisho ya {amount} {currency} yalitumika kwa uhamisho huu."
+    "amountReceiveInfoBodyApplied": "Uhamisho huu ulijumuisha marekebisho ya {amount} {currency}."
   },
   "guide": {
     "back": "Rudi",

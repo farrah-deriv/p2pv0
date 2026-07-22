@@ -1346,7 +1346,7 @@
     "transferValidateFailed": "Không thể tính phí chuyển khoản. Vui lòng thử lại.",
     "mainWallet": "Ví",
     "p2pWallets": "Ví P2P",
-    "amountReceiveInfoBodyApplied": "Khoản điều chỉnh {amount} {currency} đã được áp dụng cho lần chuyển này."
+    "amountReceiveInfoBodyApplied": "Lần chuyển này bao gồm khoản điều chỉnh {amount} {currency}."
   },
   "guide": {
     "back": "Quay lại",

@@ -1320,7 +1320,7 @@
     "transferValidateFailed": "No se pudo calcular la comisión de transferencia. Inténtalo de nuevo.",
     "mainWallet": "Cartera",
     "p2pWallets": "Carteras P2P",
-    "amountReceiveInfoBodyApplied": "Se aplicó un ajuste de {amount} {currency} a esta transferencia."
+    "amountReceiveInfoBodyApplied": "Esta transferencia incluyó un ajuste de {amount} {currency}."
   },
   "guide": {
     "back": "Atrás",

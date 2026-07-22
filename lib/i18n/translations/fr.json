@@ -1318,7 +1318,7 @@
     "transferValidateFailed": "Impossible de calculer les frais de transfert. Veuillez réessayer.",
     "mainWallet": "Portefeuille",
     "p2pWallets": "Portefeuilles P2P",
-    "amountReceiveInfoBodyApplied": "Un ajustement de {amount} {currency} a été appliqué à ce transfert."
+    "amountReceiveInfoBodyApplied": "Ce transfert incluait un ajustement de {amount} {currency}."
   },
   "guide": {
     "back": "Retour",
