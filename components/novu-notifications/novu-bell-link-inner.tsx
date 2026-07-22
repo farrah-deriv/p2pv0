@@ -12,6 +12,25 @@ import { Sheet, SheetContent, SheetClose, SheetTitle } from "@/components/ui/she
 import { Button } from "@/components/ui/button"
 import { BackArrowIcon } from "@/components/ui/back-arrow-icon"
 
+const APPEARANCE_VARIABLES = {
+  borderRadius: "8px",
+  fontSize: "16px",
+  colorShadow: "rgba(0, 0, 0, 0.1)",
+  colorNeutral: "#1A1523",
+  colorCounterForeground: "#ffffff",
+  colorCounter: "#FF444F",
+  colorSecondaryForeground: "#1A1523",
+  colorPrimaryForeground: "#ffffff",
+  colorPrimary: "#FF444F",
+  colorForeground: "#181C25",
+  colorBackground: "#ffffff",
+}
+
+const APPEARANCE_ELEMENTS = {
+  notificationImage: { display: "none" },
+  preferences__button: { display: "none" },
+}
+
 const APPLICATION_ID = process.env.NEXT_PUBLIC_NOTIFICATION_APPLICATION_ID!
 
 interface NovuBellLinkInnerProps {
@@ -94,6 +113,8 @@ function NovuBellLinkInner({ disabled = false, onClick }: NovuBellLinkInnerProps
       subscriber={subscriberId}
       subscriberHash={subscriberHash}
       localization={{ "inbox.filters.labels.default": t("notifications.title") }}
+      colorScheme="light"
+      appearance={{ variables: APPEARANCE_VARIABLES, elements: APPEARANCE_ELEMENTS }}
     >
       <Bell renderBell={renderBell} />
       <Sheet open={open} onOpenChange={setOpen}>
