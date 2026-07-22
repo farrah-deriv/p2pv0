@@ -173,6 +173,8 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
   }
 
   const openAmountReceiveInfoSheet = () => {
+    // Don't interrupt an in-flight transfer (confirm sheet would dismiss).
+    if (isSubmitting) return
     if (showMobileConfirmSheet) {
       setShowMobileConfirmSheet(false)
       setPendingMobileConfirmAfterInfo(true)
@@ -545,6 +547,13 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
   }, [transferAmount, sourceWalletData, destinationWalletData, t])
 
   useEffect(() => {
+    // Keep validate quote on success/unsuccessful — success copy uses
+    // destination.amount (You'll receive). Clearing here falls back to gross.
+    if (step === "success" || step === "unsuccessful") {
+      setIsValidatePreviewLoading(false)
+      return
+    }
+
     if (
       step !== "enterAmount" ||
       !transferAmount ||
@@ -1170,7 +1179,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     const infoBody = getAmountReceiveInfoBody(transferValidateQuote)
     const infoIconClassName = "size-[1.5rem] h-[1.5rem] w-[1.5rem]"
     const infoButtonClassName =
-      "size-[1.5rem] h-[1.5rem] w-[1.5rem] min-h-[1.5rem] max-h-[1.5rem] min-w-[1.5rem] max-w-[1.5rem] p-0 text-grayscale-text-muted hover:text-slate-1200 hover:bg-transparent [&_svg]:!size-[1.5rem] [&_svg]:!h-[1.5rem] [&_svg]:!w-[1.5rem]"
+      "size-[1.5rem] h-[1.5rem] w-[1.5rem] min-h-[1.5rem] max-h-[1.5rem] min-w-[1.5rem] max-w-[1.5rem] p-0 text-grayscale-text-muted hover:text-slate-1200 hover:bg-transparent disabled:opacity-40 disabled:pointer-events-none [&_svg]:!size-[1.5rem] [&_svg]:!h-[1.5rem] [&_svg]:!w-[1.5rem]"
 
     return (
       <>
@@ -1185,14 +1194,17 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                   data-testid="transfer-btn-amount-receive-info"
                   className={infoButtonClassName}
                   aria-label={t("wallet.amountReceiveInfoTitle")}
+                  disabled={isSubmitting}
                 >
                   <InfoCircleIcon className={infoIconClassName} />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent className="max-w-[296px] text-white/70">
-                <p>{infoBody}</p>
-                <TooltipArrow className="fill-black" />
-              </TooltipContent>
+              {!isSubmitting && (
+                <TooltipContent className="max-w-[296px] text-white/70">
+                  <p>{infoBody}</p>
+                  <TooltipArrow className="fill-black" />
+                </TooltipContent>
+              )}
             </Tooltip>
           </TooltipProvider>
         </div>
@@ -1203,8 +1215,10 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
           data-testid="transfer-btn-amount-receive-info-mobile"
           className={`inline-flex md:hidden ${infoButtonClassName}`}
           aria-label={t("wallet.amountReceiveInfoTitle")}
+          disabled={isSubmitting}
           onClick={(e) => {
             e.stopPropagation()
+            if (isSubmitting) return
             openAmountReceiveInfoSheet()
           }}
         >
@@ -1422,10 +1436,10 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
           onClick={(e) => e.stopPropagation()}
         >
           <div className="relative pt-2 pb-8">
-            <div className="flex justify-center mb-4">
+            <div className="flex justify-center mb-6">
               <div data-testid="transfer-sheet-confirm-grip" className="w-12 h-1 bg-gray-300 rounded-full" />
             </div>
-            <h1 className="text-slate-1200 text-start text-[20px] font-extrabold px-6 mb-6">
+            <h1 className="text-slate-1200 text-start text-[24px] font-extrabold px-6 mb-6">
               {t("wallet.reviewAndConfirm")}
             </h1>
             <div className="px-6 flex flex-col gap-2 mb-0">
@@ -1950,16 +1964,30 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
       destinationWalletData?.type?.toLowerCase() === "p2p" &&
       sourceWalletData?.type?.toLowerCase() !== "p2p"
 
+    // Prefer validate destination amount (You'll receive) — fee means the
+    // entered gross transfer amount was not fully credited.
+    const successAmountRaw =
+      transferValidateQuote?.destination?.amount || transferAmount || "0"
+    const successCurrency =
+      transferValidateQuote?.destination?.currency ||
+      destinationWalletData?.currency ||
+      selectedCurrency ||
+      "USD"
+    const successAmountFormatted = formatAmountWithDecimals(
+      Number.parseFloat(successAmountRaw)
+    )
+
     const transferText = isMainToP2P
       ? t("wallet.transferSuccessMessageMainToP2P", {
-          amount: formatAmountWithDecimals(Number.parseFloat(transferAmount || "0")),
-          currency: selectedCurrency || "USD",
+          amount: successAmountFormatted,
+          currency: successCurrency,
           walletName: destinationWalletData?.name || t("wallet.p2pWallet"),
-          currencyLabel: currenciesData?.[selectedCurrency || "USD"]?.label || selectedCurrency || "USD",
+          currencyLabel:
+            currenciesData?.[successCurrency]?.label || successCurrency,
         })
       : t("wallet.transferSuccessMessage", {
-          amount: formatAmountWithDecimals(Number.parseFloat(transferAmount || "0")),
-          currency: selectedCurrency || "USD",
+          amount: successAmountFormatted,
+          currency: successCurrency,
           from: sourceWalletData?.name || "",
           to: destinationWalletData?.name || "",
         })
