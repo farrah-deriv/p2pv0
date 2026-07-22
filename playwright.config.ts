@@ -61,6 +61,8 @@ export default defineConfig({
     ["list"],
     ["html", { outputFolder: "./playwright/playwright-report" }],
     ["json", { outputFile: "./playwright/playwright-report/results.json" }],
+    ...(process.env.TESTDINO_TOKEN ?
+      [["@testdino/playwright", { token: process.env.TESTDINO_TOKEN, serverUrl: "https://reporter.testdino.com" }] as [string, object]] : []),
   ],
 
   use: {
@@ -119,6 +121,7 @@ export default defineConfig({
         ...devices["Desktop Firefox"],
         viewport: { width: 1536, height: 864 },
         userAgent: `${devices["Desktop Firefox"].userAgent} Playwright-Agent/deriv/1.9`,
+        permissions: ["geolocation"],
         launchOptions: {
           firefoxUserPrefs: {
             "media.navigator.streams.fake": true,
@@ -133,6 +136,7 @@ export default defineConfig({
         ...devices["Desktop Safari"],
         viewport: { width: 1536, height: 864 },
         userAgent: `${devices["Desktop Safari"].userAgent} Playwright-Agent/deriv/1.9`,
+        permissions: ["geolocation"],
       },
     },
     {
@@ -140,6 +144,7 @@ export default defineConfig({
       use: {
         ...devices["iPhone 15 Plus"],
         userAgent: `${devices["iPhone 15 Plus"].userAgent} Playwright-Agent/deriv/1.9`,
+        permissions: ["geolocation"],
       },
     },
   ],
