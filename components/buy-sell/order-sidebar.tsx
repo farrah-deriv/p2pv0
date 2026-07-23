@@ -904,7 +904,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
               <div className="flex flex-col h-auto overflow-y-auto">
                 <div className="p-4 pb-0">
                   <Alert variant="warning" className={ALERT_INLINE_FLEX} dir={dir}>
-                    <InfoCircleIcon className="shrink-0 mt-0.5" />
+                    <InfoCircleIcon className="size-5 shrink-0 mt-0.5" />
                     <div className={ALERT_INLINE_TEXT}>
                       <h3 className="font-bold text-sm mb-1">
                         {t("order.secureTradeReminder.title")}
