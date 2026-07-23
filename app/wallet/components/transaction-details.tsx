@@ -239,7 +239,10 @@ export default function TransactionDetails({ transaction }: TransactionDetailsPr
             <div className="flex justify-center mb-6">
               <div className="w-12 h-1 bg-gray-300 rounded-full" />
             </div>
-            <p className="text-base font-normal text-grayscale-600 mb-8">{infoBody}</p>
+            <h2 className="text-slate-1200 text-[24px] font-extrabold mb-4 text-start">
+              {t("wallet.amountReceiveInfoTitle")}
+            </h2>
+            <p className="text-base font-normal text-grayscale-600 mb-8 text-start">{infoBody}</p>
             <Button
               data-testid="wallet-details-btn-amount-receive-info-got-it"
               onClick={() => setShowAmountReceiveInfoSheet(false)}

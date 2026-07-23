@@ -1322,10 +1322,10 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
             <div className="flex justify-center mb-6">
               <div className="w-12 h-1 bg-gray-300 rounded-full" />
             </div>
-            <h2 className="text-slate-1200 text-xl font-extrabold mb-4">
+            <h2 className="text-slate-1200 text-[24px] font-extrabold mb-4 text-start">
               {t("wallet.amountReceiveInfoTitle")}
             </h2>
-            <p className="text-base font-normal text-grayscale-600 mb-8">
+            <p className="text-base font-normal text-grayscale-600 mb-8 text-start">
               {getAmountReceiveInfoBody(transferValidateQuote)}
             </p>
             <Button
