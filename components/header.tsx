@@ -58,20 +58,19 @@ export default function Header() {
     { name: t("navigation.profile"), href: "/profile", testId: "header-tab-profile" },
   ]
 
-  // Hide header on advertiser page, order detail page, ad create/edit pages, wallet transaction list, and when viewing chat on mobile
   const isOrderDetailPage = pathname.match(/^\/orders\/[^/]+$/)
   const isAdFormPage = pathname === "/ads/create" || pathname.startsWith("/ads/edit/")
-  if (pathname.startsWith("/advertiser") || isOrderDetailPage || isAdFormPage || isTransactionListVisible || (isMobile && isOrderDetailPage && isChatVisible)) {
-    // Keep NovuBellLink mounted in a hidden element so its <Inbox> session is never
-    // destroyed and recreated on navigation to/from these pages — each remount calls
-    // /v1/inbox/session and repeated navigations exhaust the rate limit.
-    if (!userId) return null
-    return (
-      <div className="hidden" aria-hidden="true">
-        <NovuBellLink disabled={isMaintenanceActive} />
-      </div>
-    )
-  }
+  // Hide header on advertiser page, order detail page, ad create/edit pages, wallet transaction list,
+  // and when viewing chat on mobile. Using a CSS hidden class instead of a conditional return keeps
+  // NovuBellLink in the same tree position on every render — React never remounts it, so its <Inbox>
+  // session is never destroyed. A conditional return moves NovuBellLink to a different tree position,
+  // causing unmount + remount and an extra /v1/inbox/session call on every navigation.
+  const shouldHideHeader =
+    pathname.startsWith("/advertiser") ||
+    !!isOrderDetailPage ||
+    isAdFormPage ||
+    isTransactionListVisible ||
+    !!(isMobile && isOrderDetailPage && isChatVisible)
 
   const handleAskAmy = () => {
     track("ek_ask_amy_markets")
@@ -82,7 +81,14 @@ export default function Header() {
 
   return (
     <>
-      <header data-testid="header-container" className="relative z-20 flex justify-between items-center px-6 md:px-[24px] py-4 md:py-3 bg-slate-1200 -mb-px md:mb-0 h-14 md:h-auto">
+      <header
+        data-testid="header-container"
+        className={cn(
+          "relative z-20 flex justify-between items-center px-6 md:px-[24px] py-4 md:py-3 bg-slate-1200 -mb-px md:mb-0 h-14 md:h-auto",
+          shouldHideHeader && "hidden",
+        )}
+        aria-hidden={shouldHideHeader ? true : undefined}
+      >
         <div className="flex items-center md:hidden">
           <MobileSidebarTrigger data-testid="header-btn-mobile-sidebar" />
         </div>

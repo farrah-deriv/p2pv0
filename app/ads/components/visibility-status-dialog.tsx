@@ -42,9 +42,11 @@ function getReasonKey(reason: string): string | undefined {
   return REASON_KEY_MAP[reason]
 }
 
-function formatAmount(value: number | undefined): string {
-  if (value == null || Number.isNaN(value)) return ""
-  return value.toFixed(2)
+function formatAmount(value: number | string | undefined): string {
+  if (value == null || value === "") return ""
+  const num = Number(value)
+  if (Number.isNaN(num)) return ""
+  return num.toFixed(2)
 }
 
 function getShortReasonText(reason: string, t: (key: string, params?: TranslationParams) => string): string {
