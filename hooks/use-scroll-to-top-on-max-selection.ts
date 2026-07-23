@@ -4,14 +4,14 @@ import { type RefObject, useEffect, useRef } from "react"
 
 /**
  * When selection count first hits [maxSelected], scroll the list root to top
- * (selected items pin above — user should see them without manual scroll).
+ * so the selected-methods section stays in view.
  */
 export function useScrollToTopOnMaxSelection(
   scrollRootRef: RefObject<HTMLElement | null>,
   selectedCount: number,
   options?: {
     maxSelected?: number
-    /** Bump when list re-sorts so scroll runs after layout. */
+    /** Bump when list layout changes so scroll runs after paint. */
     listVersion?: number | string
   },
 ) {
@@ -32,7 +32,6 @@ export function useScrollToTopOnMaxSelection(
       root.scrollTop = 0
     }
 
-    // After selected items re-pin to top.
     requestAnimationFrame(tryScroll)
 
     return () => {

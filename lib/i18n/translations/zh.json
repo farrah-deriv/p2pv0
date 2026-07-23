@@ -896,6 +896,7 @@
     "selectPaymentMethod": "选择付款方式",
     "selectPaymentMethodsHint": "最多选择 3 个",
     "selectUpTo3": "最多选择 3 个",
+    "selectedPaymentMethod": "已选付款方式",
     "sellerAccepts": "卖家接受",
     "title": "付款方式",
     "unableToAdd": "无法添加付款方式",

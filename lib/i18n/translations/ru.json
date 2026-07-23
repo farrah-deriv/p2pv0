@@ -926,6 +926,7 @@
     "selectPaymentMethod": "Выберите способ оплаты",
     "selectPaymentMethodsHint": "Выберите до 3",
     "selectUpTo3": "Выберите до 3",
+    "selectedPaymentMethod": "Выбранный способ оплаты",
     "sellerAccepts": "Продавец принимает",
     "title": "Способ оплаты",
     "unableToAdd": "Не удалось добавить способ оплаты",

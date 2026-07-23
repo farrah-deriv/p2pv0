@@ -78,18 +78,11 @@ export default function CountrySelection({ countries, selectedCountries, onCount
   const CountryList = () => (
     <div className="space-y-4">
       <div className="relative">
-        <Image
-          src="/icons/search-icon-custom.png"
-          alt={t("common.search")}
-          width={24}
-          height={24}
-          className="absolute start-3 top-1/2 transform -translate-y-1/2"
-        />
         <Input
           placeholder={t("common.search")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="text-base text-start ps-10 pe-10 h-8 border-grayscale-500 focus:border-grayscale-500  bg-grayscale-500 rounded-lg"
+          className={`text-base text-start ps-4 h-8 border-grayscale-500 focus:border-grayscale-500 bg-grayscale-500 rounded-lg ${searchTerm ? "pe-10" : "pe-4"}`}
           autoComplete="off"
           autoFocus
         />

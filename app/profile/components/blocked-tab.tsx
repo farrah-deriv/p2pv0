@@ -120,18 +120,11 @@ export default function BlockedTab() {
       {(filteredBlockedUsers.length > 0 || searchQuery) && (
         <div className={PROFILE_TOOLBAR_ROW}>
           <div className="relative w-full md:w-[360px]">
-            <Image
-              src="/icons/search-icon-custom.png"
-              alt={t("common.search")}
-              width={24}
-              height={24}
-              className="absolute start-3 top-1/2 transform -translate-y-1/2"
-            />
             <Input
               placeholder={t("common.search")}
               value={searchQuery}
               onChange={handleSearchChange}
-              className="h-14 ps-10 pe-10 border-0 bg-grayscale-500 rounded-lg text-start focus:outline-none"
+              className={`h-14 ps-4 border-0 bg-grayscale-500 rounded-lg text-start focus:outline-none ${searchQuery ? "pe-10" : "pe-4"}`}
               autoComplete="off"
             />
             {searchQuery && (

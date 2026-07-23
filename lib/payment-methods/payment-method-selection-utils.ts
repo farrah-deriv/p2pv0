@@ -169,33 +169,74 @@ export function appendSelectedPaymentMethodId(
     }
   }
 
-  // Newest selection first so the created method pins to the top of the sheet.
-  return [normalizedCreatedId, ...normalizedSelectedIds]
+  // Append so creating a method does not jump it to the top of the sheet.
+  return [...normalizedSelectedIds, normalizedCreatedId]
 }
 
 export function sortPaymentMethodsSelectedFirst<T extends { id: string | number }>(
   methods: T[],
   selectedIds: (string | number)[],
 ): T[] {
-  const normalizedSelectedIds = normalizePaymentMethodIds(selectedIds)
-  const selected: T[] = []
-  const unselected: T[] = []
+  return sortSelectableItemsSelectedFirst(methods, selectedIds, (method) => method.id)
+}
 
-  for (const method of methods) {
-    if (isPaymentMethodIdSelected(normalizedSelectedIds, method.id)) {
-      selected.push(method)
-    } else {
-      unselected.push(method)
+/**
+ * Keep [orderIds] stable during an open session and only append newly appeared
+ * methods. Selected items stay in place (no pin-to-top).
+ */
+export function applyStablePaymentMethodOrder<T>(
+  methods: T[],
+  orderIds: string[],
+  getId: (item: T) => string | number,
+): T[] {
+  const byId = new Map(
+    methods.map((method) => [normalizePaymentMethodId(getId(method)), method] as const),
+  )
+  const ordered: T[] = []
+
+  for (const id of orderIds) {
+    const method = byId.get(id)
+    if (method) {
+      ordered.push(method)
+      byId.delete(id)
     }
   }
 
-  selected.sort(
-    (a, b) =>
-      normalizedSelectedIds.indexOf(normalizePaymentMethodId(a.id)) -
-      normalizedSelectedIds.indexOf(normalizePaymentMethodId(b.id)),
-  )
+  for (const method of methods) {
+    const id = normalizePaymentMethodId(getId(method))
+    if (byId.has(id)) {
+      ordered.push(method)
+      byId.delete(id)
+    }
+  }
 
-  return [...selected, ...unselected]
+  return ordered
+}
+
+/** Build the initial session order from current method encounter order. */
+export function buildSessionPaymentMethodOrderIds<T>(
+  methods: T[],
+  getId: (item: T) => string | number,
+): string[] {
+  return methods.map((method) => normalizePaymentMethodId(getId(method)))
+}
+
+/** Append any method ids that are not yet in the session order. */
+export function extendSessionPaymentMethodOrderIds<T>(
+  orderIds: string[],
+  methods: T[],
+  getId: (item: T) => string | number,
+): string[] {
+  const seen = new Set(orderIds)
+  const next = [...orderIds]
+  for (const method of methods) {
+    const id = normalizePaymentMethodId(getId(method))
+    if (!seen.has(id)) {
+      seen.add(id)
+      next.push(id)
+    }
+  }
+  return next
 }
 
 export function sortSelectableItemsSelectedFirst<T>(
@@ -234,4 +275,68 @@ export function formatPaymentMethodAccountLine(
   if (!accountValue) return name
 
   return `${name} - ${maskAccountNumber(accountValue)}`
+}
+
+function readPaymentMethodFieldValue(
+  fields: Record<string, unknown> | undefined,
+  key: string,
+): string {
+  if (!fields) return ""
+  const raw = fields[key]
+  if (raw == null) return ""
+  if (typeof raw === "object" && raw !== null && "value" in raw) {
+    const value = (raw as { value?: unknown }).value
+    return value != null ? String(value) : ""
+  }
+  return String(raw)
+}
+
+/**
+ * Two-line selection copy:
+ * 1) bank name (bank) / payment method name (e-wallet)
+ * 2) account only
+ */
+export function getPaymentMethodSelectionLines(
+  method: {
+    display_name: string
+    type?: string
+    method?: string
+    fields?: Record<string, unknown>
+  },
+  t: (key: string) => string,
+): { title: string; subtitle: string } {
+  const displayName = formatPaymentMethodName(method.display_name, t)
+  const isBank =
+    method.type === "bank" || method.method?.toLowerCase() === "bank_transfer"
+  const bankName =
+    readPaymentMethodFieldValue(method.fields, "bank_name") ||
+    readPaymentMethodFieldValue(method.fields, "bankName")
+  const account = readPaymentMethodFieldValue(method.fields, "account")
+
+  if (isBank) {
+    return {
+      title: bankName || displayName,
+      subtitle: account,
+    }
+  }
+
+  return {
+    title: displayName,
+    subtitle: account,
+  }
+}
+
+/** Chip label in the selected section — `Name account`. */
+export function getPaymentMethodSelectionChipLabel(
+  method: {
+    display_name: string
+    type?: string
+    method?: string
+    fields?: Record<string, unknown>
+  },
+  t: (key: string) => string,
+): string {
+  const { title, subtitle } = getPaymentMethodSelectionLines(method, t)
+  if (!subtitle) return title
+  return `${title} ${subtitle}`
 }

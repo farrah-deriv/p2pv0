@@ -278,22 +278,17 @@ export default function AddPaymentMethodPanel({
     )
 
     const methodSelectionContent = (
-      <>
-        <h2 className="text-2xl font-bold p-4 pb-0 text-start">{t("paymentMethod.selectPaymentMethod")}</h2>
-        <div className="p-4 pb-2">
+      <div className="flex h-full min-h-0 w-full flex-col">
+        <h2 className="shrink-0 p-4 pb-0 text-start text-2xl font-bold">
+          {t("paymentMethod.selectPaymentMethod")}
+        </h2>
+        <div className="shrink-0 p-4 pb-2">
           <div className="relative">
-            <Image
-              src="/icons/search-icon-custom.png"
-              alt={t("common.search")}
-              width={24}
-              height={24}
-              className="absolute start-3 top-1/2 transform -translate-y-1/2"
-            />
             <Input
               placeholder={t("paymentMethod.search")}
               value={searchQuery}
               onChange={handleSearchChange}
-              className="text-base ps-10 pe-10 h-8 md:h-14 border-grayscale-500 focus:border-black rounded-lg text-start"
+              className={`text-base ps-4 h-8 md:h-14 border-grayscale-500 focus:border-black rounded-lg text-start ${searchQuery ? "pe-10" : "pe-4"}`}
               autoComplete="off"
               autoFocus
             />
@@ -309,42 +304,46 @@ export default function AddPaymentMethodPanel({
             )}
           </div>
         </div>
-        <div className="p-4 pt-2 space-y-3 overflow-y-auto mb-8">
+        <div className="min-h-0 flex-1 overflow-y-auto p-4 pt-2 pb-8">
           {filteredPaymentMethods.length > 0 ? (
-            filteredPaymentMethods.map((paymentMethod) => (
-              <Button
-                key={paymentMethod.method}
-                type="button"
-                variant="ghost"
-                size="lg"
-                onClick={() => handleMethodSelect(paymentMethod)}
-                className="w-full p-4 rounded-none justify-start gap-3 h-auto border-b border-grayscale-500 hover:bg-transparent"
-              >
-                <Image
-                  src={getPaymentMethodIcon(paymentMethod.type) || "/placeholder.svg"}
-                  alt={paymentMethod.display_name}
-                  width={24}
-                  height={24}
-                />
-                <span className="text-sm font-normal text-slate-1200">{paymentMethod.display_name}</span>
-              </Button>
-            ))
+            <div className="space-y-3">
+              {filteredPaymentMethods.map((paymentMethod) => (
+                <Button
+                  key={paymentMethod.method}
+                  type="button"
+                  variant="ghost"
+                  size="lg"
+                  onClick={() => handleMethodSelect(paymentMethod)}
+                  className="w-full p-4 rounded-none justify-start gap-3 h-auto border-b border-grayscale-500 hover:bg-transparent"
+                >
+                  <Image
+                    src={getPaymentMethodIcon(paymentMethod.type) || "/placeholder.svg"}
+                    alt={paymentMethod.display_name}
+                    width={24}
+                    height={24}
+                  />
+                  <span className="text-sm font-normal text-slate-1200">{paymentMethod.display_name}</span>
+                </Button>
+              ))}
+            </div>
           ) : (
-            <EmptyState
-              title={t("paymentMethod.paymentMethodUnavailable")}
-              description={t("paymentMethod.searchDifferent")}
-              redirectToAds={false}
-            />
+            <div className="flex h-full min-h-[160px] items-center justify-center">
+              <EmptyState
+                title={t("paymentMethod.paymentMethodUnavailable")}
+                description={t("paymentMethod.searchDifferent")}
+                redirectToAds={false}
+              />
+            </div>
           )}
         </div>
-      </>
+      </div>
     )
 
     if (onClose) {
       return <PanelWrapper onClose={onClose}>{methodSelectionContent}</PanelWrapper>
     }
 
-    return <div className="w-full">{methodSelectionContent}</div>
+    return <div className="flex h-full min-h-0 w-full flex-col">{methodSelectionContent}</div>
   }
 
   const formContent = (

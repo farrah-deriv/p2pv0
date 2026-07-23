@@ -2,10 +2,9 @@
 
 import type React from "react"
 import { useState, useEffect, useRef } from "react"
-import { Check, AlertCircle } from "lucide-react"
+import { Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import Image from "next/image"
 import { useTranslations } from "@/lib/i18n/use-translations"
 
 interface PaymentMethod {
@@ -173,15 +172,8 @@ export default function PaymentMethodBottomSheet({
           <h2 className="text-2xl font-bold text-center mb-2">{t("paymentMethod.paymentMethodsSheetTitle")}</h2>
           <p className="text-center text-gray-600 mb-6">{t("paymentMethod.selectPaymentMethodsHint")}</p>
 
-          {/* Search input */}
+          {/* Search input — no leading icon when empty (mobile parity) */}
           <div className="relative mb-6">
-            <Image
-              src="/icons/search-icon-custom.png"
-              alt={t("common.search")}
-              width={24}
-              height={24}
-              className="absolute left-3 top-1/2 transform -translate-y-1/2"
-            />
             <Input
               type="text"
               placeholder={t("paymentMethod.search")}
@@ -223,9 +215,6 @@ export default function PaymentMethodBottomSheet({
               ))
             ) : (
               <div className="flex flex-col items-center justify-center h-[200px] text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                  <AlertCircle className="h-8 w-8 text-gray-400" />
-                </div>
                 <h3 className="text-lg font-medium mb-1">{t("paymentMethod.noPaymentMethodsFound")}</h3>
                 <p className="text-gray-500 max-w-xs">{t("paymentMethod.methodNotAvailableSearch")}</p>
               </div>

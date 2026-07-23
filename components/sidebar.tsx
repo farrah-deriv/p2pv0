@@ -296,13 +296,6 @@ export default function Sidebar({ className }: SidebarProps) {
         <div className="my-3 border-b border-grayscale-200"></div>
         {isOnMarketPage && (
           <div className="relative mt-2 mb-1">
-            <Image
-              src="/icons/search-icon-custom.png"
-              alt={t("common.search")}
-              width={24}
-              height={24}
-              className="absolute start-2 top-1/2 z-10 -translate-y-1/2 pointer-events-none"
-            />
             <Input
               data-testid="sidebar-input-search"
               variant="tertiary"
@@ -318,7 +311,7 @@ export default function Sidebar({ className }: SidebarProps) {
                 if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current)
                 blurTimeoutRef.current = setTimeout(() => setIsSearchFocused(false), 150)
               }}
-              className={`w-full min-w-0 bg-grayscale-500 rounded-lg ps-10 mt-6 ${searchInput ? "pe-10" : "pe-4"}`}
+              className={`w-full min-w-0 bg-grayscale-500 rounded-lg ps-4 mt-6 ${searchInput ? "pe-10" : "pe-4"}`}
             />
             {searchInput && (
               <Button

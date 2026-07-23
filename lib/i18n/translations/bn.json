@@ -906,6 +906,7 @@
     "selectPaymentMethod": "একটি পেমেন্ট পদ্ধতি নির্বাচন করুন",
     "selectPaymentMethodsHint": "৩টি পর্যন্ত নির্বাচন করুন",
     "selectUpTo3": "৩টি পর্যন্ত নির্বাচন করুন",
+    "selectedPaymentMethod": "নির্বাচিত পেমেন্ট পদ্ধতি",
     "sellerAccepts": "বিক্রেতা গ্রহণ করে",
     "title": "পেমেন্ট পদ্ধতি",
     "unableToAdd": "পেমেন্ট পদ্ধতি যোগ করা সম্ভব নয়",

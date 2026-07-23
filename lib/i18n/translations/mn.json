@@ -896,6 +896,7 @@
     "selectPaymentMethod": "Төлбөрийн аргыг сонгоно уу",
     "selectPaymentMethodsHint": "3 хүртэл сонгоно уу",
     "selectUpTo3": "3 хүртэл сонгоно уу",
+    "selectedPaymentMethod": "Сонгосон төлбөрийн арга",
     "sellerAccepts": "Худалдагч хүлээн зөвшөөрнө",
     "title": "Төлбөрийн арга",
     "unableToAdd": "Төлбөрийн хэрэгсэл нэмэх боломжгүй",

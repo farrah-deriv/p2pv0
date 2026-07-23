@@ -305,6 +305,7 @@
   "paymentMethod": {
     "title": "Payment method",
     "selectUpTo3": "Select up to 3",
+    "selectedPaymentMethod": "Selected payment method",
     "noCompatibleMethods": "No compatible payment methods found",
     "addCompatibleMethod": "Add a supported payment method to continue",
     "addSupportedMethod": "Add a supported payment method to continue",

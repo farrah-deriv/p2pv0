@@ -1,6 +1,11 @@
 import {
   appendSelectedPaymentMethodId,
+  applyStablePaymentMethodOrder,
+  buildSessionPaymentMethodOrderIds,
+  extendSessionPaymentMethodOrderIds,
   getCreatedPaymentMethodId,
+  getPaymentMethodSelectionChipLabel,
+  getPaymentMethodSelectionLines,
   hasSelectedEwalletWithSameKey,
   isBankTransferMethod,
   isPaymentMethodIdSelected,
@@ -9,6 +14,7 @@ import {
   normalizePaymentMethodId,
   resolveSelectedUserPaymentMethodIds,
   sortPaymentMethodsSelectedFirst,
+  sortSelectableItemsSelectedFirst,
   toNumericPaymentMethodIds,
 } from "@/lib/payment-methods/payment-method-selection-utils"
 
@@ -17,6 +23,43 @@ describe("payment-method-selection-utils", () => {
     expect(isPaymentMethodIdSelected(["1", "2"], 1)).toBe(true)
     expect(isPaymentMethodIdSelected([1, 2], "3")).toBe(false)
     expect(normalizePaymentMethodId(42)).toBe("42")
+  })
+
+  it("builds two-line selection copy for bank and e-wallet methods", () => {
+    const t = (key: string) => (key === "paymentMethod.bankTransfers" ? "Bank transfer" : key)
+
+    expect(
+      getPaymentMethodSelectionLines(
+        {
+          display_name: "bank_transfer",
+          type: "bank",
+          method: "bank_transfer",
+          fields: {
+            bank_name: { value: "Maybank" },
+            account: { value: "9902151010901" },
+          },
+        },
+        t,
+      ),
+    ).toEqual({
+      title: "Maybank",
+      subtitle: "9902151010901",
+    })
+
+    expect(
+      getPaymentMethodSelectionLines(
+        {
+          display_name: "Africell Money",
+          type: "ewallet",
+          method: "africell_money",
+          fields: { account: { value: "sad sad" } },
+        },
+        t,
+      ),
+    ).toEqual({
+      title: "Africell Money",
+      subtitle: "sad sad",
+    })
   })
 
   it("sorts selected methods first using normalized ids", () => {
@@ -57,7 +100,7 @@ describe("payment-method-selection-utils", () => {
   it("guards appendSelectedPaymentMethodId against max selection and duplicates", () => {
     expect(appendSelectedPaymentMethodId(["1", "2", "3"], "4")).toEqual(["1", "2", "3"])
     expect(appendSelectedPaymentMethodId(["1", "2"], "2")).toEqual(["1", "2"])
-    expect(appendSelectedPaymentMethodId(["1"], 2)).toEqual(["2", "1"])
+    expect(appendSelectedPaymentMethodId(["1"], 2)).toEqual(["1", "2"])
   })
 
   it("blocks appending same-key e-wallet but allows multiple bank transfers", () => {
@@ -70,8 +113,8 @@ describe("payment-method-selection-utils", () => {
     ]
 
     expect(appendSelectedPaymentMethodId(["1"], 2, 3, methods)).toEqual(["1"])
-    expect(appendSelectedPaymentMethodId(["1"], 5, 3, methods)).toEqual(["5", "1"])
-    expect(appendSelectedPaymentMethodId(["3"], 4, 3, methods)).toEqual(["4", "3"])
+    expect(appendSelectedPaymentMethodId(["1"], 5, 3, methods)).toEqual(["1", "5"])
+    expect(appendSelectedPaymentMethodId(["3"], 4, 3, methods)).toEqual(["3", "4"])
     expect(hasSelectedEwalletWithSameKey(methods, ["1"], methods[1])).toBe(true)
     expect(hasSelectedEwalletWithSameKey(methods, ["3"], methods[3])).toBe(false)
   })
@@ -104,5 +147,71 @@ describe("payment-method-selection-utils", () => {
     expect(
       mergeCreatedPaymentMethodIntoList(existing, created, ["bank_transfer"]),
     ).toEqual(existing)
+  })
+
+  it("builds session order from encounter order without pinning selected ids", () => {
+    const methods = [{ id: 3 }, { id: "1" }, { id: 2 }]
+    expect(buildSessionPaymentMethodOrderIds(methods, (method) => method.id)).toEqual([
+      "3",
+      "1",
+      "2",
+    ])
+  })
+
+  it("extends session order by appending newly appeared method ids", () => {
+    const methods = [{ id: 1 }, { id: 2 }, { id: 3 }]
+    expect(
+      extendSessionPaymentMethodOrderIds(["2", "1"], methods, (method) => method.id),
+    ).toEqual(["2", "1", "3"])
+  })
+
+  it("applies stable session order and appends unknown methods at the end", () => {
+    const methods = [
+      { id: 1, name: "a" },
+      { id: 2, name: "b" },
+      { id: 3, name: "c" },
+    ]
+    expect(
+      applyStablePaymentMethodOrder(methods, ["3", "1"], (method) => method.id).map(
+        (method) => method.id,
+      ),
+    ).toEqual([3, 1, 2])
+  })
+
+  it("sorts selectable items selected-first using a custom id getter", () => {
+    const items = [
+      { key: "a" },
+      { key: "b" },
+      { key: "c" },
+    ]
+    expect(
+      sortSelectableItemsSelectedFirst(items, ["c", "a"], (item) => item.key).map(
+        (item) => item.key,
+      ),
+    ).toEqual(["c", "a", "b"])
+  })
+
+  it("builds chip labels as title plus account subtitle", () => {
+    const t = (key: string) => key
+    expect(
+      getPaymentMethodSelectionChipLabel(
+        {
+          display_name: "Africell Money",
+          type: "ewallet",
+          fields: { account: { value: "sad sad" } },
+        },
+        t,
+      ),
+    ).toBe("Africell Money sad sad")
+    expect(
+      getPaymentMethodSelectionChipLabel(
+        {
+          display_name: "Africell Money",
+          type: "ewallet",
+          fields: {},
+        },
+        t,
+      ),
+    ).toBe("Africell Money")
   })
 })

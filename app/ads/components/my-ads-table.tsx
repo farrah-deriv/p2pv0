@@ -503,32 +503,53 @@ export default function MyAdsTable({
                   >
                     {formatPaymentMethods(paymentMethods)}
                   </TableCell>
-                  <TableCell className="p-2 lg:p-4 align-top row-start-1 col-span-full whitespace-nowrap flex gap-1">
-                    <span data-testid={`ads-badge-status-${ad.id}`}>{getStatusBadge(isActive)}</span>
+                  <TableCell className="p-2 lg:p-4 align-middle row-start-1 col-span-full whitespace-nowrap flex items-center gap-1">
+                    <span data-testid={`ads-badge-status-${ad.id}`} className="inline-flex items-center">
+                      {getStatusBadge(isActive)}
+                    </span>
                     {IS_CLOSED_GROUP_ENABLED && ad.is_private && (
-                      <Image src="/icons/closed-group.svg" alt={t("common.closedGroup")} width={24} height={24} />
+                      <Image
+                        src="/icons/closed-group.svg"
+                        alt={t("common.closedGroup")}
+                        width={24}
+                        height={24}
+                        className="block size-6 shrink-0"
+                      />
                     )}
                     {hasVisibilityStatus && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="p-1 hover:bg-transparent rounded-full focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                        // size=sm defaults to h-32px — overrides so icon matches badge height
+                        className="size-6 h-6 w-6 min-h-0 min-w-0 p-0 hover:bg-transparent rounded-full focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                         onClick={() => handleVisibilityStatusClick(ad)}
                       >
-                        <Image src="/icons/ad-warning.svg" alt={t("common.visibilityStatus")} width={24} height={24} />
+                        <Image
+                          src="/icons/ad-warning.svg"
+                          alt={t("common.visibilityStatus")}
+                          width={24}
+                          height={24}
+                          className="block size-6"
+                        />
                       </Button>
                     )}
                   </TableCell>
-                  <TableCell className="p-0 lg:ps-4 lg:pe-0 lg:py-4 align-top row-start-1 whitespace-nowrap">
-                    <div className="flex items-end justify-end">
+                  <TableCell className="p-0 lg:ps-4 lg:pe-0 lg:py-4 align-middle row-start-1 whitespace-nowrap">
+                    <div className="flex h-full items-center justify-end">
                       {isMobile ? (
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="p-1 hover:bg-gray-100 rounded-full focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                          className="size-6 h-6 w-6 min-h-0 min-w-0 p-0 hover:bg-gray-100 rounded-full focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                           onClick={() => handleOpenDrawer(ad)}
                         >
-                          <Image src="/icons/vertical.svg" alt={t("common.options")} width={20} height={20} />
+                          <Image
+                            src="/icons/vertical.svg"
+                            alt={t("common.options")}
+                            width={24}
+                            height={24}
+                            className="block size-6"
+                          />
                         </Button>
                       ) : (
                         <>
@@ -536,10 +557,16 @@ export default function MyAdsTable({
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="p-1 hover:bg-gray-100 rounded-full focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                              className="size-6 h-6 w-6 min-h-0 min-w-0 p-0 hover:bg-gray-100 rounded-full focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                               onClick={() => handleOpenDrawer(ad)}
                             >
-                              <Image src="/icons/vertical.svg" alt={t("common.options")} width={20} height={20} />
+                              <Image
+                                src="/icons/vertical.svg"
+                                alt={t("common.options")}
+                                width={24}
+                                height={24}
+                                className="block size-6"
+                              />
                             </Button>
                           ) : (
                             <DropdownMenu open={openDropdownId === ad.id} onOpenChange={(open) => setOpenDropdownId(open ? ad.id : null)}>
@@ -547,9 +574,15 @@ export default function MyAdsTable({
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="p-1 hover:bg-gray-100 rounded-full focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                                  className="size-6 h-6 w-6 min-h-0 min-w-0 p-0 hover:bg-gray-100 rounded-full focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                                 >
-                                  <Image src="/icons/vertical.svg" alt={t("common.options")} width={20} height={20} />
+                                  <Image
+                                    src="/icons/vertical.svg"
+                                    alt={t("common.options")}
+                                    width={24}
+                                    height={24}
+                                    className="block size-6"
+                                  />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align={dropdownMenuAlign} className="w-auto flex flex-col p-1">

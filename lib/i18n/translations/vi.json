@@ -940,6 +940,7 @@
     "selectPaymentMethod": "Chọn phương thức thanh toán",
     "selectPaymentMethodsHint": "Chọn tối đa 3",
     "selectUpTo3": "Chọn tối đa 3",
+    "selectedPaymentMethod": "Phương thức thanh toán đã chọn",
     "sellerAccepts": "Người bán chấp nhận",
     "title": "Phương thức thanh toán",
     "unableToAdd": "Không thể thêm phương thức thanh toán",

@@ -201,13 +201,6 @@ export default function MobileAdvertiserSearch({ isOpen, onClose }: MobileAdvert
                         <BackArrowIcon alt={t("common.back")} width={24} height={24} />
                     </Button>
                     <div className="relative flex-1">
-                        <Image
-                            src="/icons/search-icon-custom.png"
-                            alt={t("common.search")}
-                            width={20}
-                            height={20}
-                            className="absolute start-3 top-1/2 -translate-y-1/2 z-10 pointer-events-none"
-                        />
                         <Input
                             data-testid="mobile-search-input"
                             variant="tertiary"
@@ -215,7 +208,7 @@ export default function MobileAdvertiserSearch({ isOpen, onClose }: MobileAdvert
                             value={searchInput}
                             onChange={(e) => handleSearchChange(e.target.value)}
                             autoFocus
-                            className={`w-full min-w-0 rounded-full ps-10 ${searchInput ? "pe-10" : "pe-4"}`}
+                            className={`w-full min-w-0 rounded-full ps-4 ${searchInput ? "pe-10" : "pe-4"}`}
                         />
                         {searchInput && (
                             <Button

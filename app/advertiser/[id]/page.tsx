@@ -591,9 +591,6 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
             </div>
             {isBlocked && (
               <div className="p-6 my-6 flex flex-col items-center justify-center text-center">
-                <div className="mb-4">
-                  <Image src="/icons/blocked.png" alt={t("common.blockedUser")} width={128} height={128} className="mx-auto" />
-                </div>
                 <h2 className="text-lg font-bold text-neutral-10 mb-2">{t("advertiser.youveBlockedUser")}</h2>
                 <p className="text-base text-neutral-7">{t("advertiser.unblockDescription")}</p>
               </div>

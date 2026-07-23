@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import type { Advertisement } from "@/services/api/api-buy-sell"
 import { createOrder } from "@/services/api/api-orders"
 import { ProfileAPI } from "@/services/api"
-import { getCategoryDisplayName, formatPaymentMethodName, cn, getHomeUrl } from "@/lib/utils"
+import { formatPaymentMethodName, cn, getHomeUrl } from "@/lib/utils"
 import Image from "next/image"
 import AddPaymentMethodPanel from "@/app/profile/components/add-payment-method-panel"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
@@ -33,7 +33,8 @@ import {
 } from "@/hooks/use-api-queries"
 import { useQueryClient, type InfiniteData } from "@tanstack/react-query"
 import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
-import { useScrollToTopOnMaxSelection } from "@/hooks/use-scroll-to-top-on-max-selection"
+import { useStablePaymentMethodOrder } from "@/hooks/use-stable-payment-method-order"
+import { SelectedPaymentMethodsSection } from "@/components/payment-methods/selected-payment-methods-section"
 import RateChangeConfirmation from "./rate-change-confirmation"
 import AdUpdatedConfirmation from "./ad-updated-confirmation"
 import { useTrackers } from "@/analytics/useTrackers"
@@ -46,14 +47,13 @@ import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/res
 import {
   appendSelectedPaymentMethodId,
   filterPaymentMethodsForAdvert,
-  formatPaymentMethodAccountLine,
   getCreatedPaymentMethodId,
+  getPaymentMethodSelectionLines,
   isPaymentMethodIdSelected,
   isUserPaymentMethodSelectionDisabled,
   mergeCreatedPaymentMethodIntoList,
   normalizePaymentMethodId,
   resolveSelectedUserPaymentMethodIds,
-  sortPaymentMethodsSelectedFirst,
 } from "@/lib/payment-methods/payment-method-selection-utils"
 
 interface OrderSidebarProps {
@@ -69,7 +69,7 @@ interface PaymentMethod {
   id: string
   type: string
   display_name: string
-  fields: Record<string, any>
+  fields: Record<string, unknown>
   is_enabled: number
   method: string
 }
@@ -112,6 +112,8 @@ const PaymentSelectionContent = ({
 }) => {
   const { t } = useTranslations()
   const [selectedPMs, setSelectedPMs] = useState(tempSelectedPaymentMethods)
+  /** Resets stable list order when the sheet selection source updates. */
+  const [orderSessionKey, setOrderSessionKey] = useState(tempSelectedPaymentMethods)
   const lastScrolledPaymentMethodIdRef = useRef<string | null>(null)
   const {
     data: paymentMethodsPages,
@@ -128,12 +130,9 @@ const PaymentSelectionContent = ({
     isFetchingNextPage,
   )
 
-  useScrollToTopOnMaxSelection(scrollRootRef, selectedPMs.length, {
-    listVersion: selectedPMs.join(","),
-  })
-
   useEffect(() => {
     setSelectedPMs(tempSelectedPaymentMethods)
+    setOrderSessionKey(tempSelectedPaymentMethods)
   }, [tempSelectedPaymentMethods])
 
   // Live paginated list (alert props are a snapshot). Merge prop extras for just-created PMs.
@@ -153,10 +152,16 @@ const PaymentSelectionContent = ({
     return Array.from(byId.values())
   }, [acceptedPaymentMethods, paymentMethodsPages, userPaymentMethods])
 
-  // Live selection order — selected methods pin to the top of the sheet.
-  const sortedPaymentMethods = useMemo(
-    () => sortPaymentMethodsSelectedFirst(compatibleMethods, selectedPMs),
-    [compatibleMethods, selectedPMs],
+  const getMethodId = useCallback(
+    (method: PaymentMethod) => normalizePaymentMethodId(method.id),
+    [],
+  )
+
+  const sortedPaymentMethods = useStablePaymentMethodOrder(
+    compatibleMethods,
+    orderSessionKey,
+    getMethodId,
+    true,
   )
 
   useEffect(() => {
@@ -172,15 +177,17 @@ const PaymentSelectionContent = ({
     const tryScroll = () => {
       if (cancelled) return
       const root = scrollRootRef.current
-      if (!root) {
+      const target = root?.querySelector(
+        `[data-payment-method-id="${normalizedId}"]`,
+      ) as HTMLElement | null
+      if (!root || !target) {
         if (attempts++ < maxAttempts) {
           window.requestAnimationFrame(tryScroll)
         }
         return
       }
 
-      // Instant — no smooth delay that lands after the toast.
-      root.scrollTop = 0
+      target.scrollIntoView({ block: "nearest" })
       lastScrolledPaymentMethodIdRef.current = normalizedId
     }
 
@@ -199,8 +206,7 @@ const PaymentSelectionContent = ({
       if (isUserPaymentMethodSelectionDisabled(compatibleMethods, prev, methodId)) {
         return prev
       }
-      // Pin newly selected method to the top.
-      return [normalizePaymentMethodId(methodId), ...prev]
+      return [...prev, normalizePaymentMethodId(methodId)]
     })
   }
 
@@ -209,49 +215,51 @@ const PaymentSelectionContent = ({
     onAddPaymentMethodWithType?.(method.method)
   }
 
-  const getAccountValue = (method: PaymentMethod) => {
-    const account = method.fields?.account
-    if (typeof account === "object" && account !== null && "value" in account) {
-      return String(account.value ?? "")
-    }
-    return account != null ? String(account) : undefined
-  }
-
   return (
     <div
       data-testid="order-sidebar-modal-payment-methods"
-      className="flex flex-col flex-1 min-h-0 h-full"
+      className="flex h-full min-h-0 w-full flex-1 flex-col"
     >
       {compatibleMethods.length > 0 && (
-        <div className="shrink-0 pb-4 text-grayscale-600">{t("paymentMethod.selectUpTo3")}</div>
+        <div className="shrink-0 pb-2 text-center text-grayscale-600 md:text-start">
+          {t("paymentMethod.selectUpTo3")}
+        </div>
       )}
-      <div ref={scrollRootRef} className="flex-1 min-h-0 overflow-y-auto space-y-4">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {compatibleMethods.length === 0 ? (
-          <div className="pb-4 space-y-4">
-            <div>
-              <div className="text-slate-1200">{t("paymentMethod.addCompatibleMethod")}</div>
-            </div>
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-4">
+            <div className="text-slate-1200">{t("paymentMethod.addCompatibleMethod")}</div>
             {sellerPaymentMethods && sellerPaymentMethods.length > 0 && (
-              <div className="space-y-3">
+              <div className="mt-4 space-y-3">
                 {sellerPaymentMethods.map((method) => (
-                  <div
+                  <Button
                     key={method.method}
+                    type="button"
+                    variant="ghost"
                     onClick={() => handleAcceptedMethodClick(method)}
-                    className="border border-grayscale-200 rounded-lg p-4 cursor-pointer hover:bg-grayscale-300 transition-colors"
+                    className="h-auto w-full justify-start rounded-lg border border-grayscale-200 p-4 font-normal hover:bg-grayscale-300"
                   >
-                    <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-2">
                       <Image src="/icons/plus_icon.png" alt={t("common.plus")} width={14} height={24} />
                       <span className="text-base text-slate-1200">
                         {formatPaymentMethodName(method.method, t)}
                       </span>
-                    </div>
-                  </div>
+                    </span>
+                  </Button>
                 ))}
               </div>
             )}
           </div>
         ) : (
-          sortedPaymentMethods.map((method) => {
+          <>
+          <SelectedPaymentMethodsSection
+            methods={compatibleMethods}
+            selectedIds={selectedPMs}
+            onRemove={handlePaymentMethodToggle}
+          />
+          {/* Mobile list gap: QuillSpacing.sm (8px) */}
+          <div ref={scrollRootRef} className="min-h-0 flex-1 space-y-2 overflow-y-auto">
+          {sortedPaymentMethods.map((method) => {
             const methodId = normalizePaymentMethodId(method.id)
             const isSelected = isPaymentMethodIdSelected(selectedPMs, methodId)
             const isDisabled = isUserPaymentMethodSelectionDisabled(
@@ -259,11 +267,13 @@ const PaymentSelectionContent = ({
               selectedPMs,
               methodId,
             )
+            const lines = getPaymentMethodSelectionLines(method, t)
 
             return (
               <div
                 key={methodId}
-                className={`bg-grayscale-500 rounded-lg p-4 cursor-pointer hover:bg-grayscale-300 transition-colors ${isSelected ? "border border-black" : ""
+                data-payment-method-id={methodId}
+                className={`bg-grayscale-500 rounded-lg ps-6 pe-6 py-4 cursor-pointer hover:bg-grayscale-300 transition-colors ${isSelected ? "border border-black" : ""
                   } ${isDisabled
                     ? "opacity-30 cursor-not-allowed hover:bg-grayscale-300"
                     : ""
@@ -274,17 +284,17 @@ const PaymentSelectionContent = ({
                   }
                 }}
               >
-                <div className="flex items-center justify-between gap-3 min-w-0">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="flex items-center gap-4 min-w-0 flex-1">
                     <div
-                      className={`h-2 w-2 shrink-0 rounded-full ${method.type === "bank" ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"
+                      className={`h-3 w-3 shrink-0 rounded-full ${method.type === "bank" ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"
                         }`}
                     />
-                    <div className="min-w-0 flex flex-col">
-                      <span className="text-base text-slate-1200">{getCategoryDisplayName(method.type, t)}</span>
-                      <span className="text-base text-grayscale-text-muted truncate">
-                        {formatPaymentMethodAccountLine(method.display_name, getAccountValue(method), t)}
-                      </span>
+                    <div className="min-w-0 flex flex-col gap-0.5">
+                      <span className="truncate text-base leading-6 text-slate-1200">{lines.title}</span>
+                      {lines.subtitle ? (
+                        <span className="truncate text-xs leading-4 text-grayscale-text-muted">{lines.subtitle}</span>
+                      ) : null}
                     </div>
                   </div>
                   <Checkbox
@@ -297,8 +307,7 @@ const PaymentSelectionContent = ({
                 </div>
               </div>
             )
-          })
-        )}
+          })}
 
         {hasNextPage && (
           <div ref={sentinelRef} className="h-1 w-full" data-testid="order-sidebar-payment-methods-sentinel" />
@@ -310,23 +319,28 @@ const PaymentSelectionContent = ({
         )}
 
         {compatibleMethods.length > 0 && (
-          <div
+          <Button
+            type="button"
+            variant="ghost"
             data-testid="order-sidebar-link-add-payment"
-            className="border border-grayscale-200 rounded-lg p-4 cursor-pointer transition-colors"
+            className="h-auto w-full justify-start rounded-lg border border-grayscale-200 p-4 font-normal"
             onClick={() => {
               handleAddPaymentMethodClick(selectedPMs)
             }}
           >
-            <div className="flex items-center">
+            <span className="flex items-center">
               <Image src="/icons/plus_icon.png" alt={t("common.plus")} width={14} height={24} className="me-2" />
-              <span className="text-slate-1200 text-base">
+              <span className="text-slate-1200 text-base font-normal">
                 {t("paymentMethod.addPaymentMethod")}
               </span>
-            </div>
+            </span>
+          </Button>
+        )}
           </div>
+          </>
         )}
       </div>
-      <div className="shrink-0 pt-4 pb-6">
+      <div className="shrink-0 pt-2 pb-6">
         <Button
           data-testid="order-sidebar-btn-confirm-payment"
           className="w-full"
@@ -526,6 +540,9 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
       track("ek_select_payment_method_markets_advert_sheet")
       showAlert({
         title: t("paymentMethod.title"),
+        titleAlign: "center",
+        // Keep search sheet body height stable (empty / no selection).
+        contentClassName: "h-[min(560px,60vh)]",
         content: (
           <PaymentSelectionContent
             userPaymentMethods={methodsForSheet}
@@ -955,25 +972,34 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
 
                 {isBuy && (
                   <div className="mx-4 mt-4 pb-6 border-b">
-                    <div
+                    <Button
+                      type="button"
+                      variant="ghost"
                       data-testid="order-sidebar-btn-select-payment"
-                      className="border border-gray-200 rounded-lg px-4 cursor-pointer hover:bg-gray-50 transition-colors flex items-center h-[56px]"
+                      className="flex h-[56px] w-full items-center justify-between rounded-lg border border-gray-200 px-4 font-normal hover:bg-gray-50"
                       onClick={handleShowPaymentSelection}
                     >
-                      <div className="flex items-center justify-between flex-1">
-                        <div className="flex flex-col gap-[1px]">
-                          {selectedPaymentMethods.length > 0 && <span className="text-black/[0.72] text-xs font-normal">{t("order.receivePaymentTo")}</span>}
-                          <span data-testid="order-sidebar-text-payment-method" className="text-black/[0.72] text-base font-normal">{getSelectedPaymentMethodsText()}</span>
-                        </div>
-                        <Image
-                          src="/icons/chevron-down.png"
-                          alt={t("common.arrow")}
-                          width={24}
-                          height={24}
-                          className="ms-2 transition-transform duration-200"
-                        />
-                      </div>
-                    </div>
+                      <span className="flex min-w-0 flex-1 flex-col items-start gap-[1px]">
+                        {selectedPaymentMethods.length > 0 && (
+                          <span className="text-xs font-normal text-black/[0.72]">
+                            {t("order.receivePaymentTo")}
+                          </span>
+                        )}
+                        <span
+                          data-testid="order-sidebar-text-payment-method"
+                          className="text-base font-normal text-black/[0.72]"
+                        >
+                          {getSelectedPaymentMethodsText()}
+                        </span>
+                      </span>
+                      <Image
+                        src="/icons/chevron-down.png"
+                        alt={t("common.arrow")}
+                        width={24}
+                        height={24}
+                        className="ms-2 shrink-0 transition-transform duration-200"
+                      />
+                    </Button>
                   </div>
                 )}
 

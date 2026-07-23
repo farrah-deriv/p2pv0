@@ -1,11 +1,13 @@
 "use client"
 
 import { useState, useMemo, useCallback, useRef } from "react"
+import { useStablePaymentMethodOrder } from "@/hooks/use-stable-payment-method-order"
 import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { CustomShimmer } from "@/app/profile/components/ui/custom-shimmer"
 import AddPaymentMethodPanel from "@/app/profile/components/add-payment-method-panel"
-import { getCategoryDisplayName, getMethodDisplayDetails, getPaymentMethodColour } from "@/lib/utils"
+import { getPaymentMethodColour } from "@/lib/utils"
+import { getPaymentMethodSelectionLines } from "@/lib/payment-methods/payment-method-selection-utils"
 import Image from "next/image"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { usePaymentSelection } from "./payment-selection-context"
@@ -25,7 +27,6 @@ import {
   isPaymentMethodIdSelected,
   isUserPaymentMethodSelectionDisabled,
   normalizePaymentMethodId,
-  sortPaymentMethodsSelectedFirst,
 } from "@/lib/payment-methods/payment-method-selection-utils"
 
 interface PaymentMethod {
@@ -33,7 +34,7 @@ interface PaymentMethod {
   method: string
   type: string
   display_name: string
-  fields: Record<string, any>
+  fields: Record<string, unknown>
   created_at?: number
   is_default?: boolean
 }
@@ -66,10 +67,17 @@ const AdPaymentMethods = () => {
     [paymentMethodsResponse],
   )
 
-  // Live selection order — selected methods pin to the top.
-  const sortedPaymentMethods = useMemo(
-    () => sortPaymentMethodsSelectedFirst(paymentMethods, selectedPaymentMethodIds),
-    [paymentMethods, selectedPaymentMethodIds],
+  // Session key frozen on mount / step entry — stable order, no pin-to-top.
+  const [orderPinIds] = useState(selectedPaymentMethodIds)
+  const getMethodId = useCallback(
+    (method: PaymentMethod) => normalizePaymentMethodId(method.id),
+    [],
+  )
+  const sortedPaymentMethods = useStablePaymentMethodOrder(
+    paymentMethods,
+    orderPinIds,
+    getMethodId,
+    true,
   )
 
   const handleCheckboxChange = (methodId: number, checked: boolean) => {
@@ -176,7 +184,7 @@ const AdPaymentMethods = () => {
           >
             {sortedPaymentMethods.map((method) => {
               const isSelected = isPaymentMethodIdSelected(selectedPaymentMethodIds, method.id)
-              const displayDetails = getMethodDisplayDetails(method)
+              const lines = getPaymentMethodSelectionLines(method, t)
               const isDisabled = isUserPaymentMethodSelectionDisabled(
                 paymentMethods,
                 selectedPaymentMethodIds,
@@ -193,23 +201,24 @@ const AdPaymentMethods = () => {
                   } hover:shadow-md`}
                   onClick={() => !isDisabled && handleCheckboxChange(method.id, !isSelected)}
                 >
-                  <CardContent className="p-2 cursor-pointer">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2 ms-2">
-                        <div className={`${getPaymentMethodColour(method.type)} rounded-full w-3 h-3`} />
-                        <span className="font-bold text-sm text-neutral-7">{getCategoryDisplayName(method.type, t)}</span>
+                  <CardContent className="ps-6 pe-6 py-4 cursor-pointer">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex min-w-0 flex-1 items-center gap-4">
+                        <div className={`${getPaymentMethodColour(method.type)} shrink-0 rounded-full h-2 w-2`} />
+                        <div className="min-w-0 flex flex-col gap-0.5">
+                          <span className="truncate text-base leading-6 font-normal text-neutral-10">{lines.title}</span>
+                          {lines.subtitle ? (
+                            <span className="truncate text-xs leading-4 text-grayscale-text-muted">{lines.subtitle}</span>
+                          ) : null}
+                        </div>
                       </div>
-                      <div onClick={(e) => e.stopPropagation()} className="pointer-events-auto">
+                      <div onClick={(e) => e.stopPropagation()} className="pointer-events-auto shrink-0">
                         <Checkbox
                           checked={isSelected}
                           disabled={isDisabled}
                           className="border-slate-1200 data-[state=checked]:!bg-slate-1200 data-[state=checked]:!border-slate-1200 rounded-[2px]"
                         />
                       </div>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="text-sm tracking-wide text-neutral-10">{displayDetails.primary}</div>
-                      <div className="text-sm text-neutral-7">{displayDetails.secondary}</div>
                     </div>
                   </CardContent>
                 </Card>

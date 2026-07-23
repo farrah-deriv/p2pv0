@@ -908,6 +908,7 @@
     "selectPaymentMethod": "Wybierz metodę płatności",
     "selectPaymentMethodsHint": "Wybierz do 3",
     "selectUpTo3": "Wybierz do 3",
+    "selectedPaymentMethod": "Wybrana metoda płatności",
     "sellerAccepts": "Sprzedawca akceptuje",
     "title": "Metoda płatności",
     "unableToAdd": "Nie można dodać metody płatności",

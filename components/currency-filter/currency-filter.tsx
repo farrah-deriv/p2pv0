@@ -88,19 +88,12 @@ export function CurrencyFilter({
   const currencyListJsx = (
     <div className="w-full h-full flex flex-col">
       <div className="relative mb-6 md:mb-4 md:pe-6 shrink-0">
-        <Image
-          src="/icons/search-icon-custom.png"
-          alt={t("common.search")}
-          width={24}
-          height={24}
-          className="absolute start-3 top-1/2 transform -translate-y-1/2"
-        />
         <Input
           placeholder={placeholder === "Search" ? t("common.search") : placeholder}
           value={searchQuery}
           onChange={handleSearchChange}
           onKeyDown={handleKeyDown}
-          className="text-sm font-normal text-start placeholder:text-grayscale-text-placeholder ps-10 pe-10 h-14 md:h-8 border-0 focus:border-0 bg-grayscale-500 rounded-lg"
+          className={`text-sm font-normal text-start placeholder:text-grayscale-text-placeholder ps-4 h-14 md:h-8 border-0 focus:border-0 bg-grayscale-500 rounded-lg ${searchQuery ? "pe-10" : "pe-4"}`}
           autoComplete="off"
           data-testid="currency-filter-input-search"
         />
@@ -117,16 +110,16 @@ export function CurrencyFilter({
         )}
       </div>
 
-      {filteredCurrencies.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center">
-          <EmptyState
-            title={t("filter.currencyUnavailable", { currency: searchQuery })}
-            description={t("filter.selectAnotherCurrency")}
-            redirectToAds={false}
-          />
-        </div>
-      ) : (
-        <div className="space-y-0 max-h-[80%] overflow-y-auto scrollbar-custom md:relative md:-start-4 md:w-[calc(100%+8px)]">
+      <div className="min-h-0 flex-1 overflow-y-auto scrollbar-custom md:relative md:-start-4 md:w-[calc(100%+8px)]">
+        {filteredCurrencies.length === 0 ? (
+          <div className="flex h-full min-h-[160px] items-center justify-center">
+            <EmptyState
+              title={t("filter.currencyUnavailable", { currency: searchQuery })}
+              description={t("filter.selectAnotherCurrency")}
+              redirectToAds={false}
+            />
+          </div>
+        ) : (
           <div className="space-y-0">
             {!isMobile && (
               <div className="text-sm text-black/[0.48] font-normal pt-4 pb-2 md:ms-4 text-start">
@@ -160,8 +153,8 @@ export function CurrencyFilter({
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 

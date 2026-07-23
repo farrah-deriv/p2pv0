@@ -4,7 +4,8 @@
 import type React from "react"
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
-import { useScrollToTopOnMaxSelection } from "@/hooks/use-scroll-to-top-on-max-selection"
+import { useStablePaymentMethodOrder } from "@/hooks/use-stable-payment-method-order"
+import { SelectedPaymentMethodsSection } from "@/components/payment-methods/selected-payment-methods-section"
 import Image from "next/image"
 import type { AdFormData } from "../types"
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -16,7 +17,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { ModalHeaderRow } from "@/components/ui/modal-header-row"
 import { isRtlLocale } from "@/lib/i18n/config"
 import { Drawer, DrawerContent } from "@/components/ui/drawer"
-import { getCategoryDisplayName, formatPaymentMethodName } from "@/lib/utils"
+import { formatPaymentMethodName } from "@/lib/utils"
 import { ProfileAPI } from "@/services/api"
 import AddPaymentMethodPanel from "@/app/profile/components/add-payment-method-panel"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
@@ -37,15 +38,13 @@ import { getPaymentMethodFieldValidationIssue } from "@/lib/payment-method-valid
 import {
   appendSelectedPaymentMethodId,
   filterPaymentMethodsForAdvert,
-  formatPaymentMethodAccountLine,
   getCreatedPaymentMethodId,
+  getPaymentMethodSelectionLines,
   isPaymentMethodIdSelected,
   isUserPaymentMethodSelectionDisabled,
   mergeCreatedPaymentMethodIntoList,
   normalizePaymentMethodId,
   resolveSelectedUserPaymentMethodIds,
-  sortPaymentMethodsSelectedFirst,
-  sortSelectableItemsSelectedFirst,
   toNumericPaymentMethodIds,
 } from "@/lib/payment-methods/payment-method-selection-utils"
 
@@ -53,14 +52,14 @@ interface PaymentMethod {
   display_name: string
   method: string
   type: string
-  fields: Record<string, any>
+  fields: Record<string, unknown>
 }
 
 interface UserPaymentMethod {
   id: string
   type: string
   display_name: string
-  fields: Record<string, any>
+  fields: Record<string, unknown>
   is_enabled: number
   method: string
 }
@@ -101,6 +100,8 @@ const FullPagePaymentSelection = ({
   const dir = isRtlLocale(locale) ? "rtl" : "ltr"
   const isMobile = useIsMobile()
   const [localSelected, setLocalSelected] = useState<string[]>(selectedPaymentMethods)
+  /** Frozen at open — session key for stable row order (no pin-to-top). */
+  const [orderSessionKey, setOrderSessionKey] = useState<string[]>(selectedPaymentMethods)
   const [searchQuery, setSearchQuery] = useState("")
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const listScrollRef = useRef<HTMLDivElement>(null)
@@ -108,13 +109,14 @@ const FullPagePaymentSelection = ({
   useEffect(() => {
     if (isOpen) {
       setLocalSelected(selectedPaymentMethods)
+      setOrderSessionKey(selectedPaymentMethods)
       setSearchQuery("")
     }
   }, [isOpen, selectedPaymentMethods])
 
-  const getMethodId = (method: AvailablePaymentMethod) => {
+  const getMethodId = useCallback((method: AvailablePaymentMethod) => {
     return normalizePaymentMethodId(method.method)
-  }
+  }, [])
 
   const filteredMethods = useMemo(() => {
     const methods = Array.isArray(paymentMethods) ? paymentMethods : []
@@ -123,25 +125,19 @@ const FullPagePaymentSelection = ({
     return methods.filter((method) => method.display_name.toLowerCase().includes(query))
   }, [paymentMethods, searchQuery])
 
-  // Live selection order — selected methods pin to the top.
-  const sortedFilteredMethods = useMemo(
-    () =>
-      sortSelectableItemsSelectedFirst(filteredMethods, localSelected, (method) =>
-        getMethodId(method),
-      ),
-    [filteredMethods, localSelected],
+  const sortedFilteredMethods = useStablePaymentMethodOrder(
+    filteredMethods,
+    orderSessionKey,
+    getMethodId,
+    isOpen,
   )
-
-  useScrollToTopOnMaxSelection(listScrollRef, localSelected.length, {
-    listVersion: localSelected.join(","),
-  })
 
   const handleToggle = (methodId: string) => {
     setLocalSelected((prev) => {
       if (isPaymentMethodIdSelected(prev, methodId)) {
         return prev.filter((id) => !isPaymentMethodIdSelected([id], methodId))
       } else if (prev.length < 3) {
-        return [normalizePaymentMethodId(methodId), ...prev]
+        return [...prev, normalizePaymentMethodId(methodId)]
       }
       return prev
     })
@@ -152,17 +148,20 @@ const FullPagePaymentSelection = ({
     onClose()
   }
 
+  // Fixed body height so empty search / no chips don't collapse the modal.
+  const listBodyClass = isMobile
+    ? "flex min-h-0 flex-1 flex-col overflow-hidden px-4"
+    : "flex h-[min(480px,50vh)] min-h-0 flex-col overflow-hidden"
+
   const content = (
     <div className="box-border flex min-h-0 min-w-0 w-full max-w-full flex-1 flex-col overflow-hidden">
-      <div className={`shrink-0 pb-4 ${isMobile ? "px-4" : ""}`}>
+      <div className={`shrink-0 pb-2 ${isMobile ? "px-4" : ""}`}>
+        <p className="text-center text-sm text-slate-1200 md:text-start">
+          {t("paymentMethod.selectUpTo3")}
+        </p>
+      </div>
+      <div className={`shrink-0 pb-2 ${isMobile ? "px-4" : ""}`}>
         <div className="relative">
-          <Image
-            src="/icons/search-icon-custom.png"
-            alt={t("common.search")}
-            width={24}
-            height={24}
-            className="absolute start-2 md:start-4 top-1/2 transform -translate-y-1/2 z-10"
-          />
           <Input
             type="text"
             placeholder={t("common.search")}
@@ -170,7 +169,7 @@ const FullPagePaymentSelection = ({
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setIsSearchFocused(true)}
             onBlur={() => setIsSearchFocused(false)}
-            className={`text-base ps-[40px] md:ps-[48px] pe-10 h-8 md:h-14 bg-grayscale-500 focus:ring-0 rounded-lg placeholder:text-grayscale-text-placeholder placeholder:text-base placeholder:font-normal ${searchQuery.length > 0 && isSearchFocused ? "border border-black" : "border-0 focus:border-0"
+            className={`text-base ps-4 h-8 md:h-14 bg-grayscale-500 focus:ring-0 rounded-lg placeholder:text-grayscale-text-placeholder placeholder:text-base placeholder:font-normal ${searchQuery ? "pe-10" : "pe-4"} ${searchQuery.length > 0 && isSearchFocused ? "border border-black" : "border-0 focus:border-0"
               }`}
           />
           {searchQuery && (
@@ -185,59 +184,77 @@ const FullPagePaymentSelection = ({
           )}
         </div>
       </div>
-      <div className={`shrink-0 pb-4 ${isMobile ? "px-4" : ""}`}>
-        <p className="text-base text-slate-1200">{t("paymentMethod.selectUpTo3")}</p>
+      <div className={listBodyClass}>
+        <SelectedPaymentMethodsSection
+          methods={(Array.isArray(paymentMethods) ? paymentMethods : []).map((method) => ({
+            id: method.method,
+            display_name: method.display_name,
+            type: method.type,
+            method: method.method,
+          }))}
+          selectedIds={localSelected}
+          onRemove={(methodId) => {
+            setLocalSelected((prev) =>
+              prev.filter((id) => !isPaymentMethodIdSelected([id], methodId)),
+            )
+          }}
+        />
+        <div
+          ref={listScrollRef}
+          className="min-h-0 min-w-0 max-w-full flex-1 overflow-x-hidden overflow-y-auto"
+        >
+          {sortedFilteredMethods.length === 0 ? (
+            <div className="flex h-full min-h-[160px] flex-col items-center justify-center text-center">
+              <p className="mb-2 text-center text-base font-bold text-slate-1200">
+                {t("paymentMethod.noMatchingPayment")}
+              </p>
+              <p className="text-center text-base text-grayscale-text-muted">
+                {t("profile.noResultForPrefix")} &quot;{searchQuery}&quot;
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {sortedFilteredMethods.map((method) => {
+                const methodId = getMethodId(method)
+                const isSelected = isPaymentMethodIdSelected(localSelected, methodId)
+                const isDisabled = !isSelected && localSelected.length >= 3
+
+                return (
+                  <div
+                    key={methodId}
+                    className={`box-border w-full max-w-full min-w-0 overflow-hidden rounded-lg bg-grayscale-500 p-4 flex cursor-pointer items-center justify-between gap-4 ${isSelected ? "border border-black" : "border border-transparent"
+                      } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                    onClick={() => !isDisabled && handleToggle(methodId)}
+                  >
+                    <div className="flex min-w-0 max-w-full flex-1 items-center gap-4 overflow-hidden">
+                      <div
+                        className={`h-3 w-3 shrink-0 rounded-full ${method.type === "bank" ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"}`}
+                      />
+                      <span className={`block min-w-0 max-w-full flex-1 truncate text-base leading-6 ${isDisabled ? "text-grayscale-text-muted" : "text-slate-1200"}`}>
+                        {method.display_name}
+                      </span>
+                    </div>
+                    <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={isSelected}
+                        disabled={isDisabled}
+                        onCheckedChange={() => !isDisabled && handleToggle(methodId)}
+                        className="w-[14px] h-[14px] data-[state=checked]:bg-black border-2 border-grayscale-text-muted rounded-[2px]"
+                        data-testid={`ad-form-checkbox-payment-${methodId}`}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
       </div>
       <div
-        ref={listScrollRef}
-        className="min-h-0 min-w-0 max-w-full flex-1 space-y-2 overflow-x-hidden overflow-y-auto px-4 md:px-0"
+        className={`box-border w-full min-w-0 max-w-full shrink-0 ${
+          isMobile ? "px-4 pt-2 pb-6" : "pt-2"
+        }`}
       >
-        {sortedFilteredMethods.length === 0 ? (
-          <div className="text-center pt-0 pb-4 md:pt-4 md:pb-8 flex flex-col items-center">
-            <Image src="/icons/magnifier.png" alt={t("common.noResults")} width={88} height={88} className="mb-0" />
-            <p className="text-slate-1200 text-base font-bold text-center mb-2">
-              {t("paymentMethod.noMatchingPayment")}
-            </p>
-            <p className="text-grayscale-text-muted text-base text-center">
-              {t("profile.noResultForPrefix")} &quot;{searchQuery}&quot;
-            </p>
-          </div>
-        ) : (
-          sortedFilteredMethods.map((method) => {
-            const methodId = getMethodId(method)
-            const isSelected = isPaymentMethodIdSelected(localSelected, methodId)
-            const isDisabled = !isSelected && localSelected.length >= 3
-
-            return (
-              <div
-                key={methodId}
-                className={`box-border w-full max-w-full min-w-0 overflow-hidden rounded-lg bg-grayscale-500 p-4 flex cursor-pointer items-center justify-between gap-3 ${isSelected ? "border border-black" : "border border-transparent"
-                  } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
-                onClick={() => !isDisabled && handleToggle(methodId)}
-              >
-                <div className="flex min-w-0 max-w-full flex-1 items-center gap-4 overflow-hidden">
-                  <div
-                    className={`h-[10px] w-[10px] shrink-0 rounded-full ${method.type === "bank" ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"}`}
-                  />
-                  <span className={`block min-w-0 max-w-full flex-1 truncate text-base ${isDisabled ? "text-grayscale-text-muted" : "text-slate-1200"}`}>
-                    {method.display_name}
-                  </span>
-                </div>
-                <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
-                  <Checkbox
-                    checked={isSelected}
-                    disabled={isDisabled}
-                    onCheckedChange={() => !isDisabled && handleToggle(methodId)}
-                    className="w-[14px] h-[14px] data-[state=checked]:bg-black border-2 border-grayscale-text-muted rounded-[2px]"
-                    data-testid={`ad-form-checkbox-payment-${methodId}`}
-                  />
-                </div>
-              </div>
-            )
-          })
-        )}
-      </div>
-      <div className={`box-border w-full min-w-0 max-w-full shrink-0 ${isMobile ? "px-4 pt-4 pb-6" : "pt-4 pb-6"}`}>
         <Button onClick={handleConfirm} disabled={localSelected.length === 0} className="w-full max-w-full min-w-0">
           {t("common.confirm")}
         </Button>
@@ -251,13 +268,14 @@ const FullPagePaymentSelection = ({
         <DrawerContent
           dir={dir}
           hideHandle
-          className="max-h-[90vh] flex flex-col overflow-hidden"
+          className="flex h-[90vh] max-h-[90vh] flex-col overflow-hidden"
           data-testid="ad-form-sheet-payment-methods"
         >
           <ModalHeaderRow
             title={t("paymentMethod.title")}
             onClose={onClose}
             closeAriaLabel={t("common.close")}
+            centerTitle
             titleClassName="text-[20px] font-extrabold"
             closeIconSrc="/icons/button-close.png"
             closeIconSize={48}
@@ -272,7 +290,11 @@ const FullPagePaymentSelection = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent dir={dir} className="flex min-h-0 min-w-0 w-full max-w-xl max-h-[90vh] flex-col overflow-hidden rounded-[32px] px-8 pt-6 pb-8" data-testid="ad-form-sheet-payment-methods">
+      <DialogContent
+        dir={dir}
+        className="!flex min-h-0 min-w-0 w-full max-w-xl flex-col gap-0 overflow-hidden rounded-[32px] px-8 pt-6 pb-8"
+        data-testid="ad-form-sheet-payment-methods"
+      >
         <ModalHeaderRow
           asDialog
           title={t("paymentMethod.title")}
@@ -282,7 +304,7 @@ const FullPagePaymentSelection = ({
           closeIconSrc="/icons/button-close.png"
           closeIconSize={48}
           closeButtonClassName="hover:bg-transparent hover:opacity-80 px-0 min-w-[48px]"
-          className="mb-2"
+          className="mb-2 shrink-0"
         />
         {content}
       </DialogContent>
@@ -309,6 +331,8 @@ const PaymentSelectionContent = ({
 }) => {
   const { t } = useTranslations()
   const [selectedPMs, setSelectedPMs] = useState(tempSelectedPaymentMethods)
+  /** Resets stable list order when the sheet selection source updates. */
+  const [orderSessionKey, setOrderSessionKey] = useState(tempSelectedPaymentMethods)
   const lastScrolledPaymentMethodIdRef = useRef<string | null>(null)
   const {
     data: paymentMethodsPages,
@@ -325,12 +349,9 @@ const PaymentSelectionContent = ({
     isFetchingNextPage,
   )
 
-  useScrollToTopOnMaxSelection(scrollRootRef, selectedPMs.length, {
-    listVersion: selectedPMs.join(","),
-  })
-
   useEffect(() => {
     setSelectedPMs(tempSelectedPaymentMethods)
+    setOrderSessionKey(tempSelectedPaymentMethods)
   }, [tempSelectedPaymentMethods])
 
   // Live paginated list (alert props are a snapshot). Merge prop extras for just-created PMs.
@@ -359,34 +380,23 @@ const PaymentSelectionContent = ({
       if (isUserPaymentMethodSelectionDisabled(userMethods, prev, methodId)) {
         return prev
       }
-      // Pin newly selected method to the top.
-      return [normalizePaymentMethodId(methodId), ...prev]
+      return [...prev, normalizePaymentMethodId(methodId)]
     })
   }
 
-  const getMethodId = (method: UserPaymentMethod | PaymentMethod) => {
+  const getMethodId = useCallback((method: UserPaymentMethod | PaymentMethod) => {
     return normalizePaymentMethodId("id" in method ? method.id : method.method)
-  }
+  }, [])
 
   const getMethodType = (method: UserPaymentMethod | PaymentMethod) => {
     return method.type
   }
 
-  const getMethodAccountInfo = (method: UserPaymentMethod | PaymentMethod) => {
-    if ("fields" in method && method.fields?.account?.value) {
-      return formatPaymentMethodAccountLine(
-        method.display_name,
-        String(method.fields.account.value),
-        t,
-      )
-    }
-    return formatPaymentMethodName(method.display_name, t)
-  }
-
-  // Live selection order — selected methods pin to the top of the sheet.
-  const sortedPaymentMethods = useMemo(
-    () => sortPaymentMethodsSelectedFirst(userMethods, selectedPMs),
-    [userMethods, selectedPMs],
+  const sortedPaymentMethods = useStablePaymentMethodOrder(
+    userMethods,
+    orderSessionKey,
+    getMethodId,
+    true,
   )
 
   useEffect(() => {
@@ -402,15 +412,18 @@ const PaymentSelectionContent = ({
     const tryScroll = () => {
       if (cancelled) return
       const root = scrollRootRef.current
-      if (!root) {
+      const target = root?.querySelector(
+        `[data-payment-method-id="${normalizedId}"]`,
+      ) as HTMLElement | null
+      if (!root || !target) {
         if (attempts++ < maxAttempts) {
           window.requestAnimationFrame(tryScroll)
         }
         return
       }
 
-      // Instant — no smooth delay that lands after the toast.
-      root.scrollTop = 0
+      // Scroll to the created row in-place (no jump-to-top).
+      target.scrollIntoView({ block: "nearest" })
       lastScrolledPaymentMethodIdRef.current = normalizedId
     }
 
@@ -422,68 +435,78 @@ const PaymentSelectionContent = ({
   }, [scrollToPaymentMethodId, scrollRootRef, sortedPaymentMethods.length])
 
   return (
-    <div
-      className="box-border flex h-full min-h-0 w-full min-w-0 max-w-full flex-1 flex-col overflow-hidden"
-      data-testid="ad-form-sheet-payment-methods"
-    >
+    <div className="box-border flex h-full min-h-0 w-full min-w-0 max-w-full flex-1 flex-col overflow-hidden">
       {userMethods.length > 0 && (
-        <div className="shrink-0 pb-4 text-grayscale-600">{t("paymentMethod.selectUpTo3")}</div>
+        <div className="shrink-0 pb-2 text-center text-grayscale-600 md:text-start">
+          {t("paymentMethod.selectUpTo3")}
+        </div>
       )}
       <div
         ref={scrollRootRef}
-        className="min-h-0 min-w-0 max-w-full flex-1 space-y-4 overflow-x-hidden overflow-y-auto"
+        className="min-h-0 min-w-0 max-w-full flex-1 overflow-x-hidden overflow-y-auto"
       >
         {userMethods.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-neutral-7 mb-4">{t("adForm.noPaymentMethodsFound")}</p>
+          <div className="flex h-full min-h-[160px] flex-col items-center justify-center text-center">
+            <p className="text-neutral-7">{t("adForm.noPaymentMethodsFound")}</p>
           </div>
         ) : (
-          sortedPaymentMethods.map((method) => {
-            const methodId = getMethodId(method)
-            const isSelected = isPaymentMethodIdSelected(selectedPMs, methodId)
-            const isDisabled = isUserPaymentMethodSelectionDisabled(
-              userMethods,
-              selectedPMs,
-              methodId,
-            )
+          <>
+            <SelectedPaymentMethodsSection
+              methods={userMethods}
+              selectedIds={selectedPMs}
+              onRemove={handlePaymentMethodToggle}
+            />
+            {/* Mobile list gap: QuillSpacing.sm (8px) */}
+            <div className="space-y-2">
+            {sortedPaymentMethods.map((method) => {
+              const methodId = getMethodId(method)
+              const isSelected = isPaymentMethodIdSelected(selectedPMs, methodId)
+              const isDisabled = isUserPaymentMethodSelectionDisabled(
+                userMethods,
+                selectedPMs,
+                methodId,
+              )
+              const lines = getPaymentMethodSelectionLines(method, t)
 
-            return (
-              <div
-                key={methodId}
-                className={`box-border w-full max-w-full min-w-0 overflow-hidden rounded-lg bg-grayscale-500 p-4 cursor-pointer transition-colors ${isDisabled
-                  ? "opacity-30 cursor-not-allowed hover:bg-grayscale-300"
-                  : "hover:bg-grayscale-300"
-                  } ${isSelected ? "border border-black" : ""
-                  }`}
-                onClick={() => !isDisabled && handlePaymentMethodToggle(methodId)}
-              >
-                <div className="flex w-full min-w-0 max-w-full items-center justify-between gap-3">
-                  <div className="flex min-w-0 max-w-full flex-1 items-center gap-2 overflow-hidden">
-                    <div
-                      className={`h-2 w-2 shrink-0 rounded-full ${getMethodType(method) === "bank" ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"
-                        }`}
-                    />
-                    <div className="flex min-w-0 max-w-full flex-1 flex-col overflow-hidden">
-                      <span className="block truncate text-base text-slate-1200">
-                        {getCategoryDisplayName(getMethodType(method), t)}
-                      </span>
-                      <span className="block truncate text-base text-grayscale-text-muted">
-                        {getMethodAccountInfo(method)}
-                      </span>
+              return (
+                <div
+                  key={methodId}
+                  data-payment-method-id={methodId}
+                  className={`box-border w-full max-w-full min-w-0 overflow-hidden rounded-lg bg-grayscale-500 ps-6 pe-6 py-4 cursor-pointer transition-colors ${isDisabled
+                    ? "opacity-30 cursor-not-allowed hover:bg-grayscale-300"
+                    : "hover:bg-grayscale-300"
+                    } ${isSelected ? "border border-black" : ""
+                    }`}
+                  onClick={() => !isDisabled && handlePaymentMethodToggle(methodId)}
+                >
+                  <div className="flex w-full min-w-0 max-w-full items-center gap-4">
+                    <div className="flex min-w-0 max-w-full flex-1 items-center gap-4 overflow-hidden">
+                      <div
+                        className={`h-3 w-3 shrink-0 rounded-full ${getMethodType(method) === "bank" ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"
+                          }`}
+                      />
+                      <div className="flex min-w-0 max-w-full flex-1 flex-col gap-0.5 overflow-hidden">
+                        <span className="block truncate text-base leading-6 text-slate-1200">
+                          {lines.title}
+                        </span>
+                        {lines.subtitle ? (
+                          <span className="block truncate text-xs leading-4 text-grayscale-text-muted">
+                            {lines.subtitle}
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={() => !isDisabled && handlePaymentMethodToggle(methodId)}
+                      disabled={isDisabled}
+                      className="pointer-events-none h-[20px] w-[20px] shrink-0 rounded-sm border-[2px] border-neutral-7 disabled:cursor-not-allowed disabled:opacity-30 data-[state=checked]:border-black data-[state=checked]:bg-black"
+                      data-testid={`ad-form-checkbox-payment-${methodId}`}
+                    />
                   </div>
-                  <Checkbox
-                    checked={isSelected}
-                    onCheckedChange={() => !isDisabled && handlePaymentMethodToggle(methodId)}
-                    disabled={isDisabled}
-                    className="pointer-events-none h-[20px] w-[20px] shrink-0 rounded-sm border-[2px] border-neutral-7 disabled:cursor-not-allowed disabled:opacity-30 data-[state=checked]:border-black data-[state=checked]:bg-black"
-                    data-testid={`ad-form-checkbox-payment-${methodId}`}
-                  />
                 </div>
-              </div>
-            )
-          })
-        )}
+              )
+            })}
 
         {hasNextPage && (
           <div ref={sentinelRef} className="h-1 w-full" data-testid="ad-form-payment-methods-sentinel" />
@@ -495,21 +518,28 @@ const PaymentSelectionContent = ({
         )}
 
         {handleAddPaymentMethodClick && (
-          <div
-            className="box-border w-full max-w-full min-w-0 cursor-pointer rounded-lg bg-grayscale-500 p-4 transition-colors hover:bg-grayscale-300"
+          <Button
+            type="button"
+            variant="ghost"
+            className="box-border h-auto w-full max-w-full min-w-0 justify-start rounded-lg bg-grayscale-500 p-4 font-normal hover:bg-grayscale-300"
             onClick={() => {
               handleAddPaymentMethodClick(selectedPMs)
             }}
             data-testid="ad-form-btn-add-payment"
           >
-            <div className="flex items-center">
+            <span className="flex items-center">
               <Image src="/icons/plus_icon.png" alt={t("common.plus")} width={14} height={24} className="me-2" />
-              <span className="text-slate-1200 text-base">{t("paymentMethod.addPaymentMethod")}</span>
+              <span className="text-base font-normal text-slate-1200">
+                {t("paymentMethod.addPaymentMethod")}
+              </span>
+            </span>
+          </Button>
+        )}
             </div>
-          </div>
+          </>
         )}
       </div>
-      <div className="box-border w-full min-w-0 max-w-full shrink-0 pt-4 pb-6 md:py-4">
+      <div className="box-border w-full min-w-0 max-w-full shrink-0 pt-2 pb-6 md:py-4">
         <Button
           className="w-full max-w-full min-w-0"
           disabled={selectedPMs.length === 0}
@@ -589,7 +619,9 @@ export default function PaymentDetailsForm({
 
       showAlert({
         title: t("paymentMethod.paymentMethodsSheetTitle"),
-        contentClassName: "w-full min-w-0 max-w-full overflow-hidden",
+        titleAlign: "center",
+        // Keep search sheet body height stable (empty / no selection).
+        contentClassName: "h-[min(560px,60vh)] w-full min-w-0 max-w-full overflow-hidden",
         content: (
           <PaymentSelectionContent
             paymentMethods={methodsForSheet}

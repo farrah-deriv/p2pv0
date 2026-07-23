@@ -195,20 +195,13 @@ export default function PaymentMethodsFilter({
   }
 
   const filterContent = (
-    <div className="w-full">
-      <div className="relative mb-4">
-        <Image
-          src="/icons/search-icon-custom.png"
-          alt={t("common.search")}
-          width={24}
-          height={24}
-          className="absolute start-3 top-1/2 transform -translate-y-1/2"
-        />
+    <div className="flex h-full w-full flex-col">
+      <div className="relative mb-4 shrink-0">
         <Input
           placeholder={t("paymentMethod.search")}
           value={searchQuery}
           onChange={handleSearchChange}
-          className="h-14 rounded-lg border-0 bg-grayscale-500 text-sm font-normal text-start placeholder:text-grayscale-text-placeholder ps-10 pe-10 focus:border-0 md:h-8"
+          className={`h-14 rounded-lg border-0 bg-grayscale-500 text-sm font-normal text-start placeholder:text-grayscale-text-placeholder ps-4 focus:border-0 md:h-8 ${searchQuery ? "pe-10" : "pe-4"}`}
           autoComplete="off"
           data-testid="payment-filter-input-search"
         />
@@ -228,10 +221,9 @@ export default function PaymentMethodsFilter({
       <div
         ref={scrollContainerRef}
         className={cn(
-          "space-y-2 overflow-y-auto scrollbar-custom",
-          filteredPaymentMethods.length === 0
-            ? "flex items-center justify-center min-h-[200px] md:max-h-60"
-            : "max-h-60",
+          // Fixed list height so empty search doesn't collapse the sheet/popover.
+          "min-h-0 flex-1 space-y-2 overflow-y-auto scrollbar-custom md:h-60 md:flex-none",
+          filteredPaymentMethods.length === 0 && "flex items-center justify-center",
         )}
       >
         {filteredPaymentMethods.length > 0 && (
@@ -272,7 +264,7 @@ export default function PaymentMethodsFilter({
       </div>
 
       {filteredPaymentMethods.length > 0 && (
-        <div className="flex flex-col-reverse md:flex-row gap-3 mt-4">
+        <div className="mt-4 flex shrink-0 flex-col-reverse gap-3 md:flex-row">
           <Button
             onClick={handleReset}
             className="flex-1 bg-transparent"
@@ -317,11 +309,11 @@ export default function PaymentMethodsFilter({
     return (
       <Drawer open={isOpen} onOpenChange={handleOpenChange}>
         <DrawerTrigger asChild>{enhancedTrigger}</DrawerTrigger>
-        <DrawerContent side="bottom" className="h-fit p-4 rounded-t-2xl">
-          <div className="my-4">
+        <DrawerContent side="bottom" className="flex h-[85vh] max-h-[85vh] flex-col overflow-hidden p-4 rounded-t-2xl">
+          <div className="my-4 shrink-0">
             <h3 className="text-xl font-bold text-center">{t("paymentMethod.title")}</h3>
           </div>
-          {filterContent}
+          <div className="min-h-0 flex-1 overflow-hidden">{filterContent}</div>
         </DrawerContent>
       </Drawer>
     )
@@ -330,7 +322,7 @@ export default function PaymentMethodsFilter({
   return (
     <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>{enhancedTrigger}</PopoverTrigger>
-      <PopoverContent className="w-80 p-4" align="end">
+      <PopoverContent className="flex h-96 w-80 flex-col p-4" align="end">
         {filterContent}
       </PopoverContent>
     </Popover>

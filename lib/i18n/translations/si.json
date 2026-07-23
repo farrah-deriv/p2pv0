@@ -896,6 +896,7 @@
     "selectPaymentMethod": "ගෙවීමේ ක්රමයක් තෝරන්න",
     "selectPaymentMethodsHint": "3 දක්වා තෝරන්න",
     "selectUpTo3": "3 දක්වා තෝරන්න",
+    "selectedPaymentMethod": "තෝරාගත් ගෙවීම් ක්‍රමය",
     "sellerAccepts": "විකුණන්නා පිළිගනී",
     "title": "ගෙවීම් ක්රමය",
     "unableToAdd": "ගෙවීමේ ක්‍රමය එක් කිරීමට නොහැක",

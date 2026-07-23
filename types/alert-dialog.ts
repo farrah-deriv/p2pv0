@@ -9,6 +9,8 @@ export interface AlertDialogConfig {
   type?: "warning" | "info" | "error" | "success"
   size?: "default" | "kycOnboarding"
   contentClassName?: string
+  /** Mobile drawer title alignment. Desktop header stays start-aligned. */
+  titleAlign?: "start" | "center"
   content?: React.ReactNode
   onConfirm?: () => void | Promise<void>
   onCancel?: () => void

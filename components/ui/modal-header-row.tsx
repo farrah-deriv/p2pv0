@@ -20,6 +20,11 @@ type ModalHeaderRowProps = {
   closeIconSrc?: string
   closeIconSize?: number
   closeButtonTestId?: string
+  /**
+   * Center title in the header row. Adds a leading spacer matching the close
+   * control so the label is viewport-centered, not offset by the close button.
+   */
+  centerTitle?: boolean
 }
 
 /**
@@ -37,9 +42,11 @@ export function ModalHeaderRow({
   closeIconSrc = "/icons/close-icon.png",
   closeIconSize = 24,
   closeButtonTestId,
+  centerTitle = false,
 }: ModalHeaderRowProps) {
   const titleClasses = cn(
-    "min-w-0 flex-1 text-start font-bold text-2xl text-slate-1200",
+    "min-w-0 flex-1 font-bold text-2xl text-slate-1200",
+    centerTitle ? "text-center" : "text-start",
     titleClassName,
   )
 
@@ -56,19 +63,29 @@ export function ModalHeaderRow({
     </Button>
   )
 
+  const closeControl =
+    !hideCloseButton &&
+    (asDialog ? <DialogClose asChild>{closeButton}</DialogClose> : closeButton)
+
+  // Matching spacer keeps a centered title optically centered when close is present.
+  const leadingSpacer =
+    centerTitle && !hideCloseButton ? (
+      <div
+        className="shrink-0 min-w-[48px]"
+        style={{ width: closeIconSize, height: closeIconSize }}
+        aria-hidden
+      />
+    ) : null
+
   return (
     <div className={cn("flex items-center justify-between gap-4", className)}>
+      {leadingSpacer}
       {asDialog ? (
         <DialogTitle className={titleClasses}>{title}</DialogTitle>
       ) : (
         <div className={titleClasses}>{title}</div>
       )}
-      {!hideCloseButton &&
-        (asDialog ? (
-          <DialogClose asChild>{closeButton}</DialogClose>
-        ) : (
-          closeButton
-        ))}
+      {closeControl}
     </div>
   )
 }

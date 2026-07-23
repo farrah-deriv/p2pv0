@@ -176,7 +176,16 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
     if (config.content) {
       return (
         <div className="flex flex-col max-h-[80vh] overflow-hidden">
-          {config.title && <div className="mb-4 px-6 pt-6 text-start font-bold text-lg flex-shrink-0">{config.title}</div>}
+          {config.title && (
+            <div
+              className={cn(
+                "mb-2 px-6 pt-6 font-bold text-lg flex-shrink-0",
+                config.titleAlign === "center" ? "text-center" : "text-start",
+              )}
+            >
+              {config.title}
+            </div>
+          )}
           <div
             className={cn(
               "px-6 flex-1 min-h-0 flex flex-col overflow-hidden",
