@@ -16,7 +16,7 @@ import {
   type TransferValidateDetails,
 } from "@/services/api/api-wallets"
 import * as WalletsAPI from "@/services/api/api-wallets"
-import { currencyLogoMapper, formatAmountWithDecimals } from "@/lib/utils"
+import { currencyLogoMapper, formatAmountWithDecimals, IS_TRANSFER_FEE_DISPLAY_ENABLED } from "@/lib/utils"
 import { useCurrencies, queryKeys } from "@/hooks/use-api-queries"
 import { getQueryClient } from "@/lib/react-query-client"
 import WalletDisplay from "./wallet-display"
@@ -173,6 +173,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
   }
 
   const openAmountReceiveInfoSheet = () => {
+    if (!IS_TRANSFER_FEE_DISPLAY_ENABLED) return
     // Don't interrupt an in-flight transfer (confirm sheet would dismiss).
     if (isSubmitting) return
     if (showMobileConfirmSheet) {
@@ -568,6 +569,15 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
       return
     }
 
+    // Fee display off: do not call transfer validate API.
+    if (!IS_TRANSFER_FEE_DISPLAY_ENABLED) {
+      validateRequestIdRef.current += 1
+      setIsValidatePreviewLoading(false)
+      setTransferValidateQuote(null)
+      setValidateError(null)
+      return
+    }
+
     if (
       step !== "enterAmount" ||
       !transferAmount ||
@@ -627,7 +637,10 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
   const handleTransferClick = () => {
     track("ek_transfer_transfer")
-    if (!transferAmount || !sourceWalletData || !destinationWalletData || !transferValidateQuote) {
+    if (!transferAmount || !sourceWalletData || !destinationWalletData) {
+      return
+    }
+    if (IS_TRANSFER_FEE_DISPLAY_ENABLED && !transferValidateQuote) {
       return
     }
     setValidateError(null)
@@ -1172,6 +1185,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
   }
 
   const renderYoullReceiveInfoControl = () => {
+    if (!IS_TRANSFER_FEE_DISPLAY_ENABLED) return null
     if (!transferValidateQuote || !hasTransferFee(transferValidateQuote)) return null
 
     const infoBody = getAmountReceiveInfoBody(transferValidateQuote)
@@ -1226,7 +1240,32 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     )
   }
 
+  /** You'll receive when fee display is off — entered amount (no validate / no fee). */
+  const getEnteredReceiveDisplay = () => {
+    if (!transferAmount || !sourceWalletData || !destinationWalletData) return null
+    const amount = Number.parseFloat(transferAmount)
+    if (!Number.isFinite(amount)) return null
+
+    const sameCurrency = sourceWalletData.currency === destinationWalletData.currency
+    if (sameCurrency) {
+      return `${formatAmountWithDecimals(amount)} ${sourceWalletData.currency}`
+    }
+
+    // Cross-currency: convert without fee when exchange rate is available.
+    const rate = Number.parseFloat(exchangeRateData?.exchange_rate || exchangeRateData?.display_rate || "")
+    if (!Number.isFinite(rate) || rate <= 0) {
+      return `${formatAmountWithDecimals(amount)} ${
+        selectedAmountCurrency === "source" ? sourceWalletData.currency : destinationWalletData.currency
+      }`
+    }
+    if (selectedAmountCurrency === "source") {
+      return `${formatAmountWithDecimals(amount * rate)} ${destinationWalletData.currency}`
+    }
+    return `${formatAmountWithDecimals(amount)} ${destinationWalletData.currency}`
+  }
+
   const getQuotedReceiveDisplay = () => {
+    if (!IS_TRANSFER_FEE_DISPLAY_ENABLED) return getEnteredReceiveDisplay()
     const receiveCurrency =
       transferValidateQuote?.destination?.currency || destinationWalletData?.currency || selectedCurrency || "USD"
     if (!transferValidateQuote?.destination?.amount) {
@@ -1280,8 +1319,14 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
   }
 
   const renderEnterAmountYoullReceive = () => {
+    if (!transferAmount || transferAmount.trim() === "" || !isAmountValid(transferAmount)) {
+      return null
+    }
+
     const receiveDisplay = getQuotedReceiveDisplay()
-    if (!receiveDisplay && !isValidatePreviewLoading) return null
+    if (IS_TRANSFER_FEE_DISPLAY_ENABLED && !receiveDisplay && !isValidatePreviewLoading) {
+      return null
+    }
 
     return (
       <div
@@ -1292,7 +1337,9 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
           <span className="text-sm font-normal text-grayscale-text-muted whitespace-nowrap">
             {t("wallet.youllReceive")}
           </span>
-          {transferValidateQuote && renderYoullReceiveInfoControl()}
+          {IS_TRANSFER_FEE_DISPLAY_ENABLED &&
+            transferValidateQuote &&
+            renderYoullReceiveInfoControl()}
         </div>
         <span
           className={`text-sm font-normal text-end ${
@@ -1306,6 +1353,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
   }
 
   const renderAmountReceiveInfoSheet = () => {
+    if (!IS_TRANSFER_FEE_DISPLAY_ENABLED) return null
     if (!showAmountReceiveInfoSheet || !transferValidateQuote) return null
 
     return (
@@ -1402,7 +1450,10 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
               <Button
                 data-testid="transfer-btn-confirm"
                 onClick={handleConfirmTransfer}
-                disabled={isSubmitting || !transferValidateQuote}
+                disabled={
+                  isSubmitting ||
+                  (IS_TRANSFER_FEE_DISPLAY_ENABLED && !transferValidateQuote)
+                }
                 className="w-full h-12 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2"
               >
                 {isSubmitting ? (
@@ -1466,7 +1517,10 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
               <Button
                 data-testid="transfer-btn-confirm"
                 onClick={handleConfirmTransfer}
-                disabled={isSubmitting || !transferValidateQuote}
+                disabled={
+                  isSubmitting ||
+                  (IS_TRANSFER_FEE_DISPLAY_ENABLED && !transferValidateQuote)
+                }
                 className="w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2"
               >
                 {isSubmitting ? (
@@ -1841,7 +1895,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
               </Button>
             </div>
 
-            {showCurrencySwitcher && (
+            {showCurrencySwitcher && IS_TRANSFER_FEE_DISPLAY_ENABLED && (
               <div className="mt-6 space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-black/50 text-xs font-normal">{t("wallet.transferAmount")}</span>
@@ -1901,13 +1955,13 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                 data-testid="transfer-btn-submit"
                 onClick={handleTransferClick}
                 disabled={
-                  isValidatePreviewLoading ||
+                  (IS_TRANSFER_FEE_DISPLAY_ENABLED && isValidatePreviewLoading) ||
                   !transferAmount ||
                   transferAmount.trim() === "" ||
                   !sourceWalletData ||
                   !destinationWalletData ||
                   !isAmountValid(transferAmount) ||
-                  !transferValidateQuote
+                  (IS_TRANSFER_FEE_DISPLAY_ENABLED && !transferValidateQuote)
                 }
                 className="flex h-12 min-h-12 max-h-12 px-7 justify-center items-center gap-2"
               >
@@ -1931,13 +1985,13 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
               data-testid="transfer-btn-submit"
               onClick={handleTransferClick}
               disabled={
-                isValidatePreviewLoading ||
+                (IS_TRANSFER_FEE_DISPLAY_ENABLED && isValidatePreviewLoading) ||
                 !transferAmount ||
                 transferAmount.trim() === "" ||
                 !sourceWalletData ||
                 !destinationWalletData ||
                 !isAmountValid(transferAmount) ||
-                !transferValidateQuote
+                (IS_TRANSFER_FEE_DISPLAY_ENABLED && !transferValidateQuote)
               }
               className="w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2"
             >
@@ -1965,15 +2019,20 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
       destinationWalletData?.type?.toLowerCase() === "p2p" &&
       sourceWalletData?.type?.toLowerCase() !== "p2p"
 
-    // Prefer validate destination amount (You'll receive) — fee means the
-    // entered gross transfer amount was not fully credited.
-    const successAmountRaw =
-      transferValidateQuote?.destination?.amount || transferAmount || "0"
-    const successCurrency =
-      transferValidateQuote?.destination?.currency ||
-      destinationWalletData?.currency ||
-      selectedCurrency ||
-      "USD"
+    // When fee display is on, prefer validate destination (You'll receive).
+    // When off, production does not apply fees — show the entered amount only.
+    const successAmountRaw = IS_TRANSFER_FEE_DISPLAY_ENABLED
+      ? transferValidateQuote?.destination?.amount || transferAmount || "0"
+      : transferAmount || "0"
+    const successCurrency = IS_TRANSFER_FEE_DISPLAY_ENABLED
+      ? transferValidateQuote?.destination?.currency ||
+        destinationWalletData?.currency ||
+        selectedCurrency ||
+        "USD"
+      : selectedCurrency ||
+        sourceWalletData?.currency ||
+        destinationWalletData?.currency ||
+        "USD"
     const successAmountFormatted = formatAmountWithDecimals(
       Number.parseFloat(successAmountRaw)
     )

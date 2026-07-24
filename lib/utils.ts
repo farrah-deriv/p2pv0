@@ -758,3 +758,16 @@ export const IS_CLOSED_GROUP_ENABLED = process.env.NEXT_PUBLIC_IS_CLOSED_GROUP_E
  * Set NEXT_PUBLIC_IS_AD_CONDITIONS_ENABLED=1 in GitHub Secrets to enable.
  */
 export const IS_AD_CONDITIONS_ENABLED = process.env.NEXT_PUBLIC_IS_AD_CONDITIONS_ENABLED === "1"
+
+/**
+ * Whether transfer fee preview (validate API) + fee info icon are enabled on
+ * wallet transfer + transaction details.
+ *
+ * When OFF (default): still show "You'll receive" using the entered amount,
+ * but skip the transfer validate API and hide the fee info icon.
+ * When ON: call validate and show fee-adjusted receive + info icon.
+ * Set NEXT_PUBLIC_IS_TRANSFER_FEE_DISPLAY_ENABLED=1 in GitHub Secrets to enable.
+ */
+export const IS_TRANSFER_FEE_DISPLAY_ENABLED =
+  process.env.NEXT_PUBLIC_IS_TRANSFER_FEE_DISPLAY_ENABLED === "1"
+

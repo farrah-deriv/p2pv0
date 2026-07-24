@@ -6,6 +6,7 @@ import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger 
 import { formatAppDate } from "@/lib/format-date"
 import { localeToBcp47 } from "@/lib/i18n/config"
 import { useTranslations } from "@/lib/i18n/use-translations"
+import { IS_TRANSFER_FEE_DISPLAY_ENABLED } from "@/lib/utils"
 import type { Transaction } from "../types"
 
 interface TransactionDetailsProps {
@@ -272,8 +273,9 @@ export default function TransactionDetails({ transaction }: TransactionDetailsPr
   const feeAmount = Number.parseFloat(transaction.metadata.transaction_fee_amount ?? "0") || 0
   const feePercentage = formatConfiguredFeePercentage(transaction.metadata.transaction_fee_percentage)
   const hasTransferFee = feeAmount > 0 || feePercentage !== "0"
-  // Fee info icon only for non-order wallet transfers with a non-zero fee.
-  const showAmountReceiveInfo = isWalletTransfer && !isOrder && hasTransferFee
+  // Fee info icon only when fee display flag is on, for non-order wallet transfers with a fee.
+  const showAmountReceiveInfo =
+    IS_TRANSFER_FEE_DISPLAY_ENABLED && isWalletTransfer && !isOrder && hasTransferFee
   const amountReceiveInfoBody = showAmountReceiveInfo
     ? getAmountReceiveInfoBody(transaction)
     : ""
@@ -281,6 +283,8 @@ export default function TransactionDetails({ transaction }: TransactionDetailsPr
     transaction.metadata.transaction_gross_amount,
     transaction.metadata.transaction_currency,
   )
+  // Always show actual net received (matches hero). Fee-display flag only
+  // gates the info icon — staging already returns fee-adjusted net amounts.
   const amountReceived = formatAmount(
     transaction.metadata.transaction_net_amount,
     transaction.metadata.transaction_currency,
