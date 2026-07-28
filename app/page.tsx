@@ -90,6 +90,7 @@ export default function BuySellPage() {
   const [showKycPopup, setShowKycPopup] = useState(false)
   const sentinelRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const tableScrollRef = useRef<HTMLDivElement>(null)
   const isFetchingNextPageRef = useRef(false)
 
   const { data: paymentMethods = [], isLoading: isLoadingPaymentMethods } = usePaymentMethods()
@@ -127,6 +128,7 @@ export default function BuySellPage() {
   const isV1Signup = userData?.signup === "v1"
   const tempBanUntil = userData?.temp_ban_until
   const firstTradeableAdIndex = adverts.findIndex(ad => Number(userId) !== ad.user.id)
+  const advertsAreStale = adverts.length > 0 && adverts[0]?.type !== activeTab
 
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
   const displayCurrency = currency || localCurrency || selectedAccountCurrency
@@ -270,6 +272,9 @@ export default function BuySellPage() {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0
     }
+    if (tableScrollRef.current) {
+      tableScrollRef.current.scrollTop = 0
+    }
   }, [activeTab, currency, paymentMethodsString, sortBy, filterOptions.fromFollowing, selectedAccountCurrency])
 
   // Keep ref in sync so the observer callback always reads the latest value
@@ -280,8 +285,7 @@ export default function BuySellPage() {
   // Infinite scroll: fetch next page when sentinel comes into view
   useEffect(() => {
     const sentinel = sentinelRef.current
-    const scrollContainer = scrollContainerRef.current
-    if (!sentinel || !hasNextPage || !scrollContainer) return
+    if (!sentinel || !hasNextPage) return
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -289,7 +293,7 @@ export default function BuySellPage() {
           fetchNextPage()
         }
       },
-      { threshold: 0, rootMargin: "100px", root: scrollContainer },
+      { threshold: 0, rootMargin: "100px" },
     )
     observer.observe(sentinel)
     return () => observer.disconnect()
@@ -478,10 +482,8 @@ export default function BuySellPage() {
 
   return (
     <>
-      <div className="flex flex-col h-full md:h-screen overflow-hidden">
-        <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto overscroll-y-none pb-4 scrollbar-hide px-3">
-          <div className="flex flex-col min-h-full">
-            <div className="mb-4 md:mb-6 flex w-full flex-col gap-4 flex-shrink-0">
+      <div ref={scrollContainerRef} className="flex flex-col flex-1 min-h-0 h-full md:h-screen px-3 overflow-y-auto md:overflow-hidden overscroll-y-none scrollbar-hide">
+        <div className="flex flex-col md:flex-shrink-0 gap-4">
               {/* Desktop only — maintenance + mobile balance banners live in main.tsx. */}
               <div className="relative z-10 flex w-full flex-col bg-slate-1200 p-6 max-md:w-[calc(100%+24px)] max-md:-mx-3 max-md:mb-2 rounded-b-3xl md:rounded-3xl overflow-hidden [transform:translateZ(0)]">
                 <div data-testid="markets-text-balance">
@@ -659,15 +661,17 @@ export default function BuySellPage() {
                   </div>
                 </div>
               </div>
-            </div>
+        </div>
+        <div ref={tableScrollRef} className="flex flex-col md:flex-1 md:min-h-0 md:overflow-y-auto md:overscroll-y-none md:scrollbar-hide pt-4 md:pt-6 pb-4">
+          <div className="flex flex-col min-h-full">
             {isMaintenanceActive ? (
               <div className="flex-1 min-h-0 flex items-center md:items-start justify-center md:pt-16">
                 <EmptyState title={t("market.noAdsMaintenanceTitle")} route={null} />
               </div>
-            ) : isLoading || (adverts.length === 0 && !currency) || (fetchedAdverts.length > 0 && adverts.length === 0) ? (
+            ) : isLoading || advertsAreStale || (adverts.length === 0 && !currency) || (fetchedAdverts.length > 0 && adverts.length === 0) ? (
               <div className="md:block" data-testid="markets-skeleton-ads">
                 <Table>
-                  <TableHeader className="hidden lg:table-header-group border-b sticky top-0 bg-white z-[1]">
+                  <TableHeader className="hidden lg:table-header-group border-b bg-white z-[1]">
                     <TableRow className="text-xs">
                       <TableHead className="text-start py-4 px-4 lg:ps-0 text-slate-600 font-normal">
                         <Skeleton className="bg-grayscale-500 h-5 w-32" />
@@ -732,7 +736,7 @@ export default function BuySellPage() {
             ) : (
               <div className="md:block">
                 <Table>
-                  <TableHeader className="hidden lg:table-header-group border-b sticky top-0 bg-white z-[1]">
+                  <TableHeader className="hidden lg:table-header-group border-b bg-white z-[1]">
                     <TableRow className="text-xs">
                       <TableHead className="text-start py-4 px-4 lg:ps-0 text-slate-600 font-normal">
                         {t("market.advertisers")}
