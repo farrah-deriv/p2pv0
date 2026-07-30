@@ -340,7 +340,7 @@ const PaymentSelectionContent = ({
           </>
         )}
       </div>
-      <div className="shrink-0 pt-2 pb-6">
+      <div className="shrink-0 pt-2 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         <Button
           data-testid="order-sidebar-btn-confirm-payment"
           className="w-full"
@@ -541,7 +541,12 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
       showAlert({
         title: t("paymentMethod.title"),
         titleAlign: "center",
-        // Keep search sheet body height stable (empty / no selection).
+        mobileSheetClassName:
+          "!mt-0 h-[90dvh] max-h-[90dvh] z-[60]",
+        mobileSheetFullHeight: true,
+        mobileContentClassName:
+          "flex min-h-0 flex-1 flex-col w-full min-w-0 max-w-full overflow-hidden",
+        // Keep the desktop dialog body stable (empty / no selection).
         contentClassName: "h-[min(560px,60vh)]",
         content: (
           <PaymentSelectionContent

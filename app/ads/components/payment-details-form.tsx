@@ -8,7 +8,7 @@ import { useStablePaymentMethodOrder } from "@/hooks/use-stable-payment-method-o
 import { SelectedPaymentMethodsSection } from "@/components/payment-methods/selected-payment-methods-section"
 import Image from "next/image"
 import type { AdFormData } from "../types"
-import { useIsMobile } from "@/hooks/use-mobile"
+import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -252,7 +252,9 @@ const FullPagePaymentSelection = ({
       </div>
       <div
         className={`box-border w-full min-w-0 max-w-full shrink-0 ${
-          isMobile ? "px-4 pt-2 pb-6" : "pt-2"
+          isMobile
+            ? "px-4 pt-2 pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
+            : "pt-2"
         }`}
       >
         <Button onClick={handleConfirm} disabled={localSelected.length === 0} className="w-full max-w-full min-w-0">
@@ -268,7 +270,7 @@ const FullPagePaymentSelection = ({
         <DrawerContent
           dir={dir}
           hideHandle
-          className="flex h-[90vh] max-h-[90vh] flex-col overflow-hidden"
+          className="!mt-0 flex h-[90dvh] max-h-[90dvh] flex-col overflow-hidden z-[60]"
           data-testid="ad-form-sheet-payment-methods"
         >
           <ModalHeaderRow
@@ -539,7 +541,7 @@ const PaymentSelectionContent = ({
           </>
         )}
       </div>
-      <div className="box-border w-full min-w-0 max-w-full shrink-0 pt-2 pb-6 md:py-4">
+      <div className="box-border w-full min-w-0 max-w-full shrink-0 pt-2 pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:py-4">
         <Button
           className="w-full max-w-full min-w-0"
           disabled={selectedPMs.length === 0}
@@ -604,6 +606,13 @@ export default function PaymentDetailsForm({
     hideAlert()
   }, [hideAlert])
 
+  // Confirm-button close (PaymentSelectionContent) bypasses config.onClose,
+  // so the sheet-open notification is bundled with hideAlert here.
+  const hideSellPaymentSelection = useCallback(() => {
+    onBottomSheetOpenChange?.(false)
+    hideAlert()
+  }, [hideAlert, onBottomSheetOpenChange])
+
   const openSellPaymentSelection = useCallback(
     (
       selectionOverride?: string[],
@@ -620,7 +629,12 @@ export default function PaymentDetailsForm({
       showAlert({
         title: t("paymentMethod.paymentMethodsSheetTitle"),
         titleAlign: "center",
-        // Keep search sheet body height stable (empty / no selection).
+        mobileSheetClassName:
+          "!mt-0 h-[90dvh] max-h-[90dvh] z-[60]",
+        mobileSheetFullHeight: true,
+        mobileContentClassName:
+          "flex min-h-0 flex-1 flex-col w-full min-w-0 max-w-full overflow-hidden",
+        // Keep the desktop dialog body stable (empty / no selection).
         contentClassName: "h-[min(560px,60vh)] w-full min-w-0 max-w-full overflow-hidden",
         content: (
           <PaymentSelectionContent
@@ -628,7 +642,7 @@ export default function PaymentDetailsForm({
             tempSelectedPaymentMethods={currentSelection}
             setTempSelectedPaymentMethods={setTempSelectedPaymentMethods}
             setSelectedPaymentMethods={setSelectedPaymentMethodIds}
-            hideAlert={hideAlert}
+            hideAlert={hideSellPaymentSelection}
             handleAddPaymentMethodClick={handleAddPaymentMethodClick}
             scrollToPaymentMethodId={scrollToPaymentMethodId}
           />
@@ -642,13 +656,15 @@ export default function PaymentDetailsForm({
             isTransitioningToAddPanelRef.current = false
             return
           }
+          onBottomSheetOpenChange?.(false)
           setTempSelectedPaymentMethods(selectedPaymentMethodIds)
         },
       })
     },
     [
       handleAddPaymentMethodClick,
-      hideAlert,
+      hideSellPaymentSelection,
+      onBottomSheetOpenChange,
       selectedPaymentMethodIds,
       setSelectedPaymentMethodIds,
       showAlert,
@@ -659,6 +675,7 @@ export default function PaymentDetailsForm({
   )
 
   const handleShowPaymentSelection = () => {
+    onBottomSheetOpenChange?.(true)
     if (initialData.type === "buy") {
       setShowFullPageModal(true)
     } else {
@@ -721,6 +738,7 @@ export default function PaymentDetailsForm({
             onManage: () => {
               hideAlert()
               setShowAddPaymentPanel(false)
+              onBottomSheetOpenChange?.(false)
               router.push("/profile?tab=payment")
             },
           }),
@@ -736,6 +754,7 @@ export default function PaymentDetailsForm({
             onCancel: () => {
               hideAlert()
               setShowAddPaymentPanel(false)
+              onBottomSheetOpenChange?.(false)
             },
           }),
         )
@@ -852,7 +871,10 @@ export default function PaymentDetailsForm({
 
       <FullPagePaymentSelection
         isOpen={showFullPageModal}
-        onClose={() => setShowFullPageModal(false)}
+        onClose={() => {
+          setShowFullPageModal(false)
+          onBottomSheetOpenChange?.(false)
+        }}
         paymentMethods={availablePaymentMethods}
         selectedPaymentMethods={selectedPaymentMethodIds}
         onConfirm={(methods) => setSelectedPaymentMethodIds(methods)}

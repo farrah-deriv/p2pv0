@@ -175,7 +175,12 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
 
     if (config.content) {
       return (
-        <div className="flex flex-col max-h-[80vh] overflow-hidden">
+        <div
+          className={cn(
+            "flex flex-col max-h-[80vh] overflow-hidden",
+            config.mobileSheetFullHeight && "h-full min-h-0 max-h-none",
+          )}
+        >
           {config.title && (
             <div
               className={cn(
@@ -189,7 +194,7 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
           <div
             className={cn(
               "px-6 flex-1 min-h-0 flex flex-col overflow-hidden",
-              config.contentClassName,
+              config.mobileContentClassName ?? config.contentClassName,
             )}
           >
             {config.content}
@@ -246,6 +251,7 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
               isKycOnboarding
                 ? "max-h-[95vh] overflow-hidden rounded-t-2xl border-0"
                 : "rounded-t-[16px]",
+              config.mobileSheetClassName,
             )}
           >
             {renderMobileContent()}

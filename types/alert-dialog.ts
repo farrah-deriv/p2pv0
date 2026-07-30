@@ -9,6 +9,12 @@ export interface AlertDialogConfig {
   type?: "warning" | "info" | "error" | "success"
   size?: "default" | "kycOnboarding"
   contentClassName?: string
+  /** Mobile-only content sizing; falls back to contentClassName when omitted. */
+  mobileContentClassName?: string
+  /** Mobile-only DrawerContent sizing/stacking overrides (pure styling — does not affect layout behavior). */
+  mobileSheetClassName?: string
+  /** Explicit opt-in: unlocks the inner container from max-h-[80vh] to h-full so a fixed-height mobileSheetClassName isn't fighting the default max-height. */
+  mobileSheetFullHeight?: boolean
   /** Mobile drawer title alignment. Desktop header stays start-aligned. */
   titleAlign?: "start" | "center"
   content?: React.ReactNode
