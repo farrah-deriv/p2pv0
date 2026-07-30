@@ -448,8 +448,25 @@ const PaymentSelectionContent = ({
         className="min-h-0 min-w-0 max-w-full flex-1 overflow-x-hidden overflow-y-auto"
       >
         {userMethods.length === 0 ? (
-          <div className="flex h-full min-h-[160px] flex-col items-center justify-center text-center">
-            <p className="text-neutral-7">{t("adForm.noPaymentMethodsFound")}</p>
+          <div className="flex flex-col items-start">
+            {handleAddPaymentMethodClick && (
+              <Button
+                type="button"
+                variant="ghost"
+                className="box-border h-auto w-full max-w-full min-w-0 justify-start rounded-lg bg-grayscale-500 p-4 font-normal hover:bg-grayscale-300"
+                onClick={() => {
+                  handleAddPaymentMethodClick(selectedPMs)
+                }}
+                data-testid="ad-form-btn-add-payment"
+              >
+                <span className="flex items-center">
+                  <Image src="/icons/plus_icon.png" alt={t("common.plus")} width={14} height={24} className="me-2" />
+                  <span className="text-base font-normal text-slate-1200">
+                    {t("paymentMethod.addPaymentMethod")}
+                  </span>
+                </span>
+              </Button>
+            )}
           </div>
         ) : (
           <>
