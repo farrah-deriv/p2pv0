@@ -88,7 +88,6 @@ export default function BuySellPage() {
   const [balanceCurrency, setBalanceCurrency] = useState<string>("USD")
   const [isLoadingBalance, setIsLoadingBalance] = useState<boolean>(true)
   const [showKycPopup, setShowKycPopup] = useState(false)
-  const sentinelRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const tableScrollRef = useRef<HTMLDivElement>(null)
   const isFetchingNextPageRef = useRef(false)
@@ -122,6 +121,7 @@ export default function BuySellPage() {
       favourites_only: filterOptions.fromFollowing ? 1 : 0,
     }
   )
+  const fetchNextPageRef = useRef(fetchNextPage)
   const fetchedAdverts = useMemo(() => advertsData?.pages.flat() ?? [], [advertsData?.pages])
 
   const hasActiveFilters = filterOptions.fromFollowing !== false || sortBy !== "trade_band_rank"
@@ -277,27 +277,37 @@ export default function BuySellPage() {
     }
   }, [activeTab, currency, paymentMethodsString, sortBy, filterOptions.fromFollowing, selectedAccountCurrency])
 
-  // Keep ref in sync so the observer callback always reads the latest value
+  // Keep refs in sync so callbacks always read the latest values
   useEffect(() => {
     isFetchingNextPageRef.current = isFetchingNextPage
   }, [isFetchingNextPage])
 
-  // Infinite scroll: fetch next page when sentinel comes into view
   useEffect(() => {
-    const sentinel = sentinelRef.current
-    if (!sentinel || !hasNextPage) return
+    fetchNextPageRef.current = fetchNextPage
+  }, [fetchNextPage])
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !isFetchingNextPageRef.current) {
-          fetchNextPage()
-        }
-      },
-      { threshold: 0, rootMargin: "100px" },
-    )
-    observer.observe(sentinel)
-    return () => observer.disconnect()
-  }, [hasNextPage, fetchNextPage])
+  // Infinite scroll: load the next page when the user scrolls within 300px of the
+  // bottom of the scroll container. isFetchingNextPageRef is set to true synchronously
+  // before the async fetchNextPage() call so that rapid scroll events fired in the same
+  // JS tick cannot pass the guard and trigger parallel API requests.
+  useEffect(() => {
+    if (!hasNextPage) return
+    const scrollEl = isMobile ? scrollContainerRef.current : tableScrollRef.current
+    if (!scrollEl) return
+
+    const handleScroll = () => {
+      if (isFetchingNextPageRef.current) return
+      const { scrollTop, scrollHeight, clientHeight } = scrollEl
+      if (scrollTop > 0 && scrollTop + clientHeight >= scrollHeight - 300) {
+        isFetchingNextPageRef.current = true  // synchronous guard — prevents duplicate calls
+        fetchNextPageRef.current()
+      }
+    }
+
+    scrollEl.addEventListener("scroll", handleScroll, { passive: true })
+    return () => scrollEl.removeEventListener("scroll", handleScroll)
+  }, [hasNextPage, isMobile])
+
 
   useEffect(() => {
     if (paymentMethods.length > 0 && selectedPaymentMethods.length === 0) {
@@ -484,185 +494,185 @@ export default function BuySellPage() {
     <>
       <div ref={scrollContainerRef} className="flex flex-col flex-1 min-h-0 h-full md:h-screen px-3 overflow-y-auto md:overflow-hidden overscroll-y-none scrollbar-hide">
         <div className="flex flex-col md:flex-shrink-0 gap-4">
-              {/* Desktop only — maintenance + mobile balance banners live in main.tsx. */}
-              <div className="relative z-10 flex w-full flex-col bg-slate-1200 p-6 max-md:w-[calc(100%+24px)] max-md:-mx-3 max-md:mb-2 rounded-b-3xl md:rounded-3xl overflow-hidden [transform:translateZ(0)]">
-                <div data-testid="markets-text-balance">
-                  <BalanceSection balance={balance} currency={balanceCurrency} isLoading={isLoadingBalance} />
-                </div>
-                <div className="md:mt-4 flex w-full min-w-0 flex-wrap items-end justify-between gap-x-4 gap-y-2">
-                  <HeaderSegmentedControl
-                    className="shrink-0"
-                    value={activeTab}
-                    onValueChange={(value) => {
-                      if (value === "sell") track("ek_buy_markets")
-                      else track("ek_sell_markets")
-                      setActiveTab(value as "buy" | "sell")
-                    }}
-                    width={168}
-                    listDataGuideId="guide-buy-sell-tabs"
-                    segments={[
-                      { value: "sell", label: t("market.buyTab"), testId: "markets-tab-buy" },
-                      { value: "buy", label: t("market.sellTab"), testId: "markets-tab-sell" },
-                    ]}
-                  />
-                  {showCurrencyFilter && (
-                    <div
-                      className="flex shrink-0 flex-col items-start gap-1 md:flex-row md:items-center md:gap-2"
-                      data-guide-id="guide-currency-filter"
-                    >
-                      {activeTab === "sell" && (
-                        <span className="text-start text-xs font-normal text-white opacity-72">
-                          {t("market.payWith")}:
-                        </span>
-                      )}
-                      {activeTab === "buy" && (
-                        <span className="text-start text-xs font-normal text-white opacity-72">
-                          {t("market.receiveIn")}:
-                        </span>
-                      )}
-                      <CurrencyFilter
-                        currencies={currencies}
-                        selectedCurrency={displayCurrency}
-                        onCurrencySelect={handleCurrencySelect}
+          {/* Desktop only — maintenance + mobile balance banners live in main.tsx. */}
+          <div className="relative z-10 flex w-full flex-col bg-slate-1200 p-6 max-md:w-[calc(100%+24px)] max-md:-mx-3 max-md:mb-2 rounded-b-3xl md:rounded-3xl overflow-hidden [transform:translateZ(0)]">
+            <div data-testid="markets-text-balance">
+              <BalanceSection balance={balance} currency={balanceCurrency} isLoading={isLoadingBalance} />
+            </div>
+            <div className="md:mt-4 flex w-full min-w-0 flex-wrap items-end justify-between gap-x-4 gap-y-2">
+              <HeaderSegmentedControl
+                className="shrink-0"
+                value={activeTab}
+                onValueChange={(value) => {
+                  if (value === "sell") track("ek_buy_markets")
+                  else track("ek_sell_markets")
+                  setActiveTab(value as "buy" | "sell")
+                }}
+                width={168}
+                listDataGuideId="guide-buy-sell-tabs"
+                segments={[
+                  { value: "sell", label: t("market.buyTab"), testId: "markets-tab-buy" },
+                  { value: "buy", label: t("market.sellTab"), testId: "markets-tab-sell" },
+                ]}
+              />
+              {showCurrencyFilter && (
+                <div
+                  className="flex shrink-0 flex-col items-start gap-1 md:flex-row md:items-center md:gap-2"
+                  data-guide-id="guide-currency-filter"
+                >
+                  {activeTab === "sell" && (
+                    <span className="text-start text-xs font-normal text-white opacity-72">
+                      {t("market.payWith")}:
+                    </span>
+                  )}
+                  {activeTab === "buy" && (
+                    <span className="text-start text-xs font-normal text-white opacity-72">
+                      {t("market.receiveIn")}:
+                    </span>
+                  )}
+                  <CurrencyFilter
+                    currencies={currencies}
+                    selectedCurrency={displayCurrency}
+                    onCurrencySelect={handleCurrencySelect}
+                    disabled={isMaintenanceActive}
+                    title={activeTab === "sell" ? t("market.payWith") : t("market.receiveIn")}
+                    trigger={
+                      <Button
+                        variant="outline"
+                        size="sm"
                         disabled={isMaintenanceActive}
-                        title={activeTab === "sell" ? t("market.payWith") : t("market.receiveIn")}
-                        trigger={
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={isMaintenanceActive}
-                            className="h-10 min-h-10 max-h-10 gap-2 border border-[#ffffff3d] bg-transparent px-3 font-normal hover:bg-transparent rounded-3xl text-white"
-                            onClick={() => track("ek_payment_currency_markets")}
+                        className="h-10 min-h-10 max-h-10 gap-2 border border-[#ffffff3d] bg-transparent px-3 font-normal hover:bg-transparent rounded-3xl text-white"
+                        onClick={() => track("ek_payment_currency_markets")}
 
-                          >
-                            {currencyFlagMapper[displayCurrency as keyof typeof currencyFlagMapper] && (
-                              <Image
-                                src={
-                                  currencyFlagMapper[displayCurrency as keyof typeof currencyFlagMapper] || "/placeholder.svg"
-                                }
-                                alt={`${displayCurrency} logo`}
-                                width={24}
-                                height={16}
-                                className="min-w-6 w-6 object-cover"
-                              />
-                            )}
-                            <span className="shrink-0">{displayCurrency}</span>
-                            <Image
-                              src="/icons/chevron-down-white.png"
-                              alt={t("common.arrow")}
-                              width={24}
-                              height={24}
-                              className="min-w-6 w-6 transition-transform duration-200"
-                            />
-                          </Button>
-                        }
-                      />
-                    </div>
-                  )}
+                      >
+                        {currencyFlagMapper[displayCurrency as keyof typeof currencyFlagMapper] && (
+                          <Image
+                            src={
+                              currencyFlagMapper[displayCurrency as keyof typeof currencyFlagMapper] || "/placeholder.svg"
+                            }
+                            alt={`${displayCurrency} logo`}
+                            width={24}
+                            height={16}
+                            className="min-w-6 w-6 object-cover"
+                          />
+                        )}
+                        <span className="shrink-0">{displayCurrency}</span>
+                        <Image
+                          src="/icons/chevron-down-white.png"
+                          alt={t("common.arrow")}
+                          width={24}
+                          height={24}
+                          className="min-w-6 w-6 transition-transform duration-200"
+                        />
+                      </Button>
+                    }
+                  />
                 </div>
-              </div>
-              {tempBanUntil && !isMaintenanceActive && <TemporaryBanAlert tempBanUntil={tempBanUntil} />}
-              <div className="flex flex-wrap gap-2 md:gap-3 md:px-0 md:mt-4 md:justify-end">
-                <div className="flex gap-2 items-center md:ms-auto md:flex-none">
-                  {!isV1Signup && (
-                    <div className="flex gap-2 mb-3 flex-1 hidden">
-                      {accountCurrencies.map((curr) => (
-                        <Button
-                          key={curr.code}
-                          variant={selectedAccountCurrency === curr.code ? "black" : "outline"}
-                          onClick={() => setSelectedAccountCurrency(curr.code)}
-                          className={cn(
-                            "px-4 py-2 rounded-full font-normal border-slate-800",
-                            selectedAccountCurrency === curr.code
-                              ? ""
-                              : "text-grayscale-600 hover:bg-transparent border-gray-300",
-                          )}
-                          size="sm"
-                        >
-                          {curr.code}
-                        </Button>
-                      ))}
-                    </div>
-                  )}
-                  <div className="md:flex md:items-center md:gap-2 md:flex-none">
-                    <PaymentMethodsFilter
-                      paymentMethods={paymentMethods}
-                      selectedMethods={selectedPaymentMethods}
-                      onSelectionChange={setSelectedPaymentMethods}
-                      isLoading={isLoadingPaymentMethods}
+              )}
+            </div>
+          </div>
+          {tempBanUntil && !isMaintenanceActive && <TemporaryBanAlert tempBanUntil={tempBanUntil} />}
+          <div className="flex flex-wrap gap-2 md:gap-3 md:px-0 md:mb-4 md:justify-end">
+            <div className="flex gap-2 items-center md:ms-auto md:flex-none">
+              {!isV1Signup && (
+                <div className="flex gap-2 mb-3 flex-1 hidden">
+                  {accountCurrencies.map((curr) => (
+                    <Button
+                      key={curr.code}
+                      variant={selectedAccountCurrency === curr.code ? "black" : "outline"}
+                      onClick={() => setSelectedAccountCurrency(curr.code)}
+                      className={cn(
+                        "px-4 py-2 rounded-full font-normal border-slate-800",
+                        selectedAccountCurrency === curr.code
+                          ? ""
+                          : "text-grayscale-600 hover:bg-transparent border-gray-300",
+                      )}
+                      size="sm"
+                    >
+                      {curr.code}
+                    </Button>
+                  ))}
+                </div>
+              )}
+              <div className="md:flex md:items-center md:gap-2 md:flex-none">
+                <PaymentMethodsFilter
+                  paymentMethods={paymentMethods}
+                  selectedMethods={selectedPaymentMethods}
+                  onSelectionChange={setSelectedPaymentMethods}
+                  isLoading={isLoadingPaymentMethods}
+                  disabled={isMaintenanceActive}
+                  trigger={
+                    <Button
+                      variant="outline"
+                      size="sm"
                       disabled={isMaintenanceActive}
-                      trigger={
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={isMaintenanceActive}
-                          className={cn(
-                            "rounded-md border border-input font-normal justify-between px-3 rounded-3xl min-w-48 md:min-w-0",
-                            hasFilteredPaymentMethods
-                              ? "bg-black hover:bg-black text-white"
-                              : "bg-transparent hover:bg-transparent",
-                          )}
-                          onClick={() => track("ek_payment_method_filter_markets")}
-                          data-guide-id="guide-payment-method-filter"
-                        >
-                          <span className="truncate overflow-hidden text-ellipsis whitespace-nowrap">
-                            {getPaymentMethodsDisplayText()}
-                          </span>
-                          {hasFilteredPaymentMethods ? (
-                            <Image
-                              src="/icons/chevron-down-white.png"
-                              alt={t("common.arrow")}
-                              width={24}
-                              height={24}
-                              className="transition-transform duration-200"
-                            />
-                          ) : (
-                            <Image
-                              src="/icons/chevron-down.png"
-                              alt={t("common.arrow")}
-                              width={24}
-                              height={24}
-                              className="transition-transform duration-200"
-                            />
-                          )}
-                        </Button>
-                      }
-                    />
-                  </div>
+                      className={cn(
+                        "rounded-md border border-input font-normal justify-between px-3 rounded-3xl min-w-48 md:min-w-0",
+                        hasFilteredPaymentMethods
+                          ? "bg-black hover:bg-black text-white"
+                          : "bg-transparent hover:bg-transparent",
+                      )}
+                      onClick={() => track("ek_payment_method_filter_markets")}
+                      data-guide-id="guide-payment-method-filter"
+                    >
+                      <span className="truncate overflow-hidden text-ellipsis whitespace-nowrap">
+                        {getPaymentMethodsDisplayText()}
+                      </span>
+                      {hasFilteredPaymentMethods ? (
+                        <Image
+                          src="/icons/chevron-down-white.png"
+                          alt={t("common.arrow")}
+                          width={24}
+                          height={24}
+                          className="transition-transform duration-200"
+                        />
+                      ) : (
+                        <Image
+                          src="/icons/chevron-down.png"
+                          alt={t("common.arrow")}
+                          width={24}
+                          height={24}
+                          className="transition-transform duration-200"
+                        />
+                      )}
+                    </Button>
+                  }
+                />
+              </div>
 
-                  <div className="filter-dropdown-container flex-shrink-0">
-                    <MarketFilterDropdown
-                      activeTab={activeTab}
-                      onApply={handleFilterApply}
-                      initialFilters={filterOptions}
-                      initialSortBy={sortBy}
-                      hasActiveFilters={hasActiveFilters}
+              <div className="filter-dropdown-container flex-shrink-0">
+                <MarketFilterDropdown
+                  activeTab={activeTab}
+                  onApply={handleFilterApply}
+                  initialFilters={filterOptions}
+                  initialSortBy={sortBy}
+                  hasActiveFilters={hasActiveFilters}
+                  disabled={isMaintenanceActive}
+                  trigger={
+                    <Button
+                      variant="outline"
+                      size="sm"
                       disabled={isMaintenanceActive}
-                      trigger={
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={isMaintenanceActive}
-                          className={cn(
-                            "rounded-md border border-input font-normal px-3  focus:border-black min-w-fit rounded-3xl",
-                            hasActiveFilters ? "bg-black hover:bg-black" : "bg-transparent hover:bg-transparent",
-                          )}
-                          onClick={() => track("ek_filter_markets")}
-                          data-guide-id="guide-advanced-filter"
-                        >
-                          {hasActiveFilters ? (
-                            <Image src="/icons/filter-icon-white.png" alt={t("common.filter")} width={16} height={16} />
-                          ) : (
-                            <Image src="/icons/filter-icon.png" alt={t("common.filter")} width={20} height={20} />
-                          )}
-                        </Button>
-                      }
-                    />
-                  </div>
-                </div>
+                      className={cn(
+                        "rounded-md border border-input font-normal px-3  focus:border-black min-w-fit rounded-3xl",
+                        hasActiveFilters ? "bg-black hover:bg-black" : "bg-transparent hover:bg-transparent",
+                      )}
+                      onClick={() => track("ek_filter_markets")}
+                      data-guide-id="guide-advanced-filter"
+                    >
+                      {hasActiveFilters ? (
+                        <Image src="/icons/filter-icon-white.png" alt={t("common.filter")} width={16} height={16} />
+                      ) : (
+                        <Image src="/icons/filter-icon.png" alt={t("common.filter")} width={20} height={20} />
+                      )}
+                    </Button>
+                  }
+                />
               </div>
+            </div>
+          </div>
         </div>
-        <div ref={tableScrollRef} className="flex flex-col md:flex-1 md:min-h-0 md:overflow-y-auto md:overscroll-y-none md:scrollbar-hide pt-4 md:pt-6 pb-4">
+        <div ref={tableScrollRef} className="flex flex-col md:flex-1 md:min-h-0 md:overflow-y-auto md:overscroll-y-none md:scrollbar-hide pt-4 md:pt-2 pb-4">
           <div className="flex flex-col min-h-full">
             {isMaintenanceActive ? (
               <div className="flex-1 min-h-0 flex items-center md:items-start justify-center md:pt-16">
@@ -926,11 +936,10 @@ export default function BuySellPage() {
             )}
           </div>
           {isFetchingNextPage && (
-            <div className="sticky bottom-0 flex justify-center py-4 bg-background">
-              <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+            <div className="fixed bottom-20 md:bottom-4 left-0 right-0 md:pl-[327px] md:pr-[24px] flex justify-center z-50 pointer-events-none">
+              <div className="w-6 h-6 border-2 border-grayscale-400 border-t-slate-600 rounded-full animate-spin" />
             </div>
           )}
-          <div ref={sentinelRef} className="h-1" data-testid="markets-sentinel-load-more" />
         </div>
 
         <OrderSidebar
