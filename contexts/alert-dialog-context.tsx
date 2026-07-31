@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useState, useCallback } from "react"
+import { createContext, useContext, useState, useCallback, useEffect } from "react"
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Drawer, DrawerContent } from "@/components/ui/drawer"
 import type { AlertDialogConfig, AlertDialogContextType } from "@/types/alert-dialog"
@@ -76,6 +76,19 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
     hideAlert,
     isOpen,
   }
+
+  // vaul (mobile Drawer) uses react-dialog@1.1.19 → dismissable-layer@1.1.15, while
+  // DropdownMenu uses dismissable-layer@1.1.16. These are separate module instances with
+  // separate originalBodyPointerEvents variables. ReactDOM.flushSync in dispatchDiscreteCustomEvent
+  // forces the Drawer's DismissableLayer (v1.1.15) to run setup while body is already
+  // pointer-events:none from the DropdownMenu (v1.1.16), so it saves 'none' as the original.
+  // When the Drawer closes, it "restores" body to 'none'. We clear it here in the setup phase,
+  // which runs after all passive-effect cleanups (including the DismissableLayer restore).
+  useEffect(() => {
+    if (!isOpen) {
+      document.body.style.removeProperty('pointer-events')
+    }
+  }, [isOpen])
 
   const isKycOnboarding = config.size === "kycOnboarding"
 
