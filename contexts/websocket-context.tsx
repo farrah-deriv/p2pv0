@@ -274,6 +274,8 @@ export class WebSocketClient {
   }
 }
 
+const MAX_RETRIES = 5
+
 let wsClientInstance: WebSocketClient | null = null
 
 export function getWebSocketClient(options?: WebSocketOptions): WebSocketClient {
@@ -336,7 +338,6 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const shouldReconnectRef = useRef(true)
   const retryCountRef = useRef(0)
-  const maxRetries = 5
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
   const userId = useUserDataStore((state) => state.userId)
   const userData = useUserDataStore((state) => state.userData)
@@ -369,27 +370,35 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
       onClose: (event) => {
         setIsConnected(false)
         const isCleanClose = event.code === 1000 || event.code === 1001
-        if (shouldReconnectRef.current && !isCleanClose && retryCountRef.current < maxRetries) {
+        if (!isCleanClose) {
+          console.warn(`WebSocket closed unexpectedly: code=${event.code} reason=${event.reason || "(none)"}`)
+        }
+        if (shouldReconnectRef.current && !isCleanClose && retryCountRef.current < MAX_RETRIES) {
           if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current)
           const delay = Math.min(3000 * Math.pow(1.5, retryCountRef.current), 30000)
           reconnectTimeoutRef.current = setTimeout(() => {
+            // Re-check eligibility — user may have logged out while this timer was queued.
+            if (!isP2PWebSocketEligible()) return
             retryCountRef.current++
-            wsClientRef.current?.connect().catch((err) => console.warn("WebSocket reconnect failed:", err))
+            wsClientRef.current?.connect().catch(() => {
+              if (retryCountRef.current >= MAX_RETRIES) {
+                console.error(`WebSocket failed after ${MAX_RETRIES} reconnection attempts (last code=${event.code})`)
+              }
+            })
           }, delay)
         }
       },
-      onError: (error) => {
-        console.error("WebSocket error:", error)
+      onError: () => {
+        // WebSocket onerror intentionally carries no detail (browser security constraint).
+        // onClose fires next with a code/reason — log there instead.
         setIsConnected(false)
       },
     })
 
     wsClientRef.current = wsClient
 
-    wsClient.connect().catch((error) => {
-      if (!isP2PMaintenanceActive() && isP2PWebSocketEligible()) {
-        console.error("Failed to connect WebSocket:", error)
-      }
+    wsClient.connect().catch(() => {
+      // Connection errors are handled by onError/onClose callbacks above.
     })
 
     return () => {
