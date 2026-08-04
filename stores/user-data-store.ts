@@ -84,16 +84,24 @@ const getCachedSignup = (): string | null => {
 
 const cacheSignup = (signup: string | undefined) => {
   if (typeof window === "undefined") return
-  if (signup) {
-    localStorage.setItem("user_signup", signup)
-  } else {
-    localStorage.removeItem("user_signup")
+  try {
+    if (signup) {
+      localStorage.setItem("user_signup", signup)
+    } else {
+      localStorage.removeItem("user_signup")
+    }
+  } catch {
+    // localStorage quota exceeded — signup will be re-fetched from the API on next load
   }
 }
 
 const cacheWalletAccount = (isWallet: boolean) => {
   if (typeof window === "undefined") return
-  localStorage.setItem("is_wallet_account", isWallet.toString())
+  try {
+    localStorage.setItem("is_wallet_account", isWallet.toString())
+  } catch {
+    // localStorage quota exceeded — value will be re-derived on next load
+  }
 }
 
 export const useUserDataStore = create<UserDataState>()(
