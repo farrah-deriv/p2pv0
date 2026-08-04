@@ -3,6 +3,7 @@
 import { TooltipTrigger } from "@/components/ui/tooltip"
 import { TradeBandBadge } from "@/components/trade-band-badge"
 import { useState, useEffect, useRef, useCallback, useMemo } from "react"
+import { useQueryClient, type InfiniteData } from "@tanstack/react-query"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import type { Advertisement, PaymentMethod } from "@/services/api/api-buy-sell"
@@ -75,7 +76,7 @@ export default function BuySellPage() {
     setSelectedAccountCurrency,
   } = useMarketFilterStore()
 
-  const [adverts, setAdverts] = useState<Advertisement[]>([])
+  const queryClient = useQueryClient()
   const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false)
   const [isOrderSidebarOpen, setIsOrderSidebarOpen] = useState(false)
   const [selectedAd, setSelectedAd] = useState<Advertisement | null>(null)
@@ -111,7 +112,7 @@ export default function BuySellPage() {
   const { isConnected, joinAdvertsChannel, leaveAdvertsChannel, subscribe, subscribeToUserUpdates, unsubscribeFromUserUpdates, joinUsersOnlineChannel, leaveUsersOnlineChannel } = useWebSocketContext()
 
 
-  const { data: advertsData, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useAdvertisements(
+  const { data: advertsData, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage, queryKey: advertsQueryKey } = useAdvertisements(
     {
       type: activeTab,
       account_currency: selectedAccountCurrency,
@@ -122,13 +123,16 @@ export default function BuySellPage() {
     }
   )
   const fetchNextPageRef = useRef(fetchNextPage)
-  const fetchedAdverts = useMemo(() => advertsData?.pages.flat() ?? [], [advertsData?.pages])
+  const adverts = useMemo(() => advertsData?.pages.flat() ?? [], [advertsData?.pages])
+
+  // Tracks the current query key so WS callbacks always write to the right cache entry.
+  const advertsQueryKeyRef = useRef(advertsQueryKey)
+  useEffect(() => { advertsQueryKeyRef.current = advertsQueryKey }, [advertsQueryKey])
 
   const hasActiveFilters = filterOptions.fromFollowing !== false || sortBy !== "trade_band_rank"
   const isV1Signup = userData?.signup === "v1"
   const tempBanUntil = userData?.temp_ban_until
   const firstTradeableAdIndex = adverts.findIndex(ad => Number(userId) !== ad.user.id)
-  const advertsAreStale = adverts.length > 0 && adverts[0]?.type !== activeTab
 
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
   const displayCurrency = currency || localCurrency || selectedAccountCurrency
@@ -254,18 +258,6 @@ export default function BuySellPage() {
     () => JSON.stringify(selectedPaymentMethods),
     [selectedPaymentMethods]
   )
-
-  // Sync hook data to local state for websocket updates
-  useEffect(() => {
-    if (Array.isArray(fetchedAdverts)) {
-      setAdverts((prev) => {
-        if (JSON.stringify(prev) === JSON.stringify(fetchedAdverts)) {
-          return prev
-        }
-        return fetchedAdverts
-      })
-    }
-  }, [fetchedAdverts, advertsData])
 
   // Reset scroll position when filters change so sentinel re-enters view and load more works
   useEffect(() => {
@@ -418,27 +410,38 @@ export default function BuySellPage() {
         if (data?.payload?.data?.event === "update" && data?.payload?.data?.advert) {
           const updatedAdvert = data.payload.data.advert
 
-          setAdverts((currentAdverts) =>
-            currentAdverts.map((ad) =>
-              ad.id == updatedAdvert.id
-                ? {
-                  ...ad,
-                  version: updatedAdvert.version,
-                  effective_rate_display: updatedAdvert.effective_rate_display,
-                  minimum_order_amount: updatedAdvert.minimum_order_amount,
-                  actual_maximum_order_amount: updatedAdvert.actual_maximum_order_amount,
-                  payment_methods: updatedAdvert.payment_methods,
-                  payment_method_names: updatedAdvert.payment_method_names,
-                }
-                : ad,
-            ),
+          const key = advertsQueryKeyRef.current
+          if (!key) return
+          queryClient.setQueryData(
+            key as readonly unknown[],
+            (old: InfiniteData<Advertisement[]> | undefined) => {
+              if (!old) return old
+              return {
+                ...old,
+                pages: old.pages.map((page) =>
+                  page.map((ad) =>
+                    ad.id === updatedAdvert.id
+                      ? {
+                          ...ad,
+                          version: updatedAdvert.version,
+                          effective_rate_display: updatedAdvert.effective_rate_display,
+                          minimum_order_amount: updatedAdvert.minimum_order_amount,
+                          actual_maximum_order_amount: updatedAdvert.actual_maximum_order_amount,
+                          payment_methods: updatedAdvert.payment_methods,
+                          payment_method_names: updatedAdvert.payment_method_names,
+                        }
+                      : ad,
+                  ),
+                ),
+              }
+            },
           )
         }
       }
     })
 
     return unsubscribe
-  }, [subscribe])
+  }, [subscribe, queryClient])
 
   const handleUsersOnlineUpdate = useCallback((data: unknown) => {
     if (!data || typeof data !== "object") return
@@ -450,18 +453,29 @@ export default function BuySellPage() {
 
     const update: UsersOnlineUpdate = payload
 
-    setAdverts((currentAdverts) =>
-      currentAdverts.map((ad) => {
-        if (update.user_id !== ad.user?.id) return ad
-        // Prefer server-provided timestamp; fall back to Date.now() only as a
-        // last resort so the UI immediately reflects the offline state.
-        const lastOnlineAt = update.is_online
-          ? ad.user.last_online_at
-          : (update.last_online_at ?? Date.now())
-        return { ...ad, user: { ...ad.user, is_online: update.is_online, last_online_at: lastOnlineAt } }
-      }),
+    const key = advertsQueryKeyRef.current
+    if (!key) return
+    queryClient.setQueryData(
+      key as readonly unknown[],
+      (old: InfiniteData<Advertisement[]> | undefined) => {
+        if (!old) return old
+        return {
+          ...old,
+          pages: old.pages.map((page) =>
+            page.map((ad) => {
+              if (update.user_id !== ad.user?.id) return ad
+              // Prefer server-provided timestamp; fall back to Date.now() only as a
+              // last resort so the UI immediately reflects the offline state.
+              const lastOnlineAt = update.is_online
+                ? ad.user.last_online_at
+                : (update.last_online_at ?? Date.now())
+              return { ...ad, user: { ...ad.user, is_online: update.is_online, last_online_at: lastOnlineAt } }
+            }),
+          ),
+        }
+      },
     )
-  }, [])
+  }, [queryClient])
 
   useEffect(() => {
     if (isMaintenanceActive || !isConnected) return
@@ -678,7 +692,7 @@ export default function BuySellPage() {
               <div className="flex-1 min-h-0 flex items-center md:items-start justify-center md:pt-16">
                 <EmptyState title={t("market.noAdsMaintenanceTitle")} route={null} />
               </div>
-            ) : isLoading || advertsAreStale || (adverts.length === 0 && !currency) || (fetchedAdverts.length > 0 && adverts.length === 0) ? (
+            ) : isLoading || (adverts.length === 0 && !currency) ? (
               <div className="md:block" data-testid="markets-skeleton-ads">
                 <Table>
                   <TableHeader className="hidden lg:table-header-group border-b bg-white z-[1]">

@@ -489,6 +489,7 @@ export function useAdvertisements(params?: BuySellSearchParams) {
   return {
     ...query,
     error: query.error as Error | null,
+    queryKey,
   }
 }
 
