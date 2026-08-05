@@ -53,6 +53,7 @@ export function RateInput({
               onBlur?.()
             }}
             onFocus={() => setIsFocused(true)}
+            onWheel={(e) => e.currentTarget.blur()}
             step={step}
             min={min}
             placeholder=""

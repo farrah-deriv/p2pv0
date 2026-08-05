@@ -110,7 +110,7 @@ export default function PaymentMethodsFilter({
     }
 
     if (isAllSelected) {
-      setTempSelectedMethods([methodId])
+      setTempSelectedMethods(paymentMethods.map((m) => m.method).filter((m) => m !== methodId))
       return
     }
     const isSelected = tempSelectedMethods.includes(methodId)
@@ -178,7 +178,7 @@ export default function PaymentMethodsFilter({
               <div key={method.method} className={CHECKBOX_LABEL_ROW}>
                 <Checkbox
                   id={method.method}
-                  checked={isAllSelected ? false : tempSelectedMethods.includes(method.method)}
+                  checked={isAllSelected || tempSelectedMethods.includes(method.method)}
                   onCheckedChange={() => handleMethodToggle(method.method)}
                   className="shrink-0 data-[state=checked]:bg-black"
                   disabled={isLoading}

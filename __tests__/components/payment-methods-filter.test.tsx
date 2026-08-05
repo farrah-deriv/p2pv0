@@ -82,6 +82,25 @@ describe("PaymentMethodsFilter", () => {
     })
   })
 
+  it("deselects only the clicked method when all methods are selected", async () => {
+    const allSelected = mockPaymentMethods.map((m) => m.method)
+    render(<PaymentMethodsFilter {...defaultProps} selectedMethods={allSelected} />)
+    fireEvent.click(screen.getByText("Open Filter"))
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Bank Transfer A")).toBeChecked()
+    })
+
+    fireEvent.click(screen.getByLabelText("Bank Transfer A"))
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Bank Transfer A")).not.toBeChecked()
+      expect(screen.getByLabelText("Bank Transfer B")).toBeChecked()
+      expect(screen.getByLabelText("E-Wallet A")).toBeChecked()
+      expect(screen.getByLabelText("E-Wallet B")).toBeChecked()
+    })
+  })
+
   it("filters payment methods based on search query", async () => {
     render(<PaymentMethodsFilter {...defaultProps} />)
     fireEvent.click(screen.getByText("Open Filter"))

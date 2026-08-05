@@ -53,6 +53,7 @@ export function CurrencyInput({
             onChange={handleChange}
             onBlur={() => setIsFocused(false)}
             onFocus={() => setIsFocused(true)}
+            onWheel={(e) => e.currentTarget.blur()}
             placeholder=""
             className={cn(
               "h-[56px] w-full p-4 pt-6 border-0 focus:ring-0 focus:outline-none text-start [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",

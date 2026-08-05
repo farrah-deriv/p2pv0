@@ -19,8 +19,9 @@ interface Country {
 
 interface CountrySelectionProps {
   countries: Country[]
-  selectedCountries: string[]
-  onCountriesChange: (countries: string[]) => void
+  selectedCountries: string[] | null
+  onCountriesChange: (countries: string[] | null) => void
+  isLoading?: boolean
 }
 
 export default function CountrySelection({ countries, selectedCountries, onCountriesChange }: CountrySelectionProps) {
@@ -33,20 +34,37 @@ export default function CountrySelection({ countries, selectedCountries, onCount
 
   const filteredCountries = countries.filter((country) => country.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
-  const isAllSelected = selectedCountries.length === 0
+  const [allMode, setAllMode] = useState(selectedCountries === null)
+  const isAllSelected = allMode
+
+  // Sync allMode when the parent loads countries from outside (e.g. edit mode async fetch).
+  useEffect(() => {
+    if (selectedCountries === null) {
+      setAllMode(true)
+    } else if (selectedCountries.length > 0) {
+      setAllMode(false)
+    }
+  }, [selectedCountries])
 
   const handleCountryToggle = (countryCode: string) => {
     if (scrollContainerRef.current) {
       scrollPositionRef.current = scrollContainerRef.current.scrollTop
     }
 
-    if (selectedCountries.length === 0) {
-      onCountriesChange([countryCode])
-    } else if (selectedCountries.includes(countryCode)) {
-      const newSelection = selectedCountries.filter((code) => code !== countryCode)
-      onCountriesChange(newSelection.length === 0 ? [] : newSelection)
+    if (allMode) {
+      setAllMode(false)
+      onCountriesChange(countries.map((c) => c.code).filter((c) => c !== countryCode))
+    } else if (selectedCountries !== null && selectedCountries.includes(countryCode)) {
+      onCountriesChange(selectedCountries.filter((code) => code !== countryCode))
     } else {
-      onCountriesChange([...selectedCountries, countryCode])
+      const current = selectedCountries ?? []
+      const newSelection = [...current, countryCode]
+      if (newSelection.length === countries.length) {
+        setAllMode(true)
+        onCountriesChange(null)
+      } else {
+        onCountriesChange(newSelection)
+      }
     }
   }
 
@@ -55,11 +73,9 @@ export default function CountrySelection({ countries, selectedCountries, onCount
       scrollPositionRef.current = scrollContainerRef.current.scrollTop
     }
 
-    if (checked) {
-      onCountriesChange([])
-    } else {
-      onCountriesChange([])
-    }
+    const next = !!checked
+    setAllMode(next)
+    onCountriesChange(next ? null : [])
   }
 
   useEffect(() => {
@@ -72,10 +88,10 @@ export default function CountrySelection({ countries, selectedCountries, onCount
     if (isAllSelected) {
       return t("common.allCountries")
     }
-    return `${t("common.selectedCount")} (${selectedCountries.length})`
+    return `${t("common.selectedCount")} (${selectedCountries?.length ?? 0})`
   }
 
-  const CountryList = () => (
+  const countryList = (
     <div className="space-y-4">
       <div className="relative">
         <Input
@@ -117,7 +133,7 @@ export default function CountrySelection({ countries, selectedCountries, onCount
           <div key={country.code} className={cn(CHECKBOX_LABEL_ROW, "py-1")}>
             <Checkbox
               id={country.code}
-              checked={selectedCountries.includes(country.code)}
+              checked={isAllSelected || (selectedCountries !== null && selectedCountries.includes(country.code))}
               onCheckedChange={() => handleCountryToggle(country.code)}
               disabled={false}
               className="shrink-0 data-[state=checked]:bg-black"
@@ -161,7 +177,7 @@ export default function CountrySelection({ countries, selectedCountries, onCount
             <div className="text-base text-center opacity-72 mt-2">{t("adForm.countrySelectionSubtitle")}</div>
           </div>
           <div className="p-4">
-            <CountryList />
+            {countryList}
           </div>
         </DrawerContent>
       </Drawer>
@@ -196,7 +212,7 @@ export default function CountrySelection({ countries, selectedCountries, onCount
                    w-[var(--radix-popover-trigger-width)] 
                    min-w-[var(--radix-popover-trigger-width)]"
       >
-        <CountryList />
+        {countryList}
       </PopoverContent>
     </Popover>
   )

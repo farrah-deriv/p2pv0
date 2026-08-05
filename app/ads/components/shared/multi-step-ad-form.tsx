@@ -112,7 +112,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
   const { selectedPaymentMethodIds, setSelectedPaymentMethodIds } = usePaymentSelection()
   const { showAlert, hideAlert } = useAlertDialog()
   const [orderTimeLimit, setOrderTimeLimit] = useState(15)
-  const [selectedCountries, setSelectedCountries] = useState<string[]>([])
+  const [selectedCountries, setSelectedCountries] = useState<string[] | null>(null)
   const [countries, setCountries] = useState<Country[]>([])
   const [currencies, setCurrencies] = useState<Array<{ code: string, name: string }>>([])
   const [userPaymentMethods, setUserPaymentMethods] = useState<UserPaymentMethod[]>([])
@@ -345,7 +345,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     if (!IS_AD_CONDITIONS_ENABLED) {
       const current = buildCurrentEditState(formData, {
         orderTimeLimit,
-        selectedCountries,
+        selectedCountries: selectedCountries ?? [],
         minimumJoinedDays: null,
         minimumCompletionRate30Day: null,
         isPrivate: adVisibility === "closed-group",
@@ -368,7 +368,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
 
     const current = buildCurrentEditState(formData, {
       orderTimeLimit,
-      selectedCountries,
+      selectedCountries: selectedCountries ?? [],
       minimumJoinedDays,
       minimumCompletionRate30Day,
       isPrivate: adVisibility === "closed-group",
@@ -505,7 +505,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
         description: finalData.instructions || "",
         is_active: 1,
         order_expiry_period: orderTimeLimit,
-        available_countries: selectedCountries.length > 0 ? selectedCountries : undefined,
+        available_countries: selectedCountries !== null && selectedCountries.length > 0 ? selectedCountries : undefined,
         is_private: isPrivate,
         ...(IS_AD_CONDITIONS_ENABLED
           ? {
@@ -558,7 +558,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
       if (!IS_AD_CONDITIONS_ENABLED) {
         const current = buildCurrentEditState(finalData, {
           orderTimeLimit,
-          selectedCountries,
+          selectedCountries: selectedCountries ?? [],
           minimumJoinedDays: null,
           minimumCompletionRate30Day: null,
           isPrivate,
@@ -579,7 +579,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
       } else {
         const current = buildCurrentEditState(finalData, {
           orderTimeLimit,
-          selectedCountries,
+          selectedCountries: selectedCountries ?? [],
           minimumJoinedDays,
           minimumCompletionRate30Day,
           isPrivate,
