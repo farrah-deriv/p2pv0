@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
-import Image from "next/image"
+import { StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
 import { cn } from "@/lib/utils"
+import { useTranslations } from "@/lib/i18n/use-translations"
 import { KycOnboardingChecklist } from "./kyc-onboarding-checklist"
 import type { KycOnboardingStep } from "./kyc-onboarding-step-row"
 
@@ -28,6 +29,7 @@ export function KycOnboardingContentPanel({
   onClose,
   statusLabels,
 }: KycOnboardingContentPanelProps) {
+  const { t } = useTranslations()
   return (
     <div
       className={cn(
@@ -42,11 +44,11 @@ export function KycOnboardingContentPanel({
         <Button
           data-testid="kyc-btn-close"
           onClick={onClose}
-          variant="ghost"
-          className="absolute end-4 top-4 hidden min-w-[48px] bg-slate-75 px-1 md:end-6 md:top-6 md:inline-flex"
-          aria-label="Close"
+          variant="icon-muted"
+          className="absolute end-4 top-4 hidden md:end-6 md:top-6 md:inline-flex"
+          aria-label={t("common.close")}
         >
-          <Image src="/icons/close-icon.png" alt="" width={24} height={24} />
+          <StandaloneXmarkRegularIcon width={24} height={24} aria-hidden />
         </Button>
       )}
 

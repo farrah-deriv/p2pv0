@@ -10,7 +10,7 @@ import { useState, useEffect, useRef, Fragment } from "react"
 import { useUserDataStore, getCachedSignup } from "@/stores/user-data-store"
 import { SvgIcon } from "@/components/icons/svg-icon"
 import { useTranslations } from "@/lib/i18n/use-translations"
-import { StandaloneSearchRegularIcon } from "@deriv/quill-icons/Standalone"
+import { StandaloneSearchRegularIcon, StandaloneUserFillIcon, StandaloneChevronRightRegularIcon } from "@deriv/quill-icons/Standalone"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { TabHorizontal } from "@deriv-com/quill-ui-v2"
@@ -250,12 +250,6 @@ export default function Sidebar({ className }: SidebarProps) {
     t("navigation.profile"),
   ]
 
-  const getInitials = () => {
-    const firstInitial = firstName?.[0] ?? ""
-    const lastInitial = lastName?.[0] ?? ""
-    return (firstName && lastName) ? (firstInitial + lastInitial).toUpperCase() : email?.[0].toUpperCase()
-  }
-
   const isOnMarketPage = pathname === "/" || pathname.startsWith("/advertiser")
 
   const handleAskAmy = () => {
@@ -266,8 +260,8 @@ export default function Sidebar({ className }: SidebarProps) {
   }
 
   return (
-    <div data-testid="sidebar-container" className={cn("w-[295px] flex flex-col border-e border-slate-200 me-[8px]", className)}>
-      <div className="flex flex-row justify-between items-center gap-4 p-4 pt-6">
+    <div data-testid="sidebar-container" className={cn("w-[296px] flex flex-col border-e border-neutral-200 bg-white me-[8px]", className)}>
+      <div className="flex flex-row justify-between items-center gap-4 px-6 py-5">
         <Image src="/icons/deriv-p2p.png" alt={t("common.derivLogo")} width={128} height={24} />
         {userId && (
           <div
@@ -279,16 +273,16 @@ export default function Sidebar({ className }: SidebarProps) {
           </div>
         )}
       </div>
-      <nav className="flex-1 px-4">
+      <nav className="flex-1 px-3">
         {!isDisabled && (
           <a
             data-testid="sidebar-link-home"
             href={homeUrl}
-            className="hidden md:flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-neutral-50"
+            className="hidden md:flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50 transition-colors"
             rel="noopener noreferrer"
           >
             <div className="h-5 w-5 flex items-center justify-center">
-              <SvgIcon src={HomeIcon} fill="var(--color-slate-1200)" />
+              <SvgIcon src={HomeIcon} fill="var(--color-neutral-600)" />
             </div>
             {t("navigation.home")}
           </a>
@@ -371,7 +365,7 @@ export default function Sidebar({ className }: SidebarProps) {
             )}
           </div>
         )}
-        <ul data-guide-id="guide-sidebar-nav">
+        <ul data-guide-id="guide-sidebar-nav" className="space-y-1">
           {navItems.filter((item) => item.name !== t("navigation.home")).map((item) => {
             const isExternal = item.name === t("navigation.p2pHelpCentre")
             const isActive = !isExternal && (
@@ -383,7 +377,7 @@ export default function Sidebar({ className }: SidebarProps) {
             const linkContent = (
               <>
                 <div className="h-5 w-5 flex items-center justify-center">
-                  <SvgIcon src={isActive ? item.selectedIcon : item.icon} fill={isActive ? "var(--brand-red)" : "var(--color-slate-1200)"} />
+                  <SvgIcon src={isActive ? item.selectedIcon : item.icon} fill={isActive ? "var(--brand-red)" : "var(--color-neutral-600)"} />
                 </div>
                 {item.name}
               </>
@@ -397,7 +391,7 @@ export default function Sidebar({ className }: SidebarProps) {
                     <a
                       data-testid={item.testId}
                       href={item.href}
-                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-neutral-50"
+                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50 transition-colors"
                       rel="noopener noreferrer"
                     >
                       {linkContent}
@@ -408,8 +402,8 @@ export default function Sidebar({ className }: SidebarProps) {
                       data-testid={item.testId}
                       href={item.href}
                       className={cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm",
-                        isActive ? "text-brand-red" : "hover:bg-neutral-50",
+                        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
+                        isActive ? "text-brand-red" : "text-neutral-600 hover:bg-neutral-50",
                       )}
                     >
                       {linkContent}
@@ -446,22 +440,22 @@ export default function Sidebar({ className }: SidebarProps) {
           </Button>
         )}
       </nav>
-      <div className="p-4 pb-6">
+      <div className="p-4 mb-4">
         <a
-          className="flex items-center justify-between gap-3 rounded-md py-2 text-sm transition-colors"
+          className="flex items-center gap-3 rounded-lg p-1 -m-1 transition-colors"
           href={homeProfileUrl}
           onClick={() => track("ek_profile_markets")}
         >
-          <div className="flex items-center gap-4">
-            <div data-testid="sidebar-avatar" className="h-10 w-10 rounded-full bg-neutral-200 flex items-center justify-center text-xs font-semibold text-slate-700 shrink-0">
-              {getInitials()}
+          <div className="flex items-center gap-3">
+            <div data-testid="sidebar-avatar" className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-200 text-sm font-medium text-neutral-600 shrink-0">
+              <StandaloneUserFillIcon width={20} height={20} fill="currentColor" />
             </div>
             <div className="flex flex-col min-w-0 gap-1">
               <span className="text-sm font-semibold text-slate-1200 whitespace-pre-wrap wrap-anywhere">{fullName}</span>
               {email && <span className="text-xs text-slate-1200 whitespace-pre-wrap wrap-anywhere">{email}</span>}
             </div>
           </div>
-          <Image src="/icons/chevron-right-black.png" alt={t("common.derivLogo")} width={14} height={24} className="rtl:rotate-180" />
+          <StandaloneChevronRightRegularIcon width={16} height={16} className="text-neutral-400 shrink-0 rtl:rotate-180 ml-auto" />
         </a>
       </div>
       <FeedbackDialog isOpen={showFeedbackDialog} onClose={() => setShowFeedbackDialog(false)} />

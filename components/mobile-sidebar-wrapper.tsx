@@ -4,8 +4,8 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { useTranslations } from "@/lib/i18n/use-translations"
+import { StandaloneArrowLeftFillIcon } from "@deriv/quill-icons/Standalone"
 import ProfileIconWhite from "@/public/icons/profile-icon-white.svg"
-import ArrowBackIcon from "@/public/icons/arrow-back.svg"
 
 export function MobileSidebarTrigger({ "data-testid": testId }: { "data-testid"?: string } = {}) {
   const { t } = useTranslations()
@@ -31,7 +31,7 @@ export function MobileSidebarTrigger({ "data-testid": testId }: { "data-testid"?
         className="h-8 w-8 rounded-full bg-header-icon hover:bg-header-icon [&_svg]:size-6"
         data-testid={testId}
       >
-        <ArrowBackIcon width={24} height={24} aria-hidden="true" />
+        <StandaloneArrowLeftFillIcon width={24} height={24} fill="white" className="rtl:rotate-180" aria-hidden />
       </Button>
     )
   }

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useRef } from "react"
 import Image from "next/image"
+import { StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
 import QRCode from "qrcode"
 import * as htmlToImage from "html-to-image"
 import type { Ad } from "@/types"
@@ -234,8 +235,8 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
     <div className="fixed inset-0 z-50 overflow-y-auto bg-white">
       <div className="mx-auto flex min-h-full max-w-xl flex-col px-4 pb-6 md:px-0">
         <div className="flex items-center justify-end py-[12px] md:p-6 md:pb-4">
-          <Button onClick={() => { track("ek_close_share_ad"); onClose() }} variant="icon-muted" size="sm" className="px-1">
-            <Image src="/icons/close-icon.png" alt="Close" width={24} height={24} />
+          <Button onClick={() => { track("ek_close_share_ad"); onClose() }} variant="icon-muted" aria-label={t("common.close")}>
+            <StandaloneXmarkRegularIcon width={24} height={24} aria-hidden />
           </Button>
         </div>
         <h2 className="text-[24px] font-bold md:px-0">{t("shareAdPage.shareAdTitle")}</h2>

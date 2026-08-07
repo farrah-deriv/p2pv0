@@ -5,6 +5,7 @@ export const runtime = "edge"
 import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
+import { StandaloneArrowLeftFillIcon } from "@deriv/quill-icons/Standalone"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { useUserDataStore } from "@/stores/user-data-store"
@@ -478,8 +479,8 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
         <div className="flex flex-col md:flex-row justify-between">
           <div className="container mx-auto pb-6">
             <div className="bg-slate-75 p-6 rounded-none md:rounded-3xl flex flex-col md:items-start gap-4 mx-[-24px] mt-[-24px] md:mx-0 md:mt-0">
-              <Button data-testid="advertiser-btn-back" variant="icon-muted" onClick={handleBack} size="sm" className="px-1 w-fit">
-                <Image src="/icons/arrow-left-icon.png" alt={t("common.back")} width={24} height={24} className="rtl:rotate-180" />
+              <Button data-testid="advertiser-btn-back" variant="icon-muted" onClick={handleBack} className="!bg-neutral-100 hover:!bg-neutral-200" aria-label={t("common.back")}>
+                <StandaloneArrowLeftFillIcon width={24} height={24} className="rtl:rotate-180" aria-hidden />
               </Button>
               <div className="flex-1 w-full">
                 <div className="flex flex-col md:flex-row gap-2 md:gap-0">

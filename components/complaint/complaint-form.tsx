@@ -83,7 +83,7 @@ export function ComplaintForm({ isOpen, onClose, onSubmit, orderId, type }: Comp
         <div className="max-w-xl mx-auto flex flex-col w-full h-full">
           {/* Back button */}
           <div className="flex items-center px-4 py-3">
-            <Button variant="icon-muted" size="sm" onClick={handleClose} className="px-1" data-testid="complaint-btn-back">
+            <Button variant="icon-muted" onClick={handleClose} className="!bg-neutral-100 hover:!bg-neutral-200" data-testid="complaint-btn-back">
               <BackArrowIcon alt={t("order.goBack")} width={24} height={24} />
             </Button>
           </div>

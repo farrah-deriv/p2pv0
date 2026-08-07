@@ -1,6 +1,6 @@
 "use client"
 
-import Image from "next/image"
+import { StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
 import { Button } from "@/components/ui/button"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import {
@@ -73,13 +73,7 @@ export function SelectedPaymentMethodsSection({
                   <span className="text-grayscale-text-muted">{` ${lines.subtitle}`}</span>
                 ) : null}
               </span>
-              <Image
-                src="/icons/close-icon.png"
-                alt=""
-                width={16}
-                height={16}
-                className="size-4 shrink-0 opacity-72"
-              />
+              <StandaloneXmarkRegularIcon width={16} height={16} className="size-4 shrink-0 opacity-72" aria-hidden />
             </Button>
           )
         })}

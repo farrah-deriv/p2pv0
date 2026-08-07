@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Spinner } from "@/components/ui/spinner"
 import Image from "next/image"
+import { StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
 import { formatAmount } from "@/lib/utils"
 import type { Order } from "@/services/api/api-orders"
 import { Input } from "@/components/ui/input"
@@ -222,12 +223,10 @@ export const PaymentConfirmationSidebar = ({
           <div className="flex items-center justify-end px-4 md:px-0 py-3">
             <Button
               variant="icon-muted"
-              size="sm"
               onClick={onClose}
-              className="px-1 rounded-full"
               aria-label={t("common.close")}
             >
-              <Image src="/icons/close-circle.png" alt="" aria-hidden="true" width={24} height={24} />
+              <StandaloneXmarkRegularIcon width={24} height={24} aria-hidden />
             </Button>
           </div>
 
@@ -324,13 +323,7 @@ export const PaymentConfirmationSidebar = ({
                       className="absolute end-2 top-2 h-7 w-7 rounded-full bg-black/50 p-0 hover:bg-black/70"
                       aria-label={t("orders.removeFile")}
                     >
-                      <Image
-                        src="/icons/close-circle.png"
-                        alt=""
-                        aria-hidden="true"
-                        width={16}
-                        height={16}
-                      />
+                      <StandaloneXmarkRegularIcon width={16} height={16} aria-hidden />
                     </Button>
                   </>
                 ) : (

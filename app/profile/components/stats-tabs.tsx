@@ -224,9 +224,8 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                   <Button
                     data-testid="profile-btn-sidebar-back"
                     variant="icon-muted"
-                    size="sm"
                     onClick={() => setShowStatsSidebar(false)}
-                    className="px-1"
+                    className="!bg-neutral-100 hover:!bg-neutral-200"
                   >
                     <BackArrowIcon alt={t("common.close")} width={24} height={24} />
                   </Button>
@@ -262,9 +261,8 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                   <Button
                     data-testid="profile-btn-sidebar-back"
                     variant="icon-muted"
-                    size="sm"
                     onClick={() => setShowPaymentMethodsSidebar(false)}
-                    className="px-1"
+                    className="!bg-neutral-100 hover:!bg-neutral-200"
                   >
                     <BackArrowIcon alt={t("common.close")} width={24} height={24} />
                   </Button>
@@ -399,9 +397,8 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                   <Button
                     data-testid="profile-btn-sidebar-back"
                     variant="icon-muted"
-                    size="sm"
                     onClick={() => setShowBlockedSidebar(false)}
-                    className="px-1"
+                    className="!bg-neutral-100 hover:!bg-neutral-200"
                   >
                     <BackArrowIcon alt={t("common.close")} width={24} height={24} />
                   </Button>

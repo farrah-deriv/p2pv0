@@ -121,7 +121,7 @@ function NovuBellLinkInner({ disabled = false, onClick }: NovuBellLinkInnerProps
         <SheetContent side="right" className="w-full p-0 sm:max-w-sm" hideCloseButton>
           <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3">
             <SheetClose asChild>
-              <Button variant="icon-muted" size="sm" className="px-1" aria-label={t("common.back")}>
+              <Button variant="icon-muted" className="!bg-neutral-100 hover:!bg-neutral-200" aria-label={t("common.back")}>
                 <BackArrowIcon aria-hidden="true" alt="" width={24} height={24} />
               </Button>
             </SheetClose>

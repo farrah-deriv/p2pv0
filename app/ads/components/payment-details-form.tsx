@@ -282,9 +282,7 @@ const FullPagePaymentSelection = ({
             closeAriaLabel={t("common.close")}
             centerTitle
             titleClassName="text-[20px] font-extrabold"
-            closeIconSrc="/icons/button-close.png"
-            closeIconSize={48}
-            closeButtonClassName="hover:bg-transparent hover:opacity-80 px-0 min-w-[48px]"
+            closeButtonClassName="hover:!bg-transparent hover:!opacity-80"
             className="shrink-0 px-4 pt-4 pb-0"
           />
           {content}
@@ -306,9 +304,7 @@ const FullPagePaymentSelection = ({
           onClose={onClose}
           closeAriaLabel={t("common.close")}
           titleClassName="text-2xl font-extrabold"
-          closeIconSrc="/icons/button-close.png"
-          closeIconSize={48}
-          closeButtonClassName="hover:bg-transparent hover:opacity-80 px-0 min-w-[48px]"
+          closeButtonClassName="hover:!bg-transparent hover:!opacity-80"
           className="mb-2 shrink-0"
         />
         {content}

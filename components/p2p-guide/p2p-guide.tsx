@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useCallback, useRef, useMemo } from "react"
-import Image from "next/image"
+import { StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
 import { useGuideStore, GUIDE_TOTAL_STEPS } from "@/stores/guide-store"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { Button } from "@/components/ui/button"
@@ -286,7 +286,7 @@ export function P2PGuide() {
                 aria-label={t("guide.closeLabel")}
                 className="shrink-0 p-0 h-auto w-auto min-w-0 bg-transparent hover:bg-transparent min-h-0"
               >
-                <Image src="/icons/close-icon.png" alt="" width={24} height={24} />
+                <StandaloneXmarkRegularIcon width={24} height={24} aria-hidden />
               </Button>
             </div>
 

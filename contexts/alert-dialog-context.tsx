@@ -7,7 +7,7 @@ import { Drawer, DrawerContent } from "@/components/ui/drawer"
 import type { AlertDialogConfig, AlertDialogContextType } from "@/types/alert-dialog"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import Image from "next/image"
+import { StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import { isRtlLocale } from "@/lib/i18n/config"
 import { useTranslations } from "@/lib/i18n/use-translations"
@@ -123,7 +123,7 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
                 aria-label={t("common.close")}
                 className="shrink-0 size-10 min-h-10 min-w-10 rounded-full bg-black/4 hover:bg-black/8 focus-visible:ring-1 focus-visible:ring-black"
               >
-                <Image src="/icons/close-icon.png" alt="" width={20} height={20} aria-hidden />
+                <StandaloneXmarkRegularIcon width={20} height={20} aria-hidden />
               </Button>
             )}
           </div>
@@ -169,7 +169,7 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
                 aria-label={t("common.close")}
                 className="shrink-0 size-10 min-h-10 min-w-10 rounded-full bg-black/4 hover:bg-black/8 focus-visible:ring-1 focus-visible:ring-black"
               >
-                <Image src="/icons/close-icon.png" alt="" width={20} height={20} aria-hidden />
+                <StandaloneXmarkRegularIcon width={20} height={20} aria-hidden />
               </Button>
             )}
           </div>

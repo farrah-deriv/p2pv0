@@ -3,11 +3,11 @@
 import type React from "react"
 import { BackArrowIcon } from "@/components/ui/back-arrow-icon"
 import { Button } from "@/components/ui/button"
+import { StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import { isRtlLocale } from "@/lib/i18n/config"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { cn } from "@/lib/utils"
-import Image from "next/image"
 
 interface PanelWrapperProps {
   onBack?: () => void
@@ -29,11 +29,11 @@ export function PanelWrapper({ onBack, onClose, children }: PanelWrapperProps) {
       >
         <div dir={dir} className="max-w-xl mx-auto flex flex-col w-full h-full text-start">
           <div className={cn("flex items-center justify-end px-4 py-3 shrink-0", onBack && "justify-between")}>
-            {onBack && <Button variant="icon-muted" size="sm" onClick={onBack} className="px-1">
+            {onBack && <Button variant="icon-muted" onClick={onBack} className="!bg-neutral-100 hover:!bg-neutral-200">
               <BackArrowIcon alt={t("common.back")} width={24} height={24} />
             </Button>}
-            <Button variant="icon-muted" size="sm" onClick={onClose} className="px-1">
-              <Image src="/icons/close-circle.png" alt={t("common.close")} width={24} height={24} />
+            <Button variant="icon-muted" onClick={onClose} aria-label={t("common.close")}>
+              <StandaloneXmarkRegularIcon width={24} height={24} aria-hidden />
             </Button>
           </div>
           <div className="flex flex-col flex-1 min-h-0 overflow-hidden">{children}</div>

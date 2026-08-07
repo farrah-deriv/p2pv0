@@ -3,7 +3,7 @@
 import * as React from "react"
 import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { cva, type VariantProps } from "class-variance-authority"
-import Image from "next/image"
+import { StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
 
 import { cn } from "@/lib/utils"
 import { useTranslations } from "@/lib/i18n/use-translations"
@@ -67,9 +67,8 @@ const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Con
         {children}
         {!hideCloseButton && (
           <SheetPrimitive.Close asChild>
-            <Button variant="icon-muted" size="sm" className="absolute end-4 top-4 px-1">
-              <Image src="/icons/close-icon.png" alt={t("common.close")} width={24} height={24} />
-              <span className="sr-only">{t("common.close")}</span>
+            <Button variant="icon-muted" className="absolute end-4 top-4" aria-label={t("common.close")}>
+              <StandaloneXmarkRegularIcon width={24} height={24} aria-hidden />
             </Button>
           </SheetPrimitive.Close>
         )}

@@ -1,5 +1,5 @@
 "use client"
-import Image from "next/image"
+import { StandaloneArrowLeftFillIcon } from "@deriv/quill-icons/Standalone"
 import { Button } from "@/components/ui/button"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { getP2pUrl } from "@/lib/get-p2p-url"
@@ -20,8 +20,8 @@ export function PreviousOrdersSection({ onBack }: PreviousOrdersSectionProps) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-4 mb-6 px-3">
-        <Button variant="icon-muted" onClick={onBack} size="sm" className="px-1">
-          <Image src="/icons/arrow-left-icon.png" alt="Close" width={24} height={24} className="rtl:rotate-180" />
+        <Button variant="icon-muted" onClick={onBack} className="!bg-neutral-100 hover:!bg-neutral-200" aria-label={t("common.back")}>
+          <StandaloneArrowLeftFillIcon width={24} height={24} className="rtl:rotate-180" aria-hidden />
         </Button>
       </div>
 

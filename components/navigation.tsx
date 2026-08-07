@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import { BackArrowIcon } from "@/components/ui/back-arrow-icon"
 import { Button } from "@/components/ui/button"
-import Image from "next/image"
+import { StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
 import { NovuBellLink } from "@/components/novu-notifications"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { cn } from "@/lib/utils"
@@ -37,12 +37,12 @@ export default function Navigation({
       if (onBack && onClose) {
         return (
           <div className="flex items-center gap-4 w-full justify-between">
-            <Button variant="icon-muted" onClick={onBack} size="sm" className="px-1">
+            <Button variant="icon-muted" onClick={onBack} className="!bg-neutral-100 hover:!bg-neutral-200">
               <BackArrowIcon alt={t("common.back")} width={24} height={24} />
             </Button>
             <h1 className="text-xl font-bold">{title}</h1>
-            <Button variant="icon-muted" onClick={onClose} size="sm" className="px-1" data-testid="ad-form-btn-close">
-              <Image src="/icons/close-circle.png" alt={t("common.close")} width={24} height={24} />
+            <Button variant="icon-muted" onClick={onClose} aria-label={t("common.close")} data-testid="ad-form-btn-close">
+              <StandaloneXmarkRegularIcon width={24} height={24} aria-hidden />
             </Button>
           </div>
         )
@@ -53,8 +53,7 @@ export default function Navigation({
               <Button
                 variant="icon-muted"
                 onClick={() => router.push(redirectUrl)}
-                size="sm"
-                className="px-1"
+                className="!bg-neutral-100 hover:!bg-neutral-200"
               >
                 <BackArrowIcon alt={t("common.back")} width={24} height={24} />
               </Button>
@@ -82,11 +81,10 @@ export default function Navigation({
               router.push(redirectUrl)
             }
           }}
-          size="sm"
-          className="px-1"
+          aria-label={t("common.close")}
           data-testid="ad-form-btn-close"
         >
-          <Image src="/icons/close-circle.png" alt={t("common.close")} width={24} height={24} />
+          <StandaloneXmarkRegularIcon width={24} height={24} aria-hidden />
         </Button>
       </>
     )

@@ -63,16 +63,19 @@ export default function MobileFooterNav({ className }: { className?: string }) {
     <div
       data-testid="footer-nav-container"
       data-guide-id="guide-footer-nav"
-      className={cn("bg-white border-t md:hidden z-40 flex-shrink-0", className)}
+      className={cn("bg-white border-t border-neutral-200 md:hidden z-40 flex-shrink-0", className)}
     >
-      <div className={cn("grid grid-cols-4 min-h-16 relative", showWallet && "grid-cols-5")}>
+      <div
+        className="flex items-center justify-around pt-2"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 10px)" }}
+      >
         <Link
           href={getHomeUrl(isV1Signup, "home")}
           data-testid="footer-nav-link-home"
-          className="flex flex-col items-center justify-center gap-1.5 px-4 pt-2 pb-2 min-h-14 text-center max-w-full text-[12px] font-semibold text-neutral-600"
+          className="flex flex-col items-center gap-1.5 px-4 pt-2 pb-2 min-h-14 justify-center text-[12px] font-semibold text-neutral-600 transition-colors w-[100px]"
         >
           <div className="h-5 w-5 flex items-center justify-center flex-shrink-0">
-            <SvgIcon src={HomeIcon} fill="var(--color-slate-1200)" />
+            <SvgIcon src={HomeIcon} fill="var(--color-neutral-600)" />
           </div>
           {t("navigation.home")}
         </Link>
@@ -80,14 +83,14 @@ export default function MobileFooterNav({ className }: { className?: string }) {
           href="/"
           data-testid="footer-nav-link-markets"
           className={cn(
-            "flex flex-col items-center justify-center gap-1.5 px-4 pt-2 pb-2 min-h-14 text-center max-w-full text-[12px] font-semibold",
+            "flex flex-col items-center gap-1.5 px-4 pt-2 pb-2 min-h-14 justify-center text-[12px] font-semibold transition-colors w-[100px]",
             isMarketActive ? "text-brand-red" : "text-neutral-600",
           )}
         >
           <div className="h-5 w-5 flex items-center justify-center flex-shrink-0">
             <SvgIcon
               src={isMarketActive ? MarketSelectedIcon : MarketIcon}
-              fill={isMarketActive ? "var(--brand-red)" : "var(--color-slate-1200)"}
+              fill={isMarketActive ? "var(--brand-red)" : "var(--color-neutral-600)"}
             />
           </div>
           {t("navigation.market")}
@@ -96,12 +99,12 @@ export default function MobileFooterNav({ className }: { className?: string }) {
           href="/orders"
           data-testid="footer-nav-link-orders"
           className={cn(
-            "flex flex-col items-center justify-center gap-1.5 px-4 pt-2 pb-2 min-h-14 text-center max-w-full text-[12px] font-semibold",
+            "flex flex-col items-center gap-1.5 px-4 pt-2 pb-2 min-h-14 justify-center text-[12px] font-semibold transition-colors w-[100px]",
             isOrdersActive ? "text-brand-red" : "text-neutral-600",
           )}
         >
           <div className="h-5 w-5 flex items-center justify-center flex-shrink-0">
-            <SvgIcon src={isOrdersActive ? OrdersSelectedIcon : OrdersIcon} fill={isOrdersActive ? "var(--brand-red)" : "var(--color-slate-1200)"} />
+            <SvgIcon src={isOrdersActive ? OrdersSelectedIcon : OrdersIcon} fill={isOrdersActive ? "var(--brand-red)" : "var(--color-neutral-600)"} />
           </div>
           {t("navigation.orders")}
         </Link>
@@ -109,12 +112,12 @@ export default function MobileFooterNav({ className }: { className?: string }) {
           href="/ads"
           data-testid="footer-nav-link-ads"
           className={cn(
-            "flex flex-col items-center justify-center gap-1.5 px-4 pt-2 pb-2 min-h-14 text-center max-w-full text-[12px] font-semibold",
+            "flex flex-col items-center gap-1.5 px-4 pt-2 pb-2 min-h-14 justify-center text-[12px] font-semibold transition-colors w-[100px]",
             isAdsActive ? "text-brand-red" : "text-neutral-600",
           )}
         >
           <div className="h-5 w-5 flex items-center justify-center flex-shrink-0">
-            <SvgIcon src={isAdsActive ? AdsSelectedIcon : AdsIcon} fill={isAdsActive ? "var(--brand-red)" : "var(--color-slate-1200)"} />
+            <SvgIcon src={isAdsActive ? AdsSelectedIcon : AdsIcon} fill={isAdsActive ? "var(--brand-red)" : "var(--color-neutral-600)"} />
           </div>
           {t("navigation.myAds")}
         </Link>
@@ -123,12 +126,12 @@ export default function MobileFooterNav({ className }: { className?: string }) {
             href="/wallet"
             data-testid="footer-nav-link-wallet"
             className={cn(
-              "flex flex-col items-center justify-center gap-1.5 px-4 pt-2 pb-2 min-h-14 text-center max-w-full text-[12px] font-semibold",
+              "flex flex-col items-center gap-1.5 px-4 pt-2 pb-2 min-h-14 justify-center text-[12px] font-semibold transition-colors w-[100px]",
               isWalletActive ? "text-brand-red" : "text-neutral-600",
             )}
           >
             <div className="h-5 w-5 flex items-center justify-center flex-shrink-0">
-              <SvgIcon src={isWalletActive ? WalletSelectedIcon : WalletIcon} fill={isWalletActive ? "var(--brand-red)" : "var(--color-slate-1200)"} />
+              <SvgIcon src={isWalletActive ? WalletSelectedIcon : WalletIcon} fill={isWalletActive ? "var(--brand-red)" : "var(--color-neutral-600)"} />
             </div>
             {t("navigation.wallet")}
           </Link>

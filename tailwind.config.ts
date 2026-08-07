@@ -89,6 +89,8 @@ const config: Config = {
           hover: "#00bfea",
         },
         neutral: {
+          50: "#f1f3f5",
+          600: "#333333",
           7: "#6a7178",
           10: "#101213",
         },

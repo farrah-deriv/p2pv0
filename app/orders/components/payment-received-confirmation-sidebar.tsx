@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import Image from "next/image"
+import { StandaloneArrowLeftFillIcon } from "@deriv/quill-icons/Standalone"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { InputOTP } from "@/components/ui/input-otp"
@@ -194,8 +194,8 @@ export const PaymentReceivedConfirmationSidebar = ({
         <div className="flex flex-col h-full sm:max-w-none md:max-w-xl md:mx-auto">
           <SheetHeader className="p-4">
             <div className="flex items-center justify-between">
-              <Button variant="icon-muted" onClick={onClose} size="sm" className="px-1">
-                <Image src="/icons/arrow-left-icon.png" alt="Back" width={24} height={24} className="rtl:rotate-180" />
+              <Button variant="icon-muted" onClick={onClose} className="!bg-neutral-100 hover:!bg-neutral-200" aria-label={t("common.back")}>
+                <StandaloneArrowLeftFillIcon width={24} height={24} className="rtl:rotate-180" aria-hidden />
               </Button>
             </div>
           </SheetHeader>

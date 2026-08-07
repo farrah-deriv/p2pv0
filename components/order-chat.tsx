@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
+import { StandaloneArrowLeftFillIcon } from "@deriv/quill-icons/Standalone"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { Input } from "@/components/ui/input"
@@ -456,12 +457,12 @@ export default function OrderChat({
         {onNavigateToOrderDetails && (
           <Button
             variant="icon-muted"
-            size="sm"
             onClick={onNavigateToOrderDetails}
-            className="me-[16px] px-1"
+            className="me-[16px] !bg-neutral-100 hover:!bg-neutral-200"
+            aria-label={t("common.back")}
             data-testid="order-chat-btn-back"
           >
-            <Image src="/icons/arrow-left-icon.png" alt={t("common.back")} width={24} height={24} className="rtl:rotate-180" />
+            <StandaloneArrowLeftFillIcon width={24} height={24} className="rtl:rotate-180" aria-hidden />
           </Button>
         )}
         <div className="relative w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-white font-bold me-3">

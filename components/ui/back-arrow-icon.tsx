@@ -1,31 +1,25 @@
-import Image, { type ImageProps } from "next/image"
+import { StandaloneArrowLeftFillIcon } from "@deriv/quill-icons/Standalone"
 
 import { cn } from "@/lib/utils"
 import { RTL_MIRROR_ICON } from "@/lib/rtl"
 
-type BackArrowIconProps = Omit<ImageProps, "src" | "alt"> & {
-  /** Localized label for screen readers (e.g. `t("common.back")`). */
-  alt: string
+type BackArrowIconProps = {
+  alt?: string
+  width?: number
+  height?: number
+  className?: string
 }
 
-/**
- * Standard back/close control using the shared arrow-left asset, mirrored in RTL.
- */
-export function BackArrowIcon({
-  alt,
-  width = 24,
-  height = 24,
-  className,
-  ...props
-}: BackArrowIconProps) {
+export function BackArrowIcon({ alt, width = 24, height = 24, className }: BackArrowIconProps) {
   return (
-    <Image
-      src="/icons/arrow-left-icon.png"
-      alt={alt}
-      width={width}
-      height={height}
-      className={cn(RTL_MIRROR_ICON, className)}
-      {...props}
-    />
+    <>
+      <StandaloneArrowLeftFillIcon
+        width={width}
+        height={height}
+        className={cn(RTL_MIRROR_ICON, className)}
+        aria-hidden="true"
+      />
+      {alt && <span className="sr-only">{alt}</span>}
+    </>
   )
 }
