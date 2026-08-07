@@ -10,9 +10,10 @@ import { useState, useEffect, useRef, Fragment } from "react"
 import { useUserDataStore, getCachedSignup } from "@/stores/user-data-store"
 import { SvgIcon } from "@/components/icons/svg-icon"
 import { useTranslations } from "@/lib/i18n/use-translations"
-import { Input } from "@/components/ui/input"
+import { StandaloneSearchRegularIcon } from "@deriv/quill-icons/Standalone"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Spinner } from "@/components/ui/spinner"
+import { TabHorizontal } from "@deriv-com/quill-ui-v2"
 import { useMarketFilterStore } from "@/stores/market-filter-store"
 import { useOrderSidebarStore } from "@/stores/order-sidebar-store"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
@@ -283,11 +284,11 @@ export default function Sidebar({ className }: SidebarProps) {
           <a
             data-testid="sidebar-link-home"
             href={homeUrl}
-            className="hidden md:flex items-center gap-3 rounded-md py-4 text-sm"
+            className="hidden md:flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-neutral-50"
             rel="noopener noreferrer"
           >
             <div className="h-5 w-5 flex items-center justify-center">
-              <SvgIcon src={HomeIcon} fill="#181C25" />
+              <SvgIcon src={HomeIcon} fill="var(--color-slate-1200)" />
             </div>
             {t("navigation.home")}
           </a>
@@ -296,57 +297,52 @@ export default function Sidebar({ className }: SidebarProps) {
         <div className="my-3 border-b border-grayscale-200"></div>
         {isOnMarketPage && (
           <div className="relative mt-2 mb-1">
-            <Input
-              data-testid="sidebar-input-search"
-              variant="tertiary"
-              placeholder={t("market.searchAdvertiserNickname")}
-              value={searchInput}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              onFocus={() => {
-                if (isMaintenanceActive) return
-                setIsSearchFocused(true)
-              }}
-              disabled={isMaintenanceActive}
-              onBlur={() => {
-                if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current)
-                blurTimeoutRef.current = setTimeout(() => setIsSearchFocused(false), 150)
-              }}
-              className={`w-full min-w-0 bg-grayscale-500 rounded-lg ps-4 mt-6 ${searchInput ? "pe-10" : "pe-4"}`}
-            />
-            {searchInput && (
-              <Button
-                data-testid="sidebar-btn-search-clear"
-                variant="ghost"
-                size="sm"
-                onClick={handleClear}
-                className="absolute end-2 md:end-4 top-1/2 transform -translate-y-1/2 hover:bg-transparent p-0 h-auto"
-              >
-                <Image src="/icons/clear-search-icon.png" alt={t("common.clearSearch")} width={24} height={24} />
-              </Button>
-            )}
+            <div className="flex items-center gap-2 rounded-lg bg-black/[0.04] px-2 h-9">
+              <StandaloneSearchRegularIcon iconSize="xs" className="shrink-0 text-neutral-400" aria-hidden />
+              <input
+                data-testid="sidebar-input-search"
+                type="text"
+                placeholder={t("market.searchAdvertiserNickname")}
+                value={searchInput}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                onFocus={() => {
+                  if (isMaintenanceActive) return
+                  setIsSearchFocused(true)
+                }}
+                disabled={isMaintenanceActive}
+                onBlur={() => {
+                  if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current)
+                  blurTimeoutRef.current = setTimeout(() => setIsSearchFocused(false), 150)
+                }}
+                className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-neutral-400 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+              {searchInput && (
+                <Button
+                  variant="icon-muted"
+                  data-testid="sidebar-btn-search-clear"
+                  onClick={handleClear}
+                  aria-label={t("common.clearSearch")}
+                >
+                  <Image src="/icons/clear-search-icon.png" alt="" aria-hidden="true" width={16} height={16} />
+                </Button>
+              )}
+            </div>
             {isSearchFocused && searchInput.length > 0 && (
               <div className="absolute top-full start-0 mt-1 w-[360px] min-h-[272px] bg-white border border-slate-200 rounded-xl shadow-md z-50 overflow-hidden" onMouseDown={(e) => e.preventDefault()}>
                 <div className="px-0 pt-3 pb-0">
-                  <Tabs value={searchTab} onValueChange={(v) => { if (v === "sell") track("ek_buy_tab_markets_search"); else track("ek_sell_tab_markets_search"); setSearchTab(v as "buy" | "sell") }}>
-                    <TabsList className="w-full bg-transparent p-0">
-                      <TabsTrigger
-                        data-testid="sidebar-tab-search-buy"
-                        value="sell"
-                        variant="underline"
-                        className="flex-1 data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:rounded-none after:bg-black data-[state=active]:after:w-full"
-                      >
-                        {t("market.buyTab")}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        data-testid="sidebar-tab-search-sell"
-                        value="buy"
-                        variant="underline"
-                        className="flex-1 data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:rounded-none after:bg-black data-[state=active]:after:w-full"
-                      >
-                        {t("market.sellTab")}
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
+                  <TabHorizontal
+                    type="fill"
+                    value={searchTab}
+                    onChange={(v) => {
+                      if (v === "sell") track("ek_buy_tab_markets_search")
+                      else track("ek_sell_tab_markets_search")
+                      setSearchTab(v as "buy" | "sell")
+                    }}
+                    tabs={[
+                      { value: "sell", label: t("market.buyTab") },
+                      { value: "buy", label: t("market.sellTab") },
+                    ]}
+                  />
                 </div>
                 {isSearching && searchResults.length === 0 ? (
                   <AdvertiserSearchSkeleton count={3} />
@@ -359,7 +355,7 @@ export default function Sidebar({ className }: SidebarProps) {
                     ))}
                     {isFetchingNextPage && (
                       <div className="sticky bottom-0 flex justify-center py-2 bg-white">
-                        <div className="w-4 h-4 border-2 border-grayscale-400 border-t-slate-600 rounded-full animate-spin" />
+                        <Spinner size="sm" />
                       </div>
                     )}
                     <div ref={dropdownSentinelRef} className="h-1" />
@@ -387,7 +383,7 @@ export default function Sidebar({ className }: SidebarProps) {
             const linkContent = (
               <>
                 <div className="h-5 w-5 flex items-center justify-center">
-                  <SvgIcon src={isActive ? item.selectedIcon : item.icon} fill={isActive ? "#FF444F" : "#181C25"} />
+                  <SvgIcon src={isActive ? item.selectedIcon : item.icon} fill={isActive ? "var(--brand-red)" : "var(--color-slate-1200)"} />
                 </div>
                 {item.name}
               </>
@@ -401,7 +397,7 @@ export default function Sidebar({ className }: SidebarProps) {
                     <a
                       data-testid={item.testId}
                       href={item.href}
-                      className="flex items-center gap-3 rounded-md py-4 text-sm"
+                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-neutral-50"
                       rel="noopener noreferrer"
                     >
                       {linkContent}
@@ -411,7 +407,10 @@ export default function Sidebar({ className }: SidebarProps) {
                       prefetch
                       data-testid={item.testId}
                       href={item.href}
-                      className={cn("flex items-center gap-3 rounded-md py-4 text-sm", isActive ? "text-primary" : "")}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm",
+                        isActive ? "text-brand-red" : "hover:bg-neutral-50",
+                      )}
                     >
                       {linkContent}
                     </Link>
@@ -422,16 +421,17 @@ export default function Sidebar({ className }: SidebarProps) {
           })}
         </ul>
         {!userData?.feedback_exist && !isDisabled && userId && verificationStatus?.phone_verified && !isPoiExpired && !isPoaExpired && (
-          <button
+          <Button
+            variant="ghost"
             data-testid="sidebar-btn-feedback"
             onClick={() => setShowFeedbackDialog(true)}
-            className="hidden md:flex items-center gap-3 rounded-md py-4 text-sm w-full text-start"
+            className="hidden md:flex items-center gap-3 !rounded-md !py-4 text-sm w-full text-start !justify-start !h-auto"
           >
             <div className="h-5 w-5 flex items-center justify-center">
               <Image src="/icons/ic-feedback.svg" alt="" width={20} height={20} />
             </div>
             {t("nps.sendFeedback")}
-          </button>
+          </Button>
         )}
         {!isDisabled && (
           <Button
@@ -453,11 +453,11 @@ export default function Sidebar({ className }: SidebarProps) {
           onClick={() => track("ek_profile_markets")}
         >
           <div className="flex items-center gap-4">
-            <div data-testid="sidebar-avatar" className="w-8 h-8 rounded-full bg-grayscale-300 flex items-center justify-center text-xs font-extrabold text-slate-700 shrink-0">
+            <div data-testid="sidebar-avatar" className="h-10 w-10 rounded-full bg-neutral-200 flex items-center justify-center text-xs font-semibold text-slate-700 shrink-0">
               {getInitials()}
             </div>
             <div className="flex flex-col min-w-0 gap-1">
-              <span className="text-sm font-extrabold text-slate-1200 whitespace-pre-wrap wrap-anywhere">{fullName}</span>
+              <span className="text-sm font-semibold text-slate-1200 whitespace-pre-wrap wrap-anywhere">{fullName}</span>
               {email && <span className="text-xs text-slate-1200 whitespace-pre-wrap wrap-anywhere">{email}</span>}
             </div>
           </div>

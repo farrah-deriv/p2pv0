@@ -6,6 +6,7 @@ import Image from "next/image"
 import { BackArrowIcon } from "@/components/ui/back-arrow-icon"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { useMarketFilterStore } from "@/stores/market-filter-store"
 import { useOrderSidebarStore } from "@/stores/order-sidebar-store"
@@ -193,10 +194,10 @@ export default function MobileAdvertiserSearch({ isOpen, onClose }: MobileAdvert
                 <div className="flex items-center gap-3 px-4 py-3 flex-shrink-0">
                     <Button
                         data-testid="mobile-search-btn-back"
-                        variant="ghost"
+                        variant="icon-muted"
                         size="sm"
                         onClick={handleBack}
-                        className="bg-grayscale-500 px-1 w-fit"
+                        className="px-1 w-fit"
                     >
                         <BackArrowIcon alt={t("common.back")} width={24} height={24} />
                     </Button>
@@ -263,7 +264,7 @@ export default function MobileAdvertiserSearch({ isOpen, onClose }: MobileAdvert
                             </ul>
                             {isFetchingNextPage && (
                                 <div className="sticky bottom-0 flex justify-center py-4 bg-background">
-                                    <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                                    <Spinner size="md" />
                                 </div>
                             )}
                             <div ref={sentinelRef} data-testid="mobile-search-sentinel-load-more" className="h-1" />

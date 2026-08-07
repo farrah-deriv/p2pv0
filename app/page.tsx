@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { useQueryClient, type InfiniteData } from "@tanstack/react-query"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import type { Advertisement, PaymentMethod } from "@/services/api/api-buy-sell"
 import MarketFilterDropdown from "@/components/market-filter/market-filter-dropdown"
 import type { MarketFilterOptions } from "@/components/market-filter/types"
@@ -21,7 +22,7 @@ import { CurrencyFilter } from "@/components/currency-filter/currency-filter"
 import { useCurrencyData } from "@/hooks/use-currency-data"
 import { useAccountCurrencies } from "@/hooks/use-account-currencies"
 import Image from "next/image"
-import { currencyFlagMapper, formatPaymentMethodName, IS_CLOSED_GROUP_ENABLED } from "@/lib/utils"
+import { formatPaymentMethodName, IS_CLOSED_GROUP_ENABLED } from "@/lib/utils"
 import EmptyState from "@/components/empty-state"
 import PaymentMethodsFilter from "@/components/payment-methods-filter/payment-methods-filter"
 import { useMarketFilterStore } from "@/stores/market-filter-store"
@@ -422,14 +423,14 @@ export default function BuySellPage() {
                   page.map((ad) =>
                     ad.id === updatedAdvert.id
                       ? {
-                          ...ad,
-                          version: updatedAdvert.version,
-                          effective_rate_display: updatedAdvert.effective_rate_display,
-                          minimum_order_amount: updatedAdvert.minimum_order_amount,
-                          actual_maximum_order_amount: updatedAdvert.actual_maximum_order_amount,
-                          payment_methods: updatedAdvert.payment_methods,
-                          payment_method_names: updatedAdvert.payment_method_names,
-                        }
+                        ...ad,
+                        version: updatedAdvert.version,
+                        effective_rate_display: updatedAdvert.effective_rate_display,
+                        minimum_order_amount: updatedAdvert.minimum_order_amount,
+                        actual_maximum_order_amount: updatedAdvert.actual_maximum_order_amount,
+                        payment_methods: updatedAdvert.payment_methods,
+                        payment_method_names: updatedAdvert.payment_method_names,
+                      }
                       : ad,
                   ),
                 ),
@@ -531,7 +532,7 @@ export default function BuySellPage() {
               />
               {showCurrencyFilter && (
                 <div
-                  className="flex shrink-0 flex-col items-start gap-1 md:flex-row md:items-center md:gap-2"
+                  className="flex shrink-0 flex-row items-center gap-2"
                   data-guide-id="guide-currency-filter"
                 >
                   {activeTab === "sell" && (
@@ -550,36 +551,8 @@ export default function BuySellPage() {
                     onCurrencySelect={handleCurrencySelect}
                     disabled={isMaintenanceActive}
                     title={activeTab === "sell" ? t("market.payWith") : t("market.receiveIn")}
-                    trigger={
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={isMaintenanceActive}
-                        className="h-10 min-h-10 max-h-10 gap-2 border border-[#ffffff3d] bg-transparent px-3 font-normal hover:bg-transparent rounded-3xl text-white"
-                        onClick={() => track("ek_payment_currency_markets")}
-
-                      >
-                        {currencyFlagMapper[displayCurrency as keyof typeof currencyFlagMapper] && (
-                          <Image
-                            src={
-                              currencyFlagMapper[displayCurrency as keyof typeof currencyFlagMapper] || "/placeholder.svg"
-                            }
-                            alt={`${displayCurrency} logo`}
-                            width={24}
-                            height={16}
-                            className="min-w-6 w-6 object-cover"
-                          />
-                        )}
-                        <span className="shrink-0">{displayCurrency}</span>
-                        <Image
-                          src="/icons/chevron-down-white.png"
-                          alt={t("common.arrow")}
-                          width={24}
-                          height={24}
-                          className="min-w-6 w-6 transition-transform duration-200"
-                        />
-                      </Button>
-                    }
+                    onOpen={() => track("ek_payment_currency_markets")}
+                    triggerClassName="!h-10 !min-h-10 !max-h-10 !w-auto !px-3 !font-normal !border !border-white/24 !bg-transparent !text-white hover:!bg-white/10 !rounded-full"
                   />
                 </div>
               )}
@@ -615,42 +588,15 @@ export default function BuySellPage() {
                   onSelectionChange={setSelectedPaymentMethods}
                   isLoading={isLoadingPaymentMethods}
                   disabled={isMaintenanceActive}
-                  trigger={
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={isMaintenanceActive}
-                      className={cn(
-                        "rounded-md border border-input font-normal justify-between px-3 rounded-3xl min-w-48 md:min-w-0",
-                        hasFilteredPaymentMethods
-                          ? "bg-black hover:bg-black text-white"
-                          : "bg-transparent hover:bg-transparent",
-                      )}
-                      onClick={() => track("ek_payment_method_filter_markets")}
-                      data-guide-id="guide-payment-method-filter"
-                    >
-                      <span className="truncate overflow-hidden text-ellipsis whitespace-nowrap">
-                        {getPaymentMethodsDisplayText()}
-                      </span>
-                      {hasFilteredPaymentMethods ? (
-                        <Image
-                          src="/icons/chevron-down-white.png"
-                          alt={t("common.arrow")}
-                          width={24}
-                          height={24}
-                          className="transition-transform duration-200"
-                        />
-                      ) : (
-                        <Image
-                          src="/icons/chevron-down.png"
-                          alt={t("common.arrow")}
-                          width={24}
-                          height={24}
-                          className="transition-transform duration-200"
-                        />
-                      )}
-                    </Button>
-                  }
+                  triggerLabel={getPaymentMethodsDisplayText()}
+                  onOpen={() => track("ek_payment_method_filter_markets")}
+                  triggerDataGuideId="guide-payment-method-filter"
+                  triggerClassName={cn(
+                    "!h-10 !min-h-10 !rounded-3xl !min-w-48 md:!min-w-0 !font-normal",
+                    hasFilteredPaymentMethods
+                      ? "!bg-black hover:!bg-black !text-white !border-black"
+                      : "!bg-transparent hover:!bg-transparent",
+                  )}
                 />
               </div>
 
@@ -664,12 +610,12 @@ export default function BuySellPage() {
                   disabled={isMaintenanceActive}
                   trigger={
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       disabled={isMaintenanceActive}
                       className={cn(
-                        "rounded-md border border-input font-normal px-3  focus:border-black min-w-fit rounded-3xl",
-                        hasActiveFilters ? "bg-black hover:bg-black" : "bg-transparent hover:bg-transparent",
+                        "font-normal px-3 min-w-fit rounded-3xl !h-10 !min-h-10 !border !border-solid !border-neutral-200",
+                        hasActiveFilters ? "!bg-black hover:!bg-black !text-white !border-black" : "",
                       )}
                       onClick={() => track("ek_filter_markets")}
                       data-guide-id="guide-advanced-filter"
@@ -744,7 +690,7 @@ export default function BuySellPage() {
                 </Table>
               </div>
             ) : error ? (
-              <div className="text-center py-8 text-red-500">
+              <div className="text-center py-8 text-error">
                 {error.message || t("market.failedToLoadAdvertisements")}
               </div>
             ) : adverts.length === 0 ? (
@@ -793,13 +739,15 @@ export default function BuySellPage() {
                             </div>
                             <div className="flex flex-col">
                               <div className="flex items-center gap-2">
-                                <button
+                                <Button
+                                  variant="ghost"
                                   onClick={() => handleAdvertiserClick(ad.user?.id || 0)}
-                                  className="hover:underline cursor-pointer"
+                                  className="hover:underline cursor-pointer !p-0 !h-auto"
                                   data-testid={`markets-link-advertiser-${ad.advertiser_id ?? ad.user?.id}`}
+                                  size="sm"
                                 >
                                   {ad.user?.nickname}
-                                </button>
+                                </Button>
                                 <VerifiedBadge size={20} />
                                 {ad.user.trade_band && (
                                   <TradeBandBadge
@@ -931,7 +879,7 @@ export default function BuySellPage() {
                         <TableCell className="p-2 lg:p-4 lg:pe-0 text-end align-middle row-start-3 whitespace-nowrap">
                           {Number(userId) !== ad.user.id && (
                             <Button
-                              variant={ad.type === "buy" ? "destructive" : "secondary"}
+                              variant={ad.type === "buy" ? "destructive" : "buy"}
                               size="sm"
                               onClick={() => handleOrderClick(ad)}
                               disabled={!!tempBanUntil || isMaintenanceActive}
@@ -951,7 +899,7 @@ export default function BuySellPage() {
           </div>
           {isFetchingNextPage && (
             <div className="fixed bottom-20 md:bottom-4 left-0 right-0 md:pl-[327px] md:pr-[24px] flex justify-center z-50 pointer-events-none">
-              <div className="w-6 h-6 border-2 border-grayscale-400 border-t-slate-600 rounded-full animate-spin" />
+              <Spinner size="md" />
             </div>
           )}
         </div>

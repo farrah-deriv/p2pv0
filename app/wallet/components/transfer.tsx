@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -16,7 +17,7 @@ import {
   type TransferValidateDetails,
 } from "@/services/api/api-wallets"
 import * as WalletsAPI from "@/services/api/api-wallets"
-import { currencyLogoMapper, formatAmountWithDecimals, IS_TRANSFER_FEE_DISPLAY_ENABLED } from "@/lib/utils"
+import { cn, currencyLogoMapper, formatAmountWithDecimals, IS_TRANSFER_FEE_DISPLAY_ENABLED } from "@/lib/utils"
 import { useCurrencies, queryKeys } from "@/hooks/use-api-queries"
 import { getQueryClient } from "@/lib/react-query-client"
 import WalletDisplay from "./wallet-display"
@@ -27,6 +28,7 @@ import { getWalletTransferRejectionInfo, type WalletTransferApiError, type Walle
 import type { Transaction } from "../types"
 import { InfoCircleIcon } from "@/components/icons/info-circle"
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { StandaloneArrowUpArrowDownRegularIcon } from "@deriv/quill-icons"
 
 interface TransferProps {
   currencySelected?: string
@@ -157,7 +159,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
   const toEnterAmount = () => setStep("enterAmount")
   const toConfirm = () => {
-    if (window.innerWidth >= 768) {
+    if (!isMobile) {
       setShowAmountReceiveInfoSheet(false)
       setPendingMobileConfirmAfterInfo(false)
       setShowDesktopConfirmPopup(true)
@@ -950,14 +952,17 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
   const renderWalletAccountCardSkeleton = (label: string) => (
     <>
-      <div className="absolute top-4 start-6 flex flex-col items-start gap-1.5">
-        <div className="text-grayscale-text-muted text-base font-normal">{label}</div>
-        <Skeleton className="h-6 w-6 rounded-full mt-1 bg-grayscale-200" />
+      <div className="flex items-start flex-col flex-1 gap-1">
+        <div className="text-neutral-400 text-base">{label}</div>
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-6 w-6 rounded-full flex-shrink-0 bg-grayscale-200" />
+          <div className="space-y-1">
+            <Skeleton className="h-5 w-36 bg-grayscale-200" />
+            <Skeleton className="h-4 w-24 bg-grayscale-200" />
+          </div>
+        </div>
       </div>
-      <div className="flex-1 min-w-0 mt-6 ms-10 pe-8 text-start space-y-2">
-        <Skeleton className="h-5 w-36 bg-grayscale-200" />
-        <Skeleton className="h-4 w-24 bg-grayscale-200" />
-      </div>
+      <Image src="/icons/chevron-down.png" alt="" aria-hidden="true" width={20} height={20} className="text-neutral-400 shrink-0" />
     </>
   )
 
@@ -1457,7 +1462,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                 className="w-full h-12 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2"
               >
                 {isSubmitting ? (
-                  <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
+                  <Spinner size="xs" />
                 ) : (
                   t("common.confirm")
                 )}
@@ -1524,7 +1529,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                 className="w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2"
               >
                 {isSubmitting ? (
-                  <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
+                  <Spinner size="xs" />
                 ) : (
                   t("common.confirm")
                 )}
@@ -1620,19 +1625,19 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
           </Button>
         </div>
         <div className="md:max-w-[608px] md:mx-auto md:w-full flex-1 flex flex-col">
-          <h1 className="text-slate-1200 text-xl md:text-[32px] font-extrabold mb-6 px-2">
+          <h1 className="text-neutral-800 text-xl font-bold mb-6 px-2">
             {t("wallet.transfer")}
           </h1>
-          <div className="relative mb-6 px-2" data-testid={isWalletSelectionLoading ? "transfer-wallet-skeleton" : undefined}>
+          <div className="-space-y-[18px] mb-6 px-2" data-testid={isWalletSelectionLoading ? "transfer-wallet-skeleton" : undefined}>
             <div
               data-testid={sourceWalletData ? "transfer-btn-account-from" : "transfer-btn-select-from"}
-              className={`bg-grayscale-500 p-4 px-6 flex items-center gap-1 rounded-2xl h-[100px] relative ${
+              className={`bg-neutral-50 px-6 py-4 flex items-center gap-3 rounded-2xl h-24 ${
                 isWalletSelectionLoading ? "cursor-default pointer-events-none" : "cursor-pointer"
               }`}
               onClick={() => {
                 if (isWalletSelectionLoading) return
                 track("ek_from_wallet_transfer")
-                if (window.innerWidth < 768) {
+                if (isMobile) {
                   setShowMobileSheet("from")
                 } else {
                   setShowDesktopWalletPopup("from")
@@ -1643,67 +1648,76 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                 renderWalletAccountCardSkeleton(t("wallet.from"))
               ) : (
                 <>
-                  <div className="absolute top-4 start-6 flex flex-col items-start gap-1.5">
-                    <div className="text-grayscale-text-muted text-base font-normal">{t("wallet.from")}</div>
-                    {sourceWalletData &&
-                      (sourceWalletData.type?.toLowerCase() === "p2p" ? (
-                        <div className="relative w-[21px] h-[21px] flex-shrink-0 mt-1">
-                          <Image
-                            src="/icons/p2p-black.png"
-                            alt={t("common.p2p")}
-                            width={21}
-                            height={21}
-                            className="w-[21px] h-[21px] rounded-full"
-                          />
-                          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
-                            <div className="w-[10.5px] h-[10.5px] rounded-full bg-white flex items-center justify-center">
-                              <Image
-                                src={
-                                  getCurrencyImage(sourceWalletData.currency)}
-                                alt={sourceWalletData.currency}
-                                width={9}
-                                height={9}
-                                className="w-[9px] h-[9px] rounded-full"
-                              />
+                  <div className="flex items-start flex-col flex-1 gap-1 min-w-0">
+                    <p className="text-neutral-400 text-base">{t("wallet.from")}</p>
+                    {sourceWalletData ? (
+                      <div className="flex items-center gap-3 w-full min-w-0">
+                        {sourceWalletData.type?.toLowerCase() === "p2p" ? (
+                          <div className="relative w-6 h-6 flex-shrink-0">
+                            <Image
+                              src="/icons/p2p-black.png"
+                              alt={t("common.p2p")}
+                              width={24}
+                              height={24}
+                              className="w-6 h-6 rounded-full"
+                            />
+                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
+                              <div className="w-3.5 h-3.5 rounded-full bg-white flex items-center justify-center">
+                                <Image
+                                  src={getCurrencyImage(sourceWalletData.currency)}
+                                  alt={sourceWalletData.currency}
+                                  width={10}
+                                  height={10}
+                                  className="w-2.5 h-2.5 rounded-full"
+                                />
+                              </div>
                             </div>
                           </div>
+                        ) : (
+                          <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+                            <Image
+                              src={getCurrencyImage(sourceWalletData.currency)}
+                              alt={sourceWalletData.currency}
+                              width={24}
+                              height={24}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-base font-semibold text-neutral-800 truncate">{sourceWalletData.name}</p>
+                          <p className="text-sm text-neutral-500">{getSourceWalletAmount()}</p>
                         </div>
-                      ) : (
-                        <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mb-3 mt-1">
-                          <Image
-                            src={getCurrencyImage(sourceWalletData.currency)}
-                            alt={sourceWalletData.currency}
-                            width={24}
-                            height={24}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                  </div>
-                  <div className="flex-1 min-w-0 mt-6 ms-10 pe-8 text-start">
-                    {sourceWalletData ? (
-                      <>
-                        <div className="text-slate-1200 text-base font-bold">{sourceWalletData.name}</div>
-                        <div className="text-grayscale-600 text-sm font-normal">{getSourceWalletAmount()}</div>
-                      </>
+                      </div>
                     ) : (
-                      <div className="text-grayscale-text-placeholder text-base font-normal whitespace-nowrap">{t("wallet.select")}</div>
+                      <p className="text-base font-medium text-neutral-400">{t("wallet.select")}</p>
                     )}
                   </div>
-                  <Image src="/icons/chevron-down.png" alt={t("common.dropdown")} width={24} height={24} />
+                  <Image src="/icons/chevron-down.png" alt={t("common.dropdown")} width={20} height={20} className="shrink-0" />
                 </>
               )}
             </div>
-            <div className="h-2"></div>
+            <div className="flex justify-center relative z-10">
+              <Button
+                variant="icon-action"
+                data-testid="transfer-btn-swap"
+                onClick={handleInterchange}
+                disabled={isWalletSelectionLoading}
+                className="!bg-white hover:!bg-neutral-50 !shadow-sm !text-neutral-500"
+                aria-label={t("common.switch")}
+              >
+                <StandaloneArrowUpArrowDownRegularIcon width={24} height={24} className="text-neutral-500" />
+              </Button>
+            </div>
             <div
               data-testid={destinationWalletData ? "transfer-btn-account-to" : "transfer-btn-select-to"}
-              className={`bg-grayscale-500 p-4 px-6 flex items-center gap-1 rounded-2xl h-[100px] relative ${
+              className={`bg-neutral-50 px-6 py-4 flex items-center gap-3 rounded-2xl h-24 ${
                 isWalletSelectionLoading ? "cursor-default pointer-events-none" : "cursor-pointer"
               }`}
               onClick={() => {
                 if (isWalletSelectionLoading) return
                 track("ek_to_wallet_transfer")
-                if (window.innerWidth < 768) {
+                if (isMobile) {
                   setShowMobileSheet("to")
                 } else {
                   setShowDesktopWalletPopup("to")
@@ -1714,75 +1728,54 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                 renderWalletAccountCardSkeleton(t("wallet.to"))
               ) : (
                 <>
-                  <div className="absolute top-4 start-6 flex flex-col items-start gap-1.5">
-                    <div className="text-grayscale-text-muted text-base font-normal">{t("wallet.to")}</div>
-                    {destinationWalletData &&
-                      (destinationWalletData.type?.toLowerCase() === "p2p" ? (
-                        <div className="relative w-[21px] h-[21px] flex-shrink-0 mt-1">
-                          <Image
-                            src="/icons/p2p-black.png"
-                            alt={t("common.p2p")}
-                            width={21}
-                            height={21}
-                            className="w-[21px] h-[21px] rounded-full"
-                          />
-                          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
-                            <div className="w-[10.5px] h-[10.5px] rounded-full bg-white flex items-center justify-center">
-                              <Image
-                                src={
-                                  getCurrencyImage(destinationWalletData.currency)}
-                                alt={destinationWalletData.currency}
-                                width={9}
-                                height={9}
-                                className="w-[9px] h-[9px] rounded-full"
-                              />
+                  <div className="flex items-start flex-col flex-1 gap-1 min-w-0">
+                    <p className="text-neutral-400 text-base">{t("wallet.to")}</p>
+                    {destinationWalletData ? (
+                      <div className="flex items-center gap-3 w-full min-w-0">
+                        {destinationWalletData.type?.toLowerCase() === "p2p" ? (
+                          <div className="relative w-6 h-6 flex-shrink-0">
+                            <Image
+                              src="/icons/p2p-black.png"
+                              alt={t("common.p2p")}
+                              width={24}
+                              height={24}
+                              className="w-6 h-6 rounded-full"
+                            />
+                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
+                              <div className="w-3.5 h-3.5 rounded-full bg-white flex items-center justify-center">
+                                <Image
+                                  src={getCurrencyImage(destinationWalletData.currency)}
+                                  alt={destinationWalletData.currency}
+                                  width={10}
+                                  height={10}
+                                  className="w-2.5 h-2.5 rounded-full"
+                                />
+                              </div>
                             </div>
                           </div>
+                        ) : (
+                          <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+                            <Image
+                              src={getCurrencyImage(destinationWalletData.currency)}
+                              alt={destinationWalletData.currency}
+                              width={24}
+                              height={24}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-base font-semibold text-neutral-800 truncate">{destinationWalletData.name}</p>
+                          <p className="text-sm text-neutral-500">{getDestinationWalletAmount()}</p>
                         </div>
-                      ) : (
-                        <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mb-3 mt-1">
-                          <Image
-                            src={
-                              getCurrencyImage(destinationWalletData.currency)}
-                            alt={destinationWalletData.currency}
-                            width={24}
-                            height={24}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                  </div>
-                  <div className="flex-1 min-w-0 mt-6 ms-10 pe-8 text-start">
-                    {destinationWalletData ? (
-                      <>
-                        <div className="text-slate-1200 text-base font-bold">{destinationWalletData.name}</div>
-                        <div className="text-grayscale-600 text-sm font-normal">{getDestinationWalletAmount()}</div>
-                      </>
+                      </div>
                     ) : (
-                      <div className="text-grayscale-text-placeholder text-base font-normal whitespace-nowrap">{t("wallet.select")}</div>
+                      <p className="text-base font-medium text-neutral-400">{t("wallet.select")}</p>
                     )}
                   </div>
-                  <Image src="/icons/chevron-down.png" alt={t("common.dropdown")} width={24} height={24} />
+                  <Image src="/icons/chevron-down.png" alt={t("common.dropdown")} width={20} height={20} className="shrink-0" />
                 </>
               )}
-            </div>
-            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
-              <Button
-                data-testid="transfer-btn-swap"
-                variant="ghost"
-                size="icon"
-                onClick={handleInterchange}
-                disabled={isWalletSelectionLoading}
-                className="pointer-events-auto size-12 h-12 w-12 min-h-12 max-h-12 p-0 bg-transparent hover:bg-transparent shadow-none disabled:opacity-40"
-              >
-                <Image
-                  src="/icons/button-switch.png"
-                  alt={t("common.switch")}
-                  width={48}
-                  height={48}
-                  className="size-12"
-                />
-              </Button>
             </div>
           </div>
           <div className="mb-6 px-2 relative">
@@ -1795,7 +1788,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                   placeholder="0.00"
                   value={transferAmount || ""}
                   onChange={handleAmountChange}
-                  className="h-12 px-4 pe-16 border border-grayscale-200 rounded-lg text-base text-start placeholder:text-grayscale-text-placeholder appearance-none"
+                  className="h-14 px-4 pe-16 border border-neutral-200 rounded-xl text-base text-start placeholder:text-neutral-400 appearance-none"
                   max={getSourceWalletBalance()}
                 />
                 {!showCurrencySwitcher && (
@@ -1805,100 +1798,71 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                 )}
               </div>
               {showCurrencySwitcher && (
-                <div className="w-32 h-12 bg-black/[0.04] rounded-2xl p-2 flex items-center justify-center">
-                  <Tabs
-                    value={selectedAmountCurrency}
-                    onValueChange={(value) => {
-                      if (value) {
-                        if (value === "source") {
-                          track("ek_source_currency_segment_transfer")
-                          setSelectedCurrency(sourceWalletData?.currency || null)
-                        } else if (value === "destination") {
-                          track("ek_destination_currency_segment_transfer")
-                          setSelectedCurrency(destinationWalletData?.currency || null)
-                        }
-                        setTransferAmount("")
-                        setSelectedAmountCurrency(value as "source" | "destination")
-                      }
+                <div className="relative flex shrink-0 h-14 rounded-xl bg-neutral-100 px-2 py-1">
+                  <span
+                    className={`absolute top-1 bottom-1 rounded-[10px] bg-white shadow-sm transition-all duration-200 ease-in-out w-[calc(50%-4px)] ${
+                      selectedAmountCurrency === "source" ? "left-2" : "left-[calc(50%+2px)]"
+                    }`}
+                    aria-hidden="true"
+                  />
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      track("ek_source_currency_segment_transfer")
+                      setSelectedCurrency(sourceWalletData?.currency || null)
+                      setTransferAmount("")
+                      setSelectedAmountCurrency("source")
                     }}
-                    className="w-full h-full"
+                    className={cn(
+                      "!relative !z-10 !flex-1 !min-w-12 !rounded-[10px] !text-sm !px-2 !font-medium !h-full !min-h-0",
+                      selectedAmountCurrency === "source" ? "!text-neutral-800" : "!text-neutral-500 hover:!text-neutral-700",
+                    )}
                   >
-                    <TabsList className="bg-transparent h-full gap-1 w-full p-0">
-                      <TabsTrigger
-                        value="source"
-                        className="text-base px-3 h-full rounded-lg border-0 shadow-none data-[state=active]:bg-white data-[state=inactive]:bg-transparent hover:bg-white/50 text-slate-1200 font-normal flex-1"
-                      >
-                        {sourceWalletData?.currency}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="destination"
-                        className="text-base px-3 h-full rounded-lg border-0 shadow-none data-[state=active]:bg-white data-[state=inactive]:bg-transparent hover:bg-white/50 text-slate-1200 font-normal flex-1"
-                      >
-                        {destinationWalletData?.currency}
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
+                    {sourceWalletData?.currency}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      track("ek_destination_currency_segment_transfer")
+                      setSelectedCurrency(destinationWalletData?.currency || null)
+                      setTransferAmount("")
+                      setSelectedAmountCurrency("destination")
+                    }}
+                    className={cn(
+                      "!relative !z-10 !flex-1 !min-w-12 !rounded-[10px] !text-sm !px-2 !font-medium !h-full !min-h-0",
+                      selectedAmountCurrency === "destination" ? "!text-neutral-800" : "!text-neutral-500 hover:!text-neutral-700",
+                    )}
+                  >
+                    {destinationWalletData?.currency}
+                  </Button>
                 </div>
               )}
             </div>
             {transferAmount && !isAmountValid(transferAmount) && (
-              <p data-testid="transfer-error-amount" className="text-red-500 text-sm mt-1">{getAmountErrorMessage()}</p>
+              <p data-testid="transfer-error-amount" className="text-error text-sm mt-1">{getAmountErrorMessage()}</p>
             )}
-            <div className="flex gap-2 mt-6">
-              <Button
-                data-testid="transfer-btn-pct-25"
-                className={`flex-1 font-normal ${selectedPercentage === 25
-                  ? "bg-grayscale-200 text-slate-1200 border-slate-1200 hover:bg-grayscale-200"
-                  : "text-grayscale-600 border-grayscale-200 hover:bg-transparent"
-                  }`}
-                onClick={() => handlePercentageClick(25)}
-                size="sm"
-                variant="outline"
-              >
-                25%
-              </Button>
-              <Button
-                data-testid="transfer-btn-pct-50"
-                className={`flex-1 font-normal ${selectedPercentage === 50
-                  ? "bg-grayscale-200 text-slate-1200 border-slate-1200 hover:bg-grayscale-200"
-                  : "text-grayscale-600 border-grayscale-200 hover:bg-transparent"
-                  }`}
-                onClick={() => handlePercentageClick(50)}
-                size="sm"
-                variant="outline"
-              >
-                50%
-              </Button>
-              <Button
-                data-testid="transfer-btn-pct-75"
-                className={`flex-1 font-normal ${selectedPercentage === 75
-                  ? "bg-grayscale-200 text-slate-1200 border-slate-1200 hover:bg-grayscale-200"
-                  : "text-grayscale-600 border-grayscale-200 hover:bg-transparent"
-                  }`}
-                onClick={() => handlePercentageClick(75)}
-                size="sm"
-                variant="outline"
-              >
-                75%
-              </Button>
-              <Button
-                data-testid="transfer-btn-pct-100"
-                className={`flex-1 font-normal ${selectedPercentage === 100
-                  ? "bg-grayscale-200 text-slate-1200 border-slate-1200 hover:bg-grayscale-200"
-                  : "text-grayscale-600 border-grayscale-200 hover:bg-transparent"
-                  }`}
-                onClick={() => handlePercentageClick(100)}
-                size="sm"
-                variant="outline"
-              >
-                100%
-              </Button>
+            <div className="grid grid-cols-4 gap-2 mt-6">
+              {([25, 50, 75, 100] as const).map((pct) => (
+                <Button
+                  key={pct}
+                  variant="chip"
+                  data-testid={`transfer-btn-pct-${pct}`}
+                  onClick={() => handlePercentageClick(pct)}
+                  className={cn(
+                    selectedPercentage === pct
+                      ? "!border-neutral-800 !bg-neutral-800/5 !text-neutral-800"
+                      : "hover:!bg-neutral-50 hover:!border-neutral-300",
+                  )}
+                >
+                  {pct}%
+                </Button>
+              ))}
             </div>
 
             {showCurrencySwitcher && IS_TRANSFER_FEE_DISPLAY_ENABLED && (
               <div className="mt-6 space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-black/50 text-xs font-normal">{t("wallet.transferAmount")}</span>
+                  <span className="text-grayscale-text-muted text-xs font-normal">{t("wallet.transferAmount")}</span>
                   <span className="text-slate-1200 text-xs font-normal">
                     {transferFeeCalculation
                       ? `${formatAmountByCurrency(
@@ -1911,7 +1875,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-black/50 text-xs font-normal">
+                  <span className="text-grayscale-text-muted text-xs font-normal">
                     {t("wallet.transferFee")} ({transferFeeCalculation?.feePercentage || 0}%)
                   </span>
                   <span className="text-slate-1200 text-xs font-normal">
@@ -1921,7 +1885,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                   </span>
                 </div>
                 <div className="flex justify-between items-start">
-                  <span className="text-black/50 text-xs font-normal">{t("wallet.youllReceive")}:</span>
+                  <span className="text-grayscale-text-muted text-xs font-normal">{t("wallet.youllReceive")}:</span>
                   <div className="text-end">
                     <div className="text-slate-1200 text-xs font-normal">
                       {transferFeeCalculation && exchangeRateData
@@ -1929,7 +1893,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                         : "-"}
                     </div>
                     {transferFeeCalculation && (
-                      <div className="text-black/50 text-xs font-normal mt-1">
+                      <div className="text-grayscale-text-muted text-xs font-normal mt-1">
                         {formatAmountByCurrency(
                           transferFeeCalculation.youllReceiveConverted,
                           sourceWalletData?.currency || "",
@@ -1966,7 +1930,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                 className="flex h-12 min-h-12 max-h-12 px-7 justify-center items-center gap-2"
               >
                 {isValidatePreviewLoading ? (
-                  <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
+                  <Spinner size="xs" />
                 ) : (
                   t("wallet.transfer")
                 )}
@@ -1996,7 +1960,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
               className="w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2"
             >
               {isValidatePreviewLoading ? (
-                <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
+                <Spinner size="xs" />
               ) : (
                 t("wallet.transfer")
               )}
@@ -2069,8 +2033,9 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
             <div className="hidden md:flex gap-4 mt-6">
               <Button
                 data-testid="transfer-success-btn-details"
+                variant="outline-white"
                 onClick={() => { track("ek_view_details_transfer_successful"); handleViewDetails() }}
-                className="w-[276px] h-12 px-7 flex justify-center items-center gap-2 bg-transparent border border-white rounded-3xl text-white text-base font-extrabold hover:bg-white/10"
+                className="w-[276px] h-12 px-7 flex justify-center items-center gap-2 font-extrabold"
               >
                 {t("wallet.viewDetails")}
               </Button>
@@ -2089,8 +2054,9 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
             </Button>
             <Button
               data-testid="transfer-success-btn-details"
+              variant="outline-white"
               onClick={() => { track("ek_view_details_transfer_successful"); handleViewDetails() }}
-              className="w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2 bg-transparent border border-white rounded-3xl text-white text-base font-extrabold hover:bg-white/10"
+              className="w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2 font-extrabold"
             >
               {t("wallet.viewDetails")}
             </Button>
@@ -2101,7 +2067,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
   const renderUnsuccessfulCtaDesktop = () => {
     const primary = "w-[276px] h-12 px-7 flex justify-center items-center gap-2"
-    const secondary = "w-[276px] h-12 px-7 flex justify-center items-center gap-2 bg-transparent border border-white rounded-3xl text-white text-base font-extrabold hover:bg-white/10"
+    const secondaryLayout = "w-[276px] h-12 px-7 flex justify-center items-center gap-2 font-extrabold"
 
     if (transferRejectionCta === "contact_us") {
       return (
@@ -2134,14 +2100,14 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     if (transferRejectionCta === "got_it_contact_us") {
       return (
         <div className="hidden md:flex gap-4 mt-6">
-          <Button data-testid="transfer-error-btn-cancel" onClick={handleDoneClick} className={secondary}>{t("wallet.gotIt")}</Button>
+          <Button data-testid="transfer-error-btn-cancel" variant="outline-white" onClick={handleDoneClick} className={secondaryLayout}>{t("wallet.gotIt")}</Button>
           <Button data-testid="transfer-error-btn-contact" onClick={handleOpenLiveChat} className={primary}>{t("wallet.contactUs")}</Button>
         </div>
       )
     }
     return (
       <div className="hidden md:flex gap-4 mt-6">
-        <Button data-testid="transfer-error-btn-cancel" onClick={() => { track("ek_not_now_transfer_unsuccessful"); handleDoneClick() }} className={secondary}>{t("wallet.notNow")}</Button>
+        <Button data-testid="transfer-error-btn-cancel" variant="outline-white" onClick={() => { track("ek_not_now_transfer_unsuccessful"); handleDoneClick() }} className={secondaryLayout}>{t("wallet.notNow")}</Button>
         <Button data-testid="transfer-error-btn-retry" onClick={() => { track("ek_try_again_transfer_unsuccessful"); toEnterAmount() }} className={primary}>{t("wallet.tryAgain")}</Button>
       </div>
     )
@@ -2149,7 +2115,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
   const renderUnsuccessfulCtaMobile = () => {
     const primary = "w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2"
-    const secondary = "w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2 bg-transparent border border-white rounded-3xl text-white text-base font-extrabold hover:bg-white/10"
+    const secondaryLayout = "w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2 font-extrabold"
 
     if (transferRejectionCta === "contact_us") {
       return (
@@ -2183,14 +2149,14 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
       return (
         <div className="block md:hidden w-full space-y-3">
           <Button data-testid="transfer-error-btn-contact" onClick={handleOpenLiveChat} className={primary}>{t("wallet.contactUs")}</Button>
-          <Button data-testid="transfer-error-btn-cancel" onClick={handleDoneClick} className={secondary}>{t("wallet.gotIt")}</Button>
+          <Button data-testid="transfer-error-btn-cancel" variant="outline-white" onClick={handleDoneClick} className={secondaryLayout}>{t("wallet.gotIt")}</Button>
         </div>
       )
     }
     return (
       <div className="block md:hidden w-full space-y-3">
         <Button data-testid="transfer-error-btn-retry" onClick={() => { track("ek_try_again_transfer_unsuccessful"); toEnterAmount() }} className={primary}>{t("wallet.tryAgain")}</Button>
-        <Button data-testid="transfer-error-btn-cancel" onClick={() => { track("ek_not_now_transfer_unsuccessful"); handleDoneClick() }} className={secondary}>{t("wallet.notNow")}</Button>
+        <Button data-testid="transfer-error-btn-cancel" variant="outline-white" onClick={() => { track("ek_not_now_transfer_unsuccessful"); handleDoneClick() }} className={secondaryLayout}>{t("wallet.notNow")}</Button>
       </div>
     )
   }

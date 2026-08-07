@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { OrdersAPI } from "@/services/api"
 import type { Order } from "@/services/api/api-orders"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -41,7 +42,7 @@ function TimeRemainingDisplay({ expiresAt, testId }: { expiresAt: string; testId
   if (timeRemaining.hours && timeRemaining.minutes && timeRemaining.seconds) return null
 
   return (
-    <div className="text-xs bg-[#0000000a] text-[#000000B8] rounded-sm w-fit py-[4px] px-[8px]" data-testid={testId}>
+    <div className="text-xs bg-grayscale-500 text-grayscale-600 rounded-sm w-fit py-[4px] px-[8px]" data-testid={testId}>
       {`${pad(timeRemaining.hours)}:${pad(timeRemaining.minutes)}:${pad(timeRemaining.seconds)}`}
     </div>
   )
@@ -478,7 +479,7 @@ export default function OrdersPage() {
               <div ref={observerTarget} className="h-1" />
               {isFetchingNextPage && (
                 <div className="flex justify-center py-4">
-                  <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                  <Spinner size="md" />
                 </div>
               )}
             </>

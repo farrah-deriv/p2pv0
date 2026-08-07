@@ -1308,7 +1308,7 @@
     "transfer_wr_err_exceeds_net_deposit_limit_title": "Лимит вывода для этого метода — {max_amount}",
     "transfer_wr_err_high_risk_method_settle_first_body": "{deposit_amount} будет возвращён на ваш исходный способ пополнения. После этого вы сможете вывести остаток.",
     "transfer_wr_err_high_risk_method_settle_first_title": "Сначала необходимо использовать исходный способ оплаты",
-    "transfer_wr_err_low_trading_activity_body": "Вам необходимо совершить сделок на сумму не менее USD {required_volume}, прежде чем этот вывод будет выполнен.",
+    "transfer_wr_err_low_trading_activity_body": "Совершите больше сделок, чтобы этот вывод средств мог быть обработан.",
     "transfer_wr_err_low_trading_activity_title": "Торгуйте немного больше",
     "transfer_wr_err_method_not_used_previously_body": "В целях вашей безопасности вывод возможен только на платёжный способ, который вы ранее использовали для пополнения.",
     "transfer_wr_err_method_not_used_previously_title": "Выберите способ, которым вы пополняли счёт",

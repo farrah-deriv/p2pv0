@@ -131,7 +131,7 @@ export default function LoginPage() {
               onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, ""))}
               maxLength={6}
             />
-            {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}
+            {error && <p className="text-error mt-2 text-sm">{error}</p>}
           </div>
           <div className="text-center mb-8 space-y-2">
             <p className="text-gray-600">{t("login.didntReceiveCode")}</p>
@@ -158,7 +158,7 @@ export default function LoginPage() {
         <div className="mb-6">
           <label className="block text-gray-600 mb-3">{t("login.email")}</label>
           <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("login.emailPlaceholder")} />
-          {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}
+          {error && <p className="text-error mt-2 text-sm">{error}</p>}
         </div>
         <Button onClick={handleLogin} disabled={!email.trim() || isLoading} className="w-full">
           {isLoading ? t("login.loggingIn") : t("login.logIn")}

@@ -1288,7 +1288,7 @@
     "transfer_wr_err_exceeds_net_deposit_limit_title": "Limit wypłaty dla tej metody wynosi {max_amount}",
     "transfer_wr_err_high_risk_method_settle_first_body": "{deposit_amount} zostanie najpierw zwrócone na Twoją oryginalną metodę depozytu. Resztę możesz wypłacić później.",
     "transfer_wr_err_high_risk_method_settle_first_title": "Najpierw należy użyć oryginalnej metody płatności",
-    "transfer_wr_err_low_trading_activity_body": "Musisz przetransferować co najmniej USD {required_volume}, zanim ta wypłata zostanie przetworzona.",
+    "transfer_wr_err_low_trading_activity_body": "Przeprowadź więcej transakcji, aby ta wypłata mogła zostać przetworzona.",
     "transfer_wr_err_low_trading_activity_title": "Handluj trochę więcej",
     "transfer_wr_err_method_not_used_previously_body": "Dla Twojego bezpieczeństwa wypłaty mogą trafić tylko do metody płatności, której wcześniej użyłeś do depozytu.",
     "transfer_wr_err_method_not_used_previously_title": "Wybierz metodę, której użyłeś do wpłaty",

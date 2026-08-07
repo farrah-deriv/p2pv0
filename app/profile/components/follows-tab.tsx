@@ -16,6 +16,7 @@ import { PROFILE_SUB_TABS_ROW } from "@/lib/rtl"
 import { useFavouriteUsers, useFollowers } from "@/hooks/use-api-queries"
 import { useQueryClient } from "@tanstack/react-query"
 import { queryKeys } from "@/hooks/use-api-queries"
+import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 interface FollowUser {
   nickname: string
@@ -92,7 +93,7 @@ export default function FollowsTab() {
                     <span>{t("profile.userUnfollowed", { nickname: user.nickname })}</span>
                   </div>
                 ),
-                className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+                className: TOAST_SUCCESS_CLASS,
                 duration: 2500,
               })
               queryClient.invalidateQueries({ queryKey: queryKeys.buySell.favouriteUsers() })
@@ -113,7 +114,7 @@ export default function FollowsTab() {
                   <span>{t("profile.userFollowed", { nickname: user.nickname })}</span>
                 </div>
               ),
-              className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+              className: TOAST_SUCCESS_CLASS,
               duration: 2500,
             })
             queryClient.invalidateQueries({ queryKey: queryKeys.buySell.favouriteUsers() })

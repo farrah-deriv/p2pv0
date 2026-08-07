@@ -62,14 +62,14 @@ export default function FollowDropdown({
     return (
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" disabled={isLoading} className="gap-2">
+          <Button variant="secondary" size="sm" disabled={isLoading} className="gap-2">
             {t("advertiser.following")}
             <Image
               src="/icons/chevron-down.svg"
               alt=""
               width={14}
               height={22}
-              className={cn("transition-transform", isOpen && "rotate-180")}
+              className={cn("transition-transform duration-200", isOpen && "rotate-180")}
             />
           </Button>
         </DropdownMenuTrigger>
@@ -107,14 +107,14 @@ export default function FollowDropdown({
 
   return (
     <>
-      <Button variant="outline" size="sm" disabled={isLoading} onClick={() => setIsOpen(true)} className="gap-2">
+      <Button variant="secondary" size="sm" disabled={isLoading} onClick={() => setIsOpen(true)} className="gap-2">
         {t("advertiser.following")}
         <Image
           src="/icons/chevron-down.svg"
           alt=""
           width={14}
           height={22}
-          className={cn("transition-transform", isOpen && "rotate-180")}
+          className={cn("transition-transform duration-200", isOpen && "rotate-180")}
         />
       </Button>
       <Drawer open={isOpen} onOpenChange={setIsOpen}>

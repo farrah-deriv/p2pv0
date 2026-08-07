@@ -81,7 +81,7 @@ export default function WalletSidebar({
       >
         <div dir={dir} className="flex items-center justify-between gap-4 px-4 pb-3 md:py-3 mt-9 md:mt-0 md:border-b">
           <h2 className="min-w-0 flex-1 text-start text-lg font-bold">{getTitle()}</h2>
-          <Button data-testid="wallet-sidebar-btn-close" onClick={onClose} variant="ghost" size="sm" className="px-1">
+          <Button data-testid="wallet-sidebar-btn-close" onClick={onClose} variant="icon-muted" size="sm" className="px-1">
             <Image src="/icons/close-circle.png" alt={t("common.close")} width={24} height={24} />
           </Button>
         </div>

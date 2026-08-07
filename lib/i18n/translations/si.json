@@ -1276,7 +1276,7 @@
     "transfer_wr_err_exceeds_net_deposit_limit_title": "මෙම ක්‍රමය සඳහා මුදල් ආපසු ගැනීමේ සීමාව {max_amount} වේ",
     "transfer_wr_err_high_risk_method_settle_first_body": "{deposit_amount} පළමුව ඔබේ මුල් තැන්පතු ක්‍රමයට ආපසු එවනු ලැබේ. ඉතුරු ටික පස්සෙ withdraw කරන්න පුලුවන්.",
     "transfer_wr_err_high_risk_method_settle_first_title": "මුලින්ම භාවිතා කළ යුත්තේ මුල් ගෙවීමේ ක්‍රමයයි",
-    "transfer_wr_err_low_trading_activity_body": "මෙම මුදල් ආපසු ගැනීම සිදු වීමට පෙර ඔබ අවම වශයෙන් USD {required_volume} වෙළඳාම් කළ යුතුය.",
+    "transfer_wr_err_low_trading_activity_body": "මෙම මුදල් ආපසු ගැනීම සිදු කිරීමට හැකි වීමට වැඩි ගනුදෙනු කරන්න.",
     "transfer_wr_err_low_trading_activity_title": "තව ටිකක් වෙළඳාම් කරන්න",
     "transfer_wr_err_method_not_used_previously_body": "ඔබේ ආරක්ෂාව සඳහා, මුදල් ආපසු ගැනීම් යා හැක්කේ ඔබ කලින් තැන්පත් කිරීමට භාවිත කළ ගෙවීම් ක්‍රමයකට පමණි.",
     "transfer_wr_err_method_not_used_previously_title": "ඔබ තැන්පත් කර ඇති ක්‍රමයක් තෝරන්න",

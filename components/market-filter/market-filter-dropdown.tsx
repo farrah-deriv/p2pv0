@@ -150,10 +150,10 @@ export default function MarketFilterDropdown({
       </div>
       {isMobile && (
         <div className="flex flex-col-reverse gap-3 mt-4">
-          <Button variant="outline" onClick={handleReset} className="flex-1 bg-transparent" size="default" data-testid="market-filter-btn-reset">
+          <Button variant="ghost" onClick={handleReset} className="flex-1" size="sm" data-testid="market-filter-btn-reset">
             {t("filter.reset")}
           </Button>
-          <Button onClick={handleApply} className="flex-1" size="default" data-testid="market-filter-btn-apply">
+          <Button onClick={handleApply} className="flex-1" size="sm" data-testid="market-filter-btn-apply">
             {t("filter.apply")}
           </Button>
         </div>

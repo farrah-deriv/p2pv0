@@ -4,8 +4,8 @@ import type React from "react"
 import { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Alert } from "@/components/ui/alert"
-import { InfoCircleIcon } from "@/components/icons/info-circle"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { Advertisement } from "@/services/api/api-buy-sell"
@@ -21,7 +21,6 @@ import { useUserDataStore } from "@/stores/user-data-store"
 import { isRtlLocale } from "@/lib/i18n/config"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { ExchangeRateDisplay } from "@/components/exchange-rate-display"
-import { ALERT_INLINE_FLEX, ALERT_INLINE_TEXT } from "@/lib/rtl"
 import { useWebSocketContext } from "@/contexts/websocket-context"
 import {
   flattenUserPaymentMethodsPages,
@@ -55,6 +54,7 @@ import {
   normalizePaymentMethodId,
   resolveSelectedUserPaymentMethodIds,
 } from "@/lib/payment-methods/payment-method-selection-utils"
+import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 interface OrderSidebarProps {
   isOpen: boolean
@@ -314,7 +314,7 @@ const PaymentSelectionContent = ({
         )}
         {isFetchingNextPage && (
           <div className="flex justify-center py-2">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-grayscale-400 border-t-slate-600" />
+            <Spinner size="md" />
           </div>
         )}
 
@@ -801,7 +801,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
             <span>{t("profile.paymentMethodAddedWithName", { methodName: createdMethodName })}</span>
           </div>
         ),
-        className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+        className: TOAST_SUCCESS_CLASS,
         duration: 2500,
       })
     } catch (err) {
@@ -918,22 +918,19 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
           {localAd && (
             <div className="flex flex-col h-full max-w-xl mx-auto">
               <div className="flex items-center justify-end px-4 py-3">
-                <Button data-testid="order-sidebar-btn-close" onClick={handleClose} variant="ghost" size="sm" className="bg-grayscale-300 px-1">
+                <Button data-testid="order-sidebar-btn-close" onClick={handleClose} variant="icon-muted" size="sm" className="px-1">
                   <Image src="/icons/close-circle.png" alt={t("common.close")} width={24} height={24} />
                 </Button>
               </div>
 
               <div className="flex flex-col h-auto overflow-y-auto">
                 <div className="p-4 pb-0">
-                  <Alert variant="warning" className={ALERT_INLINE_FLEX} dir={dir}>
-                    <InfoCircleIcon className="size-5 shrink-0 mt-0.5" />
-                    <div className={ALERT_INLINE_TEXT}>
-                      <h3 className="font-bold text-sm mb-1">
-                        {t("order.secureTradeReminder.title")}
-                      </h3>
-                      <div className="text-sm">
-                        {t("order.secureTradeReminder.description")}
-                      </div>
+                  <Alert variant="warning" dir={dir}>
+                    <h3 className="font-bold text-sm mb-1">
+                      {t("order.secureTradeReminder.title")}
+                    </h3>
+                    <div className="text-sm">
+                      {t("order.secureTradeReminder.description")}
                     </div>
                   </Alert>
                 </div>
@@ -947,7 +944,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
                       type="number"
                       className={cn(
                         "[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none py-0",
-                        validationError && "border-red-500 focus:border-red-500 focus-visible:ring-0",
+                        validationError && "border-error focus:border-error focus-visible:ring-0",
                       )}
                       step="any"
                       inputMode="decimal"
@@ -962,7 +959,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
                       label={t("order.amount")}
                     />
                   </div>
-                  {validationError && <p data-testid="order-sidebar-error-amount" className="text-sm text-red-500 mb-2">{validationError}</p>}
+                  {validationError && <p data-testid="order-sidebar-error-amount" className="text-sm text-error mb-2">{validationError}</p>}
                   <div className="flex items-center">
                     <span className="text-grayscale-text-muted">{youSendText}:&nbsp;</span>
                     <span className="text-slate-1200 font-bold">
@@ -981,18 +978,18 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
                       type="button"
                       variant="ghost"
                       data-testid="order-sidebar-btn-select-payment"
-                      className="flex h-[56px] w-full items-center justify-between rounded-lg border border-gray-200 px-4 font-normal hover:bg-gray-50"
+                      className="flex h-[56px] w-full items-center justify-between rounded-lg border border-neutral-200 bg-white px-4 font-normal hover:bg-neutral-50"
                       onClick={handleShowPaymentSelection}
                     >
                       <span className="flex min-w-0 flex-1 flex-col items-start gap-[1px]">
                         {selectedPaymentMethods.length > 0 && (
-                          <span className="text-xs font-normal text-black/[0.72]">
+                          <span className="text-xs font-normal text-grayscale-600">
                             {t("order.receivePaymentTo")}
                           </span>
                         )}
                         <span
                           data-testid="order-sidebar-text-payment-method"
-                          className="text-base font-normal text-black/[0.72]"
+                          className="text-base font-normal text-grayscale-600"
                         >
                           {getSelectedPaymentMethodsText()}
                         </span>
@@ -1045,7 +1042,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
                   </div>
                 </div>
 
-                <div className="border-t border-[#E9ECEF] m-4 mb-0 pt-4 text-sm">
+                <div className="border-t border-slate-1700 m-4 mb-0 pt-4 text-sm">
                   <h3 className="text-grayscale-text-muted mb-2 text-start">
                     {isBuy ? t("order.buyersPaymentMethods") : t("order.sellersPaymentMethods")}
                   </h3>
@@ -1064,7 +1061,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
                   </div>
                 </div>
 
-                <div className="mx-4 mt-4 border-t border-[#E9ECEF] py-2 text-sm">
+                <div className="mx-4 mt-4 border-t border-slate-1700 py-2 text-sm">
                   <h3 className="text-grayscale-text-muted">
                     {isBuy ? t("order.buyersInstructions") : t("order.sellersInstructions")}
                   </h3>
@@ -1084,7 +1081,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
                     }
                   >
                     {isSubmitting ? (
-                      <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
+                      <Spinner size="xs" />
                     ) : (
                       t("order.placeOrder")
                     )}

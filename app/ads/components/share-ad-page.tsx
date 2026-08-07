@@ -7,6 +7,7 @@ import * as htmlToImage from "html-to-image"
 import type { Ad } from "@/types"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useTrackers } from "@/analytics/useTrackers"
@@ -16,6 +17,7 @@ import {
   buildShareAdShareMessage,
   buildShareAdTelegramMessage,
 } from "@/lib/share-ad-utils"
+import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 interface ShareAdPageProps {
   ad: Ad
@@ -23,7 +25,7 @@ interface ShareAdPageProps {
 }
 
 const successToastClassName =
-  "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]"
+  TOAST_SUCCESS_CLASS
 
 export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
   const { t } = useTranslations()
@@ -222,7 +224,7 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
   if (isLoading) {
     return (
       <div className="text-center py-12">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-r-transparent"></div>
+        <Spinner size="lg" />
         <p className="mt-2 text-slate-600">{t("myAds.loadingAds")}</p>
       </div>
     )
@@ -232,7 +234,7 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
     <div className="fixed inset-0 z-50 overflow-y-auto bg-white">
       <div className="mx-auto flex min-h-full max-w-xl flex-col px-4 pb-6 md:px-0">
         <div className="flex items-center justify-end py-[12px] md:p-6 md:pb-4">
-          <Button onClick={() => { track("ek_close_share_ad"); onClose() }} variant="ghost" size="sm" className="bg-grayscale-300 px-1">
+          <Button onClick={() => { track("ek_close_share_ad"); onClose() }} variant="icon-muted" size="sm" className="px-1">
             <Image src="/icons/close-icon.png" alt="Close" width={24} height={24} />
           </Button>
         </div>
@@ -240,7 +242,7 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
         <div className="flex flex-col items-center space-y-6 py-6 md:px-0">
             <div
               ref={cardRef}
-              className="w-full md:w-[358px] bg-[linear-gradient(172deg,_#f4434f_73%,_rgba(0,0,0,0.04)_27%)] py-4 md:py-6 px-6 md:px-8 text-white"
+              className="w-full md:w-[358px] bg-share-card-gradient py-4 md:py-6 px-6 md:px-8 text-white"
             >
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-4">
@@ -307,7 +309,7 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
                   onClick={() => handleShare("whatsapp")}
                   className="flex flex-col items-center gap-2 rounded-lg transition-colors min-w-fit min-h-fit p-0 hover:bg-transparent"
                 >
-                  <div className="bg-[#F2F3F4] p-2 rounded-full flex items-center justify-center">
+                  <div className="bg-slate-75 p-2 rounded-full flex items-center justify-center">
                     <Image src="/icons/whatsapp.svg" alt="WhatsApp" width={36} height={36} />
                   </div>
                   <span className="text-[10px] font-normal text-slate-1600">WhatsApp</span>
@@ -318,7 +320,7 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
                   onClick={() => handleShare("facebook")}
                   className="flex flex-col items-center gap-2 rounded-lg transition-colors min-w-fit min-h-fit p-0 hover:bg-transparent"
                 >
-                  <div className="bg-[#F2F3F4] p-2 rounded-full flex items-center justify-center">
+                  <div className="bg-slate-75 p-2 rounded-full flex items-center justify-center">
                     <Image src="/icons/facebook.svg" alt="Facebook" width={36} height={36} />
                   </div>
                   <span className="text-[10px] font-normal text-slate-1600">Facebook</span>
@@ -329,7 +331,7 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
                   onClick={() => handleShare("telegram")}
                   className="flex flex-col items-center gap-2 rounded-lg transition-colors min-w-fit min-h-fit p-0 hover:bg-transparent"
                 >
-                  <div className="bg-[#F2F3F4] p-2 rounded-full flex items-center justify-center">
+                  <div className="bg-slate-75 p-2 rounded-full flex items-center justify-center">
                     <Image src="/icons/telegram.svg" alt="Telegram" width={36} height={36} />
                   </div>
                   <span className="text-[10px] font-normal text-slate-1600">Telegram</span>
@@ -340,7 +342,7 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
                   onClick={() => handleShare("gmail")}
                   className="flex flex-col items-center gap-2 rounded-lg transition-colors min-w-fit min-h-fit p-0 hover:bg-transparent"
                 >
-                  <div className="bg-[#F2F3F4] p-2 rounded-full flex items-center justify-center">
+                  <div className="bg-slate-75 p-2 rounded-full flex items-center justify-center">
                     <Image src="/icons/google.svg" alt="Gmail" width={36} height={36} />
                   </div>
                   <span className="text-[10px] font-normal text-slate-1600">Gmail</span>
@@ -351,7 +353,7 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
                   onClick={handleCopyLink}
                   className="flex flex-col items-center gap-2 rounded-lg transition-colors min-w-fit min-h-fit p-0 hover:bg-transparent"
                 >
-                  <div className="bg-[#F2F3F4] p-2 rounded-full flex items-center justify-center">
+                  <div className="bg-slate-75 p-2 rounded-full flex items-center justify-center">
                     <Image src="/icons/link.svg" alt="link" width={36} height={36} />
                   </div>
                   <span className="text-[10px] font-normal text-slate-1600">{t("shareAdPage.copyLink")}</span>
@@ -362,7 +364,7 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
                   onClick={handleSaveImage}
                   className="flex flex-col items-center gap-2 rounded-lg transition-colors min-w-fit min-h-fit p-0 hover:bg-transparent"
                 >
-                  <div className="bg-[#F2F3F4] p-2 rounded-full flex items-center justify-center">
+                  <div className="bg-slate-75 p-2 rounded-full flex items-center justify-center">
                     <Image src="/icons/download.svg" alt="download" width={36} height={36} />
                   </div>
                   <span className="text-[10px] font-normal text-slate-1600">{t("shareAdPage.saveImage")}</span>

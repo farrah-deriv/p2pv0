@@ -1,13 +1,13 @@
 "use client"
 
 import type React from "react"
-import Image from "next/image"
 
 import { useState, useEffect, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { PanelWrapper } from "@/components/ui/panel-wrapper"
+import { Spinner } from "@/components/ui/spinner"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import {
   getPaymentMethodFieldMaxLength,
@@ -227,7 +227,7 @@ export default function EditPaymentMethodPanel({
             className="w-full md:w-auto"
           >
             {isLoading ? (
-              <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
+              <Spinner size="xs" />
             ) : (
               t("profile.saveChanges")
             )}

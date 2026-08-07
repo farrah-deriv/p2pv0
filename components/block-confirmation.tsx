@@ -33,7 +33,7 @@ export default function BlockConfirmation({
         <Button data-testid="block-confirm-btn-block" onClick={onConfirm} disabled={isLoading} className="w-full rounded-full">
           {t("profile.block")}
         </Button>
-        <Button data-testid="block-confirm-btn-cancel" onClick={onClose} variant="outline" disabled={isLoading} className="w-full rounded-full bg-transparent">
+        <Button data-testid="block-confirm-btn-cancel" onClick={onClose} variant="ghost" disabled={isLoading} className="w-full rounded-full">
           {t("common.cancel")}
         </Button>
       </div>

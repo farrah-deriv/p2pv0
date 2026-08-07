@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect, useRef } from "react"
-import { Check } from "lucide-react"
+import { StandaloneCheckRegularIcon } from "@deriv/quill-icons/Standalone"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTranslations } from "@/lib/i18n/use-translations"
@@ -189,10 +189,11 @@ export default function PaymentMethodBottomSheet({
           <div className="space-y-4 mb-8 h-[300px] overflow-y-auto">
             {filteredMethods.length > 0 ? (
               filteredMethods.map((method) => (
-                <button
+                <Button
                   key={method.method}
                   type="button"
-                  className="w-full flex items-center gap-3 py-3"
+                  variant="ghost"
+                  className="w-full flex items-center gap-3 !py-3 !h-auto !rounded-none !justify-start"
                   onClick={(e) => toggleMethod(method, e)}
                   onMouseDown={(e) => e.stopPropagation()}
                   disabled={!isMethodSelected(method) && isMaxReached}
@@ -200,18 +201,18 @@ export default function PaymentMethodBottomSheet({
                   <div
                     className={`w-6 h-6 flex items-center justify-center rounded-md border ${
                       isMethodSelected(method)
-                        ? "bg-black border-black"
+                        ? "bg-black border-black text-white"
                         : isMaxReached
                           ? "border-gray-200 bg-gray-100"
                           : "border-gray-200"
                     }`}
                   >
-                    {isMethodSelected(method) && <Check className="h-6 w-6 text-white" />}
+                    {isMethodSelected(method) && <StandaloneCheckRegularIcon iconSize="sm" />}
                   </div>
                   <span className={isMaxReached && !isMethodSelected(method) ? "text-gray-400" : "text-gray-900"}>
                     {method.display_name}
                   </span>
-                </button>
+                </Button>
               ))
             ) : (
               <div className="flex flex-col items-center justify-center h-[200px] text-center">

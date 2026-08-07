@@ -43,7 +43,7 @@ export default function UserInfo({
             {displayName ? (
               <h2 data-testid="profile-text-username" className="text-base text-white font-bold">{displayName}</h2>
             ) : (
-              <Skeleton className="h-7 w-32 bg-white/20" />
+              <Skeleton className="h-7 w-32 animate-shimmer-dark" />
             )}
             {isFullyVerified && <span data-testid="profile-badge-verified"><VerifiedBadge size={20} /></span>}
             {tradeBand && <span data-testid="profile-badge-trade-band"><TradeBandBadge tradeBand={tradeBand} showLearnMore={true} size={20} /></span>}

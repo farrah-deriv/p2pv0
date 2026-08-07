@@ -28,6 +28,7 @@ import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-m
 import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
 import { useTrackers } from "@/analytics/useTrackers"
 import { FeedbackDialog } from "@/components/feedback/feedback-dialog"
+import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 interface StatsTabsProps {
   stats?: any
@@ -128,7 +129,7 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
             <span>{t("profile.paymentMethodAdded")}</span>
           </div>
         ),
-        className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+        className: TOAST_SUCCESS_CLASS,
         duration: 2500,
       })
 
@@ -222,10 +223,10 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                 <div className="flex items-center gap-4 px-4 py-3">
                   <Button
                     data-testid="profile-btn-sidebar-back"
-                    variant="ghost"
+                    variant="icon-muted"
                     size="sm"
                     onClick={() => setShowStatsSidebar(false)}
-                    className="bg-grayscale-300 px-1"
+                    className="px-1"
                   >
                     <BackArrowIcon alt={t("common.close")} width={24} height={24} />
                   </Button>
@@ -260,10 +261,10 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                 <div className="flex items-center gap-4 px-4 py-3">
                   <Button
                     data-testid="profile-btn-sidebar-back"
-                    variant="ghost"
+                    variant="icon-muted"
                     size="sm"
                     onClick={() => setShowPaymentMethodsSidebar(false)}
-                    className="bg-grayscale-300 px-1"
+                    className="px-1"
                   >
                     <BackArrowIcon alt={t("common.close")} width={24} height={24} />
                   </Button>
@@ -318,10 +319,10 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                 <div className="flex items-center gap-4 px-4 py-3">
                   <Button
                     data-testid="profile-btn-sidebar-back"
-                    variant="ghost"
+                    variant="icon-muted"
                     size="sm"
                     onClick={() => setShowFollowsSidebar(false)}
-                    className="bg-grayscale-300 px-1"
+                    className="px-1"
                   >
                     <BackArrowIcon alt={t("common.close")} width={24} height={24} />
                   </Button>
@@ -359,10 +360,10 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                 <div className="flex items-center gap-4 px-4 py-3">
                   <Button
                     data-testid="profile-btn-sidebar-back"
-                    variant="ghost"
+                    variant="icon-muted"
                     size="sm"
                     onClick={() => setShowClosedGroupSidebar(false)}
-                    className="bg-grayscale-300 px-1"
+                    className="px-1"
                   >
                     <BackArrowIcon alt={t("common.close")} width={24} height={24} />
                   </Button>
@@ -397,10 +398,10 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                 <div className="flex items-center gap-4 px-4 py-3">
                   <Button
                     data-testid="profile-btn-sidebar-back"
-                    variant="ghost"
+                    variant="icon-muted"
                     size="sm"
                     onClick={() => setShowBlockedSidebar(false)}
-                    className="bg-grayscale-300 px-1"
+                    className="px-1"
                   >
                     <BackArrowIcon alt={t("common.close")} width={24} height={24} />
                   </Button>
@@ -435,10 +436,10 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                 <div className="flex items-center gap-4 px-4 py-3">
                   <Button
                     data-testid="profile-btn-sidebar-back"
-                    variant="ghost"
+                    variant="icon-muted"
                     size="sm"
                     onClick={() => setShowCounterpartiesSidebar(false)}
-                    className="bg-grayscale-300 px-1"
+                    className="px-1"
                   >
                     <BackArrowIcon alt={t("common.close")} width={24} height={24} />
                   </Button>
@@ -504,8 +505,9 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                     <TabsTrigger
                       key={tab.id}
                       value={tab.id}
+                      variant="underline"
                       data-testid={`profile-tab-${tab.id === "payment" ? "payment-methods" : tab.id}`}
-                      className="h-auto w-auto flex-none shrink-0 px-4 md:px-5 py-2.5 rounded-none leading-normal after:content-[''] after:absolute after:inset-x-0 after:bottom-0 after:h-[2px] after:transition-colors data-[state=active]:after:bg-black data-[state=active]:!shadow-none data-[state=active]:!bg-transparent data-[state=active]:text-foreground"
+                      className="flex-none shrink-0 px-4 md:px-5 py-2.5 leading-normal"
                     >
                       {tab.label}
                     </TabsTrigger>
@@ -556,8 +558,10 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                 {paymentMethodsCount > 0 && (
                   <div className="flex justify-end mb-4">
                     <Button data-testid="profile-btn-add-payment" variant="outline" size="sm" onClick={handleShowAddPaymentMethod}>
-                      <Image src="/icons/plus_icon.png" alt={t("common.addPayment")} width={14} height={24} className="me-1" />
-                      {t("profile.addPaymentMethod")}
+                      <span className="flex items-center gap-1.5">
+                        <Image src="/icons/plus_icon.png" alt="" width={14} height={14} />
+                        {t("profile.addPaymentMethod")}
+                      </span>
                     </Button>
                   </div>
                 )}

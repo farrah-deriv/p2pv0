@@ -13,6 +13,7 @@ import { useUserDataStore } from "@/stores/user-data-store"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { useToast } from "@/hooks/use-toast"
 import type { FeedbackError } from "@/services/api/api-auth"
+import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 interface FeedbackDialogProps {
   isOpen: boolean
@@ -49,7 +50,7 @@ function FeedbackDialogContent({
             <span>{t("nps.successToast")}</span>
           </div>
         ),
-        className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+        className: TOAST_SUCCESS_CLASS,
         duration: 2500,
       })
     } catch (err) {

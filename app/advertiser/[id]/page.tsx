@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { BuySellAPI } from "@/services/api"
 import type { Advertisement } from "@/services/api/api-buy-sell"
@@ -32,6 +33,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { useWebSocketContext } from "@/contexts/websocket-context"
 import { PresenceLastSeen } from "@/components/presence-last-seen"
 import { ExchangeRateDisplay } from "@/components/exchange-rate-display"
+import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 interface UsersOnlineUpdate {
   user_id: number
@@ -263,7 +265,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
               )}
             </div>
           ),
-          className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+          className: TOAST_SUCCESS_CLASS,
           duration: 2500,
         })
       } else {
@@ -307,7 +309,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                     </span>
                   </div>
                 ),
-                className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+                className: TOAST_SUCCESS_CLASS,
                 duration: 2500,
               })
             } else {
@@ -344,7 +346,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
               <span>{t("advertiser.userUnblocked", { nickname: profile?.nickname })}</span>
             </div>
           ),
-          className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+          className: TOAST_SUCCESS_CLASS,
           duration: 2500,
         })
       } else {
@@ -370,7 +372,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
               <span>{t("advertiser.addedToClosedGroup")}</span>
             </div>
           ),
-          className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+          className: TOAST_SUCCESS_CLASS,
           duration: 2500,
         })
       } else {
@@ -394,7 +396,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
               <span>{t("advertiser.removedFromClosedGroup")}</span>
             </div>
           ),
-          className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+          className: TOAST_SUCCESS_CLASS,
           duration: 2500,
         })
       } else {
@@ -476,7 +478,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
         <div className="flex flex-col md:flex-row justify-between">
           <div className="container mx-auto pb-6">
             <div className="bg-slate-75 p-6 rounded-none md:rounded-3xl flex flex-col md:items-start gap-4 mx-[-24px] mt-[-24px] md:mx-0 md:mt-0">
-              <Button data-testid="advertiser-btn-back" variant="ghost" onClick={handleBack} size="sm" className="bg-grayscale-500 px-1 w-fit">
+              <Button data-testid="advertiser-btn-back" variant="icon-muted" onClick={handleBack} size="sm" className="px-1 w-fit">
                 <Image src="/icons/arrow-left-icon.png" alt={t("common.back")} width={24} height={24} className="rtl:rotate-180" />
               </Button>
               <div className="flex-1 w-full">
@@ -674,7 +676,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                                   {userId != ad.user.id && (
                                     <Button
                                       data-testid={`advertiser-btn-trade-${ad.id}`}
-                                      variant={ad.type === "buy" ? "destructive" : "secondary"}
+                                      variant={ad.type === "buy" ? "destructive" : "buy"}
                                       size="sm"
                                       onClick={() => handleOrderClick(ad, ad.type === "buy" ? "buy" : "sell")}
                                       disabled={!!tempBanUntil}
@@ -691,7 +693,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                       </div>
                       {isFetchingNextPage && (
                         <div className="flex justify-center py-4">
-                          <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                          <Spinner size="md" />
                         </div>
                       )}
                     </>

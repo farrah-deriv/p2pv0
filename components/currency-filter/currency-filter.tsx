@@ -1,118 +1,202 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useMemo, useCallback, cloneElement } from "react"
+import { useState, useMemo, useCallback, useRef, useLayoutEffect, useEffect } from "react"
 import Image from "next/image"
+import { createPortal } from "react-dom"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
+import { Drawer, DrawerContent } from "@/components/ui/drawer"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn, currencyFlagMapper } from "@/lib/utils"
-import type { CurrencyFilterProps } from "./types"
+import type { Currency } from "./types"
 import EmptyState from "@/components/empty-state"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useTrackers } from "@/analytics/useTrackers"
+import {
+  StandaloneChevronDownRegularIcon,
+  StandaloneChevronUpRegularIcon,
+  StandaloneSearchRegularIcon,
+} from "@deriv/quill-icons/Standalone"
+
+interface CurrencyFilterProps {
+  currencies: Currency[]
+  selectedCurrency: string
+  onCurrencySelect: (currencyCode: string) => void
+  title?: string
+  placeholder?: string
+  disabled?: boolean
+  triggerClassName?: string
+  triggerTestId?: string
+  onOpen?: () => void
+}
 
 export function CurrencyFilter({
-  contentClassName,
   currencies,
-  isTitleVisible = true,
   selectedCurrency,
   onCurrencySelect,
   title,
-  trigger,
-  placeholder = "Search",
+  placeholder,
   disabled = false,
+  triggerClassName,
+  triggerTestId,
+  onOpen,
 }: CurrencyFilterProps) {
   const { t } = useTranslations()
   const { track } = useTrackers()
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const isMobile = useIsMobile()
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties | null>(null)
 
   const filteredCurrencies = useMemo(() => {
     let filtered = currencies
-
     if (searchQuery.trim()) {
-      const query = searchQuery?.toLowerCase().trim()
-      filtered = filtered.filter((currency) => {
-        const codeMatch = currency?.code?.toLowerCase().includes(query)
-        const nameMatch = currency?.name?.toLowerCase().includes(query)
-        const wordMatch = currency?.name
-          ?.toLowerCase()
-          .split(" ")
-          .some((word) => word.startsWith(query))
-        return codeMatch || nameMatch || wordMatch
-      })
+      const query = searchQuery.toLowerCase().trim()
+      filtered = filtered.filter(
+        (c) =>
+          c.code.toLowerCase().includes(query) ||
+          c.name.toLowerCase().includes(query) ||
+          c.name
+            .toLowerCase()
+            .split(" ")
+            .some((w) => w.startsWith(query)),
+      )
     }
-    const selectedCurrencyItem = filtered.find((currency) => currency.code === selectedCurrency)
-    const unselectedCurrencies = filtered.filter((currency) => currency.code !== selectedCurrency)
-
-    unselectedCurrencies.sort((a, b) => a.code.localeCompare(b.code))
-
-    return selectedCurrencyItem ? [selectedCurrencyItem, ...unselectedCurrencies] : unselectedCurrencies
+    const sel = filtered.find((c) => c.code === selectedCurrency)
+    const rest = filtered.filter((c) => c.code !== selectedCurrency)
+    rest.sort((a, b) => a.code.localeCompare(b.code))
+    return sel ? [sel, ...rest] : rest
   }, [currencies, searchQuery, selectedCurrency])
 
-  const handleCurrencySelect = useCallback(
-    (currencyCode: string) => {
-      track("ek_select_payment_currency_markets_payment_currency", { currency_code: currencyCode })
-      onCurrencySelect(currencyCode)
+  const handleSelect = useCallback(
+    (code: string) => {
+      track("ek_select_payment_currency_markets_payment_currency", { currency_code: code })
+      onCurrencySelect(code)
       setIsOpen(false)
       setSearchQuery("")
     },
     [onCurrencySelect, track],
   )
 
-  const handleOpenChange = useCallback((open: boolean) => {
+  const closeDropdown = useCallback(() => {
+    setIsOpen(false)
+    setSearchQuery("")
+  }, [])
+
+  const openDropdown = useCallback(() => {
     if (disabled) return
-    setIsOpen(open)
-    if (!open) {
-      setSearchQuery("")
+    setIsOpen(true)
+    onOpen?.()
+  }, [disabled, onOpen])
+
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (open) openDropdown()
+      else closeDropdown()
+    },
+    [openDropdown, closeDropdown],
+  )
+
+  // Close on outside click (desktop only)
+  useEffect(() => {
+    if (!isOpen || isMobile) return
+    const onMouseDown = (e: MouseEvent) => {
+      const target = e.target as Node
+      if (!triggerRef.current?.contains(target) && !dropdownRef.current?.contains(target)) {
+        closeDropdown()
+      }
     }
-  }, [disabled])
+    document.addEventListener("mousedown", onMouseDown)
+    return () => document.removeEventListener("mousedown", onMouseDown)
+  }, [isOpen, isMobile, closeDropdown])
 
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setSearchQuery(value)
-  }, [])
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Escape") {
-      setIsOpen(false)
-      setSearchQuery("")
+  // Position portal dropdown
+  useLayoutEffect(() => {
+    if (!isOpen || isMobile || !triggerRef.current) {
+      setDropdownStyle(null)
+      return
     }
-  }, [])
+    const rect = triggerRef.current.getBoundingClientRect()
+    const dropdownH = 300
+    const spaceBelow = window.innerHeight - rect.bottom
+    const openUpward = spaceBelow < dropdownH && rect.top > dropdownH
+    setDropdownStyle(
+      openUpward
+        ? { bottom: window.innerHeight - rect.top + 4, left: rect.left, width: Math.max(rect.width, 240) }
+        : { top: rect.bottom + 4, left: rect.left, width: Math.max(rect.width, 240) },
+    )
+  }, [isOpen, isMobile])
 
-  const currencyListJsx = (
-    <div className="w-full h-full flex flex-col">
-      <div className="relative mb-6 md:mb-4 md:pe-6 shrink-0">
-        <Input
-          placeholder={placeholder === "Search" ? t("common.search") : placeholder}
+  // Focus search on desktop open
+  useEffect(() => {
+    if (!isOpen || isMobile) return
+    const id = requestAnimationFrame(() => searchRef.current?.focus())
+    return () => cancelAnimationFrame(id)
+  }, [isOpen, isMobile])
+
+  const flagSrc = currencyFlagMapper[selectedCurrency as keyof typeof currencyFlagMapper]
+
+  const triggerButton = (
+    <Button
+      ref={triggerRef}
+      variant="outline"
+      data-testid={triggerTestId ?? "currency-filter-btn-trigger"}
+      disabled={disabled}
+      onClick={() => (isOpen ? closeDropdown() : openDropdown())}
+      aria-expanded={isOpen}
+      aria-haspopup="listbox"
+      className={cn(
+        "!h-12 !w-full !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-3 !text-sm !font-normal focus:!ring-1 focus:!ring-black",
+        triggerClassName,
+      )}
+    >
+      <span className="flex w-full flex-row items-center justify-between">
+        <span className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+          {flagSrc && (
+            <Image
+              src={flagSrc}
+              alt={`${selectedCurrency} flag`}
+              width={24}
+              height={16}
+              className="min-w-6 w-6 shrink-0 object-cover"
+            />
+          )}
+          <span className="truncate">{selectedCurrency || (placeholder ?? t("common.select"))}</span>
+        </span>
+        {isOpen && !isMobile ? (
+          <StandaloneChevronUpRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />
+        ) : (
+          <StandaloneChevronDownRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />
+        )}
+      </span>
+    </Button>
+  )
+
+  const listContent = (isSheet: boolean) => (
+    <div className="flex h-full flex-col">
+      <div
+        className={cn(
+          "flex items-center gap-2 rounded-lg bg-black/[0.04] px-2",
+          isSheet ? "mx-4 mt-2 h-10" : "mx-2 mt-2 h-9",
+        )}
+      >
+        <StandaloneSearchRegularIcon iconSize="xs" className="shrink-0 text-neutral-400" aria-hidden />
+        <input
+          ref={isSheet ? undefined : searchRef}
+          type="text"
           value={searchQuery}
-          onChange={handleSearchChange}
-          onKeyDown={handleKeyDown}
-          className={`text-sm font-normal text-start placeholder:text-grayscale-text-placeholder ps-4 h-14 md:h-8 border-0 focus:border-0 bg-grayscale-500 rounded-lg ${searchQuery ? "pe-10" : "pe-4"}`}
-          autoComplete="off"
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Escape") closeDropdown() }}
+          placeholder={t("common.search")}
+          className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-neutral-400"
           data-testid="currency-filter-input-search"
         />
-        {searchQuery && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSearchQuery("")}
-            className="absolute end-0 md:end-4 top-1/2 transform -translate-y-1/2 hover:bg-transparent"
-            data-testid="currency-filter-btn-clear"
-          >
-            <Image src="/icons/clear-search-icon.png" alt={t("common.clearSearch")} width={24} height={24} />
-          </Button>
-        )}
       </div>
-
-      <div className="min-h-0 flex-1 overflow-y-auto scrollbar-custom md:relative md:-start-4 md:w-[calc(100%+8px)]">
+      <div className="flex-1 overflow-y-auto py-1" role="listbox">
         {filteredCurrencies.length === 0 ? (
-          <div className="flex h-full min-h-[160px] items-center justify-center">
+          <div className="flex min-h-[160px] items-center justify-center">
             <EmptyState
               title={t("filter.currencyUnavailable", { currency: searchQuery })}
               description={t("filter.selectAnotherCurrency")}
@@ -120,84 +204,73 @@ export function CurrencyFilter({
             />
           </div>
         ) : (
-          <div className="space-y-0">
-            {!isMobile && (
-              <div className="text-sm text-black/[0.48] font-normal pt-4 pb-2 md:ms-4 text-start">
-                {isTitleVisible && title}
-              </div>
-            )}
-            {filteredCurrencies.map((currency) => (
-              <div
-                key={currency.code}
-                onClick={() => handleCurrencySelect(currency.code)}
-                className={cn(
-                  "px-4 h-12 flex items-center gap-2 rounded-lg border border-transparent cursor-pointer transition-colors text-base font-normal",
-                  selectedCurrency === currency.code
-                    ? "bg-grayscale-500 border-black text-black"
-                    : "text-black/[0.72] hover:bg-gray-50",
-                )}
-                data-testid={`currency-filter-btn-${currency.symbol ?? currency.id ?? currency.code}`}
-              >
-                {currencyFlagMapper[currency.code as keyof typeof currencyFlagMapper] && (
-                  <Image
-                    src={
-                      currencyFlagMapper[currency.code as keyof typeof currencyFlagMapper] || "/placeholder.svg"
-                    }
-                    alt={`${currency.code} logo`}
-                    width={24}
-                    height={16}
-                    className="object-cover"
-                  />
-                )}
-                <span>{currency.code} - {currency.name}</span>
-              </div>
-            ))}
-          </div>
+          filteredCurrencies.map((currency) => (
+            <button
+              key={currency.code}
+              type="button"
+              role="option"
+              aria-selected={currency.code === selectedCurrency}
+              onClick={() => handleSelect(currency.code)}
+              data-testid={`currency-filter-btn-${currency.code}`}
+              className={cn(
+                "flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-start text-sm transition-colors",
+                "hover:bg-neutral-50",
+                currency.code === selectedCurrency
+                  ? "bg-neutral-50 font-medium text-neutral-800"
+                  : "text-neutral-700",
+              )}
+            >
+              {currencyFlagMapper[currency.code as keyof typeof currencyFlagMapper] && (
+                <Image
+                  src={currencyFlagMapper[currency.code as keyof typeof currencyFlagMapper]}
+                  alt={`${currency.code} flag`}
+                  width={24}
+                  height={16}
+                  className="shrink-0 object-cover"
+                />
+              )}
+              <span>
+                {currency.code} - {currency.name}
+              </span>
+            </button>
+          ))
         )}
       </div>
     </div>
   )
 
-  const enhancedTrigger = cloneElement(trigger, {
-    className: cn(
-      trigger.props.className,
-      isOpen && !disabled && "[&_img[alt='Arrow']]:rotate-180",
-      disabled && "pointer-events-none opacity-60 cursor-not-allowed",
-    ),
-    disabled: disabled || trigger.props.disabled,
-    "aria-disabled": disabled || undefined,
-    "data-testid": "currency-filter-btn-trigger",
-  })
-
-  if (disabled) {
-    return enhancedTrigger
-  }
-
   if (isMobile) {
     return (
-      <Drawer open={isOpen} onOpenChange={handleOpenChange}>
-        <DrawerTrigger asChild>{enhancedTrigger}</DrawerTrigger>
-        <DrawerContent side="bottom" className="h-[90vh] px-[16px] pb-[16px] rounded-t-2xl">
-          <div className="my-4">
-            <h3 className="text-xl font-extrabold text-center text-slate-1200">{title}</h3>
-          </div>
-          {currencyListJsx}
-        </DrawerContent>
-      </Drawer>
+      <>
+        {triggerButton}
+        <Drawer open={isOpen} onOpenChange={handleOpenChange}>
+          <DrawerContent side="bottom" className="flex h-[85vh] flex-col overflow-hidden rounded-t-2xl">
+            <div className="my-4 shrink-0 px-4">
+              <h3 className="text-center text-xl font-extrabold text-slate-1200">
+                {title ?? t("common.select")}
+              </h3>
+            </div>
+            <div className="min-h-0 flex-1 overflow-hidden pb-4">{listContent(true)}</div>
+          </DrawerContent>
+        </Drawer>
+      </>
     )
   }
 
   return (
-    <Popover open={isOpen} onOpenChange={handleOpenChange}>
-      <PopoverTrigger asChild>{enhancedTrigger}</PopoverTrigger>
-      <PopoverContent
-        className={cn("w-80 h-80 p-4 md:ps-6 md:pt-4 md:pe-0 md:pb-0", contentClassName)}
-        align="end"
-        side="bottom"
-        avoidCollisions={false}
-      >
-        {currencyListJsx}
-      </PopoverContent>
-    </Popover>
+    <>
+      {triggerButton}
+      {isOpen &&
+        dropdownStyle &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div ref={dropdownRef} className="fixed z-50" style={dropdownStyle}>
+            <div className="flex h-72 flex-col overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg">
+              {listContent(false)}
+            </div>
+          </div>,
+          document.body,
+        )}
+    </>
   )
 }

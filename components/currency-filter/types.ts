@@ -1,19 +1,16 @@
-import type { ReactNode } from "react"
-
 export interface Currency {
   code: string
   name: string
 }
 
 export interface CurrencyFilterProps {
-  contentClassName?: string
   currencies: Currency[]
-  isTitleVisible?: boolean
   selectedCurrency: string
   onCurrencySelect: (currencyCode: string) => void
-  trigger: ReactNode
   title?: string
   placeholder?: string
-  emptyMessage?: string
   disabled?: boolean
+  triggerClassName?: string
+  triggerTestId?: string
+  onOpen?: () => void
 }

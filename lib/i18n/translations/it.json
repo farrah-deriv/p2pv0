@@ -1294,7 +1294,7 @@
     "transfer_wr_err_exceeds_net_deposit_limit_title": "Il limite di prelievo per questo metodo è {max_amount}",
     "transfer_wr_err_high_risk_method_settle_first_body": "{deposit_amount} verrà restituito al tuo metodo di deposito originale prima. Potrai prelevare il resto dopo.",
     "transfer_wr_err_high_risk_method_settle_first_title": "Il metodo di pagamento originale deve essere utilizzato prima",
-    "transfer_wr_err_low_trading_activity_body": "Devi fare trading per almeno USD {required_volume} prima che questo prelievo possa essere elaborato.",
+    "transfer_wr_err_low_trading_activity_body": "Esegui più operazioni in modo che questo prelievo possa essere elaborato.",
     "transfer_wr_err_low_trading_activity_title": "Fai ancora un po' di trading",
     "transfer_wr_err_method_not_used_previously_body": "Per la tua sicurezza, i prelievi possono essere effettuati solo verso un metodo di pagamento che hai già utilizzato per depositare.",
     "transfer_wr_err_method_not_used_previously_title": "Scegli un metodo con cui hai depositato",

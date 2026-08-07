@@ -28,6 +28,7 @@ import { createKycOnboardingAlertConfig } from "@/components/kyc-onboarding-shee
 import { useDeleteAd, useToggleAdActiveStatus } from "@/hooks/use-api-queries"
 import { useTrackers } from "@/analytics/useTrackers"
 import { editAdPath } from "@/lib/ads/my-ads-tab"
+import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 interface MyAdsTableProps {
   ads: Ad[]
@@ -190,7 +191,7 @@ export default function MyAdsTable({
             <span>{message}</span>
           </div>
         ),
-        className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+        className: TOAST_SUCCESS_CLASS,
         duration: 2500,
       })
     } catch (error: any) {
@@ -246,7 +247,7 @@ export default function MyAdsTable({
                   <span>{t("myAds.adDeleted")}</span>
                 </div>
               ),
-              className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+              className: TOAST_SUCCESS_CLASS,
               duration: 2500,
             })
           },
@@ -471,7 +472,7 @@ export default function MyAdsTable({
                     <div className="mb-2">
                       {availableData.current.toFixed(2)} / {availableData.total.toFixed(2)} USD
                     </div>
-                    <div className="h-2 bg-[#E9ECEF] rounded-full w-full lg:w-[200px] overflow-hidden mb-2">
+                    <div className="h-2 bg-slate-1700 rounded-full w-full lg:w-[200px] overflow-hidden mb-2">
                       <div
                         className="h-full bg-neutral-10 rounded-full"
                         style={{ width: `${Math.min(availableData.percentage, 100)}%` }}
@@ -521,7 +522,7 @@ export default function MyAdsTable({
                         variant="ghost"
                         size="sm"
                         // size=sm defaults to h-32px — overrides so icon matches badge height
-                        className="size-6 h-6 w-6 min-h-0 min-w-0 p-0 hover:bg-transparent rounded-full focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                        className="size-6 h-6 w-6 min-h-0 min-w-0 p-0 hover:bg-transparent rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         onClick={() => handleVisibilityStatusClick(ad)}
                       >
                         <Image
@@ -540,7 +541,7 @@ export default function MyAdsTable({
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="size-6 h-6 w-6 min-h-0 min-w-0 p-0 hover:bg-gray-100 rounded-full focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                          className="size-6 h-6 w-6 min-h-0 min-w-0 p-0 hover:bg-gray-100 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           onClick={() => handleOpenDrawer(ad)}
                         >
                           <Image
@@ -557,7 +558,7 @@ export default function MyAdsTable({
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="size-6 h-6 w-6 min-h-0 min-w-0 p-0 hover:bg-gray-100 rounded-full focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                              className="size-6 h-6 w-6 min-h-0 min-w-0 p-0 hover:bg-gray-100 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                               onClick={() => handleOpenDrawer(ad)}
                             >
                               <Image
@@ -574,7 +575,7 @@ export default function MyAdsTable({
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="size-6 h-6 w-6 min-h-0 min-w-0 p-0 hover:bg-gray-100 rounded-full focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                                  className="size-6 h-6 w-6 min-h-0 min-w-0 p-0 hover:bg-gray-100 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                 >
                                   <Image
                                     src="/icons/vertical.svg"
@@ -585,7 +586,7 @@ export default function MyAdsTable({
                                   />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align={dropdownMenuAlign} className="w-auto flex flex-col p-1">
+                              <DropdownMenuContent align={dropdownMenuAlign} className="w-48 flex flex-col p-1">
                                 <AdActionsMenu
                                   ad={ad}
                                   onEdit={handleEdit}

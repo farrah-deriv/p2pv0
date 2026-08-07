@@ -37,11 +37,11 @@ export default function Navigation({
       if (onBack && onClose) {
         return (
           <div className="flex items-center gap-4 w-full justify-between">
-            <Button variant="ghost" onClick={onBack} size="sm" className="bg-grayscale-300 px-1">
+            <Button variant="icon-muted" onClick={onBack} size="sm" className="px-1">
               <BackArrowIcon alt={t("common.back")} width={24} height={24} />
             </Button>
             <h1 className="text-xl font-bold">{title}</h1>
-            <Button variant="ghost" onClick={onClose} size="sm" className="bg-grayscale-300 px-1" data-testid="ad-form-btn-close">
+            <Button variant="icon-muted" onClick={onClose} size="sm" className="px-1" data-testid="ad-form-btn-close">
               <Image src="/icons/close-circle.png" alt={t("common.close")} width={24} height={24} />
             </Button>
           </div>
@@ -51,10 +51,10 @@ export default function Navigation({
           <div className="flex w-full justify-between items-center">
             <div className="flex items-center gap-4">
               <Button
-                variant="ghost"
+                variant="icon-muted"
                 onClick={() => router.push(redirectUrl)}
                 size="sm"
-                className="bg-grayscale-300 px-1"
+                className="px-1"
               >
                 <BackArrowIcon alt={t("common.back")} width={24} height={24} />
               </Button>
@@ -74,7 +74,7 @@ export default function Navigation({
       <>
         <h1 className="text-xl font-bold">{title}</h1>
         <Button
-          variant="ghost"
+          variant="icon-muted"
           onClick={() => {
             if (onClose) {
               onClose()
@@ -83,7 +83,7 @@ export default function Navigation({
             }
           }}
           size="sm"
-          className="bg-grayscale-300 px-1"
+          className="px-1"
           data-testid="ad-form-btn-close"
         >
           <Image src="/icons/close-circle.png" alt={t("common.close")} width={24} height={24} />

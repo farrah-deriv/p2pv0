@@ -1298,7 +1298,7 @@
     "transfer_wr_err_exceeds_net_deposit_limit_title": "O limite de saque para este método é {max_amount}",
     "transfer_wr_err_high_risk_method_settle_first_body": "{deposit_amount} será devolvido ao seu método de depósito original primeiro. Você pode sacar o restante depois.",
     "transfer_wr_err_high_risk_method_settle_first_title": "O método de pagamento original deve ser usado primeiro",
-    "transfer_wr_err_low_trading_activity_body": "Você precisa negociar pelo menos USD {required_volume} antes que este saque possa ser processado.",
+    "transfer_wr_err_low_trading_activity_body": "Faça mais negociações para que esta retirada possa ser processada.",
     "transfer_wr_err_low_trading_activity_title": "Negocie um pouco mais",
     "transfer_wr_err_method_not_used_previously_body": "Por sua segurança, os saques só podem ir para um método de pagamento que você já usou para depositar.",
     "transfer_wr_err_method_not_used_previously_title": "Escolha um método com o qual você depositou",

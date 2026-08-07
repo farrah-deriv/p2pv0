@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback, useRef } from "react"
 import { useStablePaymentMethodOrder } from "@/hooks/use-stable-payment-method-order"
 import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Spinner } from "@/components/ui/spinner"
 import { CustomShimmer } from "@/app/profile/components/ui/custom-shimmer"
 import AddPaymentMethodPanel from "@/app/profile/components/add-payment-method-panel"
 import { getPaymentMethodColour } from "@/lib/utils"
@@ -216,7 +217,7 @@ const AdPaymentMethods = () => {
                         <Checkbox
                           checked={isSelected}
                           disabled={isDisabled}
-                          className="border-slate-1200 data-[state=checked]:!bg-slate-1200 data-[state=checked]:!border-slate-1200 rounded-[2px]"
+                          className="rounded-[2px]"
                         />
                       </div>
                     </div>
@@ -250,7 +251,7 @@ const AdPaymentMethods = () => {
         )}
         {isFetchingNextPage && (
           <div className="flex justify-center py-2">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-grayscale-400 border-t-slate-600" />
+            <Spinner size="md" />
           </div>
         )}
 

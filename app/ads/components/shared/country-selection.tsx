@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { StandaloneChevronDownRegularIcon, StandaloneChevronUpRegularIcon } from "@deriv/quill-icons/Standalone"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { CHECKBOX_LABEL_ROW } from "@/lib/rtl"
@@ -120,7 +121,7 @@ export default function CountrySelection({ countries, selectedCountries, onCount
             id="all-countries"
             checked={isAllSelected}
             onCheckedChange={handleAllToggle}
-            className="shrink-0 data-[state=checked]:bg-black"
+            className="shrink-0 "
           />
           <label htmlFor="all-countries" className="flex-1 min-w-0 text-sm cursor-pointer text-start">
             {t("common.allCountries")}
@@ -136,7 +137,7 @@ export default function CountrySelection({ countries, selectedCountries, onCount
               checked={isAllSelected || (selectedCountries !== null && selectedCountries.includes(country.code))}
               onCheckedChange={() => handleCountryToggle(country.code)}
               disabled={false}
-              className="shrink-0 data-[state=checked]:bg-black"
+              className="shrink-0 "
               data-testid={`ad-form-checkbox-country-${country.code}`}
             />
             <label htmlFor={country.code} className="flex-1 min-w-0 text-sm cursor-pointer text-start">
@@ -151,26 +152,18 @@ export default function CountrySelection({ countries, selectedCountries, onCount
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={setIsOpen}>
-        <div className="relative">
-          <DrawerTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full h-[56px] max-h-none justify-start rounded-lg bg-transparent border-input hover:bg-transparent focus:border-black font-normal ps-4 pe-12 py-4 [&>svg]:hidden"
-              onClick={() => setIsOpen(true)}
-            >
-              <span className="text-start text-base text-grayscale-600">{getDisplayText()}</span>
-            </Button>
-          </DrawerTrigger>
-          <div className="absolute end-4 top-1/2 -translate-y-1/2 pointer-events-none">
-            <Image
-              src="/icons/chevron-down.png"
-              alt={t("common.arrow")}
-              width={24}
-              height={24}
-              className={cn("transition-transform", isOpen && "rotate-180")}
-            />
-          </div>
-        </div>
+        <DrawerTrigger asChild>
+          <Button
+            variant="outline"
+            className="!w-full !h-14 !max-h-none !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-4 !font-normal hover:!bg-white focus:!ring-1 focus:!ring-black"
+            onClick={() => setIsOpen(true)}
+          >
+            <span className="flex w-full flex-row items-center justify-between">
+              <span className="flex-1 min-w-0 truncate text-start text-base text-grayscale-600">{getDisplayText()}</span>
+              <StandaloneChevronDownRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />
+            </span>
+          </Button>
+        </DrawerTrigger>
         <DrawerContent side="bottom" className="h-fit">
           <div className="my-4">
             <h3 className="text-xl font-bold text-center">{t("common.countrySelection")}</h3>
@@ -186,26 +179,22 @@ export default function CountrySelection({ countries, selectedCountries, onCount
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <div className="relative">
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className="w-full h-[56px] max-h-none justify-start rounded-lg bg-transparent border-input hover:bg-transparent focus:border-black font-normal ps-4 pe-12 py-4 [&>svg]:hidden"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            <span className="text-start text-base text-grayscale-600">{getDisplayText()}</span>
-          </Button>
-        </PopoverTrigger>
-        <div className="absolute end-4 top-1/2 -translate-y-1/2 pointer-events-none">
-          <Image
-            src="/icons/chevron-down.png"
-            alt={t("common.arrow")}
-            width={24}
-            height={24}
-            className={cn("transition-transform", isOpen && "rotate-180")}
-          />
-        </div>
-      </div>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className="!w-full !h-14 !max-h-none !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-4 !font-normal hover:!bg-white focus:!ring-1 focus:!ring-black"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <span className="flex w-full flex-row items-center justify-between">
+            <span className="flex-1 min-w-0 truncate text-start text-base text-grayscale-600">{getDisplayText()}</span>
+            {isOpen ? (
+              <StandaloneChevronUpRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />
+            ) : (
+              <StandaloneChevronDownRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />
+            )}
+          </span>
+        </Button>
+      </PopoverTrigger>
       <PopoverContent
         align="start"
         className="p-4 

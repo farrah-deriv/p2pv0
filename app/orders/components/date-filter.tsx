@@ -81,7 +81,7 @@ export function DateFilter({ customRange, onValueChange, onCustomRangeChange, cl
             variant="outline"
             size="sm"
             className={cn(
-              "rounded-3xl border border-input bg-background font-normal px-3 hover:bg-transparent focus:border-black",
+              "rounded-3xl border border-input bg-background font-normal px-3 hover:bg-transparent focus:outline-none focus-visible:border-black",
               className,
             )}
           >
@@ -101,7 +101,7 @@ export function DateFilter({ customRange, onValueChange, onCustomRangeChange, cl
               <Button onClick={handleCustomRangeApply} className="flex-1" disabled={!tempRange.from}>
                 {t("orders.confirm")}
               </Button>
-              <Button variant="outline" onClick={handleReset} className="flex-1 bg-transparent">
+              <Button variant="ghost" onClick={handleReset} className="flex-1">
                 {t("orders.reset")}
               </Button>
             </div>
@@ -118,7 +118,7 @@ export function DateFilter({ customRange, onValueChange, onCustomRangeChange, cl
           variant="outline"
           size="sm"
           className={cn(
-            "rounded-3xl border border-input bg-background font-normal px-3 hover:bg-transparent focus:border-black",
+            "rounded-3xl border border-input bg-background font-normal px-3 hover:bg-transparent focus:outline-none focus-visible:border-black",
             className,
             isOpen && "bg-grayscale-800",
           )}

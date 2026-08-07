@@ -1,5 +1,6 @@
 "use client"
 
+import { Chip } from "@deriv-com/quill-ui-v2"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { cn } from "@/lib/utils"
 
@@ -35,26 +36,15 @@ export default function OrderTimeLimitSelector({
 
   return (
     <div className={cn("flex items-center gap-2", className)} data-testid="ad-form-select-time-limit">
-      {TIME_LIMIT_OPTIONS.map((option) => {
-        const isSelected = option === value
-        return (
-          <button
-            key={option}
-            type="button"
-            onClick={() => onValueChange(option)}
-            aria-pressed={isSelected}
-            className={cn(
-              "flex-1 h-10 rounded-full text-base font-normal transition-colors",
-              "border-[1.5px] text-grayscale-100",
-              isSelected
-                ? "bg-grayscale-500 border-black"
-                : "bg-transparent border-grayscale-400",
-            )}
-          >
-            {labelFor(option)}
-          </button>
-        )
-      })}
+      {TIME_LIMIT_OPTIONS.map((option) => (
+        <Chip
+          key={option}
+          label={labelFor(option)}
+          state={option === value ? "selected" : "default"}
+          onClick={() => onValueChange(option)}
+          className="flex-1"
+        />
+      ))}
     </div>
   )
 }

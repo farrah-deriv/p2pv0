@@ -1286,7 +1286,7 @@
     "transfer_wr_err_exceeds_net_deposit_limit_title": "এই পদ্ধতির উত্তোলন সীমা {max_amount}",
     "transfer_wr_err_high_risk_method_settle_first_body": "{deposit_amount} প্রথমে আপনার মূল আমানত পদ্ধতিতে ফেরত দেওয়া হবে। এরপর আপনি বাকিটা উত্তোলন করতে পারবেন।",
     "transfer_wr_err_high_risk_method_settle_first_title": "প্রথমে মূল পেমেন্ট পদ্ধতি ব্যবহার করতে হবে",
-    "transfer_wr_err_low_trading_activity_body": "এই উত্তোলন সম্পন্ন হওয়ার আগে আপনাকে কমপক্ষে USD {required_volume} ট্রেড করতে হবে।",
+    "transfer_wr_err_low_trading_activity_body": "এই উত্তোলন সম্পন্ন হতে পারে তার জন্য আরো ট্রেড করুন।",
     "transfer_wr_err_low_trading_activity_title": "আরও একটু ট্রেড করুন",
     "transfer_wr_err_method_not_used_previously_body": "আপনার নিরাপত্তার জন্য, উত্তোলন শুধুমাত্র সেই পেমেন্ট পদ্ধতিতে যেতে পারে যেটি আপনি আগে আমানতের জন্য ব্যবহার করেছেন।",
     "transfer_wr_err_method_not_used_previously_title": "যে পদ্ধতিতে আমানত করেছেন সেটি বেছে নিন",

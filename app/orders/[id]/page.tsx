@@ -4,7 +4,7 @@ export const runtime = "edge"
 
 import { useState, useEffect, useCallback } from "react"
 import { useParams } from 'next/navigation'
-import { ChevronRight } from 'lucide-react'
+import { StandaloneChevronRightRegularIcon } from "@deriv/quill-icons/Standalone"
 import Navigation from "@/components/navigation"
 import { Button } from "@/components/ui/button"
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -16,6 +16,7 @@ import OrderChatSkeleton from "@/components/order-chat-skeleton"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Spinner } from "@/components/ui/spinner"
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   cn,
@@ -41,6 +42,7 @@ import { useTranslations } from "@/lib/i18n/use-translations"
 import InfoCircleIcon from "@/public/icons/info-circle-bold.svg"
 import { useTrackers } from "@/analytics/useTrackers"
 import { shouldDisableChatAttachments } from "@/lib/orders/order-chat-gating"
+import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 export default function OrderDetailsPage() {
   const { t, locale } = useTranslations()
@@ -177,7 +179,7 @@ export default function OrderDetailsPage() {
             <span>{t("orderDetails.proofOfTransferSubmitted")}</span>
           </div>
         ),
-        className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+        className: TOAST_SUCCESS_CLASS,
         duration: 2500,
       })
     } catch (err) {
@@ -254,7 +256,7 @@ export default function OrderDetailsPage() {
                           <span>{t("orderDetails.textCopiedToClipboard")}</span>
                         </div>
                       ),
-                      className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+                      className: TOAST_SUCCESS_CLASS,
                       duration: 2500,
                     })
                   }
@@ -494,7 +496,7 @@ export default function OrderDetailsPage() {
                 : "py-4 flex flex-col-reverse md:flex-row gap-2 md:gap-4 sticky bottom-0 bg-white md:static md:bg-transparent",
             )}
           >
-            <Button variant="outline" className="flex-1 bg-transparent" onClick={handleCancelOrder} data-testid="order-details-btn-cancel">
+            <Button variant="ghost" className="flex-1" onClick={handleCancelOrder} data-testid="order-details-btn-cancel">
               {t("orderDetails.cancelOrder")}
             </Button>
             <Button className="flex-1" onClick={handleShowPaymentConfirmation} data-testid="order-details-btn-paid">
@@ -511,7 +513,7 @@ export default function OrderDetailsPage() {
           >
             <Button className="flex-1" onClick={handlePaymentReceived} disabled={isConfirmLoading} data-testid="order-details-btn-received">
               {isConfirmLoading ? (
-                <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
+                <Spinner size="xs" />
               ) : (
                 t("orderDetails.iveReceivedPayment")
               )}
@@ -523,7 +525,7 @@ export default function OrderDetailsPage() {
             {isCurrentUserSeller && (
               <Button className="flex-1" onClick={handlePaymentReceived} disabled={isConfirmLoading} data-testid="order-details-btn-received">
                 {isConfirmLoading ? (
-                  <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
+                  <Spinner size="xs" />
                 ) : (
                   t("orderDetails.iveReceivedPayment")
                 )}
@@ -714,8 +716,7 @@ export default function OrderDetailsPage() {
                 </div>
                 <div className={cn(isMobile && "flex-1 min-h-0 overflow-y-auto px-[24px] pt-6 pb-4")}>
                 {(order.status === "timed_out" || (order.status === "refunded" && order.disputed_at)) && !isBuyer && (
-                  <Alert variant="info" className="flex items-center gap-2 mb-[24px] [&>svg]:!static [&>svg~*]:!ps-0 [&>svg+div]:!translate-y-0">
-                    <InfoCircleIcon className="h-6 w-6 flex-shrink-0 [&>path]:fill-current" aria-hidden="true" />
+                  <Alert variant="info" className="mb-[24px]">
                     <AlertDescription>{t("orderDetails.fundsWillBeCredited")}</AlertDescription>
                   </Alert>
                 )}
@@ -731,10 +732,10 @@ export default function OrderDetailsPage() {
                             {formatAmount(order.payment_amount)} {order?.payment_currency}
                           </p>
                         </div>
-                        <button className="flex items-center text-xs" onClick={showOrderDetails} data-testid="order-details-btn-view-details">
+                        <Button variant="ghost" className="flex items-center text-xs !p-0 !h-auto" onClick={showOrderDetails} data-testid="order-details-btn-view-details">
                           {t("orderDetails.viewOrderDetails")}
-                          <ChevronRight className="h-4 w-4 ms-1" />
-                        </button>
+                          <StandaloneChevronRightRegularIcon iconSize="xs" className="ms-1" />
+                        </Button>
                       </div>
                       <div className="flex justify-between items-end">
                         <div>
@@ -767,18 +768,9 @@ export default function OrderDetailsPage() {
                       ) : (
                         <h2 className="text-lg font-bold">{t("orderDetails.sellerPaymentDetails")}</h2>
                       )}
-                      <div className="bg-orange-50 rounded-[16px] p-[16px]">
-                        <div className="flex items-start gap-2">
-                          <Image
-                            src="/icons/warning-icon-new.png"
-                            alt={t("common.warning")}
-                            height={24}
-                            width={24}
-                            className="-mt-[2px]"
-                          />
-                          <p className="text-sm text-slate-1200">{t("orderDetails.cashTransactionWarning")}</p>
-                        </div>
-                      </div>
+                      <Alert variant="warning">
+                        <AlertDescription>{t("orderDetails.cashTransactionWarning")}</AlertDescription>
+                      </Alert>
 
                       {order?.payment_method_details && order.payment_method_details.length > 0 && (
                         <div className="bg-white border rounded-lg mt-6">

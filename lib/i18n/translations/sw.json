@@ -1284,7 +1284,7 @@
     "transfer_wr_err_exceeds_net_deposit_limit_title": "Kikomo cha uondoaji kwa njia hii ni {max_amount}",
     "transfer_wr_err_high_risk_method_settle_first_body": "{deposit_amount} itarudishwa kwa njia yako ya awali ya amana kwanza. Unaweza kuondoa kilichobaki baadaye.",
     "transfer_wr_err_high_risk_method_settle_first_title": "Njia ya malipo ya awali lazima itumike kwanza",
-    "transfer_wr_err_low_trading_activity_body": "Unahitaji kufanya biashara ya angalau USD {required_volume} kabla uondoaji huu haujafanyika.",
+    "transfer_wr_err_low_trading_activity_body": "Fanya biashara zaidi ili uondoaji huu uweze kufanyika.",
     "transfer_wr_err_low_trading_activity_title": "Fanya biashara kidogo zaidi",
     "transfer_wr_err_method_not_used_previously_body": "Kwa usalama wako, uondoaji unaweza tu kwenda kwa njia ya malipo uliyotumia kuweka amana hapo awali.",
     "transfer_wr_err_method_not_used_previously_title": "Chagua njia ambayo uliweka amana nayo",

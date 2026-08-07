@@ -1276,7 +1276,7 @@
     "transfer_wr_err_exceeds_net_deposit_limit_title": "此方法提現限額為{max_amount}",
     "transfer_wr_err_high_risk_method_settle_first_body": "{deposit_amount} 將會先回到您原來的存款方式。剩餘的可以在之後提取。",
     "transfer_wr_err_high_risk_method_settle_first_title": "必須先使用原先的付款方式",
-    "transfer_wr_err_low_trading_activity_body": "您需要至少交易 USD {required_volume} 才能完成此提款。",
+    "transfer_wr_err_low_trading_activity_body": "進行更多交易，以便此提款可以順利完成。",
     "transfer_wr_err_low_trading_activity_title": "多交易一點",
     "transfer_wr_err_method_not_used_previously_body": "為了您的安全，提款只能透過您之前存款過的付款方式進行。",
     "transfer_wr_err_method_not_used_previously_title": "選擇您存款的方式",

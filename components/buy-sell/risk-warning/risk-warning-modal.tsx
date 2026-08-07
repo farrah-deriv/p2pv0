@@ -1,6 +1,6 @@
 "use client"
 
-import { CircleAlert, X } from "lucide-react"
+import { StandaloneCircleExclamationRegularIcon, StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
 
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
@@ -136,7 +136,7 @@ export default function RiskWarningModal({
             className="shrink-0 rounded-full p-2 hover:bg-slate-100 focus:outline-none focus-visible:ring-2"
             data-testid="risk-warning-btn-close"
           >
-            <X size={20} />
+            <StandaloneXmarkRegularIcon iconSize="xs" />
           </DialogClose>
         </div>
         {bodyContent}
@@ -166,7 +166,7 @@ function ValueWithWarningIcon({ text }: { text: string }) {
   return (
     <div className="flex items-center gap-1">
       <span className="text-grayscale-100 text-sm">{text}</span>
-      <CircleAlert size={16} className="text-warning-icon" />
+      <StandaloneCircleExclamationRegularIcon iconSize="xs" className="text-warning-icon" />
     </div>
   )
 }

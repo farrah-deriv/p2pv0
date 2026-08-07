@@ -1276,7 +1276,7 @@
     "transfer_wr_err_exceeds_net_deposit_limit_title": "இந்த முறைக்கான திரும்பப் பெறுதல் வரம்பு {max_amount}",
     "transfer_wr_err_high_risk_method_settle_first_body": "{deposit_amount} உங்கள் அசல் வைப்பு முறைக்கு முதலில் திருப்பித் தரப்படும். பிறகு மீதியை திரும்பப் பெறலாம்.",
     "transfer_wr_err_high_risk_method_settle_first_title": "அசல் கட்டண முறையை முதலில் பயன்படுத்த வேண்டும்",
-    "transfer_wr_err_low_trading_activity_body": "இந்த திரும்பப் பெறுவதற்கு முன் நீங்கள் குறைந்தபட்சம் USD {required_volume} வர்த்தகம் செய்ய வேண்டும்.",
+    "transfer_wr_err_low_trading_activity_body": "இந்த திரும்பப் பெறுவதற்கு செல்ல கூடுதல் வர்த்தகங்கள் செய்யுங்கள்.",
     "transfer_wr_err_low_trading_activity_title": "இன்னும் கொஞ்சம் வர்த்தகம் செய்யுங்கள்",
     "transfer_wr_err_method_not_used_previously_body": "உங்கள் பாதுகாப்பிற்காக, நீங்கள் முன்பு டெபாசிட் செய்யப் பயன்படுத்திய கட்டண முறைக்கு மட்டுமே பணம் திரும்பப் பெற முடியும்.",
     "transfer_wr_err_method_not_used_previously_title": "நீங்கள் டெபாசிட் செய்த முறையைத் தேர்வு செய்யவும்",

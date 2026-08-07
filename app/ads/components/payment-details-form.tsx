@@ -11,6 +11,7 @@ import type { AdFormData } from "../types"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
@@ -47,6 +48,7 @@ import {
   resolveSelectedUserPaymentMethodIds,
   toNumericPaymentMethodIds,
 } from "@/lib/payment-methods/payment-method-selection-utils"
+import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 interface PaymentMethod {
   display_name: string
@@ -239,7 +241,7 @@ const FullPagePaymentSelection = ({
                         checked={isSelected}
                         disabled={isDisabled}
                         onCheckedChange={() => !isDisabled && handleToggle(methodId)}
-                        className="w-[14px] h-[14px] data-[state=checked]:bg-black border-2 border-grayscale-text-muted rounded-[2px]"
+                        className="w-[14px] h-[14px] rounded-[2px]"
                         data-testid={`ad-form-checkbox-payment-${methodId}`}
                       />
                     </div>
@@ -519,7 +521,7 @@ const PaymentSelectionContent = ({
                       checked={isSelected}
                       onCheckedChange={() => !isDisabled && handlePaymentMethodToggle(methodId)}
                       disabled={isDisabled}
-                      className="pointer-events-none h-[20px] w-[20px] shrink-0 rounded-sm border-[2px] border-neutral-7 disabled:cursor-not-allowed disabled:opacity-30 data-[state=checked]:border-black data-[state=checked]:bg-black"
+                      className="pointer-events-none h-[20px] w-[20px] shrink-0 rounded-sm disabled:cursor-not-allowed disabled:opacity-30"
                       data-testid={`ad-form-checkbox-payment-${methodId}`}
                     />
                   </div>
@@ -532,7 +534,7 @@ const PaymentSelectionContent = ({
         )}
         {isFetchingNextPage && (
           <div className="flex justify-center py-2">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-grayscale-400 border-t-slate-600" />
+            <Spinner size="md" />
           </div>
         )}
 
@@ -739,7 +741,7 @@ export default function PaymentDetailsForm({
               <span>{t("profile.paymentMethodAddedWithName", { methodName: createdMethodName })}</span>
             </div>
           ),
-          className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+          className: TOAST_SUCCESS_CLASS,
           duration: 2500,
         })
       }
@@ -849,7 +851,7 @@ export default function PaymentDetailsForm({
                   onClick={() => handleShowPaymentSelection()}
                   type="button"
                 >
-                  <span className="text-left font-normal text-base text-black/[0.72]">
+                  <span className="text-left font-normal text-base text-grayscale-600">
                     {getSelectedPaymentMethodsText()}
                   </span>
                   <Image src="/icons/chevron-down.png" alt={t("common.dropdown")} width={24} height={24} className="ms-2" />

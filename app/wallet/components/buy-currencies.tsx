@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { currency3dLogoMapper } from "@/lib/utils"
 import { useAccountCurrencies } from "@/hooks/use-account-currencies"
@@ -18,7 +19,7 @@ function CurrencyCard({ code, name, onClick }: CurrencyCardProps) {
   const logo = currency3dLogoMapper[code as keyof typeof currency3dLogoMapper]
 
   return (
-    <button type="button" onClick={onClick} className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-black/[0.04] transition-colors cursor-pointer w-full text-center">
+    <Button type="button" variant="ghost" onClick={onClick} className="flex flex-col items-center gap-3 !p-4 !rounded-2xl !bg-black/[0.04] transition-colors cursor-pointer w-full text-center">
       <div className="w-8 h-8 flex items-center justify-center">
         {logo ? (
           <Image
@@ -35,7 +36,7 @@ function CurrencyCard({ code, name, onClick }: CurrencyCardProps) {
         )}
       </div>
       <span className="text-slate-1200 text-sm font-normal text-center">{name}</span>
-    </button>
+    </Button>
   )
 }
 

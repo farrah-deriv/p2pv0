@@ -1276,7 +1276,7 @@
     "transfer_wr_err_exceeds_net_deposit_limit_title": "Энэ аргын мөнгө авах хязгаар нь {max_amount}",
     "transfer_wr_err_high_risk_method_settle_first_body": "{deposit_amount}-г эхлээд таны хадгаламжийн үндсэн арга руу буцаана. Та дараа нь үлдсэнийг нь буцааж болно.",
     "transfer_wr_err_high_risk_method_settle_first_title": "Анхны төлбөрийн аргыг ашиглах ёстой",
-    "transfer_wr_err_low_trading_activity_body": "Та хамгийн багадаа USD {required_volume} арилжаа хийх шаардлагатай.",
+    "transfer_wr_err_low_trading_activity_body": "Энэ зарлагыг боловсруулахын тулд илүү олон арилжаа хийнэ үү.",
     "transfer_wr_err_low_trading_activity_title": "Бага зэрэг худалдаа хий",
     "transfer_wr_err_method_not_used_previously_body": "Аюулгүй байдлын үүднээс мөнгө татан авалтыг зөвхөн өмнө нь мөнгө байршуулж байсан төлбөрийн хэрэгслээр хийх боломжтой.",
     "transfer_wr_err_method_not_used_previously_title": "Хадгаламж хийсэн аргаа сонгоно уу",

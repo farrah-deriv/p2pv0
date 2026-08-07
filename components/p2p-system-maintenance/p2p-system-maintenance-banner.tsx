@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import { Alert } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import { cn } from "@/lib/utils"
@@ -35,7 +36,7 @@ export function P2PSystemMaintenanceBanner({
       className={cn(
         "flex flex-col gap-3 rounded-none border-transparent px-4 pt-4 pb-4 md:flex-row md:items-center md:gap-4 md:rounded-2xl md:px-6 md:pt-6 md:pb-12",
         embeddedInDarkHeader
-          ? "bg-[#2d2417] text-white md:bg-warning-bg md:text-grayscale-100"
+          ? "bg-warning-bg-dark text-white md:bg-warning-bg md:text-grayscale-100"
           : "bg-warning-bg text-grayscale-100",
       )}
     >
@@ -57,18 +58,19 @@ export function P2PSystemMaintenanceBanner({
             )}
           >
             {prefix}
-            <button
+            <Button
               type="button"
+              variant="ghost"
               data-testid="maintenance-link-livechat"
               onClick={openLiveChat}
               className={cn(
-                "font-bold underline underline-offset-2",
+                "font-bold underline underline-offset-2 !p-0 !h-auto inline",
                 embeddedInDarkHeader ? "text-white md:text-grayscale-100" : "text-grayscale-100",
               )}
               aria-label={linkLabel}
             >
               {linkLabel}
-            </button>
+            </Button>
             {suffix}
           </p>
         </div>

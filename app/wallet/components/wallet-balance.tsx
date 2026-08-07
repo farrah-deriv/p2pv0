@@ -3,7 +3,7 @@
 import { TooltipTrigger } from "@/components/ui/tooltip"
 
 import { useState, useEffect } from "react"
-import { Minus } from "lucide-react"
+import { StandaloneMinusRegularIcon } from "@deriv/quill-icons/Standalone"
 import Image from "next/image"
 import WalletSidebar from "./wallet-sidebar"
 import FullScreenIframeModal from "./full-screen-iframe-modal"
@@ -174,26 +174,26 @@ export default function WalletBalance({ className }: WalletBalanceProps) {
           <div className="flex flex-col items-center">
             <Button
               size="icon"
-              className="h-14 w-14 !rounded-full rounded-[9999px] aspect-square overflow-hidden flex-shrink-0 min-h-[56px] min-w-[56px] max-h-[56px] max-w-[56px] bg-[#00D0FF] text-black hover:bg-[#00B8E6] transition-colors p-0"
+              className="h-14 w-14 !rounded-full rounded-[9999px] aspect-square overflow-hidden flex-shrink-0 min-h-[56px] min-w-[56px] max-h-[56px] max-w-[56px] bg-blue-200 text-black hover:bg-cyan-hover transition-colors p-0"
               aria-label="Deposit"
               onClick={handleDepositClick}
             >
               <Image src="/icons/plus_icon.png" alt={t("common.plus")} width={14} height={24} />
             </Button>
-            <span className="mt-2 text-sm font-normal text-[rgba(0,0,0,0.96)] text-center leading-[22px]">{t("wallet.deposit")}</span>
+            <span className="mt-2 text-sm font-normal text-black/96 text-center leading-[22px]">{t("wallet.deposit")}</span>
           </div>
 
           <div className="flex flex-col items-center">
             <Button
               variant="outline"
               size="icon"
-              className="h-14 w-14 !rounded-full rounded-[9999px] aspect-square overflow-hidden flex-shrink-0 min-h-[56px] min-w-[56px] max-h-[56px] max-w-[56px] border-2 border-[#00080A] bg-white hover:bg-gray-50 transition-colors p-0"
+              className="h-14 w-14 !rounded-full rounded-[9999px] aspect-square overflow-hidden flex-shrink-0 min-h-[56px] min-w-[56px] max-h-[56px] max-w-[56px] border-2 border-brand-dark bg-white hover:bg-gray-50 transition-colors p-0"
               aria-label="Withdraw"
               onClick={handleWithdrawClick}
             >
-              <Minus className="h-6 w-6" />
+              <StandaloneMinusRegularIcon iconSize="sm" />
             </Button>
-            <span className="mt-2 text-sm font-normal text-[rgba(0,0,0,0.96)] text-center leading-[22px]">
+            <span className="mt-2 text-sm font-normal text-black/96 text-center leading-[22px]">
               {t("wallet.withdraw")}
             </span>
           </div>
@@ -202,13 +202,13 @@ export default function WalletBalance({ className }: WalletBalanceProps) {
             <Button
               variant="outline"
               size="icon"
-              className="h-14 w-14 !rounded-full rounded-[9999px] aspect-square overflow-hidden flex-shrink-0 min-h-[56px] min-w-[56px] max-h-[56px] max-w-[56px] border-2 border-[#00080A] bg-white hover:bg-gray-50 transition-colors p-0"
+              className="h-14 w-14 !rounded-full rounded-[9999px] aspect-square overflow-hidden flex-shrink-0 min-h-[56px] min-w-[56px] max-h-[56px] max-w-[56px] border-2 border-brand-dark bg-white hover:bg-gray-50 transition-colors p-0"
               aria-label="Transfer"
               onClick={handleTransferClick}
             >
               <Image src="/icons/exchange-icon.png" alt={t("wallet.transfer")} width={20} height={20} />
             </Button>
-            <span className="mt-2 text-sm font-normal text-[rgba(0,0,0,0.96)] text-center leading-[22px]">
+            <span className="mt-2 text-sm font-normal text-black/96 text-center leading-[22px]">
               {t("wallet.transfer")}
             </span>
           </div>

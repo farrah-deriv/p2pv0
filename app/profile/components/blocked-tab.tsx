@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast"
 import { isRtlLocale } from "@/lib/i18n/config"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { PROFILE_TOOLBAR_ROW } from "@/lib/rtl"
+import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 interface BlockedUser {
   nickname: string
@@ -72,7 +73,7 @@ export default function BlockedTab() {
                   <span>{t("profile.userUnblocked", { nickname: user.nickname })}</span>
                 </div>
               ),
-              className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+              className: TOAST_SUCCESS_CLASS,
               duration: 2500,
             })
             queryClient.invalidateQueries({ queryKey: queryKeys.auth.blockedUsers() })

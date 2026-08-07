@@ -24,7 +24,6 @@ const defaultProps = {
   currencies: mockCurrencies,
   selectedCurrency: "IDR",
   onCurrencySelect: mockOnCurrencySelect,
-  trigger: <button>Open Currency Filter</button>,
 }
 
 describe("CurrencyFilter", () => {
@@ -32,15 +31,16 @@ describe("CurrencyFilter", () => {
     jest.clearAllMocks()
   })
 
-  it("renders trigger button", () => {
+  it("renders trigger button with selected currency", () => {
     render(<CurrencyFilter {...defaultProps} />)
-    expect(screen.getByText("Open Currency Filter")).toBeInTheDocument()
+    expect(screen.getByTestId("currency-filter-btn-trigger")).toBeInTheDocument()
+    expect(screen.getByText("IDR")).toBeInTheDocument()
   })
 
-  it("opens popover on trigger click", async () => {
+  it("opens dropdown on trigger click", async () => {
     render(<CurrencyFilter {...defaultProps} />)
 
-    const trigger = screen.getByText("Open Currency Filter")
+    const trigger = screen.getByTestId("currency-filter-btn-trigger")
     await userEvent.click(trigger)
 
     expect(screen.getByPlaceholderText("Search")).toBeInTheDocument()
@@ -50,8 +50,7 @@ describe("CurrencyFilter", () => {
   it("filters currencies continuously as user types", async () => {
     render(<CurrencyFilter {...defaultProps} />)
 
-    // Open the filter
-    const trigger = screen.getByText("Open Currency Filter")
+    const trigger = screen.getByTestId("currency-filter-btn-trigger")
     await userEvent.click(trigger)
 
     const searchInput = screen.getByPlaceholderText("Search")
@@ -73,7 +72,7 @@ describe("CurrencyFilter", () => {
   it("filters by currency code continuously", async () => {
     render(<CurrencyFilter {...defaultProps} />)
 
-    const trigger = screen.getByText("Open Currency Filter")
+    const trigger = screen.getByTestId("currency-filter-btn-trigger")
     await userEvent.click(trigger)
 
     const searchInput = screen.getByPlaceholderText("Search")
@@ -88,7 +87,7 @@ describe("CurrencyFilter", () => {
   it("filters by partial word matches", async () => {
     render(<CurrencyFilter {...defaultProps} />)
 
-    const trigger = screen.getByText("Open Currency Filter")
+    const trigger = screen.getByTestId("currency-filter-btn-trigger")
     await userEvent.click(trigger)
 
     const searchInput = screen.getByPlaceholderText("Search")
@@ -103,7 +102,7 @@ describe("CurrencyFilter", () => {
   it("shows empty message when no currencies match search", async () => {
     render(<CurrencyFilter {...defaultProps} />)
 
-    const trigger = screen.getByText("Open Currency Filter")
+    const trigger = screen.getByTestId("currency-filter-btn-trigger")
     await userEvent.click(trigger)
 
     const searchInput = screen.getByPlaceholderText("Search")
@@ -114,16 +113,16 @@ describe("CurrencyFilter", () => {
     expect(screen.getByText("Currency is unavailable")).toBeInTheDocument()
   })
 
-  it("clears search when closing popover", async () => {
+  it("clears search when closing dropdown", async () => {
     render(<CurrencyFilter {...defaultProps} />)
 
-    const trigger = screen.getByText("Open Currency Filter")
+    const trigger = screen.getByTestId("currency-filter-btn-trigger")
     await userEvent.click(trigger)
 
     const searchInput = screen.getByPlaceholderText("Search")
     await userEvent.type(searchInput, "test")
 
-    // Close popover by pressing Escape
+    // Close dropdown by pressing Escape
     fireEvent.keyDown(searchInput, { key: "Escape" })
 
     // Reopen and check that search is cleared
@@ -132,10 +131,10 @@ describe("CurrencyFilter", () => {
     expect(newSearchInput).toHaveValue("")
   })
 
-  it("selects currency and closes popover", async () => {
+  it("selects currency and closes dropdown", async () => {
     render(<CurrencyFilter {...defaultProps} />)
 
-    const trigger = screen.getByText("Open Currency Filter")
+    const trigger = screen.getByTestId("currency-filter-btn-trigger")
     await userEvent.click(trigger)
 
     const currencyOption = screen.getByText("USD - US Dollar")
@@ -143,7 +142,7 @@ describe("CurrencyFilter", () => {
 
     expect(mockOnCurrencySelect).toHaveBeenCalledWith("USD")
 
-    // Check that popover is closed
+    // Check that dropdown is closed
     await waitFor(() => {
       expect(screen.queryByPlaceholderText("Search")).not.toBeInTheDocument()
     })
@@ -152,17 +151,17 @@ describe("CurrencyFilter", () => {
   it("highlights selected currency", async () => {
     render(<CurrencyFilter {...defaultProps} selectedCurrency="USD" />)
 
-    const trigger = screen.getByText("Open Currency Filter")
+    const trigger = screen.getByTestId("currency-filter-btn-trigger")
     await userEvent.click(trigger)
 
     const selectedCurrencyItem = screen.getByTestId("currency-filter-btn-USD")
-    expect(selectedCurrencyItem).toHaveClass("bg-grayscale-500", "border-black", "text-black")
+    expect(selectedCurrencyItem).toHaveClass("bg-neutral-50", "font-medium", "text-neutral-800")
   })
 
-  it("handles keyboard navigation", async () => {
+  it("handles keyboard Escape to close", async () => {
     render(<CurrencyFilter {...defaultProps} />)
 
-    const trigger = screen.getByText("Open Currency Filter")
+    const trigger = screen.getByTestId("currency-filter-btn-trigger")
     await userEvent.click(trigger)
 
     const searchInput = screen.getByPlaceholderText("Search")
@@ -178,7 +177,7 @@ describe("CurrencyFilter", () => {
   it("auto-focuses search input when opened", async () => {
     render(<CurrencyFilter {...defaultProps} />)
 
-    const trigger = screen.getByText("Open Currency Filter")
+    const trigger = screen.getByTestId("currency-filter-btn-trigger")
     await userEvent.click(trigger)
 
     const searchInput = screen.getByPlaceholderText("Search")
@@ -188,7 +187,7 @@ describe("CurrencyFilter", () => {
   it("handles case-insensitive search", async () => {
     render(<CurrencyFilter {...defaultProps} />)
 
-    const trigger = screen.getByText("Open Currency Filter")
+    const trigger = screen.getByTestId("currency-filter-btn-trigger")
     await userEvent.click(trigger)
 
     const searchInput = screen.getByPlaceholderText("Search")

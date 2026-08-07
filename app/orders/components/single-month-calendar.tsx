@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { StandaloneChevronLeftRegularIcon, StandaloneChevronRightRegularIcon } from "@deriv/quill-icons/Standalone"
 import {
   format,
   addMonths,
@@ -84,7 +84,7 @@ export function SingleMonthCalendar({ selected, onSelect }: SingleMonthCalendarP
           onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
           className="h-8 w-8 p-0"
         >
-          <ChevronLeft className={cn("h-4 w-4", RTL_MIRROR_ICON)} />
+          <StandaloneChevronLeftRegularIcon iconSize="xs" className={cn(RTL_MIRROR_ICON)} />
         </Button>
 
         <div className="text-center text-grayscale-600">{formatAppMonthYear(currentMonth, locale)}</div>
@@ -95,7 +95,7 @@ export function SingleMonthCalendar({ selected, onSelect }: SingleMonthCalendarP
           onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
           className="h-8 w-8 p-0"
         >
-          <ChevronRight className={cn("h-4 w-4", RTL_MIRROR_ICON)} />
+          <StandaloneChevronRightRegularIcon iconSize="xs" className={cn(RTL_MIRROR_ICON)} />
         </Button>
       </div>
 

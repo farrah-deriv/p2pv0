@@ -1,7 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { X, Star, ThumbsUp, ThumbsDown } from "lucide-react"
+import {
+  StandaloneXmarkRegularIcon,
+  StandaloneStarFillIcon,
+  StandaloneThumbsUpRegularIcon,
+  StandaloneThumbsDownRegularIcon,
+} from "@deriv/quill-icons"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/use-toast"
 import { cn } from "@/lib/utils"
@@ -63,7 +68,7 @@ export function RatingSidebar({
        <div className="flex justify-between items-center px-4 py-1 border-b">
           <h2 className="text-xl font-bold">{title}</h2>
           <Button onClick={handleClose} variant="ghost" size="icon" className="p-1">
-            <X className="h-6 w-6" />
+            <StandaloneXmarkRegularIcon iconSize="sm" />
           </Button>
         </div>
 
@@ -83,11 +88,9 @@ export function RatingSidebar({
                     onMouseLeave={() => setHoverRating(0)}
                     disabled={isSubmitting}
                   >
-                    <Star
-                      className={cn(
-                        "h-5 w-5",
-                        (hoverRating || rating) >= star ? "fill-yellow-400 text-yellow-400" : "text-gray-300",
-                      )}
+                    <StandaloneStarFillIcon
+                      iconSize="sm"
+                      className={cn((hoverRating || rating) >= star ? "text-yellow-400" : "text-gray-300")}
                     />
                   </Button>
                 ))}
@@ -104,7 +107,7 @@ export function RatingSidebar({
                   onClick={() => setRecommend(true)}
                   disabled={isSubmitting}
                 >
-                  <ThumbsUp className={cn("h-5 w-5", recommend === true ? "text-green-500" : "text-gray-400")} />
+                  <StandaloneThumbsUpRegularIcon iconSize="sm" className={cn(recommend === true ? "text-green-500" : "text-gray-400")} />
                   <span className="text-sm text-grayscale-100">Yes</span>
                 </Button>
                 <Button
@@ -113,7 +116,7 @@ export function RatingSidebar({
                   onClick={() => setRecommend(false)}
                   disabled={isSubmitting}
                 >
-                  <ThumbsDown className={cn("h-5 w-5", recommend === false ? "text-red-500" : "text-gray-400")} />
+                  <StandaloneThumbsDownRegularIcon iconSize="sm" className={cn(recommend === false ? "text-red-500" : "text-gray-400")} />
                   <span className="text-sm text-grayscale-100">No</span>
                 </Button>
               </div>

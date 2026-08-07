@@ -19,6 +19,7 @@ import Image from "next/image"
 import EmptyState from "@/components/empty-state"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { useToast } from "@/hooks/use-toast"
+import { TOAST_SUCCESS_CLASS, TOAST_ERROR_CLASS } from "@/lib/toast-utils"
 
 export default function CounterpartiesTab() {
   const { t, locale } = useTranslations()
@@ -77,7 +78,7 @@ export default function CounterpartiesTab() {
                   <span>{t("profile.userBlocked", { nickname: user.nickname })}</span>
                 </div>
               ),
-              className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+              className: TOAST_SUCCESS_CLASS,
               duration: 2500,
             })
             queryClient.invalidateQueries({ queryKey: queryKeys.auth.tradePartners() })
@@ -91,7 +92,7 @@ export default function CounterpartiesTab() {
                 <span>{t("profile.errorBlockingUser")}</span>
               </div>
             ),
-            className: "bg-red-500 text-white border-red-500 h-[48px] rounded-lg px-[16px] py-[8px]",
+            className: TOAST_ERROR_CLASS,
             duration: 3000,
           })
         }
@@ -118,7 +119,7 @@ export default function CounterpartiesTab() {
                   <span>{t("profile.userUnblocked", { nickname: user.nickname })}</span>
                 </div>
               ),
-              className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+              className: TOAST_SUCCESS_CLASS,
               duration: 2500,
             })
             queryClient.invalidateQueries({ queryKey: queryKeys.auth.tradePartners() })
@@ -132,7 +133,7 @@ export default function CounterpartiesTab() {
                 <span>{t("profile.errorUnblockingUser")}</span>
               </div>
             ),
-            className: "bg-red-500 text-white border-red-500 h-[48px] rounded-lg px-[16px] py-[8px]",
+            className: TOAST_ERROR_CLASS,
             duration: 3000,
           })
         }

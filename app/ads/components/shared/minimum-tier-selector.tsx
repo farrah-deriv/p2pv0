@@ -87,11 +87,12 @@ function TierRow({
   t: (key: string) => string
 }) {
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
       onClick={onSelect}
       className={cn(
-        "w-full text-start rounded-lg p-4 bg-grayscale-500 transition-colors",
+        "w-full text-start !rounded-lg !p-4 !bg-grayscale-500 transition-colors !justify-start",
         "border-[1.5px]",
         isSelected ? "border-black" : "border-transparent",
       )}
@@ -101,7 +102,7 @@ function TierRow({
         <OverlappingTierIcons icons={option.icons} />
       </div>
       <div className="mt-1 text-sm text-grayscale-100">{t(option.descriptionKey)}</div>
-    </button>
+    </Button>
   )
 }
 
@@ -189,7 +190,7 @@ export default function MinimumTierSelector({
               aria-hidden="true"
               width={24}
               height={24}
-              className={cn("transition-transform", isOpen && "rotate-180")}
+              className={cn("transition-transform duration-200", isOpen && "rotate-180")}
             />
           </div>
         </div>
@@ -227,7 +228,7 @@ export default function MinimumTierSelector({
           aria-hidden="true"
           width={24}
           height={24}
-          className={cn("transition-transform", isOpen && "rotate-180")}
+          className={cn("transition-transform duration-200", isOpen && "rotate-180")}
         />
       </div>
       {isOpen && (

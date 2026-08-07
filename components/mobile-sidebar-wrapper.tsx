@@ -17,7 +17,7 @@ export function MobileSidebarTrigger({ "data-testid": testId }: { "data-testid"?
     if (window.history.length > 1) {
       router.back()
     } else {
-      router.push("/market")
+      router.push("/")
     }
   }
 

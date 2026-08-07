@@ -21,7 +21,7 @@ export default function AdSuccessScreen({ ad, onShareClick }: AdSuccessScreenPro
     <div className="fixed inset-0 z-50 flex flex-col md:items-center md:justify-center"
       style={{
         background:
-          "radial-gradient(108.21% 50% at 52.05% 0%, rgba(255, 68, 79, 0.24) 0%, rgba(255, 68, 79, 0.00) 100%), #181C25",
+          "radial-gradient(108.21% 50% at 52.05% 0%, var(--brand-red-24) 0%, transparent 100%), var(--color-slate-1200)",
       }}
     >
       <div className="w-full h-full flex flex-col items-center justify-between md:justify-center px-4 md:px-6 py-8 md:py-6">

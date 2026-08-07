@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useCallback, useState, useMemo } from "react"
-import { AlertCircle } from "lucide-react"
+import { StandaloneCircleExclamationRegularIcon } from "@deriv/quill-icons/Standalone"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
@@ -16,6 +16,7 @@ import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { useFavouriteUsers } from "@/hooks/use-api-queries"
 import { useToast } from "@/hooks/use-toast"
 import { useUserDataStore } from "@/stores/user-data-store"
+import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 interface ClosedGroup {
   user_id: number
   nickname: string
@@ -89,7 +90,7 @@ export default function ClosedGroupTab({ isInAlert = false }: ClosedGroupTabProp
           <span>{message}</span>
         </div>
       ),
-      className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+      className: TOAST_SUCCESS_CLASS,
       duration: 2500,
     })
   }, [toast])
@@ -161,7 +162,7 @@ export default function ClosedGroupTab({ isInAlert = false }: ClosedGroupTabProp
     <div className="space-y-4">
       {!isDiamond && (
         <Alert variant="warning">
-          <AlertCircle className="h-4 w-4" />
+          <StandaloneCircleExclamationRegularIcon iconSize="xs" />
           <AlertDescription>{t("profile.closedGroupDiamondOnlyWarning")}</AlertDescription>
         </Alert>
       )}

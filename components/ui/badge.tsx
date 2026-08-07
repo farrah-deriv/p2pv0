@@ -1,53 +1,81 @@
-import type * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+"use client"
+
+import * as React from "react"
+import { Tag } from "@deriv-com/quill-ui-v2"
+import type { TagProps } from "@deriv-com/quill-ui-v2"
 
 import { cn } from "@/lib/utils"
 
-const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-  {
-    variants: {
-      variant: {
-        default: "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
-        secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        outline: "text-foreground",
-        success: "border-transparent bg-success text-white hover:bg-success/80",
-        "success-light":
-          "justify-center items-center rounded border-transparent bg-success-light text-xs font-bold leading-5 px-2 py-0.5 text-success-text",
-        "success-secondary":
-          "justify-center items-center rounded border-transparent bg-success-bg-secondary text-xs font-medium leading-5 px-2 py-0.5 text-success-text",
-        error: "border-transparent bg-error text-white hover:bg-error/80",
-        "error-light":
-          "justify-center items-center rounded border-transparent bg-error-light text-xs font-bold leading-5 px-2 py-0.5 text-error-text",
-        "error-secondary":
-          "justify-center items-center rounded border-transparent bg-error-bg-secondary text-xs font-medium leading-5 px-2 py-0.5 text-error",
-        warning: "border-transparent bg-warning-bg text-warning-icon hover:bg-warning-bg/80",
-        buy: "border-transparent bg-buy text-white hover:bg-buy/80",
-        sell: "border-transparent bg-sell text-white hover:bg-sell/80",
-        blue: "border-transparent bg-blue text-white hover:bg-blue/80",
-        "blue-light": "border-transparent bg-blue-light text-blue hover:bg-blue-light/80",
-        active: "border-transparent bg-success-light text-success hover:bg-success-light/80",
-        inactive: "border-transparent bg-error-light text-error hover:bg-error-light/80",
-        info: "border-transparent bg-info-light text-info hover:bg-info-light/80",
-        pending: "border-transparent bg-pending-light text-pending hover:bg-pending-light/80",
-        "pending-secondary":
-          "justify-center items-center rounded border-transparent bg-pending-bg text-xs font-medium leading-5 px-2 py-0.5 text-pending-text-secondary",
-        completed: "border-transparent bg-completed-light text-completed hover:bg-completed-light/80",
-        cancelled: "border-transparent bg-cancelled-light text-cancelled hover:bg-cancelled-light/80",
-        disputed: "border-transparent bg-disputed-light text-disputed hover:bg-disputed-light/80",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  },
-)
+type BadgeVariant =
+  | "default"
+  | "secondary"
+  | "destructive"
+  | "outline"
+  | "success"
+  | "success-light"
+  | "success-secondary"
+  | "error"
+  | "error-light"
+  | "error-secondary"
+  | "warning"
+  | "buy"
+  | "sell"
+  | "blue"
+  | "blue-light"
+  | "active"
+  | "inactive"
+  | "info"
+  | "pending"
+  | "pending-secondary"
+  | "completed"
+  | "cancelled"
+  | "disputed"
 
-export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}
-
-function Badge({ className, variant, ...props }: BadgeProps) {
-  return <div className={cn(badgeVariants({ variant }), className)} {...props} />
+const variantMap: Record<BadgeVariant, Pick<TagProps, "state" | "type">> = {
+  default:            { state: "neutral", type: "fill" },
+  secondary:          { state: "neutral", type: "fill" },
+  inactive:           { state: "neutral", type: "fill" },
+  cancelled:          { state: "neutral", type: "fill" },
+  outline:            { state: "neutral", type: "outline" },
+  destructive:        { state: "red",     type: "fill" },
+  error:              { state: "red",     type: "fill" },
+  sell:               { state: "red",     type: "fill" },
+  disputed:           { state: "red",     type: "fill" },
+  "error-light":      { state: "red",     type: "outline" },
+  "error-secondary":  { state: "red",     type: "outline" },
+  warning:            { state: "yellow",  type: "fill" },
+  pending:            { state: "yellow",  type: "fill" },
+  "pending-secondary":{ state: "yellow",  type: "outline" },
+  success:            { state: "green",   type: "fill" },
+  active:             { state: "green",   type: "fill" },
+  completed:          { state: "green",   type: "fill" },
+  "success-light":    { state: "green",   type: "outline" },
+  "success-secondary":{ state: "green",   type: "outline" },
+  info:               { state: "blue",    type: "fill" },
+  blue:               { state: "blue",    type: "fill" },
+  buy:                { state: "blue",    type: "fill" },
+  "blue-light":       { state: "blue",    type: "outline" },
 }
 
-export { Badge, badgeVariants }
+export interface BadgeProps {
+  variant?: BadgeVariant
+  className?: string
+  children?: React.ReactNode
+}
+
+function Badge({ className, variant = "default", children }: BadgeProps) {
+  const { state, type } = variantMap[variant] ?? variantMap.default
+  return (
+    <Tag
+      state={state}
+      type={type}
+      size="sm"
+      label={children != null ? String(children) : undefined}
+      className={cn(className)}
+    />
+  )
+}
+
+export const badgeVariants = (_opts?: { variant?: string }) => ""
+
+export { Badge }

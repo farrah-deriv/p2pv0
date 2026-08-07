@@ -6,6 +6,7 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Spinner } from "@/components/ui/spinner"
 import Image from "next/image"
 import { formatAmount } from "@/lib/utils"
 import type { Order } from "@/services/api/api-orders"
@@ -220,10 +221,10 @@ export const PaymentConfirmationSidebar = ({
           {/* Close button */}
           <div className="flex items-center justify-end px-4 md:px-0 py-3">
             <Button
-              variant="ghost"
+              variant="icon-muted"
               size="sm"
               onClick={onClose}
-              className="bg-grayscale-300 px-1"
+              className="px-1 rounded-full"
               aria-label={t("common.close")}
             >
               <Image src="/icons/close-circle.png" alt="" aria-hidden="true" width={24} height={24} />
@@ -241,16 +242,8 @@ export const PaymentConfirmationSidebar = ({
             <div className="relative">
               <Alert
                 variant="warning"
-                className="flex items-start gap-2 rounded-b-none border-0 pb-10"
+                className="rounded-b-none border-0 pb-10"
               >
-                <Image
-                  src="/icons/warning-icon-new.png"
-                  alt=""
-                  aria-hidden="true"
-                  height={24}
-                  width={24}
-                  className="mt-0.5 shrink-0"
-                />
                 <AlertDescription>
                   {t("orders.fraudWarningStart")}
                   <strong className="font-bold">{t("orders.fraudWarningBold")}</strong>
@@ -396,13 +389,7 @@ export const PaymentConfirmationSidebar = ({
                 data-testid="order-details-btn-confirm-payment"
               >
                 {isLoading || isUploadLoading ? (
-                  <Image
-                    src="/icons/spinner.png"
-                    alt={t("common.loading")}
-                    width={20}
-                    height={20}
-                    className="animate-spin"
-                  />
+                  <Spinner size="xs" />
                 ) : (
                   t("orders.submit")
                 )}

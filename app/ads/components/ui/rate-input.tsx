@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { AlertTriangle } from "lucide-react"
+import { StandaloneTriangleExclamationRegularIcon } from "@deriv/quill-icons/Standalone"
 import { cn } from "@/lib/utils"
 
 interface RateInputProps {
@@ -40,7 +40,7 @@ export function RateInput({
       <div
         className={cn(
           "flex rounded-lg overflow-hidden border transition-colors duration-200",
-          error ? "border-red-500" : "border-gray-200"
+          error ? "border-error" : "border-gray-200"
         )}
       >
         <div className="flex-1 relative">
@@ -66,7 +66,7 @@ export function RateInput({
             className={cn(
               "absolute start-3 pointer-events-none transition-all duration-200",
               showFloating ? "text-xs top-2 bg-white px-1" : "text-sm top-1/2 -translate-y-1/2",
-              error ? "text-red-500" : "text-black/70",
+              error ? "text-error" : "text-black/70",
             )}
           >
             {label}
@@ -74,7 +74,7 @@ export function RateInput({
 
           {error && (
             <div className="absolute end-2 top-1/2 transform -translate-y-1/2">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
+              <StandaloneTriangleExclamationRegularIcon iconSize="sm" className="text-error" />
             </div>
           )}
         </div>

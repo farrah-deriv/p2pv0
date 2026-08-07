@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { maskAccountNumber } from "@/lib/utils"
 import Image from "next/image"
 import { useState, useMemo, useEffect, useCallback } from "react"
@@ -32,6 +33,7 @@ import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
 import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
 import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
 import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
+import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 interface PaymentMethod {
   id: string
@@ -163,7 +165,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
             <span>{t("profile.paymentMethodUpdated")}</span>
           </div>
         ),
-        className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+        className: TOAST_SUCCESS_CLASS,
         duration: 2500,
       })
 
@@ -248,7 +250,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
             <span>{t("profile.paymentMethodDeleted")}</span>
           </div>
         ),
-        className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+        className: TOAST_SUCCESS_CLASS,
         duration: 2500,
       })
     } catch (error: any) {
@@ -329,7 +331,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-8">
-        <p className="text-red-500 mb-4">{errorMessage}</p>
+        <p className="text-error mb-4">{errorMessage}</p>
         <Button
           data-testid="profile-btn-retry-payment"
           onClick={() => refetch()}
@@ -386,7 +388,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
                       </DropdownMenuTrigger>
                       <DropdownMenuContent side={menuSide} align="center" className="w-[160px]">
                         <DropdownMenuItem
-                          className="flex items-center gap-2 text-gray-700 focus:text-gray-700 px-[16px] py-[8px] cursor-pointer"
+                          className="flex items-center gap-2 text-gray-700 focus-visible:text-gray-700 px-[16px] py-[8px] cursor-pointer"
                           onSelect={() => handleEditPaymentMethod(method)}
                         >
                           <Image src="/icons/edit-pencil-icon.png" alt={t("common.edit")} width={24} height={24} />
@@ -394,7 +396,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           data-testid={`profile-btn-delete-payment-${method.id}`}
-                          className="flex items-center gap-2 text-destructive focus:text-destructive px-[16px] py-[8px]"
+                          className="flex items-center gap-2 text-destructive focus-visible:text-destructive px-[16px] py-[8px]"
                           onSelect={() => handleDeletePaymentMethod(method.id, method.name)}
                         >
                           <Image src="/icons/delete-trash-icon.png" alt={t("common.delete")} width={24} height={24} />
@@ -439,7 +441,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
                       </DropdownMenuTrigger>
                       <DropdownMenuContent side={menuSide} align="center" className="w-[160px]">
                         <DropdownMenuItem
-                          className="flex items-center gap-2 text-gray-700 focus:text-gray-700 px-[16px] py-[8px]"
+                          className="flex items-center gap-2 text-gray-700 focus-visible:text-gray-700 px-[16px] py-[8px]"
                           onSelect={() => handleEditPaymentMethod(method)}
                         >
                           <Image src="/icons/edit-pencil-icon.png" alt={t("common.edit")} width={24} height={24} />
@@ -447,7 +449,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           data-testid={`profile-btn-delete-payment-${method.id}`}
-                          className="flex items-center gap-2 text-destructive focus:text-destructive px-[16px] py-[8px]"
+                          className="flex items-center gap-2 text-destructive focus-visible:text-destructive px-[16px] py-[8px]"
                           onSelect={() => handleDeletePaymentMethod(method.id, method.name)}
                         >
                           <Image src="/icons/delete-trash-icon.png" alt={t("common.delete")} width={24} height={24} />
@@ -467,7 +469,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
       )}
       {isFetchingNextPage && (
         <div className="flex justify-center py-4">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+          <Spinner size="md" />
         </div>
       )}
       {editPanel.show && editPanel.paymentMethod && (

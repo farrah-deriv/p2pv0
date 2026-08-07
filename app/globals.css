@@ -16,7 +16,32 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
 @layer utilities {
+  .animate-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+
+  .animate-shimmer-dark {
+    background: linear-gradient(90deg, #2a2f3d 25%, #363c4e 50%, #2a2f3d 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+
+  .bg-share-card-gradient {
+    background: linear-gradient(172deg, var(--brand-red) 73%, rgba(0, 0, 0, 0.04) 27%);
+  }
+
   .text-balance {
     text-wrap: balance;
   }
@@ -83,9 +108,13 @@ body {
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 356.47 100% 63.33%;
-    --primary-hover: 355.98 74.9% 53.14%;
+    --primary: 357 100% 63%;
+    --primary-hover: 355 43% 47%;
     --primary-foreground: 0 0% 98%;
+    --brand-red: #FF444F;
+    --brand-red-hover: #BF333B;
+    --brand-red-24: rgba(255, 68, 79, 0.24);
+    --color-slate-1200: #181C25;
     --secondary: 164.31 100% 38.24%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
@@ -120,8 +149,9 @@ body {
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: #00cccc;
-    --primary-foreground: 0 0% 9%;
+    --primary: 357 100% 63%;
+    --primary-hover: 355 43% 47%;
+    --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 14.9%;
@@ -175,4 +205,25 @@ input[type="number"]::-webkit-outer-spin-button {
 
 input[type="number"] {
   -moz-appearance: textfield;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-shimmer {
+    animation: none;
+    background: #f0f0f0;
+  }
+
+  .animate-shimmer-dark {
+    animation: none;
+    background: #2a2f3d;
+  }
 }

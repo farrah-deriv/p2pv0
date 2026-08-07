@@ -100,7 +100,7 @@ export function FloatingRateInput({
           <div
             className={cn(
               "flex rounded-lg overflow-hidden border transition-colors duration-200 bg-white",
-              error ? "border-red-500" : "border-gray-200",
+              error ? "border-error" : "border-gray-200",
             )}
           >
             <div className="flex-1 relative">

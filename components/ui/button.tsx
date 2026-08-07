@@ -1,65 +1,86 @@
 "use client"
 
 import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
+import { Button as QuillButton, type ButtonProps as QuillButtonProps } from "@deriv-com/quill-ui-v2"
+// Map legacy variant names to Quill type values
+const variantToType: Record<string, QuillButtonProps["type"]> = {
+  default: "primary",
+  primary: "primary",
+  hover: "primary",
+  secondary: "secondary",
+  ghost: "ghost",
+  chip: "ghost",
+  outline: "tertiary",
+  destructive: "primary",
+  black: "primary",
+  buy: "primary",
+  "icon-muted": "ghost",
+  "icon-action": "primary",
+  "icon-action-outlined": "ghost",
+  "outline-white": "ghost",
+}
 
-import { cn } from "@/lib/utils"
+// Map legacy size names to Quill size values
+const sizeMap: Record<string, QuillButtonProps["size"]> = {
+  default: "lg",
+  lg: "lg",
+  sm: "sm",
+  xs: "sm",
+  icon: "sm",
+}
 
-const buttonVariants = cva(
-  "inline-flex flex-row items-center justify-center gap-2 rounded-full font-extrabold text-base leading-none transition-colors cursor-pointer focus-visible:outline-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 z-0 font-[800] text-[16px] leading-[16px] text-center text-default-button-text disabled:opacity-24 disabled:cursor-not-allowed disabled:pointer-events-none",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-white hover:bg-primary-hover",
-        hover: "bg-primary-hover text-default-button-text",
-        black: "bg-black text-white hover:bg-black/90",
-        outline: "border border-[#181C25] bg-transparent text-foreground hover:bg-slate-100 px-7",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        secondary: "bg-secondary text-white hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-      },
-      size: {
-        default: "h-[48px] min-h-[48px] max-h-[48px] px-7 gap-2 min-w-[96px]",
-        sm: "h-[32px] px-4 gap-1 text-sm",
-        xs: "h-8 min-h-8 max-h-8 px-3 gap-1 text-xs",
-        lg: "h-11 rounded-[16px] px-8",
-        icon: "h-10 w-10",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  },
-)
-
-const VALID_VARIANTS = ["default", "hover", "black", "outline", "destructive", "secondary", "ghost"]
-
-const VALID_SIZES = ["default", "sm", "xs", "lg", "icon"]
-
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "type"> {
+  variant?: "default" | "primary" | "hover" | "black" | "outline" | "destructive" | "secondary" | "ghost" | "buy" | "chip" | "icon-muted" | "icon-action" | "icon-action-outlined" | "outline-white"
+  size?: "default" | "sm" | "xs" | "lg" | "icon"
   asChild?: boolean
+  /** HTML button type — passed as htmlType to Quill Button */
+  type?: "button" | "submit" | "reset"
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, disabled, ...props }, ref) => {
-    const computedVariant = VALID_VARIANTS.includes(variant as string) ? variant! : "default"
-    const computedSize = VALID_SIZES.includes(size as string) ? size : "default"
+  ({ className, variant = "default", size = "default", type = "button", disabled, onClick, children, ...rest }, ref) => {
+    const quillType = variantToType[variant] ?? "primary"
+    const quillSize = sizeMap[size] ?? "lg"
 
-    const Comp = asChild ? Slot : "button"
+    // icon-muted: 32×32px ghost circle for nav/close icon buttons
+    // icon-action: 48×48px filled brand-red circle (Quill primary = brand red, no color override needed)
+    // icon-action-outlined: 48×48px transparent circle with border
+    // buy: green filled button for P2P buy action
+    const variantClass =
+      variant === "icon-muted"
+        ? "!rounded-full !w-8 !h-8 !p-0 !min-w-0"
+        : variant === "icon-action"
+          ? "!rounded-full !w-12 !h-12 !p-0 !min-w-0"
+          : variant === "icon-action-outlined"
+            ? "!rounded-full !w-12 !h-12 !p-0 !min-w-0 !bg-transparent !border !border-slate-1200 hover:!bg-black/10"
+            : variant === "buy"
+              ? "!bg-success-text-secondary hover:!bg-success-text-secondary-hover !text-white !border-0"
+              : variant === "ghost" || variant === "outline"
+                ? "!flex-row !items-center"
+                : variant === "chip"
+                  ? "!rounded-full !border !border-neutral-200 !bg-transparent !text-neutral-600 !text-xs !font-medium !px-3 !py-2 !h-auto !min-h-0 !min-w-0"
+                  : undefined
+
     return (
-      <Comp
-        className={cn(buttonVariants({ variant: computedVariant, size: computedSize }), className)}
+      <QuillButton
         ref={ref}
+        type={quillType}
+        size={quillSize}
+        htmlType={type}
         disabled={disabled}
-        {...props}
-      />
+        state={disabled ? "disabled" : undefined}
+        onClick={onClick}
+        className={["transition-colors", variantClass, className].filter(Boolean).join(" ") || undefined}
+        {...(rest as Partial<QuillButtonProps>)}
+      >
+        {children}
+      </QuillButton>
     )
   },
 )
 Button.displayName = "Button"
 
-export { Button, buttonVariants }
+// Keep buttonVariants shim so any callers that import it don't break at compile time
+export const buttonVariants = (_opts?: { variant?: string; size?: string }) => ""
+
+export { Button }

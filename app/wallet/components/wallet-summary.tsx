@@ -345,7 +345,7 @@ export default function WalletSummary({
       >
         {!isBalancesView && (
           <div className="flex justify-start items-center h-8 mb-6">
-            <Button data-testid="wallet-btn-back" variant="ghost" size="sm" onClick={onBack} className="w-8 h-8 p-0" aria-label="Back to balances">
+            <Button data-testid="wallet-btn-back" variant="icon-muted" size="sm" onClick={onBack} className="w-8 h-8 p-0" aria-label="Back to balances">
               <Image src="/icons/back-circle.png" alt={t("common.back")} width={32} height={32} />
             </Button>
           </div>
@@ -353,7 +353,7 @@ export default function WalletSummary({
 
         {isShowingTransactionDetails && selectedTransaction && (
           <div className="flex justify-start items-center h-8 mb-6">
-            <Button variant="ghost" size="sm" onClick={handleCloseTransactionDetails} className="w-8 h-8 p-0" aria-label="Back to transaction list">
+            <Button variant="icon-muted" size="sm" onClick={handleCloseTransactionDetails} className="w-8 h-8 p-0" aria-label="Back to transaction list">
               <Image src="/icons/back-circle.png" alt={t("common.back")} width={32} height={32} />
             </Button>
           </div>
@@ -411,7 +411,7 @@ export default function WalletSummary({
                   <>
                     <p className="text-xs font-normal text-white/72 mb-1">{t("wallet.estTotalValue")}</p>
                     {propIsLoading ? (
-                      <Skeleton className="h-7 w-32 bg-white/20" />
+                      <Skeleton className="h-7 w-32 animate-shimmer-dark" />
                     ) : (
                       <p data-testid="wallet-text-total-balance" className="text-xl font-extrabold text-white">{`${formattedBalance} ${displayCurrency}`}</p>
                     )}
@@ -430,13 +430,14 @@ export default function WalletSummary({
             <div className={cn("flex items-center gap-[66px] px-[33px]", isMobile && "flex-row justify-center w-full")}>
               <div className="hidden flex-col items-center gap-2">
                 <Button
+                  variant="icon-action"
                   data-testid="wallet-btn-deposit"
-                  size="icon"
-                  className="h-12 w-12 rounded-full bg-[#FF444F] hover:bg-[#E63946] text-white p-0"
                   onClick={handleDepositClick}
                   aria-label="Deposit"
                 >
-                  <Image src="/icons/plus-white.png" alt={t("wallet.deposit")} width={14} height={14} />
+                  <span className="flex items-center justify-center">
+                    <Image src="/icons/plus-white.png" alt={t("wallet.deposit")} width={14} height={14} />
+                  </span>
                 </Button>
                 <span className={cn("text-xs font-normal", isBalancesView ? "text-white" : "text-slate-1200")}>
                   {t("wallet.deposit")}
@@ -446,13 +447,14 @@ export default function WalletSummary({
               {!isBalancesView && (
                 <div className="flex flex-col items-center gap-2">
                   <Button
+                    variant="icon-action"
                     data-testid="wallet-btn-buy"
-                    size="icon"
-                    className="h-12 w-12 rounded-full bg-[#FF444F] hover:bg-[#E63946] text-white p-0"
                     onClick={handleBuyClick}
                     aria-label="Buy"
                   >
-                    <Image src="/icons/plus-white.png" alt={t("common.buy")} width={14} height={14} />
+                    <span className="flex items-center justify-center">
+                      <Image src="/icons/plus-white.png" alt={t("common.buy")} width={14} height={14} />
+                    </span>
                   </Button>
                   <span className="text-xs font-normal text-slate-1200">
                     {t("common.buy")}
@@ -462,14 +464,15 @@ export default function WalletSummary({
 
               <div className="flex flex-col items-center gap-2">
                 <Button
+                  variant="icon-action"
                   data-testid="wallet-btn-transfer"
-                  size="icon"
-                  className="h-12 w-12 rounded-full p-0 bg-[#FF444F] hover:bg-[#E63946] text-white"
                   onClick={handleTransferClick}
                   disabled={actionsDisabled}
                   aria-label="Transfer"
                 >
-                  <Image src="/icons/transfer-white.png" alt={t("wallet.transfer")} width={14} height={14} />
+                  <span className="flex items-center justify-center">
+                    <Image src="/icons/transfer-white.png" alt={t("wallet.transfer")} width={14} height={14} />
+                  </span>
                 </Button>
                 <span className={cn("text-xs font-normal", isBalancesView ? "text-white" : "text-slate-1200")}>
                   {t("wallet.transfer")}
@@ -479,14 +482,14 @@ export default function WalletSummary({
               {!isBalancesView && (
                 <div className="flex flex-col items-center gap-2">
                   <Button
+                    variant="icon-action-outlined"
                     data-testid="wallet-btn-sell"
-                    size="icon"
-                    className="h-12 w-12 rounded-full text-white p-0 border border-slate-1200"
                     onClick={handleSellClick}
                     aria-label="Sell"
-                    variant="ghost"
                   >
-                    <Image src="/icons/withdraw-black.png" alt={t("common.sell")} width={14} height={24} />
+                    <span className="flex items-center justify-center">
+                      <Image src="/icons/withdraw-black.png" alt={t("common.sell")} width={14} height={14} />
+                    </span>
                   </Button>
                   <span className="text-xs font-normal text-slate-1200">
                     {t("common.sell")}
@@ -496,31 +499,31 @@ export default function WalletSummary({
 
               <div className="hidden flex-col items-center gap-2">
                 <Button
-                  size="icon"
-                  className={cn(
-                    "h-12 w-12 rounded-full p-0",
-                    isBalancesView
-                      ? propBalance === "0.00"
-                        ? "border border-[#FFFFFF3D] bg-transparent text-[#FFFFFF3D]"
-                        : "border border-white bg-transparent hover:bg-white/10 text-white"
-                      : "border border-slate-1200 bg-transparent hover:bg-black/10 text-slate-1200",
-                  )}
+                  variant="icon-action-outlined"
                   onClick={handleWithdrawClick}
                   disabled={isBalancesView && propBalance === "0.00"}
                   aria-label="Withdraw"
+                  className={cn(
+                    isBalancesView
+                      ? propBalance === "0.00"
+                        ? "!border-white/24 !opacity-25"
+                        : "!border-white hover:!bg-white/10"
+                      : undefined,
+                  )}
                 >
-                  <Image
-                    src={isBalancesView ? "/icons/withdraw-white.png" : "/icons/withdraw-black.png"}
-                    alt={t("wallet.withdraw")}
-                    width={14}
-                    height={14}
-                    className={cn(isBalancesView && propBalance === "0.00" && "opacity-25")}
-                  />
+                  <span className="flex items-center justify-center">
+                    <Image
+                      src={isBalancesView ? "/icons/withdraw-white.png" : "/icons/withdraw-black.png"}
+                      alt={t("wallet.withdraw")}
+                      width={14}
+                      height={14}
+                    />
+                  </span>
                 </Button>
                 <span
                   className={cn(
                     "text-xs font-normal",
-                    isBalancesView ? (propBalance === "0.00" ? "text-[#FFFFFF3D]" : "text-white") : "text-slate-1200",
+                    isBalancesView ? (propBalance === "0.00" ? "text-white/24" : "text-white") : "text-slate-1200",
                   )}
                 >
                   {t("wallet.withdraw")}
@@ -563,13 +566,14 @@ export default function WalletSummary({
         <div className="fixed inset-0 z-50 bg-slate-75 overflow-y-auto overflow-x-hidden">
           <div className="p-6 bg-slate-75">
             <div className="flex justify-start items-center mb-6">
-              <button
+              <Button
+                variant="ghost"
                 onClick={handleCloseTransactionDetails}
-                className="w-8 h-8 flex items-center justify-center"
+                className="!p-0 w-8 h-8 flex items-center justify-center"
                 aria-label="Back to transactions"
               >
                 <Image src="/icons/back-circle.png" alt={t("common.back")} width={32} height={32} />
-              </button>
+              </Button>
             </div>
           </div>
           <TransactionDetails transaction={selectedTransaction} onClose={handleCloseTransactionDetails} />

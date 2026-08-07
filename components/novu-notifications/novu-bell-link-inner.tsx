@@ -56,7 +56,7 @@ function NovuBellLinkInner({ disabled = false, onClick }: NovuBellLinkInnerProps
       variant="ghost"
       onClick={handleClick}
       aria-label={t("notifications.title")}
-      className="relative flex h-8 w-8 min-w-0 min-h-0 items-center justify-center rounded-full bg-header-icon p-0 hover:bg-header-icon focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+      className="relative flex h-8 w-8 min-w-0 min-h-0 items-center justify-center rounded-full bg-header-icon p-0 hover:!bg-header-icon focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
     >
       <Image
         src={isMobile ? "/icons/bell-sm.png" : "/icons/bell-desktop.png"}
@@ -121,7 +121,7 @@ function NovuBellLinkInner({ disabled = false, onClick }: NovuBellLinkInnerProps
         <SheetContent side="right" className="w-full p-0 sm:max-w-sm" hideCloseButton>
           <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3">
             <SheetClose asChild>
-              <Button variant="ghost" size="sm" className="bg-grayscale-300 px-1" aria-label={t("common.back")}>
+              <Button variant="icon-muted" size="sm" className="px-1" aria-label={t("common.back")}>
                 <BackArrowIcon aria-hidden="true" alt="" width={24} height={24} />
               </Button>
             </SheetClose>

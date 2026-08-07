@@ -1320,7 +1320,7 @@
     "transfer_wr_err_exceeds_net_deposit_limit_title": "Hạn mức rút tiền cho phương thức này là {max_amount}",
     "transfer_wr_err_high_risk_method_settle_first_body": "{deposit_amount} sẽ được hoàn về phương thức nạp tiền ban đầu của bạn trước. Bạn có thể rút phần còn lại sau.",
     "transfer_wr_err_high_risk_method_settle_first_title": "Phải sử dụng phương thức thanh toán ban đầu trước",
-    "transfer_wr_err_low_trading_activity_body": "Bạn cần giao dịch ít nhất USD {required_volume} trước khi lệnh rút này được thực hiện.",
+    "transfer_wr_err_low_trading_activity_body": "Thực hiện thêm giao dịch để lệnh rút tiền này có thể được xử lý.",
     "transfer_wr_err_low_trading_activity_title": "Hãy giao dịch thêm một chút",
     "transfer_wr_err_method_not_used_previously_body": "Vì sự bảo mật của bạn, lệnh rút chỉ có thể đến phương thức thanh toán bạn đã dùng để nạp tiền trước đây.",
     "transfer_wr_err_method_not_used_previously_title": "Chọn phương thức bạn đã dùng để nạp tiền",

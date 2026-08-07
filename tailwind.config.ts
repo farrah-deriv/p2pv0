@@ -23,6 +23,12 @@ const config: Config = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        brand: {
+          red: "#FF444F",
+          "red-hover": "#BF333B",
+          dark: "#0E0E0E",
+          coral: "#FF6444",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -60,6 +66,7 @@ const config: Config = {
           text: "#007A22",
           "bg-secondary": "#E6FFF9",
           "text-secondary": "#00C390",
+          "text-secondary-hover": "#00AE7A",
         },
         error: {
           light: "rgba(230, 25, 14, 0.08)",
@@ -75,6 +82,7 @@ const config: Config = {
         },
         warning: {
           bg: "#fff8e7",
+          "bg-dark": "#2d2417",
           icon: "#f59e0b",
         },
         cyan: {
@@ -234,14 +242,20 @@ const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% center" },
+          "100%": { backgroundPosition: "200% center" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        shimmer: "shimmer 1.4s ease-in-out infinite",
+        "shimmer-dark": "shimmer 1.4s ease-in-out infinite",
       },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 }
 
 export default config

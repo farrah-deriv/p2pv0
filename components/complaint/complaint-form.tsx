@@ -1,10 +1,10 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import Image from "next/image"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { BackArrowIcon } from "@/components/ui/back-arrow-icon"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
@@ -83,7 +83,7 @@ export function ComplaintForm({ isOpen, onClose, onSubmit, orderId, type }: Comp
         <div className="max-w-xl mx-auto flex flex-col w-full h-full">
           {/* Back button */}
           <div className="flex items-center px-4 py-3">
-            <Button variant="ghost" size="sm" onClick={handleClose} className="bg-grayscale-300 px-1" data-testid="complaint-btn-back">
+            <Button variant="icon-muted" size="sm" onClick={handleClose} className="px-1" data-testid="complaint-btn-back">
               <BackArrowIcon alt={t("order.goBack")} width={24} height={24} />
             </Button>
           </div>
@@ -98,29 +98,25 @@ export function ComplaintForm({ isOpen, onClose, onSubmit, orderId, type }: Comp
           <div className="px-4 space-y-4 overflow-y-auto">
             {/* Warning card */}
             <Alert variant="warning">
-              <div className="flex gap-2">
-                <Image src="/icons/warning-icon-new.png" alt="" aria-hidden="true" width={24} height={24} className="self-start" />
-                <div>
-                  <AlertTitle className="font-bold text-slate-1200 mb-1">{t("complaint.warningTitle")}</AlertTitle>
-                  <AlertDescription className="text-sm text-slate-1200">
-                    {t("complaint.warningBodyPrefix")}
-                    <strong>{t("complaint.warningBodyBold")}</strong>
-                    {t("complaint.warningBodySuffix")}
-                  </AlertDescription>
-                </div>
-              </div>
+              <AlertTitle className="font-bold text-slate-1200 mb-1">{t("complaint.warningTitle")}</AlertTitle>
+              <AlertDescription className="text-sm text-slate-1200">
+                {t("complaint.warningBodyPrefix")}
+                <strong>{t("complaint.warningBodyBold")}</strong>
+                {t("complaint.warningBodySuffix")}
+              </AlertDescription>
             </Alert>
 
             {/* Reason tiles */}
             <div className="space-y-2">
               <p className="text-slate-1200">{t("complaint.whatWentWrong")}</p>
               {filteredOptions.map((option) => (
-                <button
+                <Button
                   key={option.id}
                   type="button"
+                  variant="ghost"
                   onClick={() => setSelectedOption(option.value === selectedOption ? "" : option.value)}
                   className={cn(
-                    "w-full text-left rounded-lg p-4 transition-colors bg-grayscale-500",
+                    "w-full text-left !rounded-lg !p-4 transition-colors !bg-grayscale-500 !h-auto !justify-start flex-col !items-start",
                     selectedOption === option.value
                       ? "border border-slate-1400"
                       : "border border-transparent",
@@ -129,7 +125,7 @@ export function ComplaintForm({ isOpen, onClose, onSubmit, orderId, type }: Comp
                 >
                   <p className="text-slate-1200">{t(`complaint.${option.labelKey}`)}</p>
                   <p className="text-xs text-grayscale-text-muted mt-0.5">{t(`complaint.${option.hintKey}`)}</p>
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -151,7 +147,7 @@ export function ComplaintForm({ isOpen, onClose, onSubmit, orderId, type }: Comp
             </div>
             <Button onClick={handleSubmit} disabled={!canSubmit || isSubmitting} className="w-full md:w-auto shrink-0" data-testid="complaint-btn-submit">
               {isSubmitting ? (
-                <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
+                <Spinner size="xs" />
               ) : (
                 t("complaint.submit")
               )}

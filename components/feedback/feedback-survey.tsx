@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
@@ -139,9 +139,9 @@ export function FeedbackSurvey({ onSubmit, onClose, isSubmitting }: FeedbackSurv
       </div>
 
       <div className="px-6 pb-6 space-y-2 md:px-8">
-        <Button data-testid="feedback-btn-submit" onClick={handleSubmit} disabled={!canSubmit} className="w-full disabled:opacity-24">
+        <Button data-testid="feedback-btn-submit" onClick={handleSubmit} disabled={!canSubmit} className="w-full">
           {isSubmitting ? (
-            <Image src="/icons/spinner.png" alt="" width={20} height={20} className="animate-spin" />
+            <Spinner size="xs" />
           ) : (
             t("nps.sendFeedback")
           )}

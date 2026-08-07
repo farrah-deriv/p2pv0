@@ -1276,7 +1276,7 @@
     "transfer_wr_err_exceeds_net_deposit_limit_title": "حد السحب لهذه الطريقة هو {max_amount}",
     "transfer_wr_err_high_risk_method_settle_first_body": "سيتم إعادة {deposit_amount} إلى طريقة الإيداع الأصلية أولاً. يمكنك سحب الباقي بعد ذلك.",
     "transfer_wr_err_high_risk_method_settle_first_title": "يجب استخدام طريقة الدفع الأصلية أولاً",
-    "transfer_wr_err_low_trading_activity_body": "تحتاج إلى التداول بما لا يقل عن USD {required_volume} قبل أن يتم هذا السحب.",
+    "transfer_wr_err_low_trading_activity_body": "أجرِ المزيد من الصفقات حتى يتمكن هذا السحب من المضي قدمًا.",
     "transfer_wr_err_low_trading_activity_title": "التجارة أكثر من ذلك بقليل",
     "transfer_wr_err_method_not_used_previously_body": "من أجل أمانك، لا يمكن إجراء عمليات السحب إلا من خلال طريقة الدفع التي استخدمتها للإيداع من قبل.",
     "transfer_wr_err_method_not_used_previously_title": "اختر الطريقة التي قمت بالإيداع بها",

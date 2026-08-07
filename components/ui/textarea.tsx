@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const textareaVariants = cva(
-  "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:border-[#000000] focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
+  "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:border-black focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
   {
     variants: {
       variant: {
@@ -75,11 +75,11 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           <label
             className={cn(
               "absolute start-3 text-sm text-muted-foreground transition-all duration-200 ease-in-out pointer-events-none z-10 bg-background px-1",
-              shouldFloatLabel ? "top-[1px] text-xs text-[#000000B8] py-2" : "top-4 text-sm",
+              shouldFloatLabel ? "top-[1px] text-xs text-black/72 py-2" : "top-4 text-sm",
             )}
           >
             {label}
-            {required && <span className="text-red-500 ms-1">*</span>}
+            {required && <span className="text-error ms-1">*</span>}
           </label>
         </div>
       )

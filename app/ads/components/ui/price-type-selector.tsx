@@ -8,7 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select } from "@/components/ui/select"
 import { isRtlLocale } from "@/lib/i18n/config"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { cn } from "@/lib/utils"
@@ -126,31 +126,15 @@ export function PriceTypeSelector({ marketPrice, value, onChange, disabled = fal
               </DrawerContent>
             </Drawer>
           ) : (
-            <Select value={value} onValueChange={handleSelect} disabled={disabled} dir={dir}>
-              <SelectTrigger
-                className="w-full h-[56px] max-h-[56px] rounded-lg border border-gray-200 bg-transparent hover:bg-transparent text-start"
-              >
-                <span className={cn("text-slate-1200", textAlignClass)}>{rateTypeLabel}</span>
-              </SelectTrigger>
-              <SelectContent dir={dir} className="text-start">
-                <SelectItem value="fixed" className="h-auto items-start py-3">
-                  <div className={cn("flex flex-col gap-0.5", textAlignClass)}>
-                    <span className="text-base">{t("adForm.fixed")}</span>
-                    <span className="select-item-description text-xs opacity-60">
-                      {t("order.fixedRateDescription")}
-                    </span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="float" className="h-auto items-start py-3">
-                  <div className={cn("flex flex-col gap-0.5", textAlignClass)}>
-                    <span className="text-base">{t("adForm.floating")}</span>
-                    <span className="select-item-description text-xs opacity-60">
-                      {t("order.floatingRateDescription")}
-                    </span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <Select
+              options={[
+                { value: "fixed",  label: t("adForm.fixed") },
+                { value: "float",  label: t("adForm.floating") },
+              ]}
+              value={value}
+              onChange={(v) => handleSelect(v as PriceType)}
+              disabled={disabled}
+            />
           )
         )}
       </div>

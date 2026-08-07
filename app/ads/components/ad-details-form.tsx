@@ -10,13 +10,9 @@ import { FloatingRateInput } from "./ui/floating-rate-input"
 import { TradeTypeSelector } from "./ui/trade-type-selector"
 import { useAccountCurrencies } from "@/hooks/use-account-currencies"
 import { useSettings, useAdvertStats } from "@/hooks/use-api-queries"
-import Image from "next/image"
-import { currencyFlagMapper } from "@/lib/utils"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useWebSocketContext } from "@/contexts/websocket-context"
 import { AdDetailsFormSkeleton } from "./ui/ad-details-form-skeleton"
-import { useIsMobile } from "@/hooks/use-mobile"
-import { Button } from "@/components/ui/button"
 import { CurrencyFilter } from "@/components/currency-filter/currency-filter"
 
 interface AdDetailsFormProps {
@@ -71,7 +67,6 @@ export default function AdDetailsForm({
   const [buyCurrencyOpen, setBuyCurrencyOpen] = useState(false)
   const [forCurrencyOpen, setForCurrencyOpen] = useState(false)
 
-  const isMobile = useIsMobile()
   const { isConnected, joinExchangeRatesChannel, subscribe, requestExchangeRate } = useWebSocketContext()
   const { data: settings } = useSettings()
   const { data: advertStats, isLoading: isLoadingAdvertStats } = useAdvertStats(buyCurrency, !!buyCurrency)
@@ -398,42 +393,13 @@ export default function AdDetailsForm({
                 {type === "buy" ? t("adForm.buyCurrency") : t("adForm.sellCurrency")}
               </label>
               <CurrencyFilter
-                contentClassName="w-[278px]"
                 currencies={accountCurrencies}
-                isTitleVisible={isMobile}
                 selectedCurrency={buyCurrency}
                 onCurrencySelect={setBuyCurrency}
                 title={type === "buy" ? t("adForm.buyCurrency") : t("adForm.sellCurrency")}
-                trigger={
-                  <Button
-                    variant="outline"
-                    className="min-h-[48px] gap-2 min-w-[96px] w-full h-[56px] max-h-[56px] rounded-lg justify-between px-4 border border-gray-200 hover:bg-transparent font-normal bg-transparent"
-                    disabled
-                    data-testid="ad-form-select-account-currency"
-                  >
-                    <div className="flex items-center gap-2">
-                      {currencyFlagMapper[buyCurrency as keyof typeof currencyFlagMapper] && (
-                        <Image
-                          src={
-                            currencyFlagMapper[buyCurrency as keyof typeof currencyFlagMapper] || "/placeholder.svg"
-                          }
-                          alt={`${buyCurrency} logo`}
-                          width={24}
-                          height={16}
-                          className="me-1 object-cover"
-                        />
-                      )}
-                      <span>{buyCurrency}</span>
-                    </div>
-                    <Image
-                      src="/icons/chevron-down.png"
-                      alt={t("common.arrow")}
-                      width={24}
-                      height={24}
-                      className="ms-2 transition-transform duration-200"
-                    />
-                  </Button>
-                }
+                disabled
+                triggerTestId="ad-form-select-account-currency"
+                triggerClassName="!h-14 !px-4"
               />
             </div>
 
@@ -442,41 +408,12 @@ export default function AdDetailsForm({
                 {type === "buy" ? t("market.payWith") : t("market.receiveIn")}
               </label>
               <CurrencyFilter
-                contentClassName="w-[278px]"
                 currencies={currenciesProp}
-                isTitleVisible={isMobile}
                 selectedCurrency={forCurrency}
                 onCurrencySelect={setForCurrency}
                 title={type === "buy" ? t("market.payWith") : t("market.receiveIn")}
-                trigger={
-                  <Button
-                    variant="outline"
-                    className="min-h-[48px] gap-2 min-w-[96px] w-full h-[56px] max-h-[56px] rounded-lg justify-between px-4 border border-gray-200 hover:bg-transparent font-normal bg-transparent"
-                    data-testid="ad-form-select-payment-currency"
-                  >
-                    <div className="flex items-center gap-2">
-                      {currencyFlagMapper[forCurrency as keyof typeof currencyFlagMapper] && (
-                        <Image
-                          src={
-                            currencyFlagMapper[forCurrency as keyof typeof currencyFlagMapper] || "/placeholder.svg"
-                          }
-                          alt={`${forCurrency} logo`}
-                          width={24}
-                          height={16}
-                          className="me-1 object-cover"
-                        />
-                      )}
-                      <span>{forCurrency}</span>
-                    </div>
-                    <Image
-                      src="/icons/chevron-down.png"
-                      alt={t("common.arrow")}
-                      width={24}
-                      height={24}
-                      className="ms-2 transition-transform duration-200"
-                    />
-                  </Button>
-                }
+                triggerTestId="ad-form-select-payment-currency"
+                triggerClassName="!h-14 !px-4"
               />
             </div>
           </div>

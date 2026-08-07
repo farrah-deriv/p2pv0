@@ -697,7 +697,7 @@
     "transfer_wr_err_withdrawal_not_allowed_title": "Withdrawal unavailable",
     "transfer_wr_err_withdrawal_not_allowed_body": "We're unable to process this at the moment. Contact support and we'll sort it out.",
     "transfer_wr_err_low_trading_activity_title": "Trade a little more",
-    "transfer_wr_err_low_trading_activity_body": "You need to trade at least USD {required_volume} before this withdrawal can go through.",
+    "transfer_wr_err_low_trading_activity_body": "Place more trades so this withdrawal can go through.",
     "transfer_wr_err_no_previous_deposit_title": "No deposit found yet",
     "transfer_wr_err_no_previous_deposit_body": "Make a deposit first. Once it clears, you're all set to withdraw.",
     "transfer_wr_err_credit_card_settle_first_title": "Card refund needed first",

@@ -7,6 +7,7 @@ import Image from "next/image"
 
 import { cn } from "@/lib/utils"
 import { useTranslations } from "@/lib/i18n/use-translations"
+import { Button } from "@/components/ui/button"
 
 const Sheet = SheetPrimitive.Root
 
@@ -32,7 +33,7 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName
 
 const sheetVariants = cva(
-  "fixed z-50 gap-4 bg-background p-6 shadow-lg transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
+  "fixed z-50 gap-4 bg-background p-6 shadow-lg transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-300",
   {
     variants: {
       side: {
@@ -65,9 +66,11 @@ const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Con
       <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
         {children}
         {!hideCloseButton && (
-          <SheetPrimitive.Close className="absolute end-4 top-4 rounded-full opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none data-[state=open]:bg-secondary bg-grayscale-300 px-1 h-[32px]">
-            <Image src="/icons/close-icon.png" alt={t("common.close")} width={24} height={24} />
-            <span className="sr-only">{t("common.close")}</span>
+          <SheetPrimitive.Close asChild>
+            <Button variant="icon-muted" size="sm" className="absolute end-4 top-4 px-1">
+              <Image src="/icons/close-icon.png" alt={t("common.close")} width={24} height={24} />
+              <span className="sr-only">{t("common.close")}</span>
+            </Button>
           </SheetPrimitive.Close>
         )}
       </SheetPrimitive.Content>

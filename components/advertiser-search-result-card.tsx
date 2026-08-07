@@ -32,13 +32,14 @@ export function AdvertiserSearchResultCard({ ad, onAdvertiserClick, onBuySellCli
                 </div>
                 <div className="flex flex-col min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                        <button
+                        <Button
+                            variant="ghost"
                             data-testid={`mobile-search-btn-advertiser-${ad.user.id}`}
-                            className="text-sm hover:underline cursor-pointer truncate"
+                            className="text-sm hover:underline cursor-pointer truncate !p-0 !h-auto"
                             onClick={() => onAdvertiserClick(ad.user.id)}
                         >
                             {ad.user?.nickname}
-                        </button>
+                        </Button>
                         <VerifiedBadge size={20} />
                         {ad.user.trade_band && (
                             <TradeBandBadge tradeBand={ad.user.trade_band} showLearnMore={true} size={20} />
@@ -124,7 +125,7 @@ export function AdvertiserSearchResultCard({ ad, onAdvertiserClick, onBuySellCli
                 {userId && ad.user.id !== Number(userId) && (
                     <Button
                         data-testid={`mobile-search-btn-trade-${ad.id}`}
-                        variant={ad.type === "buy" ? "destructive" : "secondary"}
+                        variant={ad.type === "buy" ? "destructive" : "buy"}
                         size="sm"
                         onClick={() => onBuySellClick(ad)}
                         className="ms-2 flex-shrink-0"

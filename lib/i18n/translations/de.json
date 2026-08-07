@@ -1303,7 +1303,7 @@
     "transfer_wr_err_exceeds_net_deposit_limit_title": "Auszahlungslimit für diese Methode beträgt {max_amount}",
     "transfer_wr_err_high_risk_method_settle_first_body": "{deposit_amount} wird zunächst an Ihre ursprüngliche Einzahlungsmethode zurückgegeben. Den Rest können Sie danach abheben.",
     "transfer_wr_err_high_risk_method_settle_first_title": "Die ursprüngliche Zahlungsmethode muss zuerst verwendet werden",
-    "transfer_wr_err_low_trading_activity_body": "Sie müssen mindestens USD {required_volume} handeln, bevor diese Auszahlung durchgeführt werden kann.",
+    "transfer_wr_err_low_trading_activity_body": "Führen Sie mehr Trades durch, damit diese Auszahlung durchgeführt werden kann.",
     "transfer_wr_err_low_trading_activity_title": "Handeln Sie noch etwas mehr",
     "transfer_wr_err_method_not_used_previously_body": "Zu Ihrer Sicherheit können Auszahlungen nur an eine Zahlungsmethode erfolgen, die Sie zuvor für Einzahlungen genutzt haben.",
     "transfer_wr_err_method_not_used_previously_title": "Wählen Sie eine Methode, mit der Sie eingezahlt haben",

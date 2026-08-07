@@ -29,10 +29,10 @@ export function PanelWrapper({ onBack, onClose, children }: PanelWrapperProps) {
       >
         <div dir={dir} className="max-w-xl mx-auto flex flex-col w-full h-full text-start">
           <div className={cn("flex items-center justify-end px-4 py-3 shrink-0", onBack && "justify-between")}>
-            {onBack && <Button variant="ghost" size="sm" onClick={onBack} className="bg-grayscale-300 px-1">
+            {onBack && <Button variant="icon-muted" size="sm" onClick={onBack} className="px-1">
               <BackArrowIcon alt={t("common.back")} width={24} height={24} />
             </Button>}
-            <Button variant="ghost" size="sm" onClick={onClose} className="bg-grayscale-300 px-1">
+            <Button variant="icon-muted" size="sm" onClick={onClose} className="px-1">
               <Image src="/icons/close-circle.png" alt={t("common.close")} width={24} height={24} />
             </Button>
           </div>

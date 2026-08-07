@@ -11,6 +11,7 @@ import Image from "next/image"
 import type { MyAd } from "./types"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { HeaderSegmentedControl } from "@/components/header-segmented-control"
 import StatusBottomSheet from "./components/ui/status-bottom-sheet"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
@@ -263,15 +264,14 @@ export default function AdsPage() {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <button type="button" data-testid="ads-btn-hide-ads-info" className="flex items-center">
+              <Button type="button" variant="icon-muted" size="sm" data-testid="ads-btn-hide-ads-info">
                 <Image
                   src="/icons/info-circle.svg"
                   alt={t("common.info")}
-                  width={24}
-                  height={24}
-                  className="ms-1 cursor-pointer flex-shrink-0"
+                  width={20}
+                  height={20}
                 />
-              </button>
+              </Button>
             </TooltipTrigger>
             <TooltipContent>
               <p className="text-white">{t("myAds.hideMyAdsTooltip")}</p>
@@ -314,8 +314,10 @@ export default function AdsPage() {
                   disabled={!!tempBanUntil}
                   data-testid="ads-btn-create"
                 >
-                  <Image src="/icons/plus-white.png" alt={t("common.plus")} className="me-1" height={22} width={13} />
-                  {t("myAds.createAd")}
+                  <span className="flex items-center gap-1.5">
+                    <Image src="/icons/plus-white.png" alt="" height={16} width={10} />
+                    {t("myAds.createAd")}
+                  </span>
                 </Button>
               )}
               {getHideMyAdsComponent()}
@@ -325,7 +327,7 @@ export default function AdsPage() {
 
         <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-y-none scrollbar-hide container mx-auto p-0 md:p-0" data-testid="ads-table-container">
           {queryError ? (
-            <div className="text-center py-8 text-red-500">{t("myAds.errorLoadingAds")}</div>
+            <div className="text-center py-8 text-error">{t("myAds.errorLoadingAds")}</div>
           ) : (
             <MyAdsTable
               ads={isMaintenanceActive ? [] : userAdverts}
@@ -339,7 +341,7 @@ export default function AdsPage() {
           )}
           {isFetchingNextPage && (
             <div className="flex justify-center py-4">
-              <div className="w-6 h-6 border-2 border-grayscale-400 border-t-slate-600 rounded-full animate-spin" />
+              <Spinner size="md" />
             </div>
           )}
           <div ref={sentinelRef} className="h-1" data-testid="ads-sentinel-load-more" />

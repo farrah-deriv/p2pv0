@@ -1,21 +1,21 @@
 "use client"
 
-import type React from "react"
-
-import type { ReactElement } from "react"
-import { useCallback, useState, useMemo, cloneElement, useRef, useEffect } from "react"
-import Image from "next/image"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
+import { useCallback, useState, useMemo, useRef, useEffect, useLayoutEffect } from "react"
+import { createPortal } from "react-dom"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Drawer, DrawerContent } from "@/components/ui/drawer"
 import { useIsMobile } from "@/hooks/use-mobile"
 import EmptyState from "@/components/empty-state"
 import { cn } from "@/lib/utils"
 import { CHECKBOX_LABEL_ROW } from "@/lib/rtl"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useTrackers } from "@/analytics/useTrackers"
+import {
+  StandaloneChevronDownRegularIcon,
+  StandaloneChevronUpRegularIcon,
+  StandaloneSearchRegularIcon,
+} from "@deriv/quill-icons/Standalone"
 
 export interface PaymentMethod {
   display_name: string
@@ -28,9 +28,12 @@ interface PaymentMethodsFilterProps {
   selectedMethods: string[]
   onSelectionChange: (selectedMethods: string[]) => void
   isLoading?: boolean
-  trigger: ReactElement
   onOpenChange?: (isOpen: boolean) => void
   disabled?: boolean
+  triggerLabel: string
+  triggerClassName?: string
+  triggerDataGuideId?: string
+  onOpen?: () => void
 }
 
 export default function PaymentMethodsFilter({
@@ -38,9 +41,12 @@ export default function PaymentMethodsFilter({
   selectedMethods,
   onSelectionChange,
   isLoading = false,
-  trigger,
   onOpenChange: onOpenChangeProp,
   disabled = false,
+  triggerLabel,
+  triggerClassName,
+  triggerDataGuideId,
+  onOpen,
 }: PaymentMethodsFilterProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -50,10 +56,13 @@ export default function PaymentMethodsFilter({
   const { track } = useTrackers()
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const scrollPositionRef = useRef<number | null>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties | null>(null)
 
   const filteredPaymentMethods = useMemo(() => {
     if (!searchQuery.trim()) return paymentMethods
-
     return paymentMethods.filter(
       (method) =>
         method.display_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -65,9 +74,7 @@ export default function PaymentMethodsFilter({
     return filteredPaymentMethods.reduce(
       (acc, method) => {
         const { type } = method
-        if (!acc[type]) {
-          acc[type] = []
-        }
+        if (!acc[type]) acc[type] = []
         acc[type].push(method)
         return acc
       },
@@ -86,68 +93,66 @@ export default function PaymentMethodsFilter({
     if (scrollContainerRef.current) {
       scrollPositionRef.current = scrollContainerRef.current.scrollTop
     }
-
     if (checked) {
       track("ek_select_all_payment_methods_markets_payment_method_filter")
-      const newSelection = [...new Set([...tempSelectedMethods, ...paymentMethods.map((m) => m.method)])]
-      setTempSelectedMethods(newSelection)
+      setTempSelectedMethods([...new Set([...tempSelectedMethods, ...paymentMethods.map((m) => m.method)])])
     } else {
-      const allMethodIds = paymentMethods.map((method) => method.method)
-      const newSelection = tempSelectedMethods.filter((id) => !allMethodIds.includes(id))
-      setTempSelectedMethods(newSelection)
+      const allMethodIds = paymentMethods.map((m) => m.method)
+      setTempSelectedMethods(tempSelectedMethods.filter((id) => !allMethodIds.includes(id)))
     }
   }
-
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setSearchQuery(value)
-  }, [])
 
   const handleMethodToggle = (methodId: string) => {
     track("ek_select_payment_method_markets_payment_method_filter", { payment_method_name: methodId })
     if (scrollContainerRef.current) {
       scrollPositionRef.current = scrollContainerRef.current.scrollTop
     }
-
     if (isAllSelected) {
       setTempSelectedMethods(paymentMethods.map((m) => m.method).filter((m) => m !== methodId))
       return
     }
     const isSelected = tempSelectedMethods.includes(methodId)
-    if (isSelected) {
-      setTempSelectedMethods(tempSelectedMethods.filter((id) => id !== methodId))
-    } else {
-      setTempSelectedMethods([...tempSelectedMethods, methodId])
-    }
+    setTempSelectedMethods(
+      isSelected
+        ? tempSelectedMethods.filter((id) => id !== methodId)
+        : [...tempSelectedMethods, methodId],
+    )
   }
 
-  const handleOpenChange = (open: boolean) => {
+  const closeDropdown = useCallback(() => {
+    setIsOpen(false)
+    onOpenChangeProp?.(false)
+    setSearchQuery("")
+  }, [onOpenChangeProp])
+
+  const openDropdown = useCallback(() => {
     if (disabled) return
-    setIsOpen(open)
-    onOpenChangeProp?.(open)
-    if (!open) {
-      setSearchQuery("")
-    } else {
-      setTempSelectedMethods(selectedMethods)
-    }
-  }
+    setIsOpen(true)
+    onOpenChangeProp?.(true)
+    setTempSelectedMethods(selectedMethods)
+    onOpen?.()
+  }, [disabled, onOpenChangeProp, selectedMethods, onOpen])
+
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (open) openDropdown()
+      else closeDropdown()
+    },
+    [openDropdown, closeDropdown],
+  )
 
   const handleReset = () => {
     track("ek_reset_filter_markets_payment_method_filter")
     const allMethodIds = paymentMethods.map((method) => method.method)
     setTempSelectedMethods(allMethodIds)
     onSelectionChange(allMethodIds)
-    setIsOpen(false)
-    onOpenChangeProp?.(false)
-    setSearchQuery("")
+    closeDropdown()
   }
 
   const handleApply = () => {
     track("ek_apply_filter_markets_payment_method_filter")
     onSelectionChange(tempSelectedMethods)
-    setIsOpen(false)
-    onOpenChangeProp?.(false)
-    setSearchQuery("")
+    closeDropdown()
   }
 
   const getGroupTitle = (type: string) => {
@@ -156,11 +161,52 @@ export default function PaymentMethodsFilter({
     return type?.charAt(0).toUpperCase() + type?.slice(1)
   }
 
-  const renderPaymentMethodGroups = () => {
-    if (Object.keys(groupedMethods).length === 0) {
-      return null
+  // Close on outside click (desktop only)
+  useEffect(() => {
+    if (!isOpen || isMobile) return
+    const onMouseDown = (e: MouseEvent) => {
+      const target = e.target as Node
+      if (!triggerRef.current?.contains(target) && !dropdownRef.current?.contains(target)) {
+        closeDropdown()
+      }
     }
+    document.addEventListener("mousedown", onMouseDown)
+    return () => document.removeEventListener("mousedown", onMouseDown)
+  }, [isOpen, isMobile, closeDropdown])
 
+  // Position portal dropdown (right-aligned with trigger)
+  useLayoutEffect(() => {
+    if (!isOpen || isMobile || !triggerRef.current) {
+      setDropdownStyle(null)
+      return
+    }
+    const rect = triggerRef.current.getBoundingClientRect()
+    const dropdownH = 400
+    const spaceBelow = window.innerHeight - rect.bottom
+    const openUpward = spaceBelow < dropdownH && rect.top > dropdownH
+    setDropdownStyle(
+      openUpward
+        ? { bottom: window.innerHeight - rect.top + 4, right: window.innerWidth - rect.right, width: 320 }
+        : { top: rect.bottom + 4, right: window.innerWidth - rect.right, width: 320 },
+    )
+  }, [isOpen, isMobile])
+
+  // Focus search on desktop open
+  useEffect(() => {
+    if (!isOpen || isMobile) return
+    const id = requestAnimationFrame(() => searchRef.current?.focus())
+    return () => cancelAnimationFrame(id)
+  }, [isOpen, isMobile])
+
+  // Restore scroll position after checkbox toggle
+  useEffect(() => {
+    if (!scrollContainerRef.current || scrollPositionRef.current === null) return
+    scrollContainerRef.current.scrollTop = scrollPositionRef.current
+    scrollPositionRef.current = null
+  }, [tempSelectedMethods])
+
+  const renderPaymentMethodGroups = () => {
+    if (Object.keys(groupedMethods).length === 0) return null
     return Object.entries(groupedMethods)
       .sort(([typeA], [typeB]) => typeA.localeCompare(typeB))
       .map(([type, methods], index, entries) => (
@@ -182,9 +228,12 @@ export default function PaymentMethodsFilter({
                   onCheckedChange={() => handleMethodToggle(method.method)}
                   className="shrink-0 data-[state=checked]:bg-black"
                   disabled={isLoading}
-                  data-testid={`payment-filter-checkbox-${method.id ?? method.display_name}`}
+                  data-testid={`payment-filter-checkbox-${method.display_name}`}
                 />
-                <label htmlFor={method.method} className="flex-1 min-w-0 cursor-pointer text-start text-sm text-grayscale-600">
+                <label
+                  htmlFor={method.method}
+                  className="flex-1 min-w-0 cursor-pointer text-start text-sm text-grayscale-600"
+                >
                   {method.display_name}
                 </label>
               </div>
@@ -197,31 +246,24 @@ export default function PaymentMethodsFilter({
   const filterContent = (
     <div className="flex h-full w-full flex-col">
       <div className="relative mb-4 shrink-0">
-        <Input
-          placeholder={t("paymentMethod.search")}
-          value={searchQuery}
-          onChange={handleSearchChange}
-          className={`h-14 rounded-lg border-0 bg-grayscale-500 text-sm font-normal text-start placeholder:text-grayscale-text-placeholder ps-4 focus:border-0 md:h-8 ${searchQuery ? "pe-10" : "pe-4"}`}
-          autoComplete="off"
-          data-testid="payment-filter-input-search"
-        />
-        {searchQuery && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSearchQuery("")}
-            className="absolute end-0 top-1/2 transform -translate-y-1/2 hover:bg-transparent"
-            data-testid="payment-filter-btn-clear"
-          >
-            <Image src="/icons/clear-search-icon.png" alt={t("common.clearSearch")} width={24} height={24} />
-          </Button>
-        )}
+        <div className="flex items-center gap-2 rounded-lg bg-black/[0.04] px-2 h-9">
+          <StandaloneSearchRegularIcon iconSize="xs" className="shrink-0 text-neutral-400" aria-hidden />
+          <input
+            ref={searchRef}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t("paymentMethod.search")}
+            className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-neutral-400"
+            autoComplete="off"
+            data-testid="payment-filter-input-search"
+          />
+        </div>
       </div>
 
       <div
         ref={scrollContainerRef}
         className={cn(
-          // Fixed list height so empty search doesn't collapse the sheet/popover.
           "min-h-0 flex-1 space-y-2 overflow-y-auto scrollbar-custom md:h-60 md:flex-none",
           filteredPaymentMethods.length === 0 && "flex items-center justify-center",
         )}
@@ -230,22 +272,22 @@ export default function PaymentMethodsFilter({
           <div className={cn(CHECKBOX_LABEL_ROW, "mb-4")}>
             <Checkbox
               id="select-all"
-              checked={isAllSelected}
-              ref={(el) => {
-                if (el) el.indeterminate = isIndeterminate
-              }}
+              checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
               onCheckedChange={handleSelectAll}
               className="shrink-0 data-[state=checked]:bg-black"
               disabled={isLoading || filteredPaymentMethods.length === 0}
               data-testid="payment-filter-checkbox-select-all"
             />
-            <label htmlFor="select-all" className="flex-1 min-w-0 cursor-pointer text-start text-sm text-slate-1200">
+            <label
+              htmlFor="select-all"
+              className="flex-1 min-w-0 cursor-pointer text-start text-sm text-slate-1200"
+            >
               {t("paymentMethod.allPaymentMethod")}
             </label>
           </div>
         )}
         {isLoading ? (
-          <div className="text-center py-4 text-gray-500">{t("paymentMethod.loadingPaymentMethods")}</div>
+          <div className="text-center py-4 text-grayscale-text-muted">{t("paymentMethod.loadingPaymentMethods")}</div>
         ) : filteredPaymentMethods.length === 0 ? (
           <div className="w-full">
             {searchQuery ? (
@@ -255,7 +297,7 @@ export default function PaymentMethodsFilter({
                 redirectToAds={false}
               />
             ) : (
-              <p className="text-center text-gray-500">{t("paymentMethod.noPaymentMethodsAvailable")}</p>
+              <p className="text-center text-grayscale-text-muted">{t("paymentMethod.noPaymentMethodsAvailable")}</p>
             )}
           </div>
         ) : (
@@ -268,13 +310,18 @@ export default function PaymentMethodsFilter({
           <Button
             onClick={handleReset}
             className="flex-1 bg-transparent"
-            variant="outline"
+            variant="secondary"
             size={isMobile ? "default" : "sm"}
             data-testid="payment-filter-btn-reset"
           >
             {t("paymentMethod.reset")}
           </Button>
-          <Button onClick={handleApply} className="flex-1" size={isMobile ? "default" : "sm"} data-testid="payment-filter-btn-apply">
+          <Button
+            onClick={handleApply}
+            className="flex-1"
+            size={isMobile ? "default" : "sm"}
+            data-testid="payment-filter-btn-apply"
+          >
             {t("paymentMethod.apply")}
           </Button>
         </div>
@@ -282,49 +329,65 @@ export default function PaymentMethodsFilter({
     </div>
   )
 
-  useEffect(() => {
-    if (!scrollContainerRef.current) return
-    if (scrollPositionRef.current === null) return
-
-    scrollContainerRef.current.scrollTop = scrollPositionRef.current
-    scrollPositionRef.current = null
-  }, [tempSelectedMethods])
-
-  const enhancedTrigger = cloneElement(trigger, {
-    className: cn(
-      trigger.props.className,
-      isOpen && !disabled && "[&_img[alt='Arrow']]:rotate-180",
-      disabled && "pointer-events-none opacity-60 cursor-not-allowed",
-    ),
-    disabled: disabled || trigger.props.disabled,
-    "aria-disabled": disabled || undefined,
-    "data-testid": "payment-filter-btn-trigger",
-  })
-
-  if (disabled) {
-    return enhancedTrigger
-  }
+  const triggerButton = (
+    <Button
+      ref={triggerRef}
+      variant="outline"
+      data-testid="payment-filter-btn-trigger"
+      data-guide-id={triggerDataGuideId}
+      disabled={disabled}
+      onClick={() => (isOpen ? closeDropdown() : openDropdown())}
+      aria-expanded={isOpen}
+      aria-haspopup="listbox"
+      className={cn(
+        "!h-12 !w-full !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-3 !text-sm !font-normal focus:!ring-1 focus:!ring-black",
+        triggerClassName,
+      )}
+    >
+      <span className="flex w-full flex-row items-center justify-between">
+        <span className="min-w-0 flex-1 truncate overflow-hidden text-ellipsis whitespace-nowrap">{triggerLabel}</span>
+        {isOpen && !isMobile ? (
+          <StandaloneChevronUpRegularIcon iconSize="xs" className="ms-1.5 shrink-0" />
+        ) : (
+          <StandaloneChevronDownRegularIcon iconSize="xs" className="ms-1.5 shrink-0" />
+        )}
+      </span>
+    </Button>
+  )
 
   if (isMobile) {
     return (
-      <Drawer open={isOpen} onOpenChange={handleOpenChange}>
-        <DrawerTrigger asChild>{enhancedTrigger}</DrawerTrigger>
-        <DrawerContent side="bottom" className="flex h-[85vh] max-h-[85vh] flex-col overflow-hidden p-4 rounded-t-2xl">
-          <div className="my-4 shrink-0">
-            <h3 className="text-xl font-bold text-center">{t("paymentMethod.title")}</h3>
-          </div>
-          <div className="min-h-0 flex-1 overflow-hidden">{filterContent}</div>
-        </DrawerContent>
-      </Drawer>
+      <>
+        {triggerButton}
+        <Drawer open={isOpen} onOpenChange={handleOpenChange}>
+          <DrawerContent
+            side="bottom"
+            className="flex h-[85vh] max-h-[85vh] flex-col overflow-hidden rounded-t-2xl"
+          >
+            <div className="my-4 shrink-0">
+              <h3 className="text-center text-xl font-bold">{t("paymentMethod.title")}</h3>
+            </div>
+            <div className="min-h-0 flex-1 overflow-hidden px-4 pb-4">{filterContent}</div>
+          </DrawerContent>
+        </Drawer>
+      </>
     )
   }
 
   return (
-    <Popover open={isOpen} onOpenChange={handleOpenChange}>
-      <PopoverTrigger asChild>{enhancedTrigger}</PopoverTrigger>
-      <PopoverContent className="flex h-96 w-80 flex-col p-4" align="end">
-        {filterContent}
-      </PopoverContent>
-    </Popover>
+    <>
+      {triggerButton}
+      {isOpen &&
+        dropdownStyle &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div ref={dropdownRef} className="fixed z-50" style={dropdownStyle}>
+            <div className="flex h-96 flex-col overflow-hidden rounded-lg border border-neutral-200 bg-white p-4 shadow-lg">
+              {filterContent}
+            </div>
+          </div>,
+          document.body,
+        )}
+    </>
   )
 }

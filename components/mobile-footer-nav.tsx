@@ -69,71 +69,68 @@ export default function MobileFooterNav({ className }: { className?: string }) {
         <Link
           href={getHomeUrl(isV1Signup, "home")}
           data-testid="footer-nav-link-home"
-          className="flex flex-col items-center justify-center px-1 text-center max-w-full py-2 text-slate-1200"
+          className="flex flex-col items-center justify-center gap-1.5 px-4 pt-2 pb-2 min-h-14 text-center max-w-full text-[12px] font-semibold text-neutral-600"
         >
           <div className="h-5 w-5 flex items-center justify-center flex-shrink-0">
-            <SvgIcon
-              src={HomeIcon}
-            />
+            <SvgIcon src={HomeIcon} fill="var(--color-slate-1200)" />
           </div>
-          <span className="text-xs mt-1 line-clamp-2">{t("navigation.home")}</span>
+          {t("navigation.home")}
         </Link>
         <Link
           href="/"
           data-testid="footer-nav-link-markets"
-          className={cn("flex flex-col items-center justify-center px-1 text-center max-w-full py-2 relative", {
-            "text-primary": isMarketActive,
-            "text-slate-1200": !isMarketActive,
-          })}
+          className={cn(
+            "flex flex-col items-center justify-center gap-1.5 px-4 pt-2 pb-2 min-h-14 text-center max-w-full text-[12px] font-semibold",
+            isMarketActive ? "text-brand-red" : "text-neutral-600",
+          )}
         >
-          <div className="absolute start-0 top-1/2 -translate-y-1/2 h-8 w-px bg-grayscale-200"></div>
           <div className="h-5 w-5 flex items-center justify-center flex-shrink-0">
             <SvgIcon
               src={isMarketActive ? MarketSelectedIcon : MarketIcon}
-              fill={isMarketActive ? "#FF444F" : "#181C25"}
+              fill={isMarketActive ? "var(--brand-red)" : "var(--color-slate-1200)"}
             />
           </div>
-          <span className="text-xs mt-1 line-clamp-2">{t("navigation.market")}</span>
+          {t("navigation.market")}
         </Link>
         <Link
           href="/orders"
           data-testid="footer-nav-link-orders"
-          className={cn("flex flex-col items-center justify-center px-1 text-center max-w-full py-2", {
-            "text-primary": isOrdersActive,
-            "text-slate-1200": !isOrdersActive,
-          })}
+          className={cn(
+            "flex flex-col items-center justify-center gap-1.5 px-4 pt-2 pb-2 min-h-14 text-center max-w-full text-[12px] font-semibold",
+            isOrdersActive ? "text-brand-red" : "text-neutral-600",
+          )}
         >
           <div className="h-5 w-5 flex items-center justify-center flex-shrink-0">
-            <SvgIcon src={isOrdersActive ? OrdersSelectedIcon : OrdersIcon} fill={isOrdersActive ? "#FF444F" : "#181C25"} />
+            <SvgIcon src={isOrdersActive ? OrdersSelectedIcon : OrdersIcon} fill={isOrdersActive ? "var(--brand-red)" : "var(--color-slate-1200)"} />
           </div>
-          <span className="text-xs mt-1 line-clamp-2">{t("navigation.orders")}</span>
+          {t("navigation.orders")}
         </Link>
         <Link
           href="/ads"
           data-testid="footer-nav-link-ads"
-          className={cn("flex flex-col items-center justify-center px-1 text-center max-w-full py-2", {
-            "text-primary": isAdsActive,
-            "text-slate-1200": !isAdsActive,
-          })}
+          className={cn(
+            "flex flex-col items-center justify-center gap-1.5 px-4 pt-2 pb-2 min-h-14 text-center max-w-full text-[12px] font-semibold",
+            isAdsActive ? "text-brand-red" : "text-neutral-600",
+          )}
         >
           <div className="h-5 w-5 flex items-center justify-center flex-shrink-0">
-            <SvgIcon src={isAdsActive ? AdsSelectedIcon : AdsIcon} fill={isAdsActive ? "#FF444F" : "#181C25"} />
+            <SvgIcon src={isAdsActive ? AdsSelectedIcon : AdsIcon} fill={isAdsActive ? "var(--brand-red)" : "var(--color-slate-1200)"} />
           </div>
-          <span className="text-xs mt-1 line-clamp-2">{t("navigation.myAds")}</span>
+          {t("navigation.myAds")}
         </Link>
         {showWallet && (
           <Link
             href="/wallet"
             data-testid="footer-nav-link-wallet"
-            className={cn("flex flex-col items-center justify-center px-1 text-center max-w-full py-2", {
-              "text-primary": isWalletActive,
-              "text-slate-1200": !isWalletActive,
-            })}
+            className={cn(
+              "flex flex-col items-center justify-center gap-1.5 px-4 pt-2 pb-2 min-h-14 text-center max-w-full text-[12px] font-semibold",
+              isWalletActive ? "text-brand-red" : "text-neutral-600",
+            )}
           >
             <div className="h-5 w-5 flex items-center justify-center flex-shrink-0">
-              <SvgIcon src={isWalletActive ? WalletSelectedIcon : WalletIcon} fill={isWalletActive ? "#FF444F" : "#181C25"} />
+              <SvgIcon src={isWalletActive ? WalletSelectedIcon : WalletIcon} fill={isWalletActive ? "var(--brand-red)" : "var(--color-slate-1200)"} />
             </div>
-            <span className="text-xs mt-1 line-clamp-2">{t("navigation.wallet")}</span>
+            {t("navigation.wallet")}
           </Link>
         )}
       </div>

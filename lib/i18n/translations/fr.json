@@ -1292,7 +1292,7 @@
     "transfer_wr_err_exceeds_net_deposit_limit_title": "La limite de retrait pour cette méthode est {max_amount}",
     "transfer_wr_err_high_risk_method_settle_first_body": "{deposit_amount} sera retourné à votre méthode de dépôt d'origine en premier. Vous pourrez retirer le reste ensuite.",
     "transfer_wr_err_high_risk_method_settle_first_title": "Le mode de paiement d'origine doit être utilisé en premier",
-    "transfer_wr_err_low_trading_activity_body": "Vous devez trader au moins USD {required_volume} avant que ce retrait puisse être effectué.",
+    "transfer_wr_err_low_trading_activity_body": "Effectuez plus de trades pour que ce retrait puisse être traité.",
     "transfer_wr_err_low_trading_activity_title": "Tradez un peu plus",
     "transfer_wr_err_method_not_used_previously_body": "Pour votre sécurité, les retraits ne peuvent aller qu'à un moyen de paiement que vous avez déjà utilisé pour déposer.",
     "transfer_wr_err_method_not_used_previously_title": "Choisissez une méthode avec laquelle vous avez déposé",

@@ -11,7 +11,7 @@ overrides:
   diff@<8.0.3: '>=8.0.3'
   esbuild@<0.28.1: 0.28.1
   glob@>=10.2.0 <10.5.0: '>=10.5.0'
-  js-yaml@>=4.0.0 <4.1.1: '>=4.3.0'
+  js-yaml@>=4.0.0 <4.3.1: 4.3.1
   lodash: 4.18.1
   seroval@<1.4.1: '>=1.4.1'
   svgo@>=3.0.0 <3.3.4: '>=3.3.4 <4'
@@ -53,9 +53,6 @@ overrides:
   ws@>=8.0.0 <8.21.0: '>=8.21.0'
   ws: 8.21.0
   protobufjs@<=7.6.4: '>=7.6.5'
-  js-yaml@4.2.0: 4.3.0
-  js-yaml@<=4.1.1: '>=4.3.0'
-  js-yaml@>=4.0.0 <4.3.0: '>=4.3.0'
   '@babel/core@<=7.29.0': '>=7.29.6'
   '@opentelemetry/core': 2.9.0
   undici@<8.9.0: '>=8.9.0'
@@ -79,9 +76,15 @@ importers:
       '@deriv-com/analytics':
         specifier: 1.42.1
         version: 1.42.1
+      '@deriv-com/quill-ui-v2':
+        specifier: 0.0.8
+        version: 0.0.8(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@deriv-com/utils':
         specifier: ^0.0.42
         version: 0.0.42
+      '@deriv/quill-icons':
+        specifier: 2.10.0
+        version: 2.10.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@eslint/eslintrc':
         specifier: latest
         version: 3.3.6
@@ -1194,8 +1197,21 @@ packages:
     resolution: {integrity: sha512-+6/f4GHccr1d6tzc1OnVh8nAwmVjFoppobOdAHU6tyYkxXXsspYG2WNjPOU91jWrwOWZWbTEK25JWIiYKRoydw==}
     engines: {node: '>=24.13.0', npm: '>=11.7.0'}
 
+  '@deriv-com/quill-ui-v2@0.0.8':
+    resolution: {integrity: sha512-+NvPcKWUXWR6zO3imKtPth7JWoD2U8rsJQhzDJGo8tltPQZ9CHA2g9iYVgMRLt2yzZr0lb4MfqtigpSS+DvhCQ==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      react: '>=17.0.0'
+      react-dom: '>=17.0.0'
+
   '@deriv-com/utils@0.0.42':
     resolution: {integrity: sha512-4JhTpg0sQWCq94RSMGpuT/09bYSV8yO3WdunM2R84qxWNitRH/i4k/xfdleRVzX+xLSmMmJWlkbD6NAlP8U5eg==}
+
+  '@deriv/quill-icons@2.10.0':
+    resolution: {integrity: sha512-2cpPYJEB9Oj1uArsYQGrRrbXce4/uevyPzOmvOlWEFWqA4bcsH2OsKwpJ8Ukx9IB1X1C4hCyzc2Vq29XbXgl6w==}
+    peerDependencies:
+      react: '>= 16'
+      react-dom: '>= 16'
 
   '@edge-runtime/format@2.2.1':
     resolution: {integrity: sha512-JQTRVuiusQLNNLe2W9tnzBlV/GvSVcozLl4XZHk5swnRZ/v6jp8TqR8P7sqmJsQqblDZ3EztcWmLDbhRje/+8g==}
@@ -3499,6 +3515,9 @@ packages:
   arg@5.0.2:
     resolution: {integrity: sha512-PYjyFOLKQ9y57JvQ6QLo8dAgNqswh8M1RMJYdQduT6xbWSgK36P/Z/v+p888pM69jMMfS8Xd8F6I1kQ/I9HUGg==}
 
+  argparse@1.0.10:
+    resolution: {integrity: sha512-o5Roy6tNG4SL/FOkCAN6RzjiakZS25RLYFrcMttJqbdd8BWrnA+fGz57iN5Pb06pvBGvl5gQ0B48dJlslXvoTg==}
+
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
@@ -4265,6 +4284,11 @@ packages:
     resolution: {integrity: sha512-j6PAQ2uUr79PZhBjP5C5fhl8e39FmRnOjsD5lGnWrFU8i2G776tBK7+nP8KuQUTTyAZUwfQqXAgrVH5MbH9CYQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
+  esprima@4.0.1:
+    resolution: {integrity: sha512-eGuFFw7Upda+g4p+QHvnW0RyTX/SVeJBDM/gCtMARO0cLuT2HcEKnTPvhjV6aGeqrCB/sbNop0Kszm0jsaWU4A==}
+    engines: {node: '>=4'}
+    hasBin: true
+
   esquery@1.7.0:
     resolution: {integrity: sha512-Ap6G0WQwcU/LHsvLwON1fAQX9Zp0A2Y6Y/cJBl9r/JbW90Zyg4/zbG6zzKa2OTALELarYHmKu0GhpM5EO+7T0g==}
     engines: {node: '>=0.10'}
@@ -4599,6 +4623,11 @@ packages:
   human-signals@8.0.1:
     resolution: {integrity: sha512-eKCa6bwnJhvxj14kZk5NCPc6Hb6BdsU9DZcOnmQKSnO1VKrfV0zCvtttPZUsBvjmNDn8rpcJfpwSYnHBjc95MQ==}
     engines: {node: '>=18.18.0'}
+
+  husky@9.1.7:
+    resolution: {integrity: sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   iconv-lite@0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
@@ -4981,8 +5010,12 @@ packages:
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
-  js-yaml@4.3.0:
-    resolution: {integrity: sha512-1td788aAnnZ5qs7V2QIRl1owjtYpbKt749Y3xauqQgwIIGF/xXWz1wMTEBx5O3LK3lXLVuqXPdPxj2BoFHaW9Q==}
+  js-yaml@3.15.1:
+    resolution: {integrity: sha512-S99WuO3HlhO3XN41EtYUNl9zzXjoJx7QvmipxsJVxtCBT0YHEFy+iOJhjSvrmV12nYhWpZaM8lPHkJm0yUMbag==}
+    hasBin: true
+
+  js-yaml@4.3.1:
+    resolution: {integrity: sha512-CY6crGq313MX8GkwvB7tzgp99vjQxY1++5y10/BKN/GUfHqWaOGQMNZkBvqSzsZKWk/ijwHlWzzkLulsGHhjWQ==}
     hasBin: true
 
   jsesc@3.1.0:
@@ -6010,6 +6043,9 @@ packages:
   source-map@0.6.1:
     resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
     engines: {node: '>=0.10.0'}
+
+  sprintf-js@1.0.3:
+    resolution: {integrity: sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==}
 
   srvx@0.11.22:
     resolution: {integrity: sha512-LqZxxBDMKuMAZzFzJnDCkFOrs9MZQZr0LvHiO/SuSZVdQaXD7xQ5UWTUxheJrQPve1qk9MG2B/yttUvJxw8egQ==}
@@ -7556,7 +7592,7 @@ snapshots:
       commander: 11.1.0
       cookie: 0.7.0
       esbuild: 0.28.1
-      js-yaml: 4.3.0
+      js-yaml: 4.3.1
       miniflare: 3.20250718.3
       package-manager-manager: 0.2.0
       pcre-to-regexp: 1.1.0
@@ -7641,7 +7677,19 @@ snapshots:
     optionalDependencies:
       '@growthbook/growthbook': 1.6.5
 
+  '@deriv-com/quill-ui-v2@0.0.8(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      dotenv: 17.4.2
+      husky: 9.1.7
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+
   '@deriv-com/utils@0.0.42': {}
+
+  '@deriv/quill-icons@2.10.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
 
   '@edge-runtime/format@2.2.1': {}
 
@@ -7798,7 +7846,7 @@ snapshots:
       globals: 14.0.0
       ignore: 5.3.2
       import-fresh: 3.3.1
-      js-yaml: 4.3.0
+      js-yaml: 4.3.1
       minimatch: 3.1.5
       strip-json-comments: 3.1.1
     transitivePeerDependencies:
@@ -7986,7 +8034,7 @@ snapshots:
       camelcase: 5.3.1
       find-up: 4.1.0
       get-package-type: 0.1.0
-      js-yaml: 4.3.0
+      js-yaml: 3.15.1
       resolve-from: 5.0.0
 
   '@istanbuljs/schema@0.1.6': {}
@@ -10175,6 +10223,10 @@ snapshots:
 
   arg@5.0.2: {}
 
+  argparse@1.0.10:
+    dependencies:
+      sprintf-js: 1.0.3
+
   argparse@2.0.1: {}
 
   aria-hidden@1.2.6:
@@ -10565,7 +10617,7 @@ snapshots:
   cosmiconfig@8.3.6(typescript@5.0.2):
     dependencies:
       import-fresh: 3.3.1
-      js-yaml: 4.3.0
+      js-yaml: 4.3.1
       parse-json: 5.2.0
       path-type: 4.0.0
     optionalDependencies:
@@ -11122,6 +11174,8 @@ snapshots:
       acorn-jsx: 5.3.2(acorn@8.15.0)
       eslint-visitor-keys: 4.2.1
 
+  esprima@4.0.1: {}
+
   esquery@1.7.0:
     dependencies:
       estraverse: 5.3.0
@@ -11478,6 +11532,8 @@ snapshots:
   human-signals@2.1.0: {}
 
   human-signals@8.0.1: {}
+
+  husky@9.1.7: {}
 
   iconv-lite@0.4.24:
     dependencies:
@@ -12039,7 +12095,12 @@ snapshots:
 
   js-tokens@4.0.0: {}
 
-  js-yaml@4.3.0:
+  js-yaml@3.15.1:
+    dependencies:
+      argparse: 1.0.10
+      esprima: 4.0.1
+
+  js-yaml@4.3.1:
     dependencies:
       argparse: 2.0.1
 
@@ -12455,7 +12516,7 @@ snapshots:
 
   package-manager-manager@0.2.0:
     dependencies:
-      js-yaml: 4.3.0
+      js-yaml: 4.3.1
       shellac: 0.8.0
 
   parent-module@1.0.1:
@@ -13077,6 +13138,8 @@ snapshots:
       source-map: 0.6.1
 
   source-map@0.6.1: {}
+
+  sprintf-js@1.0.3: {}
 
   srvx@0.11.22: {}
 

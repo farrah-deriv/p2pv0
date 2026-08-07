@@ -10,6 +10,7 @@ import AdSuccessScreen from "../ad-success-screen"
 import { AdsAPI, ProfileAPI } from "@/services/api"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { ProgressSteps } from "./progress-steps"
 import Navigation from "@/components/navigation"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
@@ -59,6 +60,7 @@ import {
   myAdsPath,
   parseMyAdsTab,
 } from "@/lib/ads/my-ads-tab"
+import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 interface MultiStepAdFormProps {
   mode: "create" | "edit"
@@ -311,7 +313,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
         if (cancelled) return
         toast({
           description: t("adForm.failedToLoadAd"),
-          className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+          className: TOAST_SUCCESS_CLASS,
           duration: 2500,
         })
       } finally {
@@ -611,7 +613,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
                   <span>{t("adForm.adUpdatedSuccess")}</span>
                 </div>
               ),
-              className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+              className: TOAST_SUCCESS_CLASS,
               duration: 2500,
             })
             router.push(myAdsReturnPath)
@@ -1193,7 +1195,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
                       }
                     >
                       {isSubmitting ? (
-                        <Image src="/icons/spinner.png" alt="Loading" width={20} height={20} className="animate-spin" />
+                        <Spinner size="xs" />
                       ) : (
                         getButtonText()
                       )}
@@ -1216,7 +1218,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
                       }
                     >
                       {isSubmitting ? (
-                        <Image src="/icons/spinner.png" alt="Loading" width={20} height={20} className="animate-spin" />
+                        <Spinner size="xs" />
                       ) : (
                         getButtonText()
                       )}

@@ -5,6 +5,7 @@ import { useCallback, useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import Image from "next/image"
 import { usePaymentMethods } from "@/hooks/use-api-queries"
 import {
@@ -314,7 +315,7 @@ export default function AddPaymentMethodPanel({
                   variant="ghost"
                   size="lg"
                   onClick={() => handleMethodSelect(paymentMethod)}
-                  className="w-full p-4 rounded-none justify-start gap-3 h-auto border-b border-grayscale-500 hover:bg-transparent"
+                  className="w-full p-4 rounded-none !justify-start gap-3 h-auto border-b border-grayscale-500 hover:bg-transparent"
                 >
                   <Image
                     src={getPaymentMethodIcon(paymentMethod.type) || "/placeholder.svg"}
@@ -414,7 +415,7 @@ export default function AddPaymentMethodPanel({
           className="w-full md:w-auto"
         >
           {isLoading ? (
-            <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
+            <Spinner size="xs" />
           ) : (
             t("common.add")
           )}

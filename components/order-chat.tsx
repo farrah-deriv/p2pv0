@@ -4,6 +4,7 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { OrdersAPI } from "@/services/api"
@@ -12,6 +13,7 @@ import { useWebSocketContext } from "@/contexts/websocket-context"
 import { getChatErrorMessage, formatTime } from "@/lib/utils"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { PresenceLastSeen } from "@/components/presence-last-seen"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import type { Order } from "@/services/api/api-orders"
@@ -453,10 +455,10 @@ export default function OrderChat({
       <div className="flex items-center p-4 border-b flex-shrink-0">
         {onNavigateToOrderDetails && (
           <Button
-            variant="ghost"
+            variant="icon-muted"
             size="sm"
             onClick={onNavigateToOrderDetails}
-            className="me-[16px] bg-grayscale-300 px-1"
+            className="me-[16px] px-1"
             data-testid="order-chat-btn-back"
           >
             <Image src="/icons/arrow-left-icon.png" alt={t("common.back")} width={24} height={24} className="rtl:rotate-180" />
@@ -484,27 +486,16 @@ export default function OrderChat({
         </div>
       </div>
       <div ref={messagesContainerRef} className="flex-1 min-h-0 overflow-y-auto">
-        <div className="p-[16px] m-[16px] bg-orange-50 rounded-[16px]">
-          <div className="space-y-3">
-            <div className="flex items-start gap-[8px]">
-              <div className="flex-shrink-0">
-                <Image src="/icons/warning-icon-new.png" className="-mt-[2px]" alt={t("common.warning")} width={24} height={24} />
-              </div>
-              <div className="text-sm text-slate-1200">
-                <span className="font-bold">{t("chat.disclaimerImportant")}</span>
-                <span className="ms-1">{t("chat.disclaimerText")}</span>
-                <div className="mt-[16px]">
-                  <span className="font-bold">{t("chat.disclaimerNote")}</span>
-                  <span className="ms-1">{t("chat.disclaimerNoteText")}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Alert variant="warning" className="m-4">
+          <AlertDescription>
+            <p><span className="font-bold">{t("chat.disclaimerImportant")}</span>{" "}{t("chat.disclaimerText")}</p>
+            <p className="mt-4"><span className="font-bold">{t("chat.disclaimerNote")}</span>{" "}{t("chat.disclaimerNoteText")}</p>
+          </AlertDescription>
+        </Alert>
         <div className="p-4">
           {isLoading ? (
             <div className="flex justify-center items-center h-64">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-r-transparent"></div>
+              <Spinner size="lg" />
             </div>
           ) : (
             <>
@@ -619,7 +610,7 @@ export default function OrderChat({
                 onChange={(e) => setMessage(e.target.value.slice(0, maxLength))}
                 onKeyDown={handleKeyDown}
                 placeholder={t("chat.enterMessage")}
-                className="w-full rounded-[8px] pe-12 resize-none min-h-[56px] placeholder:text[#0000003D]"
+                className="w-full rounded-[8px] pe-12 resize-none min-h-[56px] placeholder:text-grayscale-text-placeholder"
                 data-testid="order-chat-input-message"
               />
               {message.trim() ? (

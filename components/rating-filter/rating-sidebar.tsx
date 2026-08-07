@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { toast } from "@/components/ui/use-toast"
 import { cn } from "@/lib/utils"
 import { OrdersAPI } from "@/services/api"
@@ -119,9 +120,9 @@ const RatingContent = ({
       </div>
     </div>
     <div className="p-4 md:px-0">
-      <Button onClick={onSubmit} disabled={rating === 0 || isSubmitting} className="w-full disabled:opacity-[0.24]" data-testid="rating-btn-submit">
+      <Button onClick={onSubmit} disabled={rating === 0 || isSubmitting} className="w-full" data-testid="rating-btn-submit">
         {isSubmitting ? (
-          <Image src="/icons/spinner.png" alt={t("common.loading")} width={20} height={20} className="animate-spin" />
+          <Spinner size="xs" />
         ) : (
           t("ratingSidebar.submit")
         )}

@@ -1,5 +1,6 @@
 "use client"
 
+import { ProgressBar } from "@deriv-com/quill-ui-v2"
 import { useTranslations } from "@/lib/i18n/use-translations"
 
 interface TradeLimitsProps {
@@ -35,9 +36,12 @@ export default function TradeLimits({ buyLimit, sellLimit, userData }: TradeLimi
               {buyRemaining} / {buyMax} USD
             </span>
           </div>
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div className="h-full bg-black rounded-full" style={{ width: `${buyPercentage || 0}%` }}></div>
-          </div>
+          <ProgressBar
+            value={buyPercentage || 0}
+            type="green"
+            size="sm"
+            ariaLabel={t("common.buy")}
+          />
         </div>
 
         <div>
@@ -47,9 +51,12 @@ export default function TradeLimits({ buyLimit, sellLimit, userData }: TradeLimi
               {sellRemaining} / {sellMax} USD
             </span>
           </div>
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div className="h-full bg-black rounded-full" style={{ width: `${sellPercentage || 0}%` }}></div>
-          </div>
+          <ProgressBar
+            value={sellPercentage || 0}
+            type="red"
+            size="sm"
+            ariaLabel={t("common.sell")}
+          />
         </div>
       </div>
     </div>

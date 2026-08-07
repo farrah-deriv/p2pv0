@@ -9,6 +9,7 @@ import { useUserDataStore } from "@/stores/user-data-store"
 import type { OrderDetailItemProps } from "./types"
 import { cn } from "@/lib/utils"
 import { useTranslations } from "@/lib/i18n/use-translations"
+import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 const OrderDetailItem = ({ hasCopy, label, value, testId, isBlockLayout, copyTestId }: OrderDetailItemProps) => {
   const { toast } = useToast()
@@ -34,7 +35,7 @@ const OrderDetailItem = ({ hasCopy, label, value, testId, isBlockLayout, copyTes
                       <span>{t("orderDetails.textCopiedToClipboard")}</span>
                     </div>
                   ),
-                  className: "bg-black text-white border-black h-[48px] rounded-lg px-[16px] py-[8px]",
+                  className: TOAST_SUCCESS_CLASS,
                   duration: 2500,
                 })
               }

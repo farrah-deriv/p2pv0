@@ -8,6 +8,8 @@ import TransactionDetails from "./transaction-details"
 import { formatAppDate } from "@/lib/format-date"
 import { formatAmountWithDecimals } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import type { Transaction } from "../types"
@@ -199,11 +201,11 @@ export default function TransactionsTab({
   if (loading) {
     return (
       <div className="p-4">
-        <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+        <div className="space-y-4">
+          <Skeleton className="h-4 w-1/4" />
           <div className="space-y-3">
-            <div className="h-16 bg-gray-200 rounded"></div>
-            <div className="h-16 bg-gray-200 rounded"></div>
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
           </div>
         </div>
       </div>
@@ -350,11 +352,9 @@ export default function TransactionsTab({
                 data-testid="wallet-loading-more-transactions"
                 className="flex w-full shrink-0 justify-center py-4 bg-background"
               >
-                <div
-                  className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"
-                  role="status"
-                  aria-label={t("common.loading")}
-                />
+                <div role="status" aria-label={t("common.loading")}>
+                  <Spinner size="sm" />
+                </div>
               </div>
             )}
           </div>

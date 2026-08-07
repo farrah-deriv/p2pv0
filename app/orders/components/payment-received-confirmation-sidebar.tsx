@@ -3,12 +3,11 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
+import { InputOTP } from "@/components/ui/input-otp"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { OrdersAPI } from "@/services/api"
 import { useTranslations } from "@/lib/i18n/use-translations"
-import { cn } from "@/lib/utils"
 
 const DEFAULT_RATE_LIMIT_SECONDS = 60
 
@@ -195,7 +194,7 @@ export const PaymentReceivedConfirmationSidebar = ({
         <div className="flex flex-col h-full sm:max-w-none md:max-w-xl md:mx-auto">
           <SheetHeader className="p-4">
             <div className="flex items-center justify-between">
-              <Button variant="ghost" onClick={onClose} size="sm" className="bg-grayscale-300 px-1">
+              <Button variant="icon-muted" onClick={onClose} size="sm" className="px-1">
                 <Image src="/icons/arrow-left-icon.png" alt="Back" width={24} height={24} className="rtl:rotate-180" />
               </Button>
             </div>
@@ -212,16 +211,15 @@ export const PaymentReceivedConfirmationSidebar = ({
             </div>
 
             <div className="space-y-4">
-              <InputOTP maxLength={6} value={otpValue} onChange={handleOtpChange} disabled={isVerifying || isLoading || !!warning} data-testid="order-details-input-otp">
-                <InputOTPGroup className="gap-2">
-                  <InputOTPSlot index={0} className={cn("w-12 h-12 text-lg bg-transparent rounded-lg data-[active=true]:ring-0 data-[active=true]:border-black", error && "border-error")} />
-                  <InputOTPSlot index={1} className={cn("w-12 h-12 text-lg bg-transparent rounded-lg data-[active=true]:ring-0 data-[active=true]:border-black", error && "border-error")} />
-                  <InputOTPSlot index={2} className={cn("w-12 h-12 text-lg bg-transparent rounded-lg data-[active=true]:ring-0 data-[active=true]:border-black", error && "border-error")} />
-                  <InputOTPSlot index={3} className={cn("w-12 h-12 text-lg bg-transparent rounded-lg data-[active=true]:ring-0 data-[active=true]:border-black", error && "border-error")} />
-                  <InputOTPSlot index={4} className={cn("w-12 h-12 text-lg bg-transparent rounded-lg data-[active=true]:ring-0 data-[active=true]:border-black", error && "border-error")} />
-                  <InputOTPSlot index={5} className={cn("w-12 h-12 text-lg bg-transparent rounded-lg data-[active=true]:ring-0 data-[active=true]:border-black", error && "border-error")} />
-                </InputOTPGroup>
-              </InputOTP>
+              <div data-testid="order-details-input-otp">
+                <InputOTP
+                  length={6}
+                  value={otpValue}
+                  onChange={handleOtpChange}
+                  disabled={isVerifying || isLoading || !!warning}
+                  status={error ? "error" : "neutral"}
+                />
+              </div>
 
               {error && <p className="text-error text-xs mx-4" data-testid="order-details-error-otp">{error}</p>}
               {warning && <p className="text-grayscale-600 text-sm">{warning}</p>}

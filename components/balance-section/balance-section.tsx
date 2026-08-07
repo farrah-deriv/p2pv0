@@ -20,7 +20,7 @@ export function BalanceSection({ balance, currency, isLoading, className }: Bala
     <div className={className}>
       <div className="text-white opacity-[0.72] text-xs mb-1">{t("wallet.estTotalValue")}</div>
       {isLoading ? (
-        <Skeleton className="h-7 w-32 bg-white/20" />
+        <Skeleton className="h-7 w-32 animate-shimmer-dark" />
       ) : (
         <div className="text-white text-[20px] font-extrabold leading-tight">{`${displayAmount} ${displayCurrency}`}</div>
       )}

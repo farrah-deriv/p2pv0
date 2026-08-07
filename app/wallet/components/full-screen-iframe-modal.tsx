@@ -1,10 +1,11 @@
 "use client"
 
-import { X } from "lucide-react"
+import { StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { getCoreUrl } from "@/lib/get-core-url"
 import { useTranslations } from "@/lib/i18n/use-translations"
@@ -117,13 +118,13 @@ export default function FullScreenIframeModal({
       <div className="flex h-16 px-4 py-1 justify-between items-center border-b border-border bg-background z-10">
         <h1 className="text-lg font-bold text-black leading-7">{title}</h1>
         <Button
-          variant="ghost"
+          variant="icon-muted"
           size="icon"
           onClick={handleClose}
-          className="flex w-8 h-8 items-center justify-center rounded-full aspect-square overflow-hidden flex-shrink-0 min-w-[2rem] min-h-[2rem] max-w-[2rem] max-h-[2rem] bg-[#EFF3F5] hover:bg-[#EFF3F5] p-0"
+          className="flex w-8 h-8 items-center justify-center rounded-full aspect-square overflow-hidden flex-shrink-0 min-w-[2rem] min-h-[2rem] max-w-[2rem] max-h-[2rem] bg-grayscale-700 hover:bg-grayscale-700 p-0"
           aria-label={t("common.close")}
         >
-          <X className="h-4 w-4" />
+          <StandaloneXmarkRegularIcon iconSize="xs" />
         </Button>
       </div>
 
@@ -131,7 +132,7 @@ export default function FullScreenIframeModal({
         {(!iframeLoaded || isLoading) && (
           <div className="absolute inset-0 flex items-center justify-center bg-background z-10">
             <div className="flex flex-col items-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
+              <Spinner size="lg" className="mb-4" />
               <p className="text-muted-foreground">{t("common.loading")}</p>
             </div>
           </div>
