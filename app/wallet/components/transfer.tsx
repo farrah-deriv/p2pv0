@@ -23,6 +23,7 @@ import { getQueryClient } from "@/lib/react-query-client"
 import WalletDisplay from "./wallet-display"
 import ChooseCurrencyStep from "./choose-currency-step"
 import { useTranslations } from "@/lib/i18n/use-translations"
+import { useIsMobile } from "@/hooks/use-mobile"
 import { useTrackers } from "@/analytics/useTrackers"
 import { getWalletTransferRejectionInfo, type WalletTransferApiError, type WalletWithdrawalRejectionAmounts, type WalletWithdrawalRejectionCode, type WalletWithdrawalRejectionCta } from "@/lib/wallet-transfer"
 import type { Transaction } from "../types"
@@ -112,6 +113,7 @@ type CurrencyToggleType = "source" | "destination"
 export default function Transfer({ currencySelected, onClose, stepVal = "enterAmount", onViewDetails }: TransferProps) {
   const { t } = useTranslations()
   const { track } = useTrackers()
+  const isMobile = useIsMobile()
   const queryClient = getQueryClient()
   const { data: currenciesResponse, isLoading: isCurrenciesLoading } = useCurrencies()
 
@@ -1225,22 +1227,24 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
             </Tooltip>
           </TooltipProvider>
         </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          data-testid="transfer-btn-amount-receive-info-mobile"
-          className={`inline-flex md:hidden ${infoButtonClassName}`}
-          aria-label={t("wallet.amountReceiveInfoTitle")}
-          disabled={isSubmitting}
-          onClick={(e) => {
-            e.stopPropagation()
-            if (isSubmitting) return
-            openAmountReceiveInfoSheet()
-          }}
-        >
-          <InfoCircleIcon className={infoIconClassName} />
-        </Button>
+        <div className="inline-flex md:hidden">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            data-testid="transfer-btn-amount-receive-info-mobile"
+            className={infoButtonClassName}
+            aria-label={t("wallet.amountReceiveInfoTitle")}
+            disabled={isSubmitting}
+            onClick={(e) => {
+              e.stopPropagation()
+              if (isSubmitting) return
+              openAmountReceiveInfoSheet()
+            }}
+          >
+            <InfoCircleIcon className={infoIconClassName} />
+          </Button>
+        </div>
       </>
     )
   }

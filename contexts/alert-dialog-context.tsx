@@ -39,8 +39,11 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
   const handleConfirm = useCallback(async () => {
     if (config.onConfirm) {
       setIsSubmitting(true)
-      await config.onConfirm()
-      setIsSubmitting(false)
+      try {
+        await config.onConfirm()
+      } finally {
+        setIsSubmitting(false)
+      }
     }
     hideAlert()
   }, [config.onConfirm, hideAlert])
@@ -109,11 +112,18 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
     if (config.content) {
       return (
         <div className="flex min-w-0 w-full flex-col overflow-hidden">
-          <div className="mb-4 flex shrink-0 items-center justify-between gap-4 px-8 pt-6">
-            {config.title && <div className="min-w-0 flex-1 text-start text-2xl font-bold">{config.title}</div>}
+          <div className="mb-4 flex shrink-0 items-start justify-between gap-3 px-8 pt-6">
+            {config.title && <h2 className="min-w-0 flex-1 text-start text-2xl leading-8 font-extrabold text-slate-1200">{config.title}</h2>}
             {!config.hideCloseButton && (
-              <Button onClick={handleClose} variant="ghost" className="min-w-[48px] shrink-0 bg-slate-75 px-1">
-                <Image src="/icons/close-icon.png" alt={t("common.close")} width={24} height={24} />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleClose}
+                aria-label={t("common.close")}
+                className="shrink-0 size-10 min-h-10 min-w-10 rounded-full bg-black/4 hover:bg-black/8 focus-visible:ring-1 focus-visible:ring-black"
+              >
+                <Image src="/icons/close-icon.png" alt="" width={20} height={20} aria-hidden />
               </Button>
             )}
           </div>
@@ -129,7 +139,7 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
             <div className="flex flex-col gap-2 px-8 py-4 border-t border-grayscale-500">
               {config.type && (
                 <Button onClick={handleConfirm} disabled={isSubmitting} variant="primary" className="w-full">
-                  {config.confirmText || "Continue"}
+                  {config.confirmText || t("common.continue")}
                 </Button>
               )}
               {config.cancelText && (
@@ -144,21 +154,34 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
     }
 
     return (
-      <div className="px-8 py-6 overflow-y-auto" data-testid={config.testId}>
-        <div className="flex justify-between items-center gap-4 mb-8">
-          {config.title && <div className="flex-1 min-w-0 text-start font-bold text-2xl">{config.title}</div>}
-          {!config.hideCloseButton && (
-            <Button onClick={handleClose} variant="ghost" className="bg-slate-75 px-1 min-w-[48px]">
-              <Image src="/icons/close-icon.png" alt={t("common.close")} width={24} height={24} />
-            </Button>
+      <div className="flex flex-col gap-8 p-8 overflow-y-auto" data-testid={config.testId}>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-start justify-between gap-3">
+            {config.title && (
+              <h2 className="text-2xl leading-8 font-extrabold text-slate-1200">{config.title}</h2>
+            )}
+            {!config.hideCloseButton && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleClose}
+                aria-label={t("common.close")}
+                className="shrink-0 size-10 min-h-10 min-w-10 rounded-full bg-black/4 hover:bg-black/8 focus-visible:ring-1 focus-visible:ring-black"
+              >
+                <Image src="/icons/close-icon.png" alt="" width={20} height={20} aria-hidden />
+              </Button>
+            )}
+          </div>
+          {config.description && (
+            <p className="text-base leading-6 font-normal text-black/72">{config.description}</p>
           )}
         </div>
-        {config.description && <div className="text-grayscale-100">{config.description}</div>}
         {(config.cancelText || config.type) && (
-          <div className="flex flex-col gap-2 mt-6">
+          <div className="flex flex-col gap-2">
             {config.type && (
               <Button onClick={handleConfirm} disabled={isSubmitting} variant="primary" className="w-full" data-testid={config.confirmTestId}>
-                {config.confirmText || "Continue"}
+                {config.confirmText || t("common.continue")}
               </Button>
             )}
             {config.cancelText && (
@@ -195,14 +218,14 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
           )}
         >
           {config.title && (
-            <div
+            <h2
               className={cn(
-                "mb-2 px-6 pt-6 font-bold text-lg flex-shrink-0",
+                "mb-2 px-6 pt-6 text-2xl leading-8 font-extrabold text-slate-1200 flex-shrink-0",
                 config.titleAlign === "center" ? "text-center" : "text-start",
               )}
             >
               {config.title}
-            </div>
+            </h2>
           )}
           <div
             className={cn(
@@ -216,7 +239,7 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
             <div className="flex flex-col gap-2 px-6 py-4 flex-shrink-0 border-t border-grayscale-500">
               {config.type && (
                 <Button onClick={handleConfirm} disabled={isSubmitting} variant="primary" className="w-full">
-                  {config.confirmText || "Continue"}
+                  {config.confirmText || t("common.continue")}
                 </Button>
               )}
               {config.cancelText && (
@@ -231,13 +254,15 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
     }
 
     return (
-      <div className="p-6 overflow-y-auto" data-testid={config.testId}>
-        {config.title && <div className="mb-8 text-start font-bold text-lg">{config.title}</div>}
-        {config.description && <div className="text-grayscale-100">{config.description}</div>}
-        {(config.cancelText || config.type) && (<div className="flex flex-col gap-2 mt-8">
+      <div className="flex flex-col gap-8 p-6 overflow-y-auto" data-testid={config.testId}>
+        <div className="flex flex-col gap-4">
+          {config.title && <h2 className="text-2xl leading-8 font-extrabold text-slate-1200">{config.title}</h2>}
+          {config.description && <p className="text-base leading-6 font-normal text-black/72">{config.description}</p>}
+        </div>
+        {(config.cancelText || config.type) && (<div className="flex flex-col gap-2">
           {config.type && (
             <Button onClick={handleConfirm} disabled={isSubmitting} variant="primary" className="w-full" data-testid={config.confirmTestId}>
-              {config.confirmText || "Continue"}
+              {config.confirmText || t("common.continue")}
             </Button>
           )}
           {config.cancelText && (
@@ -275,17 +300,17 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
           open={isOpen}
           onOpenChange={handleOpenChange}
         >
-          <AlertDialogTitle></AlertDialogTitle>
           <AlertDialogContent
             dir={dir}
             className={cn(
-              "flex min-w-0 w-full max-w-xl flex-col overflow-hidden p-0",
+              "flex min-w-0 w-full max-w-xl flex-col overflow-hidden p-0 border-0 shadow-xl",
               isKycOnboarding &&
                 "!w-[min(880px,95vw)] !max-w-[880px] !p-0 overflow-hidden rounded-3xl border-0",
             )}
             onEscapeKeyDown={config.preventOutsideClose ? (e) => e.preventDefault() : undefined}
             onInteractOutside={config.preventOutsideClose ? (e) => e.preventDefault() : undefined}
           >
+            <AlertDialogTitle className="sr-only">{config.title ?? ""}</AlertDialogTitle>
             <AlertDialogDescription className="m-0 flex min-h-0 min-w-0 w-full max-w-full flex-1 flex-col overflow-hidden p-0 text-base">
               {renderDesktopContent()}
             </AlertDialogDescription>
