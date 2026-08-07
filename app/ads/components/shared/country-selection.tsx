@@ -155,7 +155,7 @@ export default function CountrySelection({ countries, selectedCountries, onCount
         <DrawerTrigger asChild>
           <Button
             variant="outline"
-            className="!w-full !h-14 !max-h-none !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-4 !font-normal hover:!bg-white focus:!ring-1 focus:!ring-black"
+            className="!w-full !h-14 !max-h-none !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-4 !font-normal hover:!bg-white focus:!ring-1 focus:!ring-black [&>span]:!w-full"
             onClick={() => setIsOpen(true)}
           >
             <span className="flex w-full flex-row items-center justify-between">
@@ -182,7 +182,7 @@ export default function CountrySelection({ countries, selectedCountries, onCount
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="!w-full !h-14 !max-h-none !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-4 !font-normal hover:!bg-white focus:!ring-1 focus:!ring-black"
+          className="!w-full !h-14 !max-h-none !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-4 !font-normal hover:!bg-white focus:!ring-1 focus:!ring-black [&>span]:!w-full"
           onClick={() => setIsOpen(!isOpen)}
         >
           <span className="flex w-full flex-row items-center justify-between">

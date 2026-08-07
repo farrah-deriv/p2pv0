@@ -7,6 +7,7 @@ import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
 import { useStablePaymentMethodOrder } from "@/hooks/use-stable-payment-method-order"
 import { SelectedPaymentMethodsSection } from "@/components/payment-methods/selected-payment-methods-section"
 import Image from "next/image"
+import { StandaloneChevronDownRegularIcon } from "@deriv/quill-icons/Standalone"
 import type { AdFormData } from "../types"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import { Textarea } from "@/components/ui/textarea"
@@ -847,14 +848,16 @@ export default function PaymentDetailsForm({
               <div className="mb-6">
                 <Button
                   variant="outline"
-                  className="w-full justify-between px-4 rounded-lg bg-transparent border-input hover:bg-transparent max-h-none h-[56px]"
+                  className="!w-full !h-12 !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-3 !font-normal hover:!bg-neutral-50 focus:!ring-1 focus:!ring-black [&>span]:!w-full"
                   onClick={() => handleShowPaymentSelection()}
                   type="button"
                 >
-                  <span className="text-left font-normal text-base text-grayscale-600">
-                    {getSelectedPaymentMethodsText()}
+                  <span className="flex w-full flex-row items-center justify-between">
+                    <span className="min-w-0 flex-1 truncate text-sm font-normal text-grayscale-600">
+                      {getSelectedPaymentMethodsText()}
+                    </span>
+                    <StandaloneChevronDownRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />
                   </span>
-                  <Image src="/icons/chevron-down.png" alt={t("common.dropdown")} width={24} height={24} className="ms-2" />
                 </Button>
               </div>
 

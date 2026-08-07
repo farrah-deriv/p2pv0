@@ -340,7 +340,7 @@ export default function PaymentMethodsFilter({
       aria-expanded={isOpen}
       aria-haspopup="listbox"
       className={cn(
-        "!h-12 !w-full !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-3 !text-sm !font-normal focus:!ring-1 focus:!ring-black",
+        "!h-12 !w-full !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-3 !text-sm !font-normal focus:!ring-1 focus:!ring-black [&>span]:!w-full",
         triggerClassName,
       )}
     >

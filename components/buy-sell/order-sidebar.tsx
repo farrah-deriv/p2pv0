@@ -13,6 +13,7 @@ import { createOrder } from "@/services/api/api-orders"
 import { ProfileAPI } from "@/services/api"
 import { formatPaymentMethodName, cn, getHomeUrl } from "@/lib/utils"
 import Image from "next/image"
+import { StandaloneChevronDownRegularIcon } from "@deriv/quill-icons/Standalone"
 import AddPaymentMethodPanel from "@/app/profile/components/add-payment-method-panel"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { useToast } from "@/hooks/use-toast"
@@ -976,31 +977,27 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
                   <div className="mx-4 mt-4 pb-6 border-b">
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="outline"
                       data-testid="order-sidebar-btn-select-payment"
-                      className="flex h-[56px] w-full items-center justify-between rounded-lg border border-neutral-200 bg-white px-4 font-normal hover:bg-neutral-50"
+                      className="!h-12 !w-full !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-3 !font-normal hover:!bg-neutral-50 focus:!ring-1 focus:!ring-black [&>span]:!w-full"
                       onClick={handleShowPaymentSelection}
                     >
-                      <span className="flex min-w-0 flex-1 flex-col items-start gap-[1px]">
-                        {selectedPaymentMethods.length > 0 && (
-                          <span className="text-xs font-normal text-grayscale-600">
-                            {t("order.receivePaymentTo")}
+                      <span className="flex w-full flex-row items-center justify-between">
+                        <span className="flex min-w-0 flex-1 flex-col items-start gap-[1px]">
+                          {selectedPaymentMethods.length > 0 && (
+                            <span className="text-xs font-normal text-grayscale-600">
+                              {t("order.receivePaymentTo")}
+                            </span>
+                          )}
+                          <span
+                            data-testid="order-sidebar-text-payment-method"
+                            className="min-w-0 truncate text-sm font-normal text-grayscale-600"
+                          >
+                            {getSelectedPaymentMethodsText()}
                           </span>
-                        )}
-                        <span
-                          data-testid="order-sidebar-text-payment-method"
-                          className="text-base font-normal text-grayscale-600"
-                        >
-                          {getSelectedPaymentMethodsText()}
                         </span>
+                        <StandaloneChevronDownRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />
                       </span>
-                      <Image
-                        src="/icons/chevron-down.png"
-                        alt={t("common.arrow")}
-                        width={24}
-                        height={24}
-                        className="ms-2 shrink-0 transition-transform duration-200"
-                      />
                     </Button>
                   </div>
                 )}
