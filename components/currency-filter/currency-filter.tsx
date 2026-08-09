@@ -124,8 +124,8 @@ export function CurrencyFilter({
     const openUpward = spaceBelow < dropdownH && rect.top > dropdownH
     setDropdownStyle(
       openUpward
-        ? { bottom: window.innerHeight - rect.top + 4, left: rect.left, width: Math.max(rect.width, 240) }
-        : { top: rect.bottom + 4, left: rect.left, width: Math.max(rect.width, 240) },
+        ? { bottom: window.innerHeight - rect.top + 4, right: window.innerWidth - rect.right, width: Math.max(rect.width, 320) }
+        : { top: rect.bottom + 4, right: window.innerWidth - rect.right, width: Math.max(rect.width, 320) },
     )
   }, [isOpen, isMobile])
 
@@ -179,7 +179,7 @@ export function CurrencyFilter({
       <div
         className={cn(
           "flex items-center gap-2 rounded-lg bg-black/[0.04] px-2",
-          isSheet ? "mx-4 mt-2 h-10" : "mx-2 mt-2 h-9",
+          isSheet ? "mx-4 mb-2 h-10" : "m-4 h-9",
         )}
       >
         <StandaloneSearchRegularIcon iconSize="xs" className="shrink-0 text-neutral-400" aria-hidden />

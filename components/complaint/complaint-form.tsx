@@ -48,7 +48,7 @@ export function ComplaintForm({ isOpen, onClose, onSubmit, orderId, type }: Comp
             onCancel: () => handleClose(),
           })
         } else {
-          setApiError(error instanceof Error ? error.message : "An error occurred. Please try again.")
+          setApiError(error instanceof Error ? error.message : t("order.genericMessage"))
           console.error("Error submitting complaint:", error)
           onClose()
         }
@@ -79,6 +79,7 @@ export function ComplaintForm({ isOpen, onClose, onSubmit, orderId, type }: Comp
         className={`fixed inset-y-0 right-0 z-50 bg-white shadow-xl flex flex-col ${isMobile ? "inset-0 w-full" : "w-full"
           }`}
         data-testid="complaint-form-container"
+        onKeyDown={(e) => e.key === "Escape" && handleClose()}
       >
         <div className="max-w-xl mx-auto flex flex-col w-full h-full">
           {/* Back button */}
@@ -109,23 +110,26 @@ export function ComplaintForm({ isOpen, onClose, onSubmit, orderId, type }: Comp
             {/* Reason tiles */}
             <div className="space-y-2">
               <p className="text-slate-1200">{t("complaint.whatWentWrong")}</p>
+              {/* Using native <button> instead of <Button> because Quill's QuillButton
+                  wraps children in a label span with overflow:hidden, which truncates
+                  multi-line complaint reason text. */}
               {filteredOptions.map((option) => (
-                <Button
+                <button
                   key={option.id}
                   type="button"
-                  variant="ghost"
                   onClick={() => setSelectedOption(option.value === selectedOption ? "" : option.value)}
                   className={cn(
-                    "w-full text-left !rounded-lg !p-4 transition-colors !bg-grayscale-500 !h-auto !justify-start flex-col !items-start",
+                    "w-full text-left rounded-lg p-4 transition-colors bg-grayscale-500 flex flex-col items-start",
                     selectedOption === option.value
                       ? "border border-slate-1400"
                       : "border border-transparent",
                   )}
+                  aria-pressed={selectedOption === option.value}
                   data-testid={`complaint-btn-reason-${option.id}`}
                 >
                   <p className="text-slate-1200">{t(`complaint.${option.labelKey}`)}</p>
                   <p className="text-xs text-grayscale-text-muted mt-0.5">{t(`complaint.${option.hintKey}`)}</p>
-                </Button>
+                </button>
               ))}
             </div>
           </div>

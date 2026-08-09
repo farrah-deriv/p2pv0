@@ -208,7 +208,7 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
               }}
               className="grid grid-cols-[auto_1fr_1fr] items-center justify-between p-6 cursor-pointer hover:bg-gray-50 transition-colors"
             >
-              <Image src="/icons/profile-stats.svg" width={20} height={20} />
+              <Image src="/icons/profile-stats.svg" width={20} height={20} alt="" aria-hidden="true" />
               <span className="text-sm font-normal text-gray-900 ms-4">{t("profile.stats")}</span>
               <Image
                 src="/icons/chevron-right-gray.png"
@@ -281,8 +281,8 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                     <Button
                       data-testid="profile-btn-add-payment"
                       onClick={handleShowAddPaymentMethod}
-                      variant="outline"
-                      className="w-full rounded-full bg-transparent"
+                      variant="secondary-outline"
+                      className="w-full"
                     >
                       {t("profile.addPaymentMethod")}
                     </Button>
@@ -554,7 +554,7 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
               <div className="relative h-full">
                 {paymentMethodsCount > 0 && (
                   <div className="flex justify-end mb-4">
-                    <Button data-testid="profile-btn-add-payment" variant="outline" size="sm" onClick={handleShowAddPaymentMethod}>
+                    <Button data-testid="profile-btn-add-payment" variant="secondary-outline" size="sm" onClick={handleShowAddPaymentMethod}>
                       <span className="flex items-center gap-1.5">
                         <Image src="/icons/plus_icon.png" alt="" width={14} height={14} />
                         {t("profile.addPaymentMethod")}

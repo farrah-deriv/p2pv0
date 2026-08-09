@@ -143,7 +143,7 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
                 </Button>
               )}
               {config.cancelText && (
-                <Button onClick={handleCancel} variant={config.type ? "outline" : "primary"} className="w-full">
+                <Button onClick={handleCancel} variant={config.type ? "secondary-outline" : "primary"} className="w-full">
                   {config.cancelText}
                 </Button>
               )}
@@ -185,7 +185,7 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
               </Button>
             )}
             {config.cancelText && (
-              <Button onClick={handleCancel} variant={config.type ? "outline" : "primary"} className="w-full" data-testid={config.cancelTestId}>
+              <Button onClick={handleCancel} variant={config.type ? "secondary-outline" : "primary"} className="w-full" data-testid={config.cancelTestId}>
                 {config.cancelText}
               </Button>
             )}
@@ -243,7 +243,7 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
                 </Button>
               )}
               {config.cancelText && (
-                <Button onClick={handleCancel} variant={config.type ? "outline" : "primary"} className="w-full">
+                <Button onClick={handleCancel} variant={config.type ? "secondary-outline" : "primary"} className="w-full">
                   {config.cancelText}
                 </Button>
               )}
@@ -266,7 +266,7 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
             </Button>
           )}
           {config.cancelText && (
-            <Button onClick={handleCancel} variant={config.type ? "outline" : "primary"} className="w-full" data-testid={config.cancelTestId}>
+            <Button onClick={handleCancel} variant={config.type ? "secondary-outline" : "primary"} className="w-full" data-testid={config.cancelTestId}>
               {config.cancelText}
             </Button>
           )}

@@ -60,7 +60,7 @@ export default function EmptyState({
       {description && <p className="text-base font-normal text-grayscale-600">{description}</p>}
       <div className="flex w-full gap-2 flex-wrap mt-4">
         {redirectToMarket && (
-          <Button onClick={browseMarket} className="flex-1 min-w-fit whitespace-nowrap" variant="outline">
+          <Button onClick={browseMarket} className="flex-1 min-w-fit whitespace-nowrap" variant="secondary-outline">
             {t("market.browseMarket")}
           </Button>
         )}

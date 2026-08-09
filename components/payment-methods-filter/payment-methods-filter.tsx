@@ -306,11 +306,11 @@ export default function PaymentMethodsFilter({
       </div>
 
       {filteredPaymentMethods.length > 0 && (
-        <div className="mt-4 flex shrink-0 flex-col-reverse gap-3 md:flex-row">
+        <div className="mt-4 flex shrink-0 md:flex-row flex-col-reverse gap-3">
           <Button
             onClick={handleReset}
-            className="flex-1 bg-transparent"
-            variant="secondary"
+            className="md:flex-1"
+            variant="secondary-outline"
             size={isMobile ? "default" : "sm"}
             data-testid="payment-filter-btn-reset"
           >
@@ -318,7 +318,7 @@ export default function PaymentMethodsFilter({
           </Button>
           <Button
             onClick={handleApply}
-            className="flex-1"
+            className="md:flex-1"
             size={isMobile ? "default" : "sm"}
             data-testid="payment-filter-btn-apply"
           >

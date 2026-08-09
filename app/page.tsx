@@ -532,7 +532,7 @@ export default function BuySellPage() {
               />
               {showCurrencyFilter && (
                 <div
-                  className="flex shrink-0 flex-row items-center gap-2"
+                  className="flex md:shrink-0 md:flex-row md:items-center gap-2 flex-col"
                   data-guide-id="guide-currency-filter"
                 >
                   {activeTab === "sell" && (
@@ -742,7 +742,7 @@ export default function BuySellPage() {
                                 <Button
                                   variant="ghost"
                                   onClick={() => handleAdvertiserClick(ad.user?.id || 0)}
-                                  className="hover:underline cursor-pointer !p-0 !h-auto"
+                                  className="hover:underline hover:!bg-transparent cursor-pointer !p-0 !h-auto"
                                   data-testid={`markets-link-advertiser-${ad.advertiser_id ?? ad.user?.id}`}
                                   size="sm"
                                 >

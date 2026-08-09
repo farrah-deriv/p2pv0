@@ -15,7 +15,7 @@ import type { Advertisement } from "@/services/api/api-buy-sell"
 import EmptyState from "@/components/empty-state"
 import { AdvertiserSearchResultCard } from "@/components/advertiser-search-result-card"
 import { AdvertiserSearchSkeleton } from "@/components/advertiser-search-skeleton"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { TabHorizontal } from "@deriv-com/quill-ui-v2"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
@@ -181,7 +181,7 @@ export default function MobileAdvertiserSearch({ isOpen, onClose }: MobileAdvert
         <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
             <SheetContent
                 data-testid="mobile-search-sheet"
-                side="top"
+                side="right"
                 hideCloseButton
                 className="h-full w-full p-0 flex flex-col gap-0 rounded-none"
                 onPointerDownOutside={(e) => e.preventDefault()}
@@ -195,9 +195,8 @@ export default function MobileAdvertiserSearch({ isOpen, onClose }: MobileAdvert
                     <Button
                         data-testid="mobile-search-btn-back"
                         variant="icon-muted"
-                        size="sm"
                         onClick={handleBack}
-                        className="px-1 w-fit"
+                        className="!bg-header-icon hover:!bg-header-icon"
                     >
                         <BackArrowIcon alt={t("common.back")} width={24} height={24} />
                     </Button>
@@ -226,27 +225,20 @@ export default function MobileAdvertiserSearch({ isOpen, onClose }: MobileAdvert
                 </div>
 
                 {/* Tabs */}
-                <div className="px-0 pt-3 pb-0 flex-shrink-0">
-                    <Tabs value={searchTab} onValueChange={(v) => { if (v === "sell") track("ek_buy_tab_markets_search"); else track("ek_sell_tab_markets_search"); setSearchTab(v as "buy" | "sell") }}>
-                        <TabsList className="w-full bg-transparent p-0">
-                            <TabsTrigger
-                                data-testid="mobile-search-tab-buy"
-                                value="sell"
-                                variant="underline"
-                                className="flex-1 data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:rounded-none after:bg-black data-[state=active]:after:w-full"
-                            >
-                                {t("market.buyTab")}
-                            </TabsTrigger>
-                            <TabsTrigger
-                                data-testid="mobile-search-tab-sell"
-                                value="buy"
-                                variant="underline"
-                                className="flex-1 data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:rounded-none after:bg-black data-[state=active]:after:w-full"
-                            >
-                                {t("market.sellTab")}
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
+                <div className="flex-shrink-0">
+                    <TabHorizontal
+                        type="fill"
+                        value={searchTab}
+                        onChange={(v) => {
+                            if (v === "sell") track("ek_buy_tab_markets_search")
+                            else track("ek_sell_tab_markets_search")
+                            setSearchTab(v as "buy" | "sell")
+                        }}
+                        tabs={[
+                            { value: "sell", label: t("market.buyTab") },
+                            { value: "buy", label: t("market.sellTab") },
+                        ]}
+                    />
                 </div>
 
                 {/* Results */}

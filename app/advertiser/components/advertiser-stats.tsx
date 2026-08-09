@@ -95,8 +95,10 @@ export default function AdvertiserStats({ profile }: AdvertiserStatsProps) {
             className="font-normal px-0 md:px-3"
             onClick={() => setIsStatsModalOpen(true)}
           >
-            {t("advertiser.viewMore")}
-            <Image src="/icons/chevron-right-sm.png" width={20} height={20} />
+            <span className="flex items-center gap-1">
+              {t("advertiser.viewMore")}
+              <Image src="/icons/chevron-right-sm.png" width={20} height={20} />
+            </span>
           </Button>
         </div>
       </div>

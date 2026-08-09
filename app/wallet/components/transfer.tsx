@@ -793,7 +793,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
   const handleOpenLiveChat = () => {
     if (typeof window !== "undefined" && (window as any).Intercom) {
-      ;(window as any).Intercom("show")
+      ; (window as any).Intercom("show")
     }
   }
 
@@ -1263,9 +1263,8 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     // Cross-currency: convert without fee when exchange rate is available.
     const rate = Number.parseFloat(exchangeRateData?.exchange_rate || exchangeRateData?.display_rate || "")
     if (!Number.isFinite(rate) || rate <= 0) {
-      return `${formatAmountWithDecimals(amount)} ${
-        selectedAmountCurrency === "source" ? sourceWalletData.currency : destinationWalletData.currency
-      }`
+      return `${formatAmountWithDecimals(amount)} ${selectedAmountCurrency === "source" ? sourceWalletData.currency : destinationWalletData.currency
+        }`
     }
     if (selectedAmountCurrency === "source") {
       return `${formatAmountWithDecimals(amount * rate)} ${destinationWalletData.currency}`
@@ -1351,9 +1350,8 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
             renderYoullReceiveInfoControl()}
         </div>
         <span
-          className={`text-sm font-normal text-end ${
-            receiveDisplay && receiveDisplay !== "-" ? "text-slate-1200" : "text-grayscale-text-muted"
-          }`}
+          className={`text-sm font-normal text-end ${receiveDisplay && receiveDisplay !== "-" ? "text-slate-1200" : "text-grayscale-text-muted"
+            }`}
         >
           {receiveDisplay || "-"}
         </span>
@@ -1635,9 +1633,8 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
           <div className="-space-y-[18px] mb-6 px-2" data-testid={isWalletSelectionLoading ? "transfer-wallet-skeleton" : undefined}>
             <div
               data-testid={sourceWalletData ? "transfer-btn-account-from" : "transfer-btn-select-from"}
-              className={`bg-neutral-50 px-6 py-4 flex items-center gap-3 rounded-2xl h-24 ${
-                isWalletSelectionLoading ? "cursor-default pointer-events-none" : "cursor-pointer"
-              }`}
+              className={`bg-neutral-50 px-6 py-4 flex items-center gap-3 rounded-2xl h-24 ${isWalletSelectionLoading ? "cursor-default pointer-events-none" : "cursor-pointer"
+                }`}
               onClick={() => {
                 if (isWalletSelectionLoading) return
                 track("ek_from_wallet_transfer")
@@ -1715,9 +1712,8 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
             </div>
             <div
               data-testid={destinationWalletData ? "transfer-btn-account-to" : "transfer-btn-select-to"}
-              className={`bg-neutral-50 px-6 py-4 flex items-center gap-3 rounded-2xl h-24 ${
-                isWalletSelectionLoading ? "cursor-default pointer-events-none" : "cursor-pointer"
-              }`}
+              className={`bg-neutral-50 px-6 py-4 flex items-center gap-3 rounded-2xl h-24 ${isWalletSelectionLoading ? "cursor-default pointer-events-none" : "cursor-pointer"
+                }`}
               onClick={() => {
                 if (isWalletSelectionLoading) return
                 track("ek_to_wallet_transfer")
@@ -1804,9 +1800,8 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
               {showCurrencySwitcher && (
                 <div className="relative flex shrink-0 h-14 rounded-xl bg-neutral-100 px-2 py-1">
                   <span
-                    className={`absolute top-1 bottom-1 rounded-[10px] bg-white shadow-sm transition-all duration-200 ease-in-out w-[calc(50%-4px)] ${
-                      selectedAmountCurrency === "source" ? "left-2" : "left-[calc(50%+2px)]"
-                    }`}
+                    className={`absolute top-1 bottom-1 rounded-[10px] bg-white shadow-sm transition-all duration-200 ease-in-out w-[calc(50%-4px)] ${selectedAmountCurrency === "source" ? "left-2" : "left-[calc(50%+2px)]"
+                      }`}
                     aria-hidden="true"
                   />
                   <Button
@@ -1852,7 +1847,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                   variant="chip"
                   data-testid={`transfer-btn-pct-${pct}`}
                   onClick={() => handlePercentageClick(pct)}
-                  className={cn(
+                  className={cn("!border-solid",
                     selectedPercentage === pct
                       ? "!border-neutral-800 !bg-neutral-800/5 !text-neutral-800"
                       : "hover:!bg-neutral-50 hover:!border-neutral-300",
@@ -1994,31 +1989,31 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
       : transferAmount || "0"
     const successCurrency = IS_TRANSFER_FEE_DISPLAY_ENABLED
       ? transferValidateQuote?.destination?.currency ||
-        destinationWalletData?.currency ||
-        selectedCurrency ||
-        "USD"
+      destinationWalletData?.currency ||
+      selectedCurrency ||
+      "USD"
       : selectedCurrency ||
-        sourceWalletData?.currency ||
-        destinationWalletData?.currency ||
-        "USD"
+      sourceWalletData?.currency ||
+      destinationWalletData?.currency ||
+      "USD"
     const successAmountFormatted = formatAmountWithDecimals(
       Number.parseFloat(successAmountRaw)
     )
 
     const transferText = isMainToP2P
       ? t("wallet.transferSuccessMessageMainToP2P", {
-          amount: successAmountFormatted,
-          currency: successCurrency,
-          walletName: destinationWalletData?.name || t("wallet.p2pWallet"),
-          currencyLabel:
-            currenciesData?.[successCurrency]?.label || successCurrency,
-        })
+        amount: successAmountFormatted,
+        currency: successCurrency,
+        walletName: destinationWalletData?.name || t("wallet.p2pWallet"),
+        currencyLabel:
+          currenciesData?.[successCurrency]?.label || successCurrency,
+      })
       : t("wallet.transferSuccessMessage", {
-          amount: successAmountFormatted,
-          currency: successCurrency,
-          from: sourceWalletData?.name || "",
-          to: destinationWalletData?.name || "",
-        })
+        amount: successAmountFormatted,
+        currency: successCurrency,
+        from: sourceWalletData?.name || "",
+        to: destinationWalletData?.name || "",
+      })
 
     return (
       <div
@@ -2028,43 +2023,43 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
             "radial-gradient(108.21% 50% at 52.05% 0%, rgba(255, 68, 79, 0.24) 0%, rgba(255, 68, 79, 0.00) 100%), #181C25",
         }}
       >
-          <div className="flex-1 flex flex-col items-center justify-center text-center">
-            <div className="mb-6">
-              <Image src="/icons/success-transfer.png" alt={t("common.success")} width={256} height={256} />
-            </div>
-            <h1 className="text-white text-center text-2xl font-extrabold mb-4">{t("wallet.transferSuccessful")}</h1>
-            <p className="text-white text-center text-base font-normal">{transferText}</p>
-            <div className="hidden md:flex gap-4 mt-6">
-              <Button
-                data-testid="transfer-success-btn-details"
-                variant="outline-white"
-                onClick={() => { track("ek_view_details_transfer_successful"); handleViewDetails() }}
-                className="w-[276px] h-12 px-7 flex justify-center items-center gap-2 font-extrabold"
-              >
-                {t("wallet.viewDetails")}
-              </Button>
-              <Button data-testid="transfer-success-btn-done" onClick={() => { track("ek_got_it_transfer_successful"); handleDoneClick() }} className="w-[276px] h-12 px-7 flex justify-center items-center gap-2">
-                {t("wallet.gotIt")}
-              </Button>
-            </div>
+        <div className="flex-1 flex flex-col items-center justify-center text-center">
+          <div className="mb-6">
+            <Image src="/icons/success-transfer.png" alt={t("common.success")} width={256} height={256} />
           </div>
-          <div className="block md:hidden w-full space-y-3">
-            <Button
-              data-testid="transfer-success-btn-done"
-              onClick={() => { track("ek_got_it_transfer_successful"); handleDoneClick() }}
-              className="w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2"
-            >
-              {t("wallet.gotIt")}
-            </Button>
+          <h1 className="text-white text-center text-2xl font-extrabold mb-4">{t("wallet.transferSuccessful")}</h1>
+          <p className="text-white text-center text-base font-normal">{transferText}</p>
+          <div className="hidden md:flex gap-4 mt-6">
             <Button
               data-testid="transfer-success-btn-details"
               variant="outline-white"
               onClick={() => { track("ek_view_details_transfer_successful"); handleViewDetails() }}
-              className="w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2 font-extrabold"
+              className="w-[276px] h-12 px-7 flex justify-center items-center gap-2 font-extrabold"
             >
               {t("wallet.viewDetails")}
             </Button>
+            <Button data-testid="transfer-success-btn-done" onClick={() => { track("ek_got_it_transfer_successful"); handleDoneClick() }} className="w-[276px] h-12 px-7 flex justify-center items-center gap-2">
+              {t("wallet.gotIt")}
+            </Button>
           </div>
+        </div>
+        <div className="block md:hidden w-full space-y-3">
+          <Button
+            data-testid="transfer-success-btn-done"
+            onClick={() => { track("ek_got_it_transfer_successful"); handleDoneClick() }}
+            className="w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2"
+          >
+            {t("wallet.gotIt")}
+          </Button>
+          <Button
+            data-testid="transfer-success-btn-details"
+            variant="outline-white"
+            onClick={() => { track("ek_view_details_transfer_successful"); handleViewDetails() }}
+            className="w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2 font-extrabold"
+          >
+            {t("wallet.viewDetails")}
+          </Button>
+        </div>
       </div>
     )
   }

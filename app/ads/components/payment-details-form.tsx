@@ -7,14 +7,13 @@ import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
 import { useStablePaymentMethodOrder } from "@/hooks/use-stable-payment-method-order"
 import { SelectedPaymentMethodsSection } from "@/components/payment-methods/selected-payment-methods-section"
 import Image from "next/image"
-import { StandaloneChevronDownRegularIcon } from "@deriv/quill-icons/Standalone"
+import { StandaloneChevronDownRegularIcon, StandaloneSearchRegularIcon } from "@deriv/quill-icons/Standalone"
 import type { AdFormData } from "../types"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { ModalHeaderRow } from "@/components/ui/modal-header-row"
 import { isRtlLocale } from "@/lib/i18n/config"
@@ -106,7 +105,6 @@ const FullPagePaymentSelection = ({
   /** Frozen at open — session key for stable row order (no pin-to-top). */
   const [orderSessionKey, setOrderSessionKey] = useState<string[]>(selectedPaymentMethods)
   const [searchQuery, setSearchQuery] = useState("")
-  const [isSearchFocused, setIsSearchFocused] = useState(false)
   const listScrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -164,25 +162,25 @@ const FullPagePaymentSelection = ({
         </p>
       </div>
       <div className={`shrink-0 pb-2 ${isMobile ? "px-4" : ""}`}>
-        <div className="relative">
-          <Input
+        <div className="flex items-center gap-2 rounded-lg bg-black/[0.04] px-3 h-10">
+          <StandaloneSearchRegularIcon iconSize="xs" className="shrink-0 text-neutral-400" aria-hidden />
+          <input
             type="text"
-            placeholder={t("common.search")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => setIsSearchFocused(true)}
-            onBlur={() => setIsSearchFocused(false)}
-            className={`text-base ps-4 h-8 md:h-14 bg-grayscale-500 focus:ring-0 rounded-lg placeholder:text-grayscale-text-placeholder placeholder:text-base placeholder:font-normal ${searchQuery ? "pe-10" : "pe-4"} ${searchQuery.length > 0 && isSearchFocused ? "border border-black" : "border-0 focus:border-0"
-              }`}
+            placeholder={t("common.search")}
+            className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-neutral-400"
+            data-testid="ad-form-input-payment-search"
           />
           {searchQuery && (
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={() => setSearchQuery("")}
-              className="absolute end-2 md:end-4 top-1/2 transform -translate-y-1/2 hover:bg-transparent p-0 h-auto"
+              className="hover:!bg-transparent !p-0 !h-auto !w-auto !min-w-0"
+              aria-label={t("common.clearSearch")}
             >
-              <Image src="/icons/clear-search-icon.png" alt={t("common.clearSearch")} width={24} height={24} />
+              <Image src="/icons/clear-search-icon.png" alt="" aria-hidden width={20} height={20} />
             </Button>
           )}
         </div>
@@ -254,11 +252,10 @@ const FullPagePaymentSelection = ({
         </div>
       </div>
       <div
-        className={`box-border w-full min-w-0 max-w-full shrink-0 ${
-          isMobile
-            ? "px-4 pt-2 pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
-            : "pt-2"
-        }`}
+        className={`box-border w-full min-w-0 max-w-full shrink-0 ${isMobile
+          ? "px-4 pt-2 pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
+          : "pt-2"
+          }`}
       >
         <Button onClick={handleConfirm} disabled={localSelected.length === 0} className="w-full max-w-full min-w-0">
           {t("common.confirm")}
@@ -476,83 +473,83 @@ const PaymentSelectionContent = ({
             />
             {/* Mobile list gap: QuillSpacing.sm (8px) */}
             <div className="space-y-2">
-            {sortedPaymentMethods.map((method) => {
-              const methodId = getMethodId(method)
-              const isSelected = isPaymentMethodIdSelected(selectedPMs, methodId)
-              const isDisabled = isUserPaymentMethodSelectionDisabled(
-                userMethods,
-                selectedPMs,
-                methodId,
-              )
-              const lines = getPaymentMethodSelectionLines(method, t)
+              {sortedPaymentMethods.map((method) => {
+                const methodId = getMethodId(method)
+                const isSelected = isPaymentMethodIdSelected(selectedPMs, methodId)
+                const isDisabled = isUserPaymentMethodSelectionDisabled(
+                  userMethods,
+                  selectedPMs,
+                  methodId,
+                )
+                const lines = getPaymentMethodSelectionLines(method, t)
 
-              return (
-                <div
-                  key={methodId}
-                  data-payment-method-id={methodId}
-                  className={`box-border w-full max-w-full min-w-0 overflow-hidden rounded-lg bg-grayscale-500 ps-6 pe-6 py-4 cursor-pointer transition-colors ${isDisabled
-                    ? "opacity-30 cursor-not-allowed hover:bg-grayscale-300"
-                    : "hover:bg-grayscale-300"
-                    } ${isSelected ? "border border-black" : ""
-                    }`}
-                  onClick={() => !isDisabled && handlePaymentMethodToggle(methodId)}
-                >
-                  <div className="flex w-full min-w-0 max-w-full items-center gap-4">
-                    <div className="flex min-w-0 max-w-full flex-1 items-center gap-4 overflow-hidden">
-                      <div
-                        className={`h-3 w-3 shrink-0 rounded-full ${getMethodType(method) === "bank" ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"
-                          }`}
-                      />
-                      <div className="flex min-w-0 max-w-full flex-1 flex-col gap-0.5 overflow-hidden">
-                        <span className="block truncate text-base leading-6 text-slate-1200">
-                          {lines.title}
-                        </span>
-                        {lines.subtitle ? (
-                          <span className="block truncate text-xs leading-4 text-grayscale-text-muted">
-                            {lines.subtitle}
+                return (
+                  <div
+                    key={methodId}
+                    data-payment-method-id={methodId}
+                    className={`box-border w-full max-w-full min-w-0 overflow-hidden rounded-lg bg-grayscale-500 ps-6 pe-6 py-4 cursor-pointer transition-colors ${isDisabled
+                      ? "opacity-30 cursor-not-allowed hover:bg-grayscale-300"
+                      : "hover:bg-grayscale-300"
+                      } ${isSelected ? "border border-black" : ""
+                      }`}
+                    onClick={() => !isDisabled && handlePaymentMethodToggle(methodId)}
+                  >
+                    <div className="flex w-full min-w-0 max-w-full items-center gap-4">
+                      <div className="flex min-w-0 max-w-full flex-1 items-center gap-4 overflow-hidden">
+                        <div
+                          className={`h-3 w-3 shrink-0 rounded-full ${getMethodType(method) === "bank" ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"
+                            }`}
+                        />
+                        <div className="flex min-w-0 max-w-full flex-1 flex-col gap-0.5 overflow-hidden">
+                          <span className="block truncate text-base leading-6 text-slate-1200">
+                            {lines.title}
                           </span>
-                        ) : null}
+                          {lines.subtitle ? (
+                            <span className="block truncate text-xs leading-4 text-grayscale-text-muted">
+                              {lines.subtitle}
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => !isDisabled && handlePaymentMethodToggle(methodId)}
+                        disabled={isDisabled}
+                        className="pointer-events-none h-[20px] w-[20px] shrink-0 rounded-sm disabled:cursor-not-allowed disabled:opacity-30"
+                        data-testid={`ad-form-checkbox-payment-${methodId}`}
+                      />
                     </div>
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={() => !isDisabled && handlePaymentMethodToggle(methodId)}
-                      disabled={isDisabled}
-                      className="pointer-events-none h-[20px] w-[20px] shrink-0 rounded-sm disabled:cursor-not-allowed disabled:opacity-30"
-                      data-testid={`ad-form-checkbox-payment-${methodId}`}
-                    />
                   </div>
+                )
+              })}
+
+              {hasNextPage && (
+                <div ref={sentinelRef} className="h-1 w-full" data-testid="ad-form-payment-methods-sentinel" />
+              )}
+              {isFetchingNextPage && (
+                <div className="flex justify-center py-2">
+                  <Spinner size="md" />
                 </div>
-              )
-            })}
+              )}
 
-        {hasNextPage && (
-          <div ref={sentinelRef} className="h-1 w-full" data-testid="ad-form-payment-methods-sentinel" />
-        )}
-        {isFetchingNextPage && (
-          <div className="flex justify-center py-2">
-            <Spinner size="md" />
-          </div>
-        )}
-
-        {handleAddPaymentMethodClick && (
-          <Button
-            type="button"
-            variant="ghost"
-            className="box-border h-auto w-full max-w-full min-w-0 justify-start rounded-lg bg-grayscale-500 p-4 font-normal hover:bg-grayscale-300"
-            onClick={() => {
-              handleAddPaymentMethodClick(selectedPMs)
-            }}
-            data-testid="ad-form-btn-add-payment"
-          >
-            <span className="flex items-center">
-              <Image src="/icons/plus_icon.png" alt={t("common.plus")} width={14} height={24} className="me-2" />
-              <span className="text-base font-normal text-slate-1200">
-                {t("paymentMethod.addPaymentMethod")}
-              </span>
-            </span>
-          </Button>
-        )}
+              {handleAddPaymentMethodClick && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="box-border h-auto w-full max-w-full min-w-0 justify-start rounded-lg bg-grayscale-500 p-4 font-normal hover:bg-grayscale-300"
+                  onClick={() => {
+                    handleAddPaymentMethodClick(selectedPMs)
+                  }}
+                  data-testid="ad-form-btn-add-payment"
+                >
+                  <span className="flex items-center">
+                    <Image src="/icons/plus_icon.png" alt={t("common.plus")} width={14} height={24} className="me-2" />
+                    <span className="text-base font-normal text-slate-1200">
+                      {t("paymentMethod.addPaymentMethod")}
+                    </span>
+                  </span>
+                </Button>
+              )}
             </div>
           </>
         )}
@@ -844,12 +841,12 @@ export default function PaymentDetailsForm({
               <div className="mb-6">
                 <Button
                   variant="outline"
-                  className="!w-full !h-12 !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-3 !font-normal hover:!bg-neutral-50 focus:!ring-1 focus:!ring-black [&>span]:!w-full"
+                  className="!w-full !h-12 !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-3 !font-normal hover:!bg-neutral-50 [&>span]:!w-full"
                   onClick={() => handleShowPaymentSelection()}
                   type="button"
                 >
                   <span className="flex w-full flex-row items-center justify-between">
-                    <span className="min-w-0 flex-1 truncate text-sm font-normal text-grayscale-600">
+                    <span className="min-w-0 flex-1 truncate text-sm font-normal text-grayscale-600 text-left">
                       {getSelectedPaymentMethodsText()}
                     </span>
                     <StandaloneChevronDownRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />

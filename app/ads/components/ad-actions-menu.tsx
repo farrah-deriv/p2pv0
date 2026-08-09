@@ -29,7 +29,7 @@ export function AdActionsMenu({
       <Button
         variant="ghost"
         size="sm"
-        className="w-full hover:!bg-transparent font-normal !justify-start text-grayscale-600 my-1"
+        className="w-full hover:!bg-transparent !font-normal !justify-start !text-grayscale-600 !my-1"
         onClick={() => onEdit(ad)}
         data-testid={`ads-btn-edit-${ad.id}`}
       >
@@ -41,7 +41,7 @@ export function AdActionsMenu({
       <Button
         variant="ghost"
         size="sm"
-        className="w-full hover:!bg-transparent font-normal !justify-start text-grayscale-600 my-1"
+        className="w-full hover:!bg-transparent !font-normal !justify-start !text-grayscale-600 !my-1"
         onClick={() => onShare(ad)}
       >
         <span className="flex items-center gap-2">
@@ -52,7 +52,7 @@ export function AdActionsMenu({
       <Button
         variant="ghost"
         size="sm"
-        className="w-full hover:!bg-transparent font-normal !justify-start text-grayscale-600 my-1"
+        className="w-full hover:!bg-transparent !font-normal !justify-start !text-grayscale-600 !my-1"
         onClick={() => onToggleStatus(ad)}
       >
         <span className="flex items-center gap-2">
@@ -63,7 +63,7 @@ export function AdActionsMenu({
       <Button
         variant="ghost"
         size="sm"
-        className="w-full hover:!bg-transparent font-normal !justify-start my-1"
+        className="w-full hover:!bg-transparent !font-normal !justify-start !my-1"
         onClick={() => onDelete(ad.id)}
         data-testid={`ads-btn-delete-${ad.id}`}
       >

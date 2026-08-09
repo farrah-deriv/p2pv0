@@ -25,10 +25,9 @@ export function MobileSidebarTrigger({ "data-testid": testId }: { "data-testid"?
     return (
       <Button
         onClick={handleBack}
-        variant="ghost"
-        size="icon"
+        variant="icon-muted"
         aria-label={t("common.back")}
-        className="h-8 w-8 rounded-full bg-header-icon hover:bg-header-icon [&_svg]:size-6"
+        className="!bg-header-icon hover:!bg-header-icon"
         data-testid={testId}
       >
         <StandaloneArrowLeftFillIcon width={24} height={24} fill="white" className="rtl:rotate-180" aria-hidden />

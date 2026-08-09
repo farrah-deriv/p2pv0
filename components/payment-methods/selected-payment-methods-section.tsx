@@ -57,9 +57,9 @@ export function SelectedPaymentMethodsSection({
             <Button
               key={methodId}
               type="button"
-              variant="outline"
+              variant="secondary-outline"
               size="xs"
-              className="inline-flex h-auto max-w-full items-center gap-1.5 rounded-md border-grayscale-400 bg-white px-3 py-1.5 text-start text-xs font-normal leading-4 hover:bg-white"
+              className="!h-auto inline-flex max-w-full items-center gap-1.5 !rounded-md !px-3 !py-1.5 text-start !text-xs !font-normal !leading-4"
               onClick={(event) => {
                 event.stopPropagation()
                 onRemove(methodId)
@@ -67,13 +67,15 @@ export function SelectedPaymentMethodsSection({
               data-testid={`selected-payment-method-chip-${methodId}`}
               aria-label={`${t("common.remove")}: ${label}`}
             >
-              <span className="min-w-0 truncate">
-                <span className="text-slate-1200">{lines.title}</span>
-                {lines.subtitle ? (
-                  <span className="text-grayscale-text-muted">{` ${lines.subtitle}`}</span>
-                ) : null}
+              <span className="flex min-w-0 max-w-full items-center gap-1.5">
+                <span className="min-w-0 truncate">
+                  <span className="text-slate-1200">{lines.title}</span>
+                  {lines.subtitle ? (
+                    <span className="text-grayscale-text-muted">{` ${lines.subtitle}`}</span>
+                  ) : null}
+                </span>
+                <StandaloneXmarkRegularIcon width={16} height={16} className="size-4 shrink-0 opacity-72" aria-hidden />
               </span>
-              <StandaloneXmarkRegularIcon width={16} height={16} className="size-4 shrink-0 opacity-72" aria-hidden />
             </Button>
           )
         })}

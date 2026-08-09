@@ -1,8 +1,9 @@
 "use client"
 
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Button } from "@/components/ui/button"
+import { StandaloneChevronRightRegularIcon } from "@deriv/quill-icons/Standalone"
 import Image from "next/image"
+import { Link } from "@/components/ui/link"
 import { getHelpCentreUrl } from "@/lib/get-help-centre-url"
 import { useTranslations } from "@/lib/i18n/use-translations"
 
@@ -75,21 +76,15 @@ export function TradeBandBadge({ tradeBand, showLearnMore = false, size = 18, wi
             <p className="font-bold text-white mb-2">{t(config.titleKey)}</p>
             <p className={`text-white ${showLearnMore ? "mb-4" : ""}`}>{t(config.descriptionKey)}</p>
             {showLearnMore && (
-              <Button
-                variant="ghost"
+              <Link
+                type="secondary-static-dark"
                 size="sm"
-                onClick={redirectToHelpCentre}
-                className="h-auto text-white hover:bg-transparent hover:text-white p-0 font-normal text-xs"
+                href="#"
+                onClick={(e) => { e.preventDefault(); redirectToHelpCentre(); }}
               >
                 {t("common.learnMore")}
-                <Image
-                  src="/icons/chevron-right-white.png"
-                  alt={t("common.arrow")}
-                  width={8}
-                  height={18}
-                  className="ms-2 cursor-pointer"
-                />
-              </Button>
+                <StandaloneChevronRightRegularIcon iconSize="xs" aria-hidden="true" className="rtl:rotate-180" />
+              </Link>
             )}
           </>
           <TooltipArrow className="fill-black" />

@@ -552,7 +552,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                     </div>
                   </div>
                   {userId != profile?.id && (
-                    <div className="flex items-center md:mt-0 ustify-self-end">
+                    <div className="flex items-center md:mt-0 justify-self-end gap-2">
                       {!isBlocked && (
                         <>
                           {isFollowing ? (
@@ -568,7 +568,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                               />
                             </span>
                           ) : (
-                            <Button data-testid="advertiser-btn-follow" onClick={toggleFollow} variant="outline" size="sm" disabled={isFollowLoading}>
+                            <Button data-testid="advertiser-btn-follow" onClick={toggleFollow} variant="secondary-outline" size="sm" disabled={isFollowLoading}>
                               {t("advertiser.follow")}
                             </Button>
                           )}
@@ -576,9 +576,8 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                       )}
                       <Button
                         data-testid={isBlocked ? "advertiser-btn-unblock" : "advertiser-btn-block"}
-                        variant="ghost"
+                        variant="secondary-outline"
                         size="sm"
-                        className="underline"
                         onClick={handleBlockClick}
                         disabled={isBlockLoading}
                       >

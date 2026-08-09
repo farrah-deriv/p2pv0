@@ -14,7 +14,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { queryKeys } from "@/hooks/use-api-queries"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { StandaloneSearchRegularIcon } from "@deriv/quill-icons/Standalone"
 import Image from "next/image"
 import EmptyState from "@/components/empty-state"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
@@ -166,17 +166,17 @@ export default function CounterpartiesTab() {
       <div className="flex-1 min-w-0 border-b border-gray-100 py-4 flex items-center justify-between gap-3">
         <Button
           onClick={() => handleAdvertiserClick(user.user_id)}
-          className="min-w-0 flex-1 justify-start text-start hover:underline hover:bg-transparent cursor-pointer font-normal text-slate-1200 px-0 text-base overflow-hidden"
+          className="min-w-0 justify-start text-start hover:underline !hover:bg-transparent cursor-pointer font-normal text-slate-1200 px-0 text-base overflow-hidden"
           size="sm"
           variant="ghost"
         >
           <span className="block truncate">{user.nickname}</span>
         </Button>
         <Button
-          variant="outline"
+          variant="secondary-outline"
           size="sm"
           onClick={() => (user.is_blocked ? handleUnblock(user) : handleBlock(user))}
-          className="shrink-0 whitespace-nowrap rounded-full px-4 py-1 text-sm"
+          className="shrink-0 whitespace-nowrap"
         >
           {user.is_blocked ? t("profile.unblock") : t("profile.block")}
         </Button>
@@ -188,24 +188,29 @@ export default function CounterpartiesTab() {
     <div className="flex flex-col h-full" dir={dir}>
       {(filteredUsers.length > 0 || searchQuery) && (
         <div className={PROFILE_TOOLBAR_ROW}>
-          <div className="relative w-full md:w-[360px]">
-            <Input
-              placeholder={t("common.search")}
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className={`h-14 ps-4 border-0 bg-grayscale-500 rounded-lg text-start focus:outline-none ${searchQuery ? "pe-10" : "pe-4"}`}
-              autoComplete="off"
-            />
-            {searchQuery && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClearSearch}
-                className="absolute end-0 top-1/2 transform -translate-y-1/2 hover:bg-transparent"
-              >
-                <Image src="/icons/clear-search-icon.png" alt={t("common.clearSearch")} width={24} height={24} />
-              </Button>
-            )}
+          <div className="w-full md:w-[360px]">
+            <div className="flex items-center gap-2 rounded-lg bg-black/[0.04] px-3 h-10">
+              <StandaloneSearchRegularIcon iconSize="xs" className="shrink-0 text-neutral-400" aria-hidden />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder={t("common.search")}
+                autoComplete="off"
+                className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-neutral-400"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleClearSearch}
+                  className="hover:!bg-transparent !p-0 !h-auto !w-auto !min-w-0"
+                  aria-label={t("common.clearSearch")}
+                >
+                  <Image src="/icons/clear-search-icon.png" alt="" aria-hidden width={20} height={20} />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       )}

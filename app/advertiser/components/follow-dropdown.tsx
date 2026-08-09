@@ -62,15 +62,17 @@ export default function FollowDropdown({
     return (
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
-          <Button variant="secondary" size="sm" disabled={isLoading} className="gap-2">
-            {t("advertiser.following")}
-            <Image
-              src="/icons/chevron-down.svg"
-              alt=""
-              width={14}
-              height={22}
-              className={cn("transition-transform duration-200", isOpen && "rotate-180")}
-            />
+          <Button variant="secondary-outline" size="sm" disabled={isLoading}>
+            <span className="flex items-center gap-2">
+              {t("advertiser.following")}
+              <Image
+                src="/icons/chevron-down.svg"
+                alt=""
+                width={14}
+                height={22}
+                className={cn("transition-transform duration-200", isOpen && "rotate-180")}
+              />
+            </span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="p-2 w-[280px]">
@@ -107,15 +109,17 @@ export default function FollowDropdown({
 
   return (
     <>
-      <Button variant="secondary" size="sm" disabled={isLoading} onClick={() => setIsOpen(true)} className="gap-2">
-        {t("advertiser.following")}
-        <Image
-          src="/icons/chevron-down.svg"
-          alt=""
-          width={14}
-          height={22}
-          className={cn("transition-transform duration-200", isOpen && "rotate-180")}
-        />
+      <Button variant="secondary" size="sm" disabled={isLoading} onClick={() => setIsOpen(true)}>
+        <span className="flex items-center gap-2">
+          {t("advertiser.following")}
+          <Image
+            src="/icons/chevron-down.svg"
+            alt=""
+            width={14}
+            height={22}
+            className={cn("transition-transform duration-200", isOpen && "rotate-180")}
+          />
+        </span>
       </Button>
       <Drawer open={isOpen} onOpenChange={setIsOpen}>
         <DrawerContent side="bottom" className="h-auto p-6 rounded-t-2xl">

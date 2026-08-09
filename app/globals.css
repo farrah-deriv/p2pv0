@@ -208,6 +208,44 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+/* Quill's built-in slideIn keyframe only translates Y, which overrides the
+   top-center positioning class's translateX(-50%) during the animation and
+   causes the snackbar to jump left when the animation ends. Override with
+   a keyframe that preserves the X centering throughout.
+   On mobile (≤640px) Quill uses left/right:16px + transform:none, so the
+   animation must use translateY only — no X translation. */
+@keyframes snackbar-slide-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes snackbar-slide-in-mobile {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[class*="quill-snackbar"] {
+  animation: snackbar-slide-in 0.2s ease-out !important;
+}
+
+@media (max-width: 640px) {
+  [class*="quill-snackbar"] {
+    animation: snackbar-slide-in-mobile 0.2s ease-out !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,

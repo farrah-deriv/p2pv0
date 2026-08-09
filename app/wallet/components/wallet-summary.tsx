@@ -482,10 +482,11 @@ export default function WalletSummary({
               {!isBalancesView && (
                 <div className="flex flex-col items-center gap-2">
                   <Button
-                    variant="icon-action-outlined"
+                    variant="secondary-outline"
                     data-testid="wallet-btn-sell"
                     onClick={handleSellClick}
                     aria-label="Sell"
+                    className="!rounded-full !w-12 !h-12 !p-0 !min-w-0"
                   >
                     <span className="flex items-center justify-center">
                       <Image src="/icons/withdraw-black.png" alt={t("common.sell")} width={14} height={14} />

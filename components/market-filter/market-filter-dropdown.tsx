@@ -149,11 +149,11 @@ export default function MarketFilterDropdown({
         </RadioGroup>
       </div>
       {isMobile && (
-        <div className="flex flex-col-reverse gap-3 mt-4">
-          <Button variant="ghost" onClick={handleReset} className="flex-1" size="sm" data-testid="market-filter-btn-reset">
+        <div className="flex md:flex-row flex-col-reverse gap-3 mt-4">
+          <Button variant="secondary-outline" onClick={handleReset} className="md:flex-1" data-testid="market-filter-btn-reset">
             {t("filter.reset")}
           </Button>
-          <Button onClick={handleApply} className="flex-1" size="sm" data-testid="market-filter-btn-apply">
+          <Button onClick={handleApply} className="md:flex-1" data-testid="market-filter-btn-apply">
             {t("filter.apply")}
           </Button>
         </div>

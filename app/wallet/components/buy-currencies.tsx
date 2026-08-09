@@ -19,8 +19,8 @@ function CurrencyCard({ code, name, onClick }: CurrencyCardProps) {
   const logo = currency3dLogoMapper[code as keyof typeof currency3dLogoMapper]
 
   return (
-    <Button type="button" variant="ghost" onClick={onClick} className="flex flex-col items-center gap-3 !p-4 !rounded-2xl !bg-black/[0.04] transition-colors cursor-pointer w-full text-center">
-      <div className="w-8 h-8 flex items-center justify-center">
+    <Button type="button" variant="ghost" onClick={onClick} className="flex !flex-col !h-auto !items-center !gap-3 !p-4 !rounded-2xl !bg-black/[0.04] !transition-colors !cursor-pointer w-full !text-center">
+      <div className="w-8 h-8 flex items-center justify-center w-full mb-2">
         {logo ? (
           <Image
             src={logo}

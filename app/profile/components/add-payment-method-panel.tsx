@@ -3,6 +3,7 @@
 import type * as React from "react"
 import { useCallback, useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
+import { StandaloneSearchRegularIcon } from "@deriv/quill-icons/Standalone"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
@@ -284,23 +285,27 @@ export default function AddPaymentMethodPanel({
           {t("paymentMethod.selectPaymentMethod")}
         </h2>
         <div className="shrink-0 p-4 pb-2">
-          <div className="relative">
-            <Input
-              placeholder={t("paymentMethod.search")}
+          <div className="flex items-center gap-2 rounded-lg bg-black/[0.04] px-3 h-10">
+            <StandaloneSearchRegularIcon iconSize="xs" className="shrink-0 text-neutral-400" aria-hidden />
+            <input
+              type="text"
               value={searchQuery}
               onChange={handleSearchChange}
-              className={`text-base ps-4 h-8 md:h-14 border-grayscale-500 focus:border-black rounded-lg text-start ${searchQuery ? "pe-10" : "pe-4"}`}
+              placeholder={t("paymentMethod.search")}
               autoComplete="off"
               autoFocus
+              className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-neutral-400"
+              data-testid="add-payment-method-input-search"
             />
             {searchQuery && (
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={() => setSearchQuery("")}
-                className="absolute end-0 top-1/2 transform -translate-y-1/2 hover:bg-transparent"
+                className="hover:!bg-transparent !p-0 !h-auto !w-auto !min-w-0"
+                aria-label={t("common.clearSearch")}
               >
-                <Image src="/icons/clear-search-icon.png" alt={t("common.clearSearch")} width={24} height={24} />
+                <Image src="/icons/clear-search-icon.png" alt="" aria-hidden width={20} height={20} />
               </Button>
             )}
           </div>
@@ -315,15 +320,19 @@ export default function AddPaymentMethodPanel({
                   variant="ghost"
                   size="lg"
                   onClick={() => handleMethodSelect(paymentMethod)}
-                  className="w-full p-4 rounded-none !justify-start gap-3 h-auto border-b border-grayscale-500 hover:bg-transparent"
+                  className="w-full p-4 rounded-none !justify-start !h-auto border-b border-grayscale-500 hover:!bg-transparent"
                 >
-                  <Image
-                    src={getPaymentMethodIcon(paymentMethod.type) || "/placeholder.svg"}
-                    alt={paymentMethod.display_name}
-                    width={24}
-                    height={24}
-                  />
-                  <span className="text-sm font-normal text-slate-1200">{paymentMethod.display_name}</span>
+                  <span className="flex flex-row items-center gap-3">
+                    <Image
+                      src={getPaymentMethodIcon(paymentMethod.type) || "/placeholder.svg"}
+                      alt=""
+                      aria-hidden
+                      width={24}
+                      height={24}
+                      className="shrink-0"
+                    />
+                    <span className="text-sm font-normal text-slate-1200">{paymentMethod.display_name}</span>
+                  </span>
                 </Button>
               ))}
             </div>

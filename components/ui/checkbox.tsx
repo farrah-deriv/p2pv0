@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
-import { StandaloneCheckRegularIcon } from "@deriv/quill-icons/Standalone"
+import { StandaloneCheckBoldIcon } from "@deriv/quill-icons/Standalone"
 
 import { cn } from "@/lib/utils"
 
@@ -19,7 +19,7 @@ const Checkbox = React.forwardRef<
     {...props}
   >
     <CheckboxPrimitive.Indicator className={cn("flex items-center justify-center text-current [&_path]:fill-current")}>
-      <StandaloneCheckRegularIcon iconSize="xs" style={{ width: 10, height: 10 }} />
+      <StandaloneCheckBoldIcon iconSize="xs" style={{ width: 12, height: 12 }} />
     </CheckboxPrimitive.Indicator>
   </CheckboxPrimitive.Root>
 ))

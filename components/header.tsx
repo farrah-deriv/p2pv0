@@ -94,7 +94,7 @@ export default function Header({ className }: { className?: string }) {
           <Image src="/icons/ic-ask-amy-mobile.svg" alt={t("navigation.askAmy")} width={114} height={32} />
         </Button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {(pathname === "/" || pathname.startsWith("/advertiser")) && (
             <Button
               onClick={() => {
@@ -103,10 +103,9 @@ export default function Header({ className }: { className?: string }) {
                   setUserIsSearchOpen(true)
                 })
               }}
-              variant="ghost"
-              size="icon"
+              variant="icon-muted"
               aria-label={t("common.search")}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-header-icon p-0 hover:!bg-header-icon [&_svg]:size-6"
+              className="!bg-header-icon hover:!bg-header-icon"
             >
               <SearchIconWhite width={24} height={24} aria-hidden="true" />
             </Button>
@@ -114,7 +113,7 @@ export default function Header({ className }: { className?: string }) {
           {userId && (
             <div
               data-testid="header-btn-notifications"
-              className="flex h-8 w-8 shrink-0 items-center justify-center text-slate-600 hover:text-slate-700"
+              className="flex h-8 w-8 shrink-0 overflow-hidden items-center justify-center rounded-full bg-header-icon text-slate-600 hover:text-slate-700"
             >
               <NovuBellLink
                 disabled={isMaintenanceActive}

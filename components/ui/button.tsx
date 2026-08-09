@@ -18,6 +18,7 @@ const variantToType: Record<string, QuillButtonProps["type"]> = {
   "icon-action": "primary",
   "icon-action-outlined": "ghost",
   "outline-white": "ghost",
+  "secondary-outline": "ghost",
 }
 
 // Map legacy size names to Quill size values
@@ -30,7 +31,7 @@ const sizeMap: Record<string, QuillButtonProps["size"]> = {
 }
 
 export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "type"> {
-  variant?: "default" | "primary" | "hover" | "black" | "outline" | "destructive" | "secondary" | "ghost" | "buy" | "chip" | "icon-muted" | "icon-action" | "icon-action-outlined" | "outline-white"
+  variant?: "default" | "primary" | "hover" | "black" | "outline" | "destructive" | "secondary" | "ghost" | "buy" | "chip" | "icon-muted" | "icon-action" | "icon-action-outlined" | "outline-white" | "secondary-outline"
   size?: "default" | "sm" | "xs" | "lg" | "icon"
   asChild?: boolean
   /** HTML button type — passed as htmlType to Quill Button */
@@ -48,11 +49,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     // buy: green filled button for P2P buy action
     const variantClass =
       variant === "icon-muted"
-        ? "!rounded-full !w-8 !h-8 !p-0 !min-w-0"
+        ? "!rounded-full !w-8 !h-8 !p-0 !min-w-0 !bg-black/[0.06] hover:!bg-black/10"
         : variant === "icon-action"
           ? "!rounded-full !w-12 !h-12 !p-0 !min-w-0"
           : variant === "icon-action-outlined"
             ? "!rounded-full !w-12 !h-12 !p-0 !min-w-0 !bg-transparent !border !border-slate-1200 hover:!bg-black/10"
+            : variant === "secondary-outline"
+            ? "!bg-transparent !border !border-solid !border-slate-1200 hover:!bg-black/5"
             : variant === "buy"
               ? "!bg-success-text-secondary hover:!bg-success-text-secondary-hover !text-white !border-0"
               : variant === "ghost" || variant === "outline"

@@ -264,7 +264,7 @@ export default function AdsPage() {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button type="button" variant="icon-muted" size="sm" data-testid="ads-btn-hide-ads-info">
+              <Button type="button" variant="icon-muted" size="sm" data-testid="ads-btn-hide-ads-info" className="!bg-transparent hover:!bg-transparent">
                 <Image
                   src="/icons/info-circle.svg"
                   alt={t("common.info")}
