@@ -197,6 +197,20 @@ export default function MyAdsTable({
     } catch (error: any) {
       if (error?.errors?.length > 0) {
         const firstError = error.errors[0]
+
+        if (firstError.code === "AdvertPaymentMethodIDsRequired") {
+          showAlert({
+            title: t("adForm.paymentMethodIDsRequiredTitle"),
+            description: t("adForm.paymentMethodIDsRequiredActivateMessage"),
+            confirmText: t("adForm.addPaymentMethod"),
+            type: "error",
+            onConfirm: () => {
+              router.push(editAdPath(ad.id, isActiveTab ? "active" : "inactive"))
+            },
+          })
+          return
+        }
+
         const errorCodeMap: Record<string, string> = {
           AdvertActiveCountExceeded: t("adForm.adLimitReachedMessage"),
           AdvertExchangeRateDuplicate: t("adForm.duplicateRateMessage"),

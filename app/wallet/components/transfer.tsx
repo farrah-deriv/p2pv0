@@ -2034,7 +2034,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
               data-testid="transfer-success-btn-details"
               variant="outline-white"
               onClick={() => { track("ek_view_details_transfer_successful"); handleViewDetails() }}
-              className="w-[276px] h-12 px-7 flex justify-center items-center gap-2 font-extrabold"
+              className="w-[276px] h-12 px-7 flex justify-center items-center gap-2 font-extrabold border border-white text-white"
             >
               {t("wallet.viewDetails")}
             </Button>
@@ -2055,7 +2055,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
             data-testid="transfer-success-btn-details"
             variant="outline-white"
             onClick={() => { track("ek_view_details_transfer_successful"); handleViewDetails() }}
-            className="w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2 font-extrabold"
+            className="w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2 font-extrabold border border-white text-white"
           >
             {t("wallet.viewDetails")}
           </Button>

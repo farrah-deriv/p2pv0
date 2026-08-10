@@ -449,7 +449,8 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
         AdvertExchangeRateDuplicate: t("adForm.duplicateRateMessage"),
         AdvertOrderRangeOverlap: t("adForm.rangeOverlapMessage"),
         AdvertPaymentMethodDuplicate: t("adForm.duplicatePaymentMethodMessage"),
-        AdvertPaymentMethodRemoveOpenOrder: t("adForm.paymentMethodRemoveOpenOrderMessage")
+        AdvertPaymentMethodRemoveOpenOrder: t("adForm.paymentMethodRemoveOpenOrderMessage"),
+        ...(mode === "create" && { AdvertPaymentMethodIDsRequired: t("adForm.paymentMethodIDsRequiredMessage") })
       }
 
       if (errorCodeMap[errors[0].code]) {
@@ -635,6 +636,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
       AdvertFloatRateMaximum: t("adForm.updateRate"),
       AdvertPaymentMethodDuplicate: t("adForm.updatePaymentMethods"),
       AdvertPaymentMethodRemoveOpenOrder: t("common.gotIt"),
+      ...(mode === "create" && { AdvertPaymentMethodIDsRequired: t("adForm.addPaymentMethod") }),
     }
     return confirmTextMap[errorName] || t("adForm.updateAd")
   }
@@ -715,6 +717,15 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
         type: "error",
         onConfirm: () => { },
       },
+      ...(mode === "create" && {
+        AdvertPaymentMethodIDsRequired: {
+          title: t("adForm.paymentMethodIDsRequiredTitle"),
+          type: "error" as const,
+          onConfirm: () => {
+            setCurrentStep(1)
+          },
+        },
+      }),
     }
 
     const errorInfo = errorInfoMap[errorName] || {
