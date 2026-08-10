@@ -113,7 +113,11 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
       return (
         <div className="flex min-w-0 w-full flex-col overflow-hidden">
           <div className="mb-4 flex shrink-0 items-center justify-between gap-3 px-8 pt-6">
-            {config.title && <h2 className="min-w-0 flex-1 text-start text-2xl leading-8 font-extrabold text-slate-1200">{config.title}</h2>}
+            {config.title && (
+              <h2 className={cn("min-w-0 flex-1 text-start text-2xl leading-8 font-extrabold text-slate-1200", config.titleClassName)}>
+                {config.title}
+              </h2>
+            )}
             {!config.hideCloseButton && (
               <Button
                 type="button"
@@ -157,7 +161,7 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between gap-3">
             {config.title && (
-              <h2 className="text-2xl leading-8 font-extrabold text-slate-1200">{config.title}</h2>
+              <h2 className={cn("text-2xl leading-8 font-extrabold text-slate-1200 min-w-0 flex-1", config.titleClassName)}>{config.title}</h2>
             )}
             {!config.hideCloseButton && (
               <Button
@@ -218,8 +222,10 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
           {config.title && (
             <h2
               className={cn(
-                "mb-2 px-6 pt-6 text-2xl leading-8 font-extrabold text-slate-1200 flex-shrink-0",
+                "mb-2 px-6 font-extrabold text-2xl leading-8 text-slate-1200 flex-shrink-0",
+                config.compactSheetHeader ? "pt-3" : "pt-6",
                 config.titleAlign === "center" ? "text-center" : "text-start",
+                config.titleClassName,
               )}
             >
               {config.title}
@@ -252,9 +258,15 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
     }
 
     return (
-      <div className="flex flex-col gap-8 p-6 overflow-y-auto" data-testid={config.testId}>
+      <div
+        className={cn(
+          "flex flex-col gap-8 px-6 pb-6 overflow-y-auto",
+          config.compactSheetHeader ? "pt-3" : "pt-6",
+        )}
+        data-testid={config.testId}
+      >
         <div className="flex flex-col gap-4">
-          {config.title && <h2 className="text-2xl leading-8 font-extrabold text-slate-1200">{config.title}</h2>}
+          {config.title && <h2 className={cn("text-2xl leading-8 font-extrabold text-slate-1200", config.titleClassName)}>{config.title}</h2>}
           {config.description && <p className="text-base leading-6 font-normal text-black/72">{config.description}</p>}
         </div>
         {(config.cancelText || config.type) && (<div className="flex flex-col gap-2">

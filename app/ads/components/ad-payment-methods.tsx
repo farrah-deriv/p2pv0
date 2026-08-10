@@ -10,7 +10,7 @@ import AddPaymentMethodPanel from "@/app/profile/components/add-payment-method-p
 import { getPaymentMethodColour } from "@/lib/utils"
 import { getPaymentMethodSelectionLines } from "@/lib/payment-methods/payment-method-selection-utils"
 import Image from "next/image"
-import { useAlertDialog } from "@/hooks/use-alert-dialog"
+import { useAdvertAlertDialog } from "@/app/ads/hooks/use-advert-alert-dialog"
 import { usePaymentSelection } from "./payment-selection-context"
 import {
   flattenUserPaymentMethodsPages,
@@ -42,7 +42,7 @@ interface PaymentMethod {
 
 const AdPaymentMethods = () => {
   const { selectedPaymentMethodIds, togglePaymentMethod } = usePaymentSelection()
-  const { hideAlert, showAlert } = useAlertDialog()
+  const { hideAlert, showAlert } = useAdvertAlertDialog()
   const { t } = useTranslations()
   const router = useRouter()
   const [showAddPaymentPanel, setShowAddPaymentPanel] = useState(false)

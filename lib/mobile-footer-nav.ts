@@ -4,7 +4,7 @@ export function shouldShowMobileFooterNav(
   isTransactionListVisible: boolean,
 ): boolean {
   if (pathname.startsWith("/orders/")) return false
-  if (pathname.startsWith("/ads/create")) return false
+if (pathname.startsWith("/ads/create")) return false
   if (pathname.startsWith("/ads/edit")) return false
   if (pathname.startsWith("/profile")) return false
   if (isChatVisible) return false

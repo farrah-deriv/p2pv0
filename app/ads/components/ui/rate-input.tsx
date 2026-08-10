@@ -57,15 +57,18 @@ export function RateInput({
             step={step}
             min={min}
             placeholder=""
-            className="w-full p-4 pt-6 border-0 focus:ring-0 focus:outline-none text-start text-gray-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none h-[56px]"
+            // Match MinimumTierSelector floating field: pt-6 pb-2 keeps label→value gap.
+            className="w-full h-[56px] px-4 pt-6 pb-2 border-0 focus:ring-0 focus:outline-none text-base font-normal text-start text-gray-900 leading-5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             aria-invalid={error}
             data-testid="ad-form-input-rate"
           />
 
           <label
             className={cn(
-              "absolute start-3 pointer-events-none transition-all duration-200",
-              showFloating ? "text-xs top-2 bg-white px-1" : "text-sm top-1/2 -translate-y-1/2",
+              "absolute start-[14px] pointer-events-none transition-all duration-200 font-normal",
+              showFloating
+                ? "text-[12px] top-2 bg-white px-1"
+                : "text-base top-1/2 -translate-y-1/2",
               error ? "text-error" : "text-black/70",
             )}
           >

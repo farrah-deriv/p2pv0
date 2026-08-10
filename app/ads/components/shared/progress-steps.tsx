@@ -1,3 +1,7 @@
+"use client"
+
+import { cn } from "@/lib/utils"
+
 interface ProgressStep {
   title: string
   completed: boolean
@@ -6,33 +10,33 @@ interface ProgressStep {
 interface ProgressStepsProps {
   currentStep: number
   steps: ProgressStep[]
+  label: string
   className?: string
-  title?: {
-    label: string
-    stepTitle: string
-  }
 }
 
-export function ProgressSteps({ currentStep, steps, className = "", title }: ProgressStepsProps) {
-  const progressPercentage = ((currentStep + 1) / steps.length) * 100
+export function ProgressSteps({ currentStep, steps, label, className = "" }: ProgressStepsProps) {
+  const total = steps.length
+  const filled = Math.min(currentStep + 1, total)
+  const progressPct = (filled / total) * 100
+  const stepTitle = steps[currentStep]?.title ?? ""
 
   return (
-    <div className={`md:w-full ${className}`} data-testid="ad-form-progress">
-      <div className="w-full h-[3px] bg-gray-200 relative overflow-hidden">
-        <div
-          className="h-full bg-black transition-all duration-300 ease-in-out"
-          style={{ width: `${progressPercentage}%` }}
-        />
-      </div>
-      {title && (
-        <div className="mt-6">
-          <div className="text-base font-normal text-slate-1200">{title.label}</div>
-          {/* Responsive: 20px to match mobile headingMedium; desktop keeps 32px */}
-          <div className="text-xl md:text-[32px] font-extrabold text-black mt-1">
-            {title.stepTitle}
-          </div>
+    <div className={cn("w-full", className)} data-testid="ad-form-progress">
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 h-[3px] rounded-full bg-neutral-200">
+          <div
+            className="absolute inset-y-0 start-0 rounded-full bg-slate-1200 transition-all duration-300"
+            style={{ width: `${progressPct}%` }}
+            aria-hidden
+          />
         </div>
-      )}
+        <span className="flex-shrink-0 text-sm text-neutral-400">
+          {filled}/{total}
+        </span>
+      </div>
+
+      <p className="mt-3 text-sm text-neutral-500">{label}</p>
+      <p className="mt-1 text-xl font-bold text-slate-1200 leading-tight">{stepTitle}</p>
     </div>
   )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useTranslations } from "@/lib/i18n/use-translations"
-import { useAlertDialog } from "@/hooks/use-alert-dialog"
+import { useAdvertAlertDialog } from "@/app/ads/hooks/use-advert-alert-dialog"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -16,7 +16,7 @@ interface AdVisibilitySelectorProps {
 
 export default function AdVisibilitySelector({ value, onValueChange, onEditClosedGroup, closedGroupDisabled = false }: AdVisibilitySelectorProps) {
   const { t } = useTranslations()
-  const { showAlert } = useAlertDialog()
+  const { showAlert } = useAdvertAlertDialog()
 
   const handleEditListClick = () => {
     showAlert({

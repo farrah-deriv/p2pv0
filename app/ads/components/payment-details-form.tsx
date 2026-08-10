@@ -3,6 +3,8 @@
 
 import type React from "react"
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
+import { useAccountCurrencies } from "@/hooks/use-account-currencies"
+import { CurrencyInput } from "./ui/currency-input"
 import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
 import { useStablePaymentMethodOrder } from "@/hooks/use-stable-payment-method-order"
 import { SelectedPaymentMethodsSection } from "@/components/payment-methods/selected-payment-methods-section"
@@ -18,10 +20,11 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { ModalHeaderRow } from "@/components/ui/modal-header-row"
 import { isRtlLocale } from "@/lib/i18n/config"
 import { Drawer, DrawerContent } from "@/components/ui/drawer"
+import { getDecimalConstraints, getDecimalPlaces } from "@/lib/currency-decimal"
 import { formatPaymentMethodName } from "@/lib/utils"
 import { ProfileAPI } from "@/services/api"
 import AddPaymentMethodPanel from "@/app/profile/components/add-payment-method-panel"
-import { useAlertDialog } from "@/hooks/use-alert-dialog"
+import { useAdvertAlertDialog } from "@/app/ads/hooks/use-advert-alert-dialog"
 import { useToast } from "@/hooks/use-toast"
 import { usePaymentSelection } from "./payment-selection-context"
 import { useTranslations } from "@/lib/i18n/use-translations"
@@ -72,12 +75,19 @@ interface AvailablePaymentMethod {
   method: string
 }
 
+interface AmountValidationErrors {
+  totalAmount?: string
+  minAmount?: string
+  maxAmount?: string
+}
+
 interface PaymentDetailsFormProps {
   initialData: Partial<AdFormData>
   onBottomSheetOpenChange?: (isOpen: boolean) => void
   userPaymentMethods: UserPaymentMethod[]
   availablePaymentMethods: AvailablePaymentMethod[]
   onRefetchPaymentMethods: () => Promise<void>
+  isEditMode?: boolean
 }
 
 /**
@@ -257,7 +267,11 @@ const FullPagePaymentSelection = ({
           : "pt-2"
           }`}
       >
-        <Button onClick={handleConfirm} disabled={localSelected.length === 0} className="w-full max-w-full min-w-0">
+        <Button
+          onClick={handleConfirm}
+          disabled={localSelected.length === 0}
+          className="w-full max-w-full min-w-0 min-h-[48px] h-[48px]"
+        >
           {t("common.confirm")}
         </Button>
       </div>
@@ -278,8 +292,10 @@ const FullPagePaymentSelection = ({
             onClose={onClose}
             closeAriaLabel={t("common.close")}
             centerTitle
-            titleClassName="text-[20px] font-extrabold"
-            closeButtonClassName="hover:!bg-transparent hover:!opacity-80"
+            titleClassName="text-xl font-extrabold"
+            closeIconSrc="/icons/button-close.png"
+            closeIconSize={48}
+            closeButtonClassName="hover:bg-transparent hover:opacity-80 px-0 min-w-[48px]"
             className="shrink-0 px-4 pt-4 pb-0"
           />
           {content}
@@ -515,7 +531,7 @@ const PaymentSelectionContent = ({
                         checked={isSelected}
                         onCheckedChange={() => !isDisabled && handlePaymentMethodToggle(methodId)}
                         disabled={isDisabled}
-                        className="pointer-events-none h-[20px] w-[20px] shrink-0 rounded-sm disabled:cursor-not-allowed disabled:opacity-30"
+                        className="pointer-events-none h-[20px] w-[20px] shrink-0 rounded-sm border-[2px] border-neutral-7 disabled:cursor-not-allowed disabled:opacity-30 data-[state=checked]:border-black data-[state=checked]:bg-black"
                         data-testid={`ad-form-checkbox-payment-${methodId}`}
                       />
                     </div>
@@ -581,35 +597,111 @@ export default function PaymentDetailsForm({
   userPaymentMethods,
   availablePaymentMethods,
   onRefetchPaymentMethods,
+  isEditMode = false,
 }: PaymentDetailsFormProps) {
   const { t } = useTranslations()
   const router = useRouter()
-  const isMobile = useIsMobile()
+  const { accountCurrencies } = useAccountCurrencies()
   const { mutateAsync: addPaymentMethod, isPending: isAddingPaymentMethod } = useAddPaymentMethod()
+  const buyCurrency = initialData.buyCurrency || "USD"
+
+  const [totalAmount, setTotalAmount] = useState(initialData.totalAmount?.toString() || "")
+  const [minAmount, setMinAmount] = useState(initialData.minAmount?.toString() || "")
+  const [maxAmount, setMaxAmount] = useState(initialData.maxAmount?.toString() || "")
+  const [amountErrors, setAmountErrors] = useState<AmountValidationErrors>({})
+  const [amountTouched, setAmountTouched] = useState({
+    totalAmount: false,
+    minAmount: false,
+    maxAmount: false,
+  })
+
   const [instructions, setInstructions] = useState(initialData.instructions || "")
   const [instructionsError, setInstructionsError] = useState("")
-  const [touched, setTouched] = useState(false)
   const [tempSelectedPaymentMethods, setTempSelectedPaymentMethods] = useState<string[]>([])
   const [showAddPaymentPanel, setShowAddPaymentPanel] = useState(false)
   const [showFullPageModal, setShowFullPageModal] = useState(false)
   // When true, Drawer/Dialog onOpenChange from programmatic hideAlert (add-PM
   // transition) must not wipe the draft selection back to last confirmed.
   const isTransitioningToAddPanelRef = useRef(false)
-  const { hideAlert, showAlert } = useAlertDialog()
+  const { hideAlert, showAlert } = useAdvertAlertDialog()
   const { toast } = useToast()
   const { selectedPaymentMethodIds, setSelectedPaymentMethodIds } = usePaymentSelection()
+
+  const adType = initialData.type || "buy"
 
   const validateInstructions = (value: string) => {
     return getPaymentMethodFieldValidationIssue("bank_transfer", "instructions", value) === null
   }
 
-  const isFormValid = () => {
-    return selectedPaymentMethodIds.length > 0 && validateInstructions(instructions)
+  const areAmountsValid = () => {
+    return (
+      !!totalAmount &&
+      !!minAmount &&
+      !!maxAmount &&
+      Object.keys(amountErrors).length === 0
+    )
   }
+
+  const isFormValid = () => {
+    return selectedPaymentMethodIds.length > 0 && validateInstructions(instructions) && areAmountsValid()
+  }
+
+  useEffect(() => {
+    if (initialData.totalAmount !== undefined) setTotalAmount(initialData.totalAmount.toString())
+    if (initialData.minAmount !== undefined) setMinAmount(initialData.minAmount.toString())
+    if (initialData.maxAmount !== undefined) setMaxAmount(initialData.maxAmount.toString())
+    if (initialData.instructions !== undefined) setInstructions(initialData.instructions || "")
+  }, [initialData.totalAmount, initialData.minAmount, initialData.maxAmount, initialData.instructions])
+
+  useEffect(() => {
+    const errors: AmountValidationErrors = {}
+    const total = Number(totalAmount)
+    const min = Number(minAmount)
+    const max = Number(maxAmount)
+
+    if (amountTouched.totalAmount) {
+      if (!totalAmount) {
+        errors.totalAmount = t("adForm.totalAmountRequired")
+      } else if (total <= 0) {
+        errors.totalAmount = t("adForm.totalAmountGreaterThanZero")
+      }
+    }
+
+    if (minAmount && totalAmount && min > total) {
+      errors.minAmount = t("adForm.minAmountLessThanTotal")
+    }
+
+    if (maxAmount && totalAmount && max > total) {
+      errors.maxAmount = t("adForm.maxAmountLessThanTotal")
+    }
+
+    if (amountTouched.minAmount) {
+      if (!minAmount) {
+        errors.minAmount = t("adForm.minAmountRequired")
+      } else if (min <= 0) {
+        errors.minAmount = t("adForm.minAmountGreaterThanZero")
+      }
+    }
+
+    if (amountTouched.minAmount && amountTouched.maxAmount && min > max) {
+      errors.minAmount = t("adForm.minAmountLessThanMax")
+      errors.maxAmount = t("adForm.maxAmountGreaterThanMin")
+    }
+
+    if (amountTouched.maxAmount) {
+      if (!maxAmount) {
+        errors.maxAmount = t("adForm.maxAmountRequired")
+      } else if (max <= 0) {
+        errors.maxAmount = t("adForm.maxAmountGreaterThanZero")
+      }
+    }
+
+    setAmountErrors(errors)
+  }, [totalAmount, minAmount, maxAmount, amountTouched, t])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setTouched(true)
+    setAmountTouched({ totalAmount: true, minAmount: true, maxAmount: true })
   }
 
   const handleAddPaymentMethodClick = useCallback((currentSelection: string[]) => {
@@ -824,6 +916,9 @@ export default function PaymentDetailsForm({
       detail: {
         isValid: isFormValid(),
         formData: {
+          totalAmount: Number.parseFloat(totalAmount) || 0,
+          minAmount: Number.parseFloat(minAmount) || 0,
+          maxAmount: Number.parseFloat(maxAmount) || 0,
           payment_method_ids: toNumericPaymentMethodIds(selectedPaymentMethodIds),
           paymentMethods: paymentMethodNames,
           instructions,
@@ -832,23 +927,149 @@ export default function PaymentDetailsForm({
       bubbles: true,
     })
     document.dispatchEvent(event)
-  }, [selectedPaymentMethodIds, instructions, userPaymentMethods, initialData.type])
+  }, [
+    selectedPaymentMethodIds,
+    instructions,
+    userPaymentMethods,
+    initialData.type,
+    totalAmount,
+    minAmount,
+    maxAmount,
+    amountErrors,
+  ])
 
   return (
     <>
       <div className="h-full flex flex-col">
         <form id="payment-details-form" onSubmit={handleSubmit} className="flex-1">
           <div className="max-w-[800px] mx-auto h-full flex flex-col">
-            <div>
-              <div className="mb-6">
+            <div data-guide-id="ad-guide-amount" className="mb-8">
+              <div className="mb-2">
+                <h3 className="text-sm font-normal leading-5 tracking-normal text-start text-slate-1200">
+                  {t("adForm.amountAndOrderLimit")}
+                </h3>
+              </div>
+              <div className="mb-4">
+                <CurrencyInput
+                  data-testid="ad-form-input-total-amount"
+                  value={totalAmount}
+                  onValueChange={(value) => {
+                    if (value === "") {
+                      setTotalAmount("")
+                      setAmountTouched((prev) => ({ ...prev, totalAmount: true }))
+                      return
+                    }
+
+                    const decimalConstraints = getDecimalConstraints(buyCurrency, accountCurrencies)
+                    if (decimalConstraints) {
+                      const decimalPlaces = getDecimalPlaces(value)
+                      if (decimalPlaces > decimalConstraints.maximum) {
+                        return
+                      }
+                    }
+
+                    setTotalAmount(value)
+                    setAmountTouched((prev) => ({ ...prev, totalAmount: true }))
+                  }}
+                  onBlur={() => setAmountTouched((prev) => ({ ...prev, totalAmount: true }))}
+                  placeholder={adType === "sell" ? t("adForm.sellQuantity") : t("adForm.buyQuantity")}
+                  isEditMode={isEditMode}
+                  error={amountTouched.totalAmount && !!amountErrors.totalAmount}
+                  currency={buyCurrency}
+                />
+                {amountTouched.totalAmount && amountErrors.totalAmount && (
+                  <p className="text-destructive text-xs mt-1 ms-4">{amountErrors.totalAmount}</p>
+                )}
+              </div>
+              <div className="flex flex-col md:flex-row md:items-baseline gap-4">
+                <div className="flex-1">
+                  <CurrencyInput
+                    data-testid="ad-form-input-min-amount"
+                    value={minAmount}
+                    onValueChange={(value) => {
+                      if (value === "") {
+                        setMinAmount("")
+                        setAmountTouched((prev) => ({ ...prev, minAmount: true }))
+                        return
+                      }
+
+                      const decimalConstraints = getDecimalConstraints(buyCurrency, accountCurrencies)
+                      if (decimalConstraints) {
+                        const decimalPlaces = getDecimalPlaces(value)
+                        if (decimalPlaces > decimalConstraints.maximum) {
+                          return
+                        }
+                      }
+
+                      setMinAmount(value)
+                      setAmountTouched((prev) => ({ ...prev, minAmount: true }))
+                    }}
+                    onBlur={() => setAmountTouched((prev) => ({ ...prev, minAmount: true }))}
+                    placeholder={t("adForm.minimumOrder")}
+                    error={amountTouched.minAmount && !!amountErrors.minAmount}
+                    currency={buyCurrency}
+                  />
+                  {amountTouched.minAmount && amountErrors.minAmount && (
+                    <p className="text-destructive text-xs mt-1 ms-4" data-testid="ad-form-error-amount">
+                      {amountErrors.minAmount}
+                    </p>
+                  )}
+                </div>
+                <div className="text-xl hidden md:block">~</div>
+                <div className="flex-1">
+                  <CurrencyInput
+                    data-testid="ad-form-input-max-amount"
+                    value={maxAmount}
+                    onValueChange={(value) => {
+                      if (value === "") {
+                        setMaxAmount("")
+                        setAmountTouched((prev) => ({ ...prev, maxAmount: true }))
+                        return
+                      }
+
+                      const decimalConstraints = getDecimalConstraints(buyCurrency, accountCurrencies)
+                      if (decimalConstraints) {
+                        const decimalPlaces = getDecimalPlaces(value)
+                        if (decimalPlaces > decimalConstraints.maximum) {
+                          return
+                        }
+                      }
+
+                      setMaxAmount(value)
+                      setAmountTouched((prev) => ({ ...prev, maxAmount: true }))
+                    }}
+                    onBlur={() => setAmountTouched((prev) => ({ ...prev, maxAmount: true }))}
+                    placeholder={t("adForm.maximumOrder")}
+                    error={amountTouched.maxAmount && !!amountErrors.maxAmount}
+                    currency={buyCurrency}
+                  />
+                  {amountTouched.maxAmount && amountErrors.maxAmount && (
+                    <p className="text-destructive text-xs mt-1 ms-4" data-testid="ad-form-error-amount">
+                      {amountErrors.maxAmount}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div data-guide-id="ad-guide-payment">
+              <h3 className="text-sm font-normal leading-5 tracking-normal mb-2 text-start text-slate-1200">
+                {t("adForm.paymentDetails")}
+              </h3>
+              {/* Match CurrencyInput spacing (mb-4) + border-gray-200 outline. */}
+              <div className="mb-4">
                 <Button
                   variant="outline"
-                  className="!w-full !h-12 !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-3 !font-normal hover:!bg-neutral-50 [&>span]:!w-full"
+                  className="!h-12 !w-full !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-3 !font-normal focus:!ring-1 focus:!ring-black hover:!bg-white [&>span]:!w-full"
                   onClick={() => handleShowPaymentSelection()}
                   type="button"
                 >
                   <span className="flex w-full flex-row items-center justify-between">
-                    <span className="min-w-0 flex-1 truncate text-sm font-normal text-grayscale-600 text-left">
+                    <span
+                      className={`truncate text-start text-sm font-normal ${
+                        selectedPaymentMethodIds.length > 0 ? "text-slate-1200" : "text-neutral-400"
+                      }`}
+                    >
                       {getSelectedPaymentMethodsText()}
                     </span>
                     <StandaloneChevronDownRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />
@@ -869,7 +1090,7 @@ export default function PaymentDetailsForm({
                     }
                   }}
                   placeholder={initialData.type === "buy" ? t("adForm.sellerInstructions") : t("adForm.buyerInstructions")}
-                  className={`min-h-[120px] resize-none${instructionsError ? " border-error" : ""}`}
+                  className={`min-h-[120px] resize-none border-gray-200 bg-transparent text-base font-normal placeholder:text-base placeholder:font-normal placeholder:text-black/70 focus:border-gray-200${instructionsError ? " border-error focus:border-error" : ""}`}
                   maxLength={300}
                 />
                 <div className="flex justify-between items-start mt-2 text-xs mx-4 gap-2">

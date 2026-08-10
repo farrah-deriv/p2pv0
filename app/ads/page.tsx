@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { HeaderSegmentedControl } from "@/components/header-segmented-control"
 import StatusBottomSheet from "./components/ui/status-bottom-sheet"
-import { useAlertDialog } from "@/hooks/use-alert-dialog"
+import { useAdvertAlertDialog } from "@/app/ads/hooks/use-advert-alert-dialog"
 import { Switch } from "@/components/ui/switch"
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 import { useUserDataStore } from "@/stores/user-data-store"
@@ -50,7 +50,7 @@ export default function AdsPage() {
     title: "",
     message: "",
   })
-  const { hideAlert, showAlert } = useAlertDialog()
+  const { hideAlert, showAlert } = useAdvertAlertDialog()
   const [showKycPopup, setShowKycPopup] = useState(false)
   const errorAlertShownRef = useRef(false)
 

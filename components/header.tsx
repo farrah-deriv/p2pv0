@@ -61,7 +61,7 @@ export default function Header({ className }: { className?: string }) {
     !!isOrderDetailPage ||
     isAdFormPage ||
     isTransactionListVisible ||
-    !!(isMobile && isOrderDetailPage && isChatVisible)
+!!(isMobile && isOrderDetailPage && isChatVisible)
 
   const handleAskAmy = () => {
     track("ek_ask_amy_markets")

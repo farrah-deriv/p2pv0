@@ -367,7 +367,7 @@ export default function Sidebar({ className }: SidebarProps) {
         )}
         <ul data-guide-id="guide-sidebar-nav" className="space-y-1">
           {navItems.filter((item) => item.name !== t("navigation.home")).map((item) => {
-            const isExternal = item.name === t("navigation.p2pHelpCentre")
+            const isExternal = item.href.startsWith("http")
             const isActive = !isExternal && (
               item.href === "/"
                 ? pathname === "/" || pathname.startsWith("/advertiser")

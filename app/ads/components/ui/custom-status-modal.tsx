@@ -63,17 +63,7 @@ export default function CustomStatusModal({
 
           {/* Content section - left aligned */}
           <div className="mb-12">
-            <h2
-              className="font-bold mb-6"
-              style={{
-                fontSize: "20px",
-                lineHeight: "100%",
-                letterSpacing: "0%",
-                fontWeight: 700,
-              }}
-            >
-              {title}
-            </h2>
+            <h2 className="mb-6 text-2xl font-extrabold leading-none tracking-normal">{title}</h2>
 
             {type === "success" && (
               <>

@@ -22,7 +22,9 @@ import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import { shouldShowP2PMaintenanceBanner } from "@/lib/p2p-maintenance-constants"
 import { shouldShowMobileFooterNav } from "@/lib/mobile-footer-nav"
 import { useWalletViewStore } from "@/stores/wallet-view-store"
+import { useGuideStore } from "@/stores/guide-store"
 import { P2PGuide } from "@/components/p2p-guide/p2p-guide"
+import { P2PGuideIntro } from "@/components/p2p-guide/p2p-guide-intro"
 import "./globals.css"
 
 export default function Main({
@@ -46,6 +48,10 @@ export default function Main({
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
   const { isChatVisible } = useChatVisibilityStore()
   const { isTransactionListVisible } = useWalletViewStore()
+  const openIntro = useGuideStore((state) => state.openIntro)
+  const reopenIntro = useGuideStore((state) => state.reopenIntro)
+  const pendingReopenIntro = useGuideStore((state) => state.pendingReopenIntro)
+  const setPendingReopenIntro = useGuideStore((state) => state.setPendingReopenIntro)
   const showMobileFooterNav = shouldShowMobileFooterNav(pathname, isChatVisible, isTransactionListVisible)
   const { data: onboardingStatus, isLoading: isOnboardingLoading } = useOnboardingStatus(
     isAuthenticated && !isMaintenanceActive,
@@ -133,6 +139,18 @@ export default function Main({
       }
     }
   }, [isMaintenanceActive, pathname, router, searchParams])
+
+  useEffect(() => {
+    if (isReady && isAuthenticated) openIntro()
+  }, [isReady, isAuthenticated]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (pathname === "/" && pendingReopenIntro) {
+      setPendingReopenIntro(false)
+      reopenIntro()
+    }
+  }, [pathname, pendingReopenIntro]) // eslint-disable-line react-hooks/exhaustive-deps
+
 
   useEffect(() => {
     if (isMaintenanceActive || !isAuthenticated || isOnboardingLoading || !onboardingStatus) {
@@ -253,6 +271,7 @@ export default function Main({
         )}
       </div>
       <P2PGuide />
+      <P2PGuideIntro />
     </WebSocketProvider>
   )
 }

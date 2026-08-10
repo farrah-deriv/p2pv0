@@ -15,6 +15,13 @@ export interface AlertDialogConfig {
   mobileSheetClassName?: string
   /** Explicit opt-in: unlocks the inner container from max-h-[80vh] to h-full so a fixed-height mobileSheetClassName isn't fighting the default max-height. */
   mobileSheetFullHeight?: boolean
+  /** Optional override for title typography (e.g. advert sheets: text-2xl font-extrabold). */
+  titleClassName?: string
+  /**
+   * Tighter handle→title gap for bottom sheets (12px / pt-3).
+   * Use for advert sheets so spacing matches mobile BottomSheetHandle.
+   */
+  compactSheetHeader?: boolean
   /** Mobile drawer title alignment. Desktop header stays start-aligned. */
   titleAlign?: "start" | "center"
   content?: React.ReactNode

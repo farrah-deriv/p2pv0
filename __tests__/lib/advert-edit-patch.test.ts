@@ -146,11 +146,11 @@ describe("buildAdvertEditPatch", () => {
 })
 
 describe("hasAdvertEditChanges", () => {
-  it("returns true for legacy minimum trade band even without edits", () => {
+  it("returns false for legacy minimum trade band without user edits", () => {
     const original = snapshot({ minimumTradeBand: "gold" })
     const current = snapshot()
 
-    expect(hasAdvertEditChanges(original, current)).toBe(true)
+    expect(hasAdvertEditChanges(original, current)).toBe(false)
   })
 
   it("returns true when ad condition fields change", () => {

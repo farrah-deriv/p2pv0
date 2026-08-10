@@ -3,7 +3,6 @@
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
-import { localeToBcp47 } from "@/lib/i18n/config"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -15,8 +14,6 @@ interface FloatingRateInputProps {
   onBlur?: () => void
   error?: boolean
   errorMsg?: string
-  currency?: string
-  marketPrice?: number
 }
 
 export function FloatingRateInput({
@@ -25,12 +22,9 @@ export function FloatingRateInput({
   onBlur,
   error = false,
   errorMsg = "",
-  currency = "IDR",
-  marketPrice,
 }: FloatingRateInputProps) {
-  const { t, locale } = useTranslations()
+  const { t } = useTranslations()
   const [isFocused, setIsFocused] = useState(false)
-  const numberLocale = localeToBcp47(locale)
   const inputRef = useRef<HTMLInputElement>(null)
   const [displayValue, setDisplayValue] = useState(value)
 
@@ -89,10 +83,6 @@ export function FloatingRateInput({
     setDisplayValue(value)
   }
 
-  const showFloating = isFocused || value.length > 0
-  const ratePercentage = Number.parseFloat(value) || 0
-  const yourPrice = marketPrice ? marketPrice * (1 + ratePercentage / 100) : null
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row gap-4">
@@ -127,35 +117,7 @@ export function FloatingRateInput({
             </div>
           </div>
           {error && <p className="text-destructive text-xs mt-1 ms-4" data-testid="ad-form-error-rate">{errorMsg}</p>}
-          <div className="text-xs text-grayscale-text-muted ms-4 mt-1 text-start">
-            {t("adForm.currentMarketPrice")}{" "}
-            {marketPrice ? (
-              <span>
-                {Number(marketPrice).toLocaleString(numberLocale, {
-                  minimumFractionDigits: 6,
-                  maximumFractionDigits: 6,
-                })}{" "}
-                {currency}
-              </span>
-            ) : (
-              <span className="text-slate-1200">-</span>
-            )}
-          </div>
         </div>
-      </div>
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-grayscale-text-muted">{t("adForm.yourRate")}</span>
-        {yourPrice ? (
-          <span className="text-slate-1200">
-            {yourPrice.toLocaleString(numberLocale, {
-              minimumFractionDigits: 6,
-              maximumFractionDigits: 6,
-            })}{" "}
-            <span className="text-xs font-normal">{currency}</span>
-          </span>
-        ) : (
-          <span className="text-slate-1200">-</span>
-        )}
       </div>
     </div>
   )

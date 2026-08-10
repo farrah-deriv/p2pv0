@@ -279,7 +279,7 @@ export function VisibilityStatusDialog({
 
       <Button
         onClick={() => handleAction(cta.primaryAction)}
-        className="w-full mt-8"
+        className="w-full mt-8 min-h-[48px] h-[48px]"
         variant="default"
       >
         {cta.primaryLabel}
@@ -288,7 +288,7 @@ export function VisibilityStatusDialog({
       {cta.secondaryLabel && cta.secondaryAction && (
         <Button
           onClick={() => handleAction(cta.secondaryAction!, true)}
-          className="w-full"
+          className="w-full min-h-[48px] h-[48px]"
           variant="outline"
         >
           {cta.secondaryLabel}
@@ -301,8 +301,8 @@ export function VisibilityStatusDialog({
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent dir={dir}>
-          <DrawerHeader className="text-start">
-            <DrawerTitle className="font-bold text-2xl text-slate-1200 text-start">
+          <DrawerHeader className="px-4 pb-4 pt-3 text-start">
+            <DrawerTitle className="text-2xl font-extrabold text-slate-1200 text-start">
               {t("myAds.visibilityStatus")}
             </DrawerTitle>
           </DrawerHeader>
@@ -321,6 +321,7 @@ export function VisibilityStatusDialog({
           onClose={() => onOpenChange(false)}
           closeAriaLabel={t("common.close")}
           className="mb-4"
+          titleClassName="text-2xl font-extrabold"
         />
         <div className="text-start">{content}</div>
       </DialogContent>

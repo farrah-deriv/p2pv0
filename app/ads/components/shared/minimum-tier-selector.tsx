@@ -195,7 +195,7 @@ export default function MinimumTierSelector({
           </div>
         </div>
         <DrawerContent className="h-fit">
-          <div className="p-4">
+          <div className="px-4 pb-4 pt-3">
             <TierList withTitle />
           </div>
         </DrawerContent>

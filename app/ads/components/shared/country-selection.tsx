@@ -165,8 +165,8 @@ export default function CountrySelection({ countries, selectedCountries, onCount
           </Button>
         </DrawerTrigger>
         <DrawerContent side="bottom" className="h-fit">
-          <div className="my-4">
-            <h3 className="text-xl font-bold text-center">{t("common.countrySelection")}</h3>
+          <div className="px-4 pt-3 pb-4">
+            <h3 className="text-xl font-extrabold text-center">{t("common.countrySelection")}</h3>
             <div className="text-base text-center opacity-72 mt-2">{t("adForm.countrySelectionSubtitle")}</div>
           </div>
           <div className="p-4">

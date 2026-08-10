@@ -45,6 +45,8 @@ import { useWebSocketContext } from "@/contexts/websocket-context"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useTrackers } from "@/analytics/useTrackers"
 import { PresenceLastSeen } from "@/components/presence-last-seen"
+import { useGuideStore } from "@/stores/guide-store"
+import { P2PGuideButton } from "@/components/p2p-guide/p2p-guide-button"
 
 type Ad = Advertisement
 type AdType = "buy" | "sell"
@@ -60,6 +62,16 @@ interface UsersOnlineUpdate {
 export default function BuySellPage() {
   const { t, locale } = useTranslations()
   const router = useRouter()
+  const pendingStartGuide = useGuideStore((s) => s.pendingStartGuide)
+  const setPendingStartGuide = useGuideStore((s) => s.setPendingStartGuide)
+  const startGuide = useGuideStore((s) => s.startGuide)
+
+  useEffect(() => {
+    if (pendingStartGuide) {
+      setPendingStartGuide(false)
+      startGuide("markets")
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
   const searchParams = useSearchParams()
   const {
     activeTab,
@@ -600,7 +612,7 @@ export default function BuySellPage() {
                 />
               </div>
 
-              <div className="filter-dropdown-container flex-shrink-0">
+              <div className="filter-dropdown-container flex items-center gap-2 flex-shrink-0">
                 <MarketFilterDropdown
                   activeTab={activeTab}
                   onApply={handleFilterApply}
@@ -628,6 +640,7 @@ export default function BuySellPage() {
                     </Button>
                   }
                 />
+                <P2PGuideButton guideType="markets" />
               </div>
             </div>
           </div>

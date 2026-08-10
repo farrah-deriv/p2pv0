@@ -110,7 +110,7 @@ export default function StatusBottomSheet({
         </div>
 
         <div className="px-6 pb-8">
-          <h2 className="mb-6 mt-4 font-bold text-lg leading-7">{title}</h2>
+          <h2 className="mb-6 mt-4 text-2xl font-extrabold leading-7">{title}</h2>
 
           {type === "success" && (
             <>

@@ -212,7 +212,6 @@ export function hasAdvertEditChanges(
   original: AdvertEditSnapshot,
   current: AdvertEditSnapshot,
 ): boolean {
-  if (original.minimumTradeBand != null) return true
   if (current.minimumJoinedDays !== original.minimumJoinedDays) return true
   if (
     !nullableNumbersEqual(
@@ -223,7 +222,9 @@ export function hasAdvertEditChanges(
     return true
   }
 
-  return Object.keys(buildAdvertEditPatch(original, current)).length > 0
+  const patch = { ...buildAdvertEditPatch(original, current) }
+  delete patch.minimum_trade_band
+  return Object.keys(patch).length > 0
 }
 
 /** Ensures edit PATCH always includes ad condition fields (mirrors mobile toEditPatchBody). */

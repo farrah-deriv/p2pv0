@@ -68,17 +68,19 @@ test.describe("Ads — Create Sell ad", { tag: ["@ads", "@staging", "@desktop", 
         // Switch trade type from the default "Buy" to "Sell"
         await adsCreatePage.verifyStep0Visible();
         await adsCreatePage.selectSellAdType();
-        await adsCreatePage.fillAdStep0(rate, "1000", minOrder, maxOrder);
+        await adsCreatePage.fillAdStep0Rate(rate);
         await adsCreatePage.proceedToStep1();
 
-        // Step 1 — Set payment details
+        // Step 1 — Set amount and payment
         // Sell ads open payment selection via an AlertDialog (no sheet testid); use the sell-specific method.
         await adsCreatePage.verifyStep1Visible();
+        await adsCreatePage.fillAdStep1Amounts("1000", minOrder, maxOrder);
         await adsCreatePage.selectFirstPaymentMethodSellAd();
         await adsCreatePage.proceedToStep2();
 
         // Step 2 — Set ad conditions (order time limit pre-selected; no change needed)
         await adsCreatePage.verifyStep2Visible();
+        await adsCreatePage.proceedToReview();
         await adsCreatePage.submitCreateAd();
 
         // Success screen confirms the ad was created

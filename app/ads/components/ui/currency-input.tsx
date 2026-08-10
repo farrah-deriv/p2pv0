@@ -55,8 +55,9 @@ export function CurrencyInput({
             onFocus={() => setIsFocused(true)}
             onWheel={(e) => e.currentTarget.blur()}
             placeholder=""
+            // Match MinimumTierSelector floating field: pt-6 pb-2 keeps label→value gap.
             className={cn(
-              "h-[56px] w-full p-4 pt-6 border-0 focus:ring-0 focus:outline-none text-start [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
+              "h-[56px] w-full px-4 pt-6 pb-2 border-0 focus:ring-0 focus:outline-none text-base font-normal text-start leading-5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
               isDisabled ? "bg-gray-50 text-gray-500 cursor-not-allowed" : "text-gray-900",
             )}
             disabled={isDisabled}
@@ -66,16 +67,17 @@ export function CurrencyInput({
             {...props}
           />
 
-  <label
-  className={cn(
-    "absolute start-3 pointer-events-none transition-all duration-200",
-    showFloating ? "text-xs top-2 px-1" : "text-sm top-1/2 -translate-y-1/2",
-    error ? "text-error" : "text-black/70",
-  )}
->
-  {placeholder}
-</label>
-
+          <label
+            className={cn(
+              "absolute start-[14px] pointer-events-none transition-all duration-200 font-normal",
+              showFloating
+                ? "text-[12px] top-2 px-1"
+                : "text-base top-1/2 -translate-y-1/2",
+              error ? "text-error" : "text-black/70",
+            )}
+          >
+            {placeholder}
+          </label>
 
 
           {error && (
@@ -84,7 +86,7 @@ export function CurrencyInput({
             </div>
           )}
         </div>
-        <div className="flex items-center justify-center bg-slate-75 px-4 text-gray-500 min-w-[80px] text-center">
+        <div className="flex items-center justify-center bg-slate-75 px-4 text-base font-normal text-black/70 min-w-[80px] text-center">
           {currency}
         </div>
       </div>

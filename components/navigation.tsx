@@ -7,6 +7,7 @@ import { StandaloneXmarkFillIcon } from "@deriv/quill-icons/Standalone"
 import { NovuBellLink } from "@/components/novu-notifications"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { cn } from "@/lib/utils"
+import Image from "next/image"
 
 interface NavigationProps {
   className?: string
@@ -14,8 +15,11 @@ interface NavigationProps {
   isVisible?: boolean
   onBack?: () => void
   onClose?: () => void
+  onGuide?: () => void
   redirectUrl?: string
   title: string
+  /** Larger left-aligned title (create/edit ad wizard matches mobile headingLarge ~24px). */
+  largeTitle?: boolean
   showNotificationIcon?: boolean
 }
 
@@ -25,22 +29,33 @@ export default function Navigation({
   isVisible = true,
   onBack,
   onClose,
+  onGuide,
   redirectUrl = "/",
   title,
+  largeTitle = false,
   showNotificationIcon = false,
 }: NavigationProps) {
   const router = useRouter()
   const { t } = useTranslations()
+  const titleClassName = cn(
+    "font-bold text-start text-slate-1200",
+    largeTitle ? "text-2xl leading-8" : "text-xl",
+  )
 
   const getHeaderComponent = () => {
     if (isBackBtnVisible) {
       if (onBack && onClose) {
         return (
-          <div className="flex items-center gap-4 w-full justify-between">
-            <Button variant="icon-muted" onClick={onBack} className="!bg-neutral-100 hover:!bg-neutral-200">
-              <BackArrowIcon alt={t("common.back")} width={24} height={24} />
+          <div className="flex items-center gap-3 w-full">
+            <Button variant="icon-muted" onClick={onBack} aria-label={t("common.back")}>
+              <BackArrowIcon alt="" width={24} height={24} aria-hidden />
             </Button>
-            <h1 className="text-xl font-bold">{title}</h1>
+            <h1 className={cn(titleClassName, "min-w-0 flex-1")}>{title}</h1>
+            {onGuide && (
+              <Button variant="icon-muted" onClick={onGuide} aria-label={t("guideIntro.openGuide")}>
+                <Image src="/icons/ic-guide-notebook.svg" alt="" width={20} height={20} aria-hidden />
+              </Button>
+            )}
             <Button variant="icon-muted" onClick={onClose} aria-label={t("common.close")} data-testid="ad-form-btn-close">
               <StandaloneXmarkFillIcon width={24} height={24} aria-hidden />
             </Button>
@@ -49,15 +64,15 @@ export default function Navigation({
       } else {
         return (
           <div className="flex w-full justify-between items-center">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 min-w-0">
               <Button
                 variant="icon-muted"
                 onClick={() => router.push(redirectUrl)}
-                className="!bg-neutral-100 hover:!bg-neutral-200"
+                aria-label={t("common.back")}
               >
-                <BackArrowIcon alt={t("common.back")} width={24} height={24} />
+                <BackArrowIcon alt="" width={24} height={24} aria-hidden />
               </Button>
-              <h1 className="text-xl font-bold">{title}</h1>
+              <h1 className={titleClassName}>{title}</h1>
             </div>
             {showNotificationIcon && (
               <NovuBellLink className="!text-white" />
@@ -69,7 +84,12 @@ export default function Navigation({
 
     return (
       <>
-        <h1 className="text-xl font-bold">{title}</h1>
+        <h1 className={cn(titleClassName, "flex-1 min-w-0")}>{title}</h1>
+        {onGuide && (
+          <Button variant="icon-muted" onClick={onGuide} aria-label={t("guideIntro.openGuide")} className="me-1">
+            <Image src="/icons/ic-guide-notebook.svg" alt="" width={20} height={20} aria-hidden />
+          </Button>
+        )}
         <Button
           variant="icon-muted"
           onClick={() => {

@@ -163,13 +163,12 @@ export default function PaymentMethodBottomSheet({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Drag handle */}
-        <div className="w-full flex justify-center pt-2 pb-4">
+        <div className="w-full flex justify-center pt-2 pb-3">
           <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
         </div>
 
         <form onSubmit={handleFormSubmit} className="px-6 pb-8">
-          <h2 className="text-2xl font-bold text-center mb-2">{t("paymentMethod.paymentMethodsSheetTitle")}</h2>
+          <h2 className="text-xl font-extrabold text-center mb-2">{t("paymentMethod.paymentMethodsSheetTitle")}</h2>
           <p className="text-center text-gray-600 mb-6">{t("paymentMethod.selectPaymentMethodsHint")}</p>
 
           {/* Search input — no leading icon when empty (mobile parity) */}
@@ -226,7 +225,7 @@ export default function PaymentMethodBottomSheet({
               type="button"
               onClick={handleSelect}
               onMouseDown={(e) => e.stopPropagation()}
-              className="w-full"
+              className="w-full min-h-[48px] h-[48px]"
             >
               {t("wallet.select")}
             </Button>
@@ -235,7 +234,7 @@ export default function PaymentMethodBottomSheet({
               onClick={handleReset}
               onMouseDown={(e) => e.stopPropagation()}
               variant="outline"
-              className="w-full h-[48px] border-black rounded-full"
+              className="w-full min-h-[48px] h-[48px] border-black rounded-full"
             >
               {t("paymentMethod.reset")}
             </Button>

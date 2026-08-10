@@ -14,7 +14,7 @@ import type { Ad } from "../types"
 import { cn } from "@/lib/utils"
 import { formatPaymentMethodName, getPaymentMethodColourByName, IS_CLOSED_GROUP_ENABLED } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
-import { useAlertDialog } from "@/hooks/use-alert-dialog"
+import { useAdvertAlertDialog } from "@/app/ads/hooks/use-advert-alert-dialog"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { AdActionsMenu } from "./ad-actions-menu"
 import ShareAdPage from "./share-ad-page"
@@ -56,7 +56,7 @@ export default function MyAdsTable({
   const { track } = useTrackers()
   const router = useRouter()
   const { toast } = useToast()
-  const { showDeleteDialog, showAlert, hideAlert } = useAlertDialog()
+  const { showDeleteDialog, showAlert, hideAlert } = useAdvertAlertDialog()
   const isMobile = useIsMobile()
   const { userId, onboardingStatus, verificationStatus } = useUserDataStore()
   const isPoiExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poi_status !== "approved"
@@ -624,8 +624,8 @@ export default function MyAdsTable({
 
       <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
         <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle className="font-bold text-xl">{t("myAds.manageAds")}</DrawerTitle>
+          <DrawerHeader className="px-4 pb-4 pt-3">
+            <DrawerTitle className="text-xl font-extrabold">{t("myAds.manageAds")}</DrawerTitle>
           </DrawerHeader>
           <div className="flex flex-col">
             {selectedAd && (

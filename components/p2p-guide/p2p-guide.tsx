@@ -1,8 +1,9 @@
 "use client"
 
 import { useEffect, useState, useCallback, useRef, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import { StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
-import { useGuideStore, GUIDE_TOTAL_STEPS } from "@/stores/guide-store"
+import { useGuideStore, GUIDE_TOTAL_STEPS, type GuideType } from "@/stores/guide-store"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { Button } from "@/components/ui/button"
 
@@ -29,7 +30,7 @@ interface StepConfig {
   bodyKey: string
 }
 
-const STEP_CONFIG: StepConfig[] = [
+const MARKETS_STEP_CONFIG: StepConfig[] = [
   { targetId: "guide-buy-sell-tabs", titleKey: "guide.step1Title", bodyKey: "guide.step1Body" },
   { targetId: "guide-currency-filter", titleKey: "guide.step2Title", bodyKey: "guide.step2Body" },
   { targetId: "guide-payment-method-filter", titleKey: "guide.step3Title", bodyKey: "guide.step3Body" },
@@ -38,6 +39,20 @@ const STEP_CONFIG: StepConfig[] = [
   // Mobile: footer nav. Desktop: footer nav is md:hidden → sidebar nav, tooltip to its right.
   { targetId: "guide-footer-nav", fallbackTargetId: "guide-sidebar-nav", fallbackPlacement: "right", titleKey: "guide.step6Title", bodyKey: "guide.step6Body", fallbackBodyKey: "guide.step6BodyDesktop" },
 ]
+
+const ADS_STEP_CONFIG: StepConfig[] = [
+  { targetId: "ad-guide-trade-type", skipIfAbsent: true, titleKey: "adGuide.step1Title", bodyKey: "adGuide.step1Body" },
+  { targetId: "ad-guide-currency", titleKey: "adGuide.step2Title", bodyKey: "adGuide.step2Body" },
+  { targetId: "ad-guide-rate", titleKey: "adGuide.step3Title", bodyKey: "adGuide.step3Body" },
+  { targetId: "ad-guide-amount", titleKey: "adGuide.step4Title", bodyKey: "adGuide.step4Body" },
+  { targetId: "ad-guide-payment", titleKey: "adGuide.step5Title", bodyKey: "adGuide.step5Body" },
+  { targetId: "ad-guide-conditions", titleKey: "adGuide.step6Title", bodyKey: "adGuide.step6Body" },
+]
+
+const STEP_CONFIG_BY_TYPE: Record<GuideType, StepConfig[]> = {
+  markets: MARKETS_STEP_CONFIG,
+  ads: ADS_STEP_CONFIG,
+}
 
 const SPOTLIGHT_PADDING = 8
 const TOOLTIP_GAP = 8
@@ -57,21 +72,23 @@ function stepWouldBeSkipped(stepConfig: StepConfig): boolean {
 
 export function P2PGuide() {
   const { t } = useTranslations()
-  const { isGuideActive, currentStep, nextStep, goToStep, completeGuide } = useGuideStore()
+  const router = useRouter()
+  const { isGuideActive, guideType, currentStep, nextStep, goToStep, completeGuide, reopenIntro, setPendingReopenIntro } = useGuideStore()
   const [targetRect, setTargetRect] = useState<TargetRect | null>(null)
   const [usingFallback, setUsingFallback] = useState(false)
   // Tracks which step owns the current targetRect; -1 means stale/unset
   const rectStepRef = useRef(-1)
   const tooltipRef = useRef<HTMLDivElement>(null)
   const [viewportHeight, setViewportHeight] = useState(() =>
-    typeof window !== "undefined" ? window.innerHeight : 0
+    typeof window !== "undefined" ? (window.visualViewport?.height ?? window.innerHeight) : 0
   )
   const [viewportWidth, setViewportWidth] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth : 1200
   )
 
   const readTargetRect = useCallback(() => {
-    const config = STEP_CONFIG[currentStep]
+    const activeConfig = STEP_CONFIG_BY_TYPE[guideType] ?? MARKETS_STEP_CONFIG
+    const config = activeConfig[currentStep]
     if (!config) return
 
     const findVisible = (id: string) => {
@@ -98,7 +115,7 @@ export function P2PGuide() {
         rectStepRef.current = currentStep
       } else {
         // All instances hidden, or absent with skipIfAbsent — skip this step
-        if (currentStep >= GUIDE_TOTAL_STEPS - 1) {
+        if (currentStep >= activeConfig.length - 1) {
           completeGuide()
         } else {
           nextStep()
@@ -107,7 +124,25 @@ export function P2PGuide() {
       return
     }
 
-    let { top, left, bottom, right } = el.getBoundingClientRect()
+    const elRect = el.getBoundingClientRect()
+    const vh = window.innerHeight
+
+    // If element is not fully in the viewport, scroll it into view. Use instant behaviour so
+    // the element is at its final position before we read the rect — smooth scroll causes the
+    // rect to be read mid-animation, pinning the spotlight to the wrong place.
+    // scrollMarginTop pushes the element ~30% from the top, leaving room below for the tooltip.
+    // scrollIntoView (not window.scrollTo) is used so the browser finds the right scroll
+    // container regardless of whether it is the document or an inner overflow div.
+    if (elRect.top < 0 || elRect.bottom > vh) {
+      const target = el
+      target.style.scrollMarginTop = `${Math.round(vh * 0.3)}px`
+      target.scrollIntoView({ behavior: "auto", block: "start" })
+      target.style.scrollMarginTop = ""
+      setTimeout(readTargetRect, 80)
+      return
+    }
+
+    let { top, left, bottom, right } = elRect
 
     // Expand spotlight to cover any additional targets
     for (const additionalId of config.additionalTargetIds ?? []) {
@@ -123,10 +158,10 @@ export function P2PGuide() {
 
     setTargetRect({ top, left, width: right - left, height: bottom - top })
     setUsingFallback(usedFallback)
-    setViewportHeight(window.innerHeight)
+    setViewportHeight(window.visualViewport?.height ?? window.innerHeight)
     setViewportWidth(window.innerWidth)
     rectStepRef.current = currentStep
-  }, [currentStep, nextStep, completeGuide])
+  }, [currentStep, guideType, nextStep, completeGuide])
 
   useEffect(() => {
     if (!isGuideActive) return
@@ -176,13 +211,21 @@ export function P2PGuide() {
   }, [isGuideActive, currentStep, targetRect]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pre-compute skip status once per step change — avoids repeated querySelectorAll during render
+  const activeStepConfig = STEP_CONFIG_BY_TYPE[guideType] ?? MARKETS_STEP_CONFIG
   const skippedByStep = useMemo(
-    () => isGuideActive ? STEP_CONFIG.map(s => stepWouldBeSkipped(s)) : [],
+    () => isGuideActive ? activeStepConfig.map(s => stepWouldBeSkipped(s)) : [],
     [isGuideActive, currentStep], // eslint-disable-line react-hooks/exhaustive-deps
+  )
+  // Stable snapshot taken once at guide activation — used for the X/Y counter so it
+  // doesn't shrink when wizard navigation moves earlier elements out of the DOM.
+  const skippedAtStart = useMemo(
+    () => isGuideActive ? activeStepConfig.map(s => stepWouldBeSkipped(s)) : [],
+    [isGuideActive], // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   if (!isGuideActive) return null
 
+  const STEP_CONFIG = STEP_CONFIG_BY_TYPE[guideType] ?? MARKETS_STEP_CONFIG
   const config = STEP_CONFIG[currentStep]
 
   // Hide spotlight and tooltip while readTargetRect is resolving; keep backdrop visible
@@ -197,9 +240,11 @@ export function P2PGuide() {
     goToStep(step)
   }
 
-  // Exclude skipped steps from the counter so numbering stays contiguous
-  const effectiveTotalSteps = STEP_CONFIG.filter((_, i) => !skippedByStep[i]).length
-  const effectiveCurrentStep = STEP_CONFIG.slice(0, currentStep + 1).filter((_, i) => !skippedByStep[i]).length
+  // Exclude skipped steps from the counter so numbering stays contiguous.
+  // Uses skippedAtStart (not skippedByStep) so the total stays stable as wizard
+  // navigation moves already-visited elements out of the DOM.
+  const effectiveTotalSteps = STEP_CONFIG.filter((_, i) => !skippedAtStart[i]).length
+  const effectiveCurrentStep = STEP_CONFIG.slice(0, currentStep + 1).filter((_, i) => !skippedAtStart[i]).length
 
   const spotlightTop = targetRect ? targetRect.top - SPOTLIGHT_PADDING : 0
   const spotlightLeft = targetRect ? targetRect.left - SPOTLIGHT_PADDING : 0
@@ -209,9 +254,13 @@ export function P2PGuide() {
   // "right" placement: tooltip sits to the right of the spotlight (used for sidebar nav on desktop)
   const isRightPlacement = usingFallback && config.fallbackPlacement === "right"
 
-  // Default placement: above or below based on where the target sits in the viewport
-  const targetMidY = targetRect ? targetRect.top + targetRect.height / 2 : viewportHeight / 2
-  const tooltipBelow = targetMidY < viewportHeight * 0.55
+  // Place tooltip below the spotlight if there's room, otherwise above.
+  // Checking available space (not a fixed 55% midpoint) handles small screens and
+  // tall elements where the fixed threshold produces overflow.
+  const ESTIMATED_TOOLTIP_HEIGHT = 200
+  const tooltipBelow = isRightPlacement || (
+    spotlightTop + spotlightHeight + TOOLTIP_GAP + ESTIMATED_TOOLTIP_HEIGHT <= viewportHeight
+  )
 
   const tooltipTopValue = tooltipBelow
     ? spotlightTop + spotlightHeight + TOOLTIP_GAP
@@ -281,10 +330,10 @@ export function P2PGuide() {
               <p id="p2p-guide-title" className="font-bold text-base text-slate-1200 leading-snug pe-2">{t(config.titleKey)}</p>
               <Button
                 type="button"
-                variant="ghost"
+                variant="icon-muted"
                 onClick={completeGuide}
                 aria-label={t("guide.closeLabel")}
-                className="shrink-0 p-0 h-auto w-auto min-w-0 bg-transparent hover:bg-transparent min-h-0"
+                className="shrink-0"
               >
                 <StandaloneXmarkRegularIcon width={24} height={24} aria-hidden />
               </Button>
@@ -312,7 +361,15 @@ export function P2PGuide() {
                   variant="default"
                   size="sm"
                   className="rounded-full font-bold"
-                  onClick={isEffectiveLastStep ? completeGuide : nextStep}
+                  onClick={isEffectiveLastStep ? () => {
+                    completeGuide()
+                    if (guideType === "ads") {
+                      setPendingReopenIntro(true)
+                      router.push("/")
+                    } else {
+                      reopenIntro()
+                    }
+                  } : nextStep}
                 >
                   {isEffectiveLastStep ? t("guide.done") : t("guide.next")}
                 </Button>

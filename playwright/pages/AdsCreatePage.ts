@@ -28,30 +28,34 @@ export class AdsCreatePage {
      */
 
     /**
-     * Step 0 title: "Set ad and rate type".
-     * Responsive + desktop each render a titles block; pick the visible one.
+     * Step 0 label in circle progress: "Set ad and rate type".
      */
     get stepSetAdAndRateTypeTitle(): Locator {
         return this.page
-            .getByTestId("ad-form-step-titles")
+            .getByTestId("ad-form-progress")
             .filter({ visible: true })
             .getByText("Set ad and rate type", { exact: true });
     }
 
-    /** Step 1 title: "Set payment details" */
+    /** Step 1 label in circle progress: "Set amount and payment" */
     get stepSetPaymentDetailsTitle(): Locator {
         return this.page
-            .getByTestId("ad-form-step-titles")
+            .getByTestId("ad-form-progress")
             .filter({ visible: true })
-            .getByText("Set payment details", { exact: true });
+            .getByText("Set amount and payment", { exact: true });
     }
 
-    /** Step 2 title: "Set ad conditions" */
+    /** Step 2 label in circle progress: "Set ad conditions" */
     get stepSetAdConditionsTitle(): Locator {
         return this.page
-            .getByTestId("ad-form-step-titles")
+            .getByTestId("ad-form-progress")
             .filter({ visible: true })
             .getByText("Set ad conditions", { exact: true });
+    }
+
+    /** Review step summary (full page after conditions) */
+    get reviewSummary(): Locator {
+        return this.page.getByTestId("ad-form-review-summary").filter({ visible: true });
     }
 
     /**
@@ -99,8 +103,13 @@ export class AdsCreatePage {
         return this.page.getByTestId("ad-form-btn-next-step2").filter({ visible: true });
     }
 
+    /** Next button advancing from step 2 (conditions) to review */
+    get nextToReviewButton(): Locator {
+        return this.page.getByTestId("ad-form-btn-next-step3").filter({ visible: true });
+    }
+
     /**
-     * Submit button on step 2.
+     * Submit button on review step.
      * Reads "Create ad" in create mode and "Save changes" in edit mode.
      */
     get submitButton(): Locator {
@@ -159,22 +168,37 @@ export class AdsCreatePage {
     }
 
     /**
-     * Fill the rate and amount fields on step 0 for a Buy ad.
+     * Fill the rate field on step 0 (amounts moved to step 1).
      *
-     * @param rate        - Fixed rate per local currency (e.g. "1.5")
-     * @param totalAmount - Total buy amount (e.g. "1000")
+     * @param rate - Fixed rate per local currency (e.g. "1.5")
+     */
+    async fillAdStep0Rate(rate: string): Promise<void> {
+        await expect(this.rateInput, "Rate input should be visible on step 0").toBeVisible();
+        await this.rateInput.fill(rate);
+    }
+
+    /**
+     * Fill amount fields on step 1 (Set amount and payment).
+     *
+     * @param totalAmount - Total buy/sell amount (e.g. "1000")
      * @param minOrder    - Minimum order amount (e.g. "10")
      * @param maxOrder    - Maximum order amount (e.g. "500")
      */
-    async fillAdStep0(rate: string, totalAmount: string, minOrder: string, maxOrder: string): Promise<void> {
-        await expect(this.rateInput, "Rate input should be visible on step 0").toBeVisible();
-        await this.rateInput.fill(rate);
-        await expect(this.totalAmountInput, "Total amount input should be visible on step 0").toBeVisible();
+    async fillAdStep1Amounts(totalAmount: string, minOrder: string, maxOrder: string): Promise<void> {
+        await expect(this.totalAmountInput, "Total amount input should be visible on step 1").toBeVisible();
         await this.totalAmountInput.fill(totalAmount);
-        await expect(this.minOrderInput, "Minimum order input should be visible on step 0").toBeVisible();
+        await expect(this.minOrderInput, "Minimum order input should be visible on step 1").toBeVisible();
         await this.minOrderInput.fill(minOrder);
-        await expect(this.maxOrderInput, "Maximum order input should be visible on step 0").toBeVisible();
+        await expect(this.maxOrderInput, "Maximum order input should be visible on step 1").toBeVisible();
         await this.maxOrderInput.fill(maxOrder);
+    }
+
+    /**
+     * @deprecated Prefer fillAdStep0Rate + fillAdStep1Amounts. Kept for call-site compatibility:
+     * fills rate on step 0 only; amounts must be filled after proceedToStep1 via fillAdStep1Amounts.
+     */
+    async fillAdStep0(rate: string, _totalAmount?: string, _minOrder?: string, _maxOrder?: string): Promise<void> {
+        await this.fillAdStep0Rate(rate);
     }
 
     /**
@@ -235,10 +259,19 @@ export class AdsCreatePage {
     }
 
     /**
-     * Click the Submit button on step 2 to create or save the ad.
+     * Click Next on step 2 to open the review screen.
+     */
+    async proceedToReview(): Promise<void> {
+        await expect(this.nextToReviewButton, "Next button (step 2 → review) should be visible").toBeVisible();
+        await this.nextToReviewButton.click();
+        await expect(this.reviewSummary, "Review summary should be visible").toBeVisible();
+    }
+
+    /**
+     * Click the Submit button on the review step to create or save the ad.
      */
     async submitCreateAd(): Promise<void> {
-        await expect(this.submitButton, "Submit button should be visible on step 2").toBeVisible();
+        await expect(this.submitButton, "Submit button should be visible on review step").toBeVisible();
         await this.submitButton.click();
     }
 
@@ -262,7 +295,7 @@ export class AdsCreatePage {
     async verifyStep1Visible(): Promise<void> {
         await expect(
             this.stepSetPaymentDetailsTitle,
-            "Step 1 title 'Set payment details' should be visible"
+            "Step 1 title 'Set amount and payment' should be visible"
         ).toBeVisible();
     }
 

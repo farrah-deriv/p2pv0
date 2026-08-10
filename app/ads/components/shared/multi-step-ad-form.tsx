@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { ProgressSteps } from "./progress-steps"
 import Navigation from "@/components/navigation"
-import { useAlertDialog } from "@/hooks/use-alert-dialog"
+import { useAdvertAlertDialog } from "@/app/ads/hooks/use-advert-alert-dialog"
 import OrderTimeLimitSelector from "./order-time-limit-selector"
 import AdConditionChipSelector from "./ad-condition-chip-selector"
 import MinimumTierSelector, { type MinimumTradeBand } from "./minimum-tier-selector"
@@ -38,6 +38,7 @@ import {
 import type { Ad } from "@/types"
 import { useTrackers } from "@/analytics/useTrackers"
 import type { AdFormData } from "@/app/ads/types"
+import { useGuideStore } from "@/stores/guide-store"
 import {
   AD_COMPLETION_RATE_OPTIONS,
   AD_JOINED_DAYS_OPTIONS,
@@ -112,7 +113,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false)
   const [isLoadingInitialData, setIsLoadingInitialData] = useState(false)
   const { selectedPaymentMethodIds, setSelectedPaymentMethodIds } = usePaymentSelection()
-  const { showAlert, hideAlert } = useAlertDialog()
+  const { showAlert, hideAlert } = useAdvertAlertDialog()
   const [orderTimeLimit, setOrderTimeLimit] = useState(15)
   const [selectedCountries, setSelectedCountries] = useState<string[] | null>(null)
   const [countries, setCountries] = useState<Country[]>([])
@@ -129,6 +130,28 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
   const [successAd, setSuccessAd] = useState<Ad | null>(null)
   const [showSharePage, setShowSharePage] = useState(false)
   const [originalEditSnapshot, setOriginalEditSnapshot] = useState<AdvertEditSnapshot | null>(null)
+  const [marketPrice, setMarketPrice] = useState<number | null>(null)
+
+  const guideStep = useGuideStore((s) => s.currentStep)
+  const guideType = useGuideStore((s) => s.guideType)
+  const startGuide = useGuideStore((s) => s.startGuide)
+
+  // Start the ads guide when the ?guide=true URL param is present (create mode only)
+  useEffect(() => {
+    if (mode === "create" && searchParams.get("guide") === "true") {
+      const timer = setTimeout(() => startGuide("ads"), 300)
+      return () => clearTimeout(timer)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Sync wizard page with active guide step
+  useEffect(() => {
+    if (guideType !== "ads") return
+    if (guideStep <= 2) setCurrentStep(0)
+    else if (guideStep <= 4) setCurrentStep(1)
+    else if (guideStep === 5) setCurrentStep(2)
+  }, [guideStep, guideType])
 
   const createAdMutation = useCreateAd()
   const updateAdMutation = useUpdateAd()
@@ -143,7 +166,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
 
   const steps = [
     { title: t("adForm.setTypeAndPrice"), completed: currentStep > 0 },
-    { title: t("adForm.setPaymentDetails"), completed: currentStep > 1 },
+    { title: t("adForm.setAmountAndPayment"), completed: currentStep > 1 },
     { title: t("adForm.setAdConditions"), completed: currentStep > 2 },
   ]
 
@@ -230,8 +253,8 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
             // Mirrors mobile prefillFromAdvert: sell ads use payment_method_ids only.
             paymentMethodIds = Array.isArray(data.payment_method_ids)
               ? data.payment_method_ids
-                  .map((id: unknown) => Number(id))
-                  .filter((id: number) => !Number.isNaN(id))
+                .map((id: unknown) => Number(id))
+                .filter((id: number) => !Number.isNaN(id))
               : []
 
             setSelectedPaymentMethodIds(paymentMethodIds.map(String))
@@ -395,6 +418,9 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
   useEffect(() => {
     const handleAdFormValidation = (e: any) => {
       setAdFormValid(e.detail.isValid)
+      if (typeof e.detail.marketPrice === "number") {
+        setMarketPrice(e.detail.marketPrice)
+      }
       if (e.detail.isValid) {
         const updatedData = { ...formData, ...e.detail.formData }
         setFormData(updatedData)
@@ -420,7 +446,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     }
   }, [formData])
 
-  const handleAdDetailsNext = (data, errors?: Record<string, string>) => {
+  const handleAdDetailsNext = (data: Partial<AdFormData>, errors?: Record<string, string>) => {
     const updatedData = { ...formData, ...data }
     setFormData(updatedData)
     formDataRef.current = updatedData
@@ -769,11 +795,11 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     }
 
     if (currentStep === 1) {
-      if (mode === "create" && formData.type === "buy" && !paymentFormValid) {
+      if (!paymentFormValid) {
         return
       }
 
-      if (formData.type === "sell" && !hasSelectedPaymentMethods) {
+      if (mode === "edit" && formData.type === "sell" && !hasSelectedPaymentMethods) {
         return
       }
 
@@ -784,6 +810,10 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
 
     if (currentStep === 2) {
       if (mode === "edit" && (!adFormValid || !hasEditChanges)) {
+        return
+      }
+
+      if (mustSwitchEveryone) {
         return
       }
 
@@ -816,14 +846,16 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
           track("ek_confirm_cancel_ad_cancel_ad_sheet")
           const finalData = { ...formDataRef.current }
           const currency = finalData?.buyCurrency || "USD"
-          leaveExchangeRatesChannel(currency)
+          const paymentCurrency = finalData?.forCurrency || ""
+          leaveExchangeRatesChannel(currency, paymentCurrency)
           router.push(myAdsPath())
         },
       })
     } else {
       const finalData = { ...formDataRef.current }
       const currency = finalData?.buyCurrency || "USD"
-      leaveExchangeRatesChannel(currency)
+      const paymentCurrency = finalData?.forCurrency || ""
+      leaveExchangeRatesChannel(currency, paymentCurrency)
       router.push(myAdsReturnPath)
     }
   }
@@ -836,7 +868,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
 
   const isButtonDisabled =
     (currentStep === 0 && !adFormValid) ||
-    (currentStep === 1 && mode === "create" && formData.type === "buy" && !paymentFormValid) ||
+    (currentStep === 1 && !paymentFormValid) ||
     (currentStep === 1 && formData.type === "sell" && !hasSelectedPaymentMethods) ||
     (currentStep === 2 && mode === "edit" && (!adFormValid || !hasEditChanges)) ||
     (currentStep === 2 && mustSwitchEveryone) ||
@@ -850,9 +882,16 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     return mode === "create" ? t("adForm.createAd") : t("adForm.saveChanges")
   }
 
-  const getPageTitle = () => {
+  const getNavTitle = () => {
     return mode === "create" ? t("adForm.createAd") : t("adForm.editAd")
   }
+
+  const footerButtonTestId =
+    currentStep === 0
+      ? "ad-form-btn-next-step1"
+      : currentStep === 1
+        ? "ad-form-btn-next-step2"
+        : "ad-form-btn-submit"
 
   return (
     <>
@@ -882,257 +921,61 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
               Desktop (md+): page scroll with sticky header/footer as before. */}
           <div className="fixed inset-0 flex flex-col bg-white md:overflow-y-auto md:px-[24px]">
             <div className="flex min-h-0 flex-1 flex-col md:mx-auto md:h-auto md:min-h-full md:w-full md:max-w-[620px] md:overflow-visible md:px-0 progress-steps-container overflow-x-hidden">
-              {/* Top: close/back + progress (and desktop titles) — not part of scroll */}
+              {/* Top: close/back + progress — not part of scroll */}
               <div className="shrink-0 bg-white md:sticky md:top-0 md:z-10">
                 <Navigation
                   isBackBtnVisible={currentStep != 0}
                   isVisible={false}
                   onBack={() => {
                     track(`ek_back_create_ad_step_${currentStep + 1}`)
-                    const updatedStep = currentStep - 1
-                    setCurrentStep(updatedStep)
+                    setCurrentStep(currentStep - 1)
                   }}
                   onClose={handleClose}
+                  onGuide={mode === "create" ? () => startGuide("ads") : undefined}
                   title=""
+                  largeTitle
                   className="md:h-16 md:pt-8"
                 />
                 <ProgressSteps
                   currentStep={currentStep}
                   steps={steps}
-                  className="px-6 pt-6 md:pt-0 md:my-6"
+                  label={getNavTitle()}
+                  className="px-6 pt-4 md:pt-2 md:my-4"
                 />
-                <div
-                  className="hidden md:block px-6 mb-6"
-                  data-testid="ad-form-step-titles"
-                >
-                  <div className="text-base font-normal text-slate-1200">
-                    {getPageTitle()}
-                  </div>
-                  <div className="text-[32px] font-extrabold text-black mt-1">
-                    {steps[currentStep].title}
-                  </div>
-                </div>
               </div>
 
               {/* Middle: only this region scrolls on responsive */}
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain md:overflow-visible md:flex-none pb-4 md:pb-0">
-                <div
-                  className="md:hidden px-6 mt-6 mb-4"
-                  data-testid="ad-form-step-titles"
-                >
-                  <div className="text-base font-normal text-slate-1200">
-                    {getPageTitle()}
-                  </div>
-                  <div className="text-xl font-extrabold text-black mt-1">
-                    {steps[currentStep].title}
-                  </div>
-                </div>
-
-                <div className="relative mx-6 md:mb-0">
-                {currentStep === 0 ? (
-                  <AdDetailsForm
-                    onNext={handleAdDetailsNext}
-                    onClose={handleClose}
-                    initialData={formData}
-                    setFormData={setFormData}
-                    isEditMode={mode === "edit"}
-                    currencies={currencies}
-                    isLoadingInitialData={isLoadingInitialData}
-                  />
-                ) : currentStep === 1 ? (
-                  <PaymentDetailsForm
-                    initialData={formData}
-                    onBottomSheetOpenChange={handleBottomSheetOpenChange}
-                    userPaymentMethods={userPaymentMethods}
-                    availablePaymentMethods={availablePaymentMethods}
-                    onRefetchPaymentMethods={async () => {
-                      await refetchUserPaymentMethods()
-                    }}
-                  />
-                ) : (
-                  <div className="space-y-6">
-                    <div>
-                      <div className="flex gap-1 items-center mb-4">
-                        <h3 className="text-base font-normal leading-6 tracking-normal text-start">
-                          {t("adForm.orderTimeLimit")}
-                        </h3>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger data-testid="ad-form-tooltip-time-limit">
-                              <Image
-                                src="/icons/info-circle.svg"
-                                alt="Info"
-                                width={24}
-                                height={24}
-                                className="cursor-pointer"
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p className="text-white text-start">
-                                {formData.type === "sell"
-                                  ? t("adForm.orderTimeLimitHelperBuyer")
-                                  : t("adForm.orderTimeLimitHelperSeller")}
-                              </p>
-                              <TooltipArrow className="fill-black" />
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                      <OrderTimeLimitSelector value={orderTimeLimit} onValueChange={setOrderTimeLimit} />
-                    </div>
-
-                    <div className="w-full md:w-[100%]">
-                      <div className="flex gap-1 items-center mb-4">
-                        <h3 className="text-base font-normal text-start">{t("adForm.country")}</h3>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger data-testid="ad-form-tooltip-countries">
-                              <Image
-                                src="/icons/info-circle.svg"
-                                alt="Info"
-                                width={24}
-                                height={24}
-                                className="cursor-pointer"
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p className="text-white text-start">
-                                {formData.type === "sell"
-                                  ? t("adForm.countryHelperBuyer")
-                                  : t("adForm.countryHelperSeller")}
-                              </p>
-                              <TooltipArrow className="fill-black" />
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
+                <div className="relative mx-6 mt-4 md:mt-2 md:mb-0">
+                  {currentStep === 0 ? (
+                    <AdDetailsForm
+                      onNext={handleAdDetailsNext}
+                      initialData={formData}
+                      isEditMode={mode === "edit"}
+                      currencies={currencies}
+                      isLoadingInitialData={isLoadingInitialData}
+                    />
+                  ) : currentStep === 1 ? (
+                    <PaymentDetailsForm
+                      initialData={formData}
+                      onBottomSheetOpenChange={handleBottomSheetOpenChange}
+                      userPaymentMethods={userPaymentMethods}
+                      availablePaymentMethods={availablePaymentMethods}
+                      onRefetchPaymentMethods={async () => {
+                        await refetchUserPaymentMethods()
+                      }}
+                      isEditMode={mode === "edit"}
+                    />
+                  ) : currentStep === 2 ? (
+                    <div className="space-y-6" data-guide-id="ad-guide-conditions">
                       <div>
-                        <CountrySelection
-                          selectedCountries={selectedCountries}
-                          onCountriesChange={setSelectedCountries}
-                          countries={countries}
-                          isLoading={isLoadingCountries}
-                        />
-                      </div>
-                    </div>
-
-                    {IS_AD_CONDITIONS_ENABLED ? (
-                      <>
-                        <div className="w-full md:w-[100%]">
-                          <div className="flex gap-1 items-center mb-4">
-                            <h3 className="text-base font-normal leading-6 tracking-normal text-start">
-                              {t("adForm.joinedMoreThan")}
-                            </h3>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger data-testid="ad-form-tooltip-joined-days">
-                                  <Image
-                                    src="/icons/info-circle.svg"
-                                    alt="Info"
-                                    width={24}
-                                    height={24}
-                                    className="cursor-pointer"
-                                  />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p className="text-white text-start">
-                                    {formData.type === "sell"
-                                      ? t("adForm.joinedMoreThanHelperBuyer")
-                                      : t("adForm.joinedMoreThanHelperSeller")}
-                                  </p>
-                                  <TooltipArrow className="fill-black" />
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          </div>
-                          <AdConditionChipSelector
-                            value={minimumJoinedDays}
-                            onValueChange={(value) => {
-                              track("ek_select_joined_days_create_ad_step_3", {
-                                minimum_join_days: value?.toString() ?? "any",
-                              })
-                              setMinimumJoinedDays(value)
-                            }}
-                            testIdPrefix="ad-form-chip-joined-days"
-                            options={AD_JOINED_DAYS_OPTIONS}
-                            labelFor={(days) => {
-                              switch (days) {
-                                case 15:
-                                  return t("adForm.joinedMoreThan15Days")
-                                case 30:
-                                  return t("adForm.joinedMoreThan30Days")
-                                case 60:
-                                  return t("adForm.joinedMoreThan60Days")
-                                default:
-                                  return `${days}`
-                              }
-                            }}
-                          />
-                        </div>
-
-                        <div className="w-full md:w-[100%]">
-                          <div className="flex gap-1 items-center mb-4">
-                            <h3 className="text-base font-normal leading-6 tracking-normal text-start">
-                              {t("adForm.completionRateMoreThan")}
-                            </h3>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger data-testid="ad-form-tooltip-completion-rate">
-                                  <Image
-                                    src="/icons/info-circle.svg"
-                                    alt="Info"
-                                    width={24}
-                                    height={24}
-                                    className="cursor-pointer"
-                                  />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p className="text-white text-start">
-                                    {formData.type === "sell"
-                                      ? t("adForm.completionRateMoreThanHelperBuyer")
-                                      : t("adForm.completionRateMoreThanHelperSeller")}
-                                  </p>
-                                  <TooltipArrow className="fill-black" />
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          </div>
-                          <AdConditionChipSelector
-                            value={minimumCompletionRate30Day}
-                            onValueChange={(value) => {
-                              track("ek_select_completion_rate_create_ad_step_3", {
-                                minimum_completion_rate_30day: value?.toString() ?? "any",
-                              })
-                              setMinimumCompletionRate30Day(value)
-                            }}
-                            testIdPrefix="ad-form-chip-completion-rate"
-                            options={AD_COMPLETION_RATE_OPTIONS}
-                            labelFor={(rate) => {
-                              switch (rate) {
-                                case 50:
-                                  return t("adForm.completionRate50Percent")
-                                case 70:
-                                  return t("adForm.completionRate70Percent")
-                                case 90:
-                                  return t("adForm.completionRate90Percent")
-                                default:
-                                  return `${rate}%`
-                              }
-                            }}
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <div className="w-full md:w-[100%]">
-                        <div className="flex gap-1 items-center mb-4">
-                          <h3 className="text-base font-normal leading-6 tracking-normal text-start">
-                            {formData.type === "sell"
-                              ? t("adForm.minimumTierBuyer")
-                              : t("adForm.minimumTierSeller")}
+                        <div className="flex gap-1 items-center mb-2">
+                          <h3 className="text-sm font-normal leading-5 tracking-normal text-start text-slate-1200">
+                            {t("adForm.orderTimeLimit")}
                           </h3>
                           <TooltipProvider>
                             <Tooltip>
-                              <TooltipTrigger data-testid="ad-form-tooltip-minimum-tier">
+                              <TooltipTrigger data-testid="ad-form-tooltip-time-limit">
                                 <Image
                                   src="/icons/info-circle.svg"
                                   alt="Info"
@@ -1144,48 +987,222 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
                               <TooltipContent>
                                 <p className="text-white text-start">
                                   {formData.type === "sell"
-                                    ? t("adForm.minimumTierHelperBuyer")
-                                    : t("adForm.minimumTierHelperSeller")}
+                                    ? t("adForm.orderTimeLimitHelperBuyer")
+                                    : t("adForm.orderTimeLimitHelperSeller")}
                                 </p>
                                 <TooltipArrow className="fill-black" />
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
                         </div>
-                        <MinimumTierSelector
-                          value={minimumTradeBand}
-                          onValueChange={setMinimumTradeBand}
-                          adType={formData.type || "buy"}
-                        />
+                        <OrderTimeLimitSelector value={orderTimeLimit} onValueChange={setOrderTimeLimit} />
                       </div>
-                    )}
-                    {showVisibility && (<div>
-                      <div className="flex gap-1 items-center mb-4">
-                        <h3 className="text-base font-normal leading-6 tracking-normal text-start">
-                          {t("adForm.adVisibility")}
-                        </h3>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger data-testid="ad-form-tooltip-visibility">
-                              <Image
-                                src="/icons/info-circle.svg"
-                                alt="Info"
-                                width={24}
-                                height={24}
-                                className="cursor-pointer"
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p className="text-white">{t("adForm.adVisibilityTooltip")}</p>
-                              <TooltipArrow className="fill-black" />
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+
+                      <div className="w-full md:w-[100%]">
+                        <div className="flex gap-1 items-center mb-2">
+                          <h3 className="text-sm font-normal leading-5 tracking-normal text-start text-slate-1200">{t("adForm.country")}</h3>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger data-testid="ad-form-tooltip-countries">
+                                <Image
+                                  src="/icons/info-circle.svg"
+                                  alt="Info"
+                                  width={24}
+                                  height={24}
+                                  className="cursor-pointer"
+                                />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-white text-start">
+                                  {formData.type === "sell"
+                                    ? t("adForm.countryHelperBuyer")
+                                    : t("adForm.countryHelperSeller")}
+                                </p>
+                                <TooltipArrow className="fill-black" />
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        <div>
+                          <CountrySelection
+                            selectedCountries={selectedCountries}
+                            onCountriesChange={setSelectedCountries}
+                            countries={countries}
+                            isLoading={isLoadingCountries}
+                          />
+                        </div>
                       </div>
-                      <AdVisibilitySelector value={adVisibility} onValueChange={setAdVisibility} closedGroupDisabled={isDowngradedPrivate} />
-                    </div>)}
-                  </div>
-                )}
+
+                      {IS_AD_CONDITIONS_ENABLED ? (
+                        <>
+                          <div className="w-full md:w-[100%]">
+                            <div className="flex gap-1 items-center mb-2">
+                              <h3 className="text-sm font-normal leading-5 tracking-normal text-start text-slate-1200">
+                                {t("adForm.joinedMoreThan")}
+                              </h3>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger data-testid="ad-form-tooltip-joined-days">
+                                    <Image
+                                      src="/icons/info-circle.svg"
+                                      alt="Info"
+                                      width={24}
+                                      height={24}
+                                      className="cursor-pointer"
+                                    />
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-white text-start">
+                                      {formData.type === "sell"
+                                        ? t("adForm.joinedMoreThanHelperBuyer")
+                                        : t("adForm.joinedMoreThanHelperSeller")}
+                                    </p>
+                                    <TooltipArrow className="fill-black" />
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                            <AdConditionChipSelector
+                              value={minimumJoinedDays}
+                              onValueChange={(value) => {
+                                track("ek_select_joined_days_create_ad_step_3", {
+                                  minimum_join_days: value?.toString() ?? "any",
+                                })
+                                setMinimumJoinedDays(value)
+                              }}
+                              testIdPrefix="ad-form-chip-joined-days"
+                              options={AD_JOINED_DAYS_OPTIONS}
+                              labelFor={(days) => {
+                                switch (days) {
+                                  case 15:
+                                    return t("adForm.joinedMoreThan15Days")
+                                  case 30:
+                                    return t("adForm.joinedMoreThan30Days")
+                                  case 60:
+                                    return t("adForm.joinedMoreThan60Days")
+                                  default:
+                                    return `${days}`
+                                }
+                              }}
+                            />
+                          </div>
+
+                          <div className="w-full md:w-[100%]">
+                            <div className="flex gap-1 items-center mb-2">
+                              <h3 className="text-sm font-normal leading-5 tracking-normal text-start text-slate-1200">
+                                {t("adForm.completionRateMoreThan")}
+                              </h3>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger data-testid="ad-form-tooltip-completion-rate">
+                                    <Image
+                                      src="/icons/info-circle.svg"
+                                      alt="Info"
+                                      width={24}
+                                      height={24}
+                                      className="cursor-pointer"
+                                    />
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-white text-start">
+                                      {formData.type === "sell"
+                                        ? t("adForm.completionRateMoreThanHelperBuyer")
+                                        : t("adForm.completionRateMoreThanHelperSeller")}
+                                    </p>
+                                    <TooltipArrow className="fill-black" />
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                            <AdConditionChipSelector
+                              value={minimumCompletionRate30Day}
+                              onValueChange={(value) => {
+                                track("ek_select_completion_rate_create_ad_step_3", {
+                                  minimum_completion_rate_30day: value?.toString() ?? "any",
+                                })
+                                setMinimumCompletionRate30Day(value)
+                              }}
+                              testIdPrefix="ad-form-chip-completion-rate"
+                              options={AD_COMPLETION_RATE_OPTIONS}
+                              labelFor={(rate) => {
+                                switch (rate) {
+                                  case 50:
+                                    return t("adForm.completionRate50Percent")
+                                  case 70:
+                                    return t("adForm.completionRate70Percent")
+                                  case 90:
+                                    return t("adForm.completionRate90Percent")
+                                  default:
+                                    return `${rate}%`
+                                }
+                              }}
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <div className="w-full md:w-[100%]">
+                          <div className="flex gap-1 items-center mb-2">
+                            <h3 className="text-sm font-normal leading-5 tracking-normal text-start text-slate-1200">
+                              {formData.type === "sell"
+                                ? t("adForm.minimumTierBuyer")
+                                : t("adForm.minimumTierSeller")}
+                            </h3>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger data-testid="ad-form-tooltip-minimum-tier">
+                                  <Image
+                                    src="/icons/info-circle.svg"
+                                    alt="Info"
+                                    width={24}
+                                    height={24}
+                                    className="cursor-pointer"
+                                  />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="text-white text-start">
+                                    {formData.type === "sell"
+                                      ? t("adForm.minimumTierHelperBuyer")
+                                      : t("adForm.minimumTierHelperSeller")}
+                                  </p>
+                                  <TooltipArrow className="fill-black" />
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                          <MinimumTierSelector
+                            value={minimumTradeBand}
+                            onValueChange={setMinimumTradeBand}
+                            adType={formData.type || "buy"}
+                          />
+                        </div>
+                      )}
+                      {showVisibility && (<div>
+                        <div className="flex gap-1 items-center mb-2">
+                          <h3 className="text-sm font-normal leading-5 tracking-normal text-start text-slate-1200">
+                            {t("adForm.adVisibility")}
+                          </h3>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger data-testid="ad-form-tooltip-visibility">
+                                <Image
+                                  src="/icons/info-circle.svg"
+                                  alt="Info"
+                                  width={24}
+                                  height={24}
+                                  className="cursor-pointer"
+                                />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-white">{t("adForm.adVisibilityTooltip")}</p>
+                                <TooltipArrow className="fill-black" />
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        <AdVisibilitySelector value={adVisibility} onValueChange={setAdVisibility} closedGroupDisabled={isDowngradedPrivate} />
+                      </div>)}
+                    </div>
+                  ) : null}
                 </div>
               </div>
 
@@ -1198,13 +1215,8 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
                       onClick={handleButtonClick}
                       disabled={isButtonDisabled || isSubmitting}
                       className="w-full"
-                      data-testid={
-                        currentStep === 0
-                          ? "ad-form-btn-next-step1"
-                          : currentStep === 1
-                            ? "ad-form-btn-next-step2"
-                            : "ad-form-btn-submit"
-                      }
+                      size="lg"
+                      data-testid={footerButtonTestId}
                     >
                       {isSubmitting ? (
                         <Spinner size="xs" />
@@ -1215,19 +1227,14 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
                   </div>
                 </div>
               ) : (
-                <div className="hidden md:block w-full bg-white h-24 md:sticky md:bottom-0">
-                  <div className="flex justify-end px-6 pt-6">
+                <div className="hidden md:block w-full bg-white md:sticky md:bottom-0">
+                  <div className="flex justify-end px-6 py-6">
                     <Button
                       type="button"
                       onClick={handleButtonClick}
                       disabled={isButtonDisabled || isSubmitting}
-                      data-testid={
-                        currentStep === 0
-                          ? "ad-form-btn-next-step1"
-                          : currentStep === 1
-                            ? "ad-form-btn-next-step2"
-                            : "ad-form-btn-submit"
-                      }
+                      size="lg"
+                      data-testid={footerButtonTestId}
                     >
                       {isSubmitting ? (
                         <Spinner size="xs" />
