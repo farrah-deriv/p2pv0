@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import { BackArrowIcon } from "@/components/ui/back-arrow-icon"
 import { Button } from "@/components/ui/button"
-import { StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
+import { StandaloneXmarkFillIcon } from "@deriv/quill-icons/Standalone"
 import { NovuBellLink } from "@/components/novu-notifications"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { cn } from "@/lib/utils"
@@ -42,7 +42,7 @@ export default function Navigation({
             </Button>
             <h1 className="text-xl font-bold">{title}</h1>
             <Button variant="icon-muted" onClick={onClose} aria-label={t("common.close")} data-testid="ad-form-btn-close">
-              <StandaloneXmarkRegularIcon width={24} height={24} aria-hidden />
+              <StandaloneXmarkFillIcon width={24} height={24} aria-hidden />
             </Button>
           </div>
         )
@@ -84,7 +84,7 @@ export default function Navigation({
           aria-label={t("common.close")}
           data-testid="ad-form-btn-close"
         >
-          <StandaloneXmarkRegularIcon width={24} height={24} aria-hidden />
+          <StandaloneXmarkFillIcon width={24} height={24} aria-hidden />
         </Button>
       </>
     )

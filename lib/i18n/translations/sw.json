@@ -1208,6 +1208,7 @@
     "date": "Tarehe",
     "deposit": "Wekeza",
     "depositNow": "Weka pesa sasa",
+    "noFundsAvailable": "No funds available.",
     "depositToP2p": "Wekeza",
     "depositWith": "Wekeza kwa",
     "directDepositDescription": "Deposit funds directly from your bank account, e-wallet, or other payment methods.",

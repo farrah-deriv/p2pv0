@@ -1232,6 +1232,7 @@
     "date": "Дата",
     "deposit": "Пополнить",
     "depositNow": "Пополнить сейчас",
+    "noFundsAvailable": "No funds available.",
     "depositToP2p": "Пополнить",
     "depositWith": "Пополнить с",
     "directDepositDescription": "Deposit funds directly from your bank account, e-wallet, or other payment methods.",

@@ -1212,6 +1212,7 @@
     "date": "Data",
     "deposit": "Wpłata",
     "depositNow": "Wpłać teraz",
+    "noFundsAvailable": "No funds available.",
     "depositToP2p": "Wpłata",
     "depositWith": "Wpłata za pomocą",
     "directDepositDescription": "Deposit funds directly from your bank account, e-wallet, or other payment methods.",

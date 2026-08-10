@@ -58,11 +58,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             ? "!bg-transparent !border !border-solid !border-slate-1200 hover:!bg-black/5"
             : variant === "buy"
               ? "!bg-success-text-secondary hover:!bg-success-text-secondary-hover !text-white !border-0"
-              : variant === "ghost" || variant === "outline"
-                ? "!flex-row !items-center"
-                : variant === "chip"
-                  ? "!rounded-full !border !border-neutral-200 !bg-transparent !text-neutral-600 !text-xs !font-medium !px-3 !py-2 !h-auto !min-h-0 !min-w-0"
-                  : undefined
+              : variant === "outline-white"
+                ? "!bg-transparent !border !border-white !text-white hover:!bg-white/10 !flex-row !items-center"
+                : variant === "ghost" || variant === "outline"
+                  ? "!flex-row !items-center"
+                  : variant === "chip"
+                    ? "!rounded-full !border !border-neutral-200 !bg-transparent !text-neutral-600 !text-xs !font-medium !px-3 !py-2 !h-auto !min-h-0 !min-w-0"
+                    : undefined
 
     return (
       <QuillButton

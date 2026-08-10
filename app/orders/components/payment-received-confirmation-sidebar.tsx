@@ -194,7 +194,7 @@ export const PaymentReceivedConfirmationSidebar = ({
         <div className="flex flex-col h-full sm:max-w-none md:max-w-xl md:mx-auto">
           <SheetHeader className="p-4">
             <div className="flex items-center justify-between">
-              <Button variant="icon-muted" onClick={onClose} className="!bg-neutral-100 hover:!bg-neutral-200" aria-label={t("common.back")}>
+              <Button variant="icon-muted" onClick={onClose} className="!bg-black/[0.04] hover:!bg-black/[0.08]" aria-label={t("common.back")}>
                 <StandaloneArrowLeftFillIcon width={24} height={24} className="rtl:rotate-180" aria-hidden />
               </Button>
             </div>

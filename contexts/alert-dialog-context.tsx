@@ -112,16 +112,15 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
     if (config.content) {
       return (
         <div className="flex min-w-0 w-full flex-col overflow-hidden">
-          <div className="mb-4 flex shrink-0 items-start justify-between gap-3 px-8 pt-6">
+          <div className="mb-4 flex shrink-0 items-center justify-between gap-3 px-8 pt-6">
             {config.title && <h2 className="min-w-0 flex-1 text-start text-2xl leading-8 font-extrabold text-slate-1200">{config.title}</h2>}
             {!config.hideCloseButton && (
               <Button
                 type="button"
-                variant="ghost"
-                size="icon"
+                variant="icon-muted"
                 onClick={handleClose}
                 aria-label={t("common.close")}
-                className="shrink-0 size-10 min-h-10 min-w-10 rounded-full bg-black/4 hover:bg-black/8 focus-visible:ring-1 focus-visible:ring-black"
+                className="shrink-0 !bg-black/[0.04] hover:!bg-black/[0.08]"
               >
                 <StandaloneXmarkRegularIcon width={20} height={20} aria-hidden />
               </Button>
@@ -156,18 +155,17 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
     return (
       <div className="flex flex-col gap-8 p-8 overflow-y-auto" data-testid={config.testId}>
         <div className="flex flex-col gap-4">
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center justify-between gap-3">
             {config.title && (
               <h2 className="text-2xl leading-8 font-extrabold text-slate-1200">{config.title}</h2>
             )}
             {!config.hideCloseButton && (
               <Button
                 type="button"
-                variant="ghost"
-                size="icon"
+                variant="icon-muted"
                 onClick={handleClose}
                 aria-label={t("common.close")}
-                className="shrink-0 size-10 min-h-10 min-w-10 rounded-full bg-black/4 hover:bg-black/8 focus-visible:ring-1 focus-visible:ring-black"
+                className="shrink-0 !bg-black/[0.04] hover:!bg-black/[0.08]"
               >
                 <StandaloneXmarkRegularIcon width={20} height={20} aria-hidden />
               </Button>

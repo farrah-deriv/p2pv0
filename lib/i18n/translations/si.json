@@ -1200,6 +1200,7 @@
     "date": "දිනය",
     "deposit": "තැන්පත් කරන්න",
     "depositNow": "දැන් තැන්පත් කරන්න",
+    "noFundsAvailable": "No funds available.",
     "depositToP2p": "තැන්පත් කරන්න",
     "depositWith": "සමඟ තැන්පත් කරන්න",
     "directDepositDescription": "Deposit funds directly from your bank account, e-wallet, or other payment methods.",

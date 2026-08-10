@@ -1,5 +1,5 @@
 "use client"
-import { StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
+import { StandaloneXmarkFillIcon } from "@deriv/quill-icons/Standalone"
 import DepositOptions from "./deposit-options"
 import WithdrawOptions from "./withdraw-options"
 import Transfer from "./transfer"
@@ -82,7 +82,7 @@ export default function WalletSidebar({
         <div dir={dir} className="flex items-center justify-between gap-4 px-4 pb-3 md:py-3 mt-9 md:mt-0 md:border-b">
           <h2 className="min-w-0 flex-1 text-start text-lg font-bold">{getTitle()}</h2>
           <Button data-testid="wallet-sidebar-btn-close" onClick={onClose} variant="icon-muted" aria-label={t("common.close")}>
-            <StandaloneXmarkRegularIcon width={24} height={24} aria-hidden />
+            <StandaloneXmarkFillIcon width={24} height={24} aria-hidden />
           </Button>
         </div>
 

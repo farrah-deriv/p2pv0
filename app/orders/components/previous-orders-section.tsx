@@ -20,7 +20,7 @@ export function PreviousOrdersSection({ onBack }: PreviousOrdersSectionProps) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-4 mb-6 px-3">
-        <Button variant="icon-muted" onClick={onBack} className="!bg-neutral-100 hover:!bg-neutral-200" aria-label={t("common.back")}>
+        <Button variant="icon-muted" onClick={onBack} className="!bg-black/[0.04] hover:!bg-black/[0.08]" aria-label={t("common.back")}>
           <StandaloneArrowLeftFillIcon width={24} height={24} className="rtl:rotate-180" aria-hidden />
         </Button>
       </div>

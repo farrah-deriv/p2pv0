@@ -1210,6 +1210,7 @@
     "date": "তারিখ",
     "deposit": "জমা",
     "depositNow": "এখনই জমা দিন",
+    "noFundsAvailable": "No funds available.",
     "depositToP2p": "জমা",
     "depositWith": "দিয়ে জমা করুন",
     "directDepositDescription": "Deposit funds directly from your bank account, e-wallet, or other payment methods.",

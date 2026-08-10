@@ -3,12 +3,10 @@
 import { useState, useRef, useEffect } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { StandaloneChevronDownRegularIcon, StandaloneChevronUpRegularIcon } from "@deriv/quill-icons/Standalone"
-import Image from "next/image"
+import { StandaloneChevronDownRegularIcon, StandaloneChevronUpRegularIcon, StandaloneSearchRegularIcon, StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
 import { cn } from "@/lib/utils"
 import { CHECKBOX_LABEL_ROW } from "@/lib/rtl"
 import { useTranslations } from "@/lib/i18n/use-translations"
@@ -94,23 +92,25 @@ export default function CountrySelection({ countries, selectedCountries, onCount
 
   const countryList = (
     <div className="space-y-4">
-      <div className="relative">
-        <Input
+      <div className="flex items-center gap-2 rounded-lg bg-black/[0.04] px-3 h-10">
+        <StandaloneSearchRegularIcon iconSize="xs" className="shrink-0 text-neutral-400" aria-hidden />
+        <input
+          type="text"
           placeholder={t("common.search")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className={`text-base text-start ps-4 h-8 border-grayscale-500 focus:border-grayscale-500 bg-grayscale-500 rounded-lg ${searchTerm ? "pe-10" : "pe-4"}`}
           autoComplete="off"
           autoFocus
+          className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-neutral-400"
         />
         {searchTerm && (
           <Button
-            variant="ghost"
-            size="sm"
+            variant="icon-muted"
             onClick={() => setSearchTerm("")}
-            className="absolute end-0 top-1/2 transform -translate-y-1/2 hover:bg-transparent"
+            aria-label={t("common.clearSearch")}
+            className="!bg-transparent hover:!bg-black/[0.06] !w-6 !h-6 !min-w-0 shrink-0"
           >
-            <Image src="/icons/clear-search-icon.png" alt={t("common.clearSearch")} width={24} height={24} />
+            <StandaloneXmarkRegularIcon iconSize="xs" aria-hidden />
           </Button>
         )}
       </div>

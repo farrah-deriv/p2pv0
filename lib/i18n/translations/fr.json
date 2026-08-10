@@ -1216,6 +1216,7 @@
     "date": "Date",
     "deposit": "Dépôt",
     "depositNow": "Déposer maintenant",
+    "noFundsAvailable": "No funds available.",
     "depositToP2p": "Dépôt",
     "depositWith": "Déposer avec",
     "directDepositDescription": "Deposit funds directly from your bank account, e-wallet, or other payment methods.",

@@ -419,10 +419,10 @@ export default function Sidebar({ className }: SidebarProps) {
             variant="ghost"
             data-testid="sidebar-btn-feedback"
             onClick={() => setShowFeedbackDialog(true)}
-            className="hidden md:flex items-center gap-3 !rounded-md !py-4 text-sm w-full text-start !justify-start !h-auto"
+            className="hidden md:flex w-full !justify-start items-center gap-3 !rounded-lg !px-3 !py-2.5 !h-auto text-sm !text-neutral-600 hover:!bg-neutral-50 !transition-colors"
           >
             <div className="h-5 w-5 flex items-center justify-center">
-              <Image src="/icons/ic-feedback.svg" alt="" width={20} height={20} />
+              <Image src="/icons/ic-feedback.svg" alt="" width={20} height={20} aria-hidden />
             </div>
             {t("nps.sendFeedback")}
           </Button>

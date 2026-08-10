@@ -13,7 +13,7 @@ import { createOrder } from "@/services/api/api-orders"
 import { ProfileAPI } from "@/services/api"
 import { formatPaymentMethodName, cn, getHomeUrl } from "@/lib/utils"
 import Image from "next/image"
-import { StandaloneChevronDownRegularIcon, StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
+import { StandaloneChevronDownRegularIcon, StandaloneXmarkFillIcon } from "@deriv/quill-icons/Standalone"
 import AddPaymentMethodPanel from "@/app/profile/components/add-payment-method-panel"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { useToast } from "@/hooks/use-toast"
@@ -920,7 +920,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
             <div className="flex flex-col h-full max-w-xl mx-auto">
               <div className="flex items-center justify-end px-4 py-3">
                 <Button data-testid="order-sidebar-btn-close" onClick={handleClose} variant="icon-muted" aria-label={t("common.close")}>
-                  <StandaloneXmarkRegularIcon width={24} height={24} aria-hidden />
+                  <StandaloneXmarkFillIcon width={24} height={24} aria-hidden />
                 </Button>
               </div>
 

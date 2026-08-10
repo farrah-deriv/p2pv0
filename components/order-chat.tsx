@@ -458,7 +458,7 @@ export default function OrderChat({
           <Button
             variant="icon-muted"
             onClick={onNavigateToOrderDetails}
-            className="me-[16px] !bg-neutral-100 hover:!bg-neutral-200"
+            className="me-[16px] !bg-black/[0.04] hover:!bg-black/[0.08]"
             aria-label={t("common.back")}
             data-testid="order-chat-btn-back"
           >

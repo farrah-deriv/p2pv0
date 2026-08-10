@@ -1244,6 +1244,7 @@
     "date": "Ngày",
     "deposit": "Nạp tiền",
     "depositNow": "Nạp tiền ngay",
+    "noFundsAvailable": "No funds available.",
     "depositToP2p": "Nạp tiền",
     "depositWith": "Nạp tiền bằng",
     "directDepositDescription": "Deposit funds directly from your bank account, e-wallet, or other payment methods.",

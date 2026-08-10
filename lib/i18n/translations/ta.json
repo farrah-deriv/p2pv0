@@ -1200,6 +1200,7 @@
     "date": "தேதி",
     "deposit": "வைப்பு",
     "depositNow": "இப்போது டெபாசிட் செய்யுங்கள்",
+    "noFundsAvailable": "No funds available.",
     "depositToP2p": "வைப்பு",
     "depositWith": "உடன் வைப்பு",
     "directDepositDescription": "Deposit funds directly from your bank account, e-wallet, or other payment methods.",

@@ -1222,6 +1222,7 @@
     "date": "Data",
     "deposit": "Depositar",
     "depositNow": "Deposite agora",
+    "noFundsAvailable": "No funds available.",
     "depositToP2p": "Depositar",
     "depositWith": "Depositar com",
     "directDepositDescription": "Deposit funds directly from your bank account, e-wallet, or other payment methods.",

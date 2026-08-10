@@ -42,7 +42,7 @@ export default function OrderTimeLimitSelector({
           label={labelFor(option)}
           state={option === value ? "selected" : "default"}
           onClick={() => onValueChange(option)}
-          className="flex-1"
+          className={cn("flex-1 !border-solid", option === value ? "!border-black !bg-white !text-black" : "hover:!bg-neutral-50 hover:!border-neutral-300")}
         />
       ))}
     </div>

@@ -3,12 +3,13 @@
 import { useState } from "react"
 import Image from "next/image"
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Select } from "@/components/ui/select"
+import { StandaloneChevronDownRegularIcon, StandaloneChevronUpRegularIcon } from "@deriv/quill-icons/Standalone"
 import { isRtlLocale } from "@/lib/i18n/config"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { cn } from "@/lib/utils"
@@ -41,10 +42,15 @@ export function PriceTypeSelector({ marketPrice, value, onChange, disabled = fal
     <Button
       variant="outline"
       disabled={disabled}
-      className="w-full h-[56px] max-h-[56px] rounded-lg justify-between px-4 border border-gray-200 hover:bg-transparent font-normal bg-transparent"
+      className="!h-12 !w-full !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-3 !text-sm !font-normal focus:!ring-1 focus:!ring-black [&>span]:!w-full"
     >
-      <span className={cn("text-grayscale-600", textAlignClass)}>{rateTypeLabel}</span>
-      <Image src="/icons/chevron-down.png" alt={t("common.arrow")} width={24} height={24} className="ms-2 shrink-0" />
+      <span className="flex w-full flex-row items-center justify-between">
+        <span className={cn("truncate", textAlignClass)}>{rateTypeLabel}</span>
+        {open
+          ? <StandaloneChevronUpRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />
+          : <StandaloneChevronDownRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />
+        }
+      </span>
     </Button>
   )
 
@@ -88,31 +94,27 @@ export function PriceTypeSelector({ marketPrice, value, onChange, disabled = fal
 
   return (
     <TooltipProvider>
-      <div className="space-y-4" dir={dir}>
-        {!marketPrice || !isFloatingRateEnabled ?
-          (
-            <div className="flex items-center">
-              <h3 className="text-lg font-bold leading-6 tracking-normal">{t("adForm.rateFixedTitle")}</h3>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Image
-                    src="/icons/info-circle.svg"
-                    alt={t("common.info")}
-                    width={24}
-                    height={24}
-                    className="ms-1 cursor-pointer flex-shrink-0"
-                  />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="text-white">{t("order.fixedRateDescription")}</p>
-                  <TooltipArrow className="fill-black" />
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          ) :
-          (<h3 className="text-lg font-bold leading-6 tracking-normal text-start">{t("order.rateType")}</h3>)
-        }
-        {marketPrice && isFloatingRateEnabled && (
+      <div dir={dir}>
+        {!marketPrice || !isFloatingRateEnabled ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                disabled={disabled}
+                className="!h-12 !w-full !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-3 !text-sm !font-normal [&>span]:!w-full"
+              >
+                <span className="flex w-full flex-row items-center justify-between">
+                  <span className={cn("truncate", textAlignClass)}>{t("adForm.fixed")}</span>
+                  <Image src="/icons/info-circle.svg" alt={t("common.info")} width={16} height={16} className="ms-1.5 shrink-0 cursor-pointer" />
+                </span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-white">{t("order.fixedRateDescription")}</p>
+              <TooltipArrow className="fill-black" />
+            </TooltipContent>
+          </Tooltip>
+        ) : (
           isMobile ? (
             <Drawer open={open} onOpenChange={setOpen}>
               <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
@@ -126,15 +128,17 @@ export function PriceTypeSelector({ marketPrice, value, onChange, disabled = fal
               </DrawerContent>
             </Drawer>
           ) : (
-            <Select
-              options={[
-                { value: "fixed",  label: t("adForm.fixed") },
-                { value: "float",  label: t("adForm.floating") },
-              ]}
-              value={value}
-              onChange={(v) => handleSelect(v as PriceType)}
-              disabled={disabled}
-            />
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>{triggerButton}</PopoverTrigger>
+              <PopoverContent
+                align="start"
+                sideOffset={4}
+                className="p-2 rounded-xl border border-neutral-200 shadow-lg"
+                style={{ width: "var(--radix-popover-trigger-width)" }}
+              >
+                {content}
+              </PopoverContent>
+            </Popover>
           )
         )}
       </div>

@@ -558,7 +558,7 @@ export default function OrderDetailsPage() {
             </div>
             <div className="pt-2 flex justify-end">
               <Button
-                variant="outline"
+                variant="secondary-outline"
                 onClick={() => {
                   track("ek_rate_transaction_order_details")
                   setShowRatingSidebar(true)
@@ -823,7 +823,7 @@ export default function OrderDetailsPage() {
                         </div>
                         <div className="pt-2 flex justify-end">
                           <Button
-                            variant="outline"
+                            variant="secondary-outline"
                             onClick={() => {
                               track("ek_rate_transaction_order_details")
                               setShowRatingSidebar(true)

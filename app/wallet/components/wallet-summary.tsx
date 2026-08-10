@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
+import { StandaloneArrowLeftFillIcon } from "@deriv/quill-icons/Standalone"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -345,16 +346,16 @@ export default function WalletSummary({
       >
         {!isBalancesView && (
           <div className="flex justify-start items-center h-8 mb-6">
-            <Button data-testid="wallet-btn-back" variant="icon-muted" size="sm" onClick={onBack} className="w-8 h-8 p-0" aria-label="Back to balances">
-              <Image src="/icons/back-circle.png" alt={t("common.back")} width={32} height={32} />
+            <Button data-testid="wallet-btn-back" variant="icon-muted" size="sm" onClick={onBack} className="w-8 h-8 p-0 !bg-black/[0.04] hover:!bg-black/[0.08]" aria-label={t("common.back")}>
+              <StandaloneArrowLeftFillIcon width={24} height={24} className="rtl:rotate-180" aria-hidden />
             </Button>
           </div>
         )}
 
         {isShowingTransactionDetails && selectedTransaction && (
           <div className="flex justify-start items-center h-8 mb-6">
-            <Button variant="icon-muted" size="sm" onClick={handleCloseTransactionDetails} className="w-8 h-8 p-0" aria-label="Back to transaction list">
-              <Image src="/icons/back-circle.png" alt={t("common.back")} width={32} height={32} />
+            <Button variant="icon-muted" size="sm" onClick={handleCloseTransactionDetails} className="w-8 h-8 p-0 !bg-black/[0.04] hover:!bg-black/[0.08]" aria-label={t("common.back")}>
+              <StandaloneArrowLeftFillIcon width={24} height={24} className="rtl:rotate-180" aria-hidden />
             </Button>
           </div>
         )}
@@ -433,7 +434,7 @@ export default function WalletSummary({
                   variant="icon-action"
                   data-testid="wallet-btn-deposit"
                   onClick={handleDepositClick}
-                  aria-label="Deposit"
+                  aria-label={t("wallet.deposit")}
                 >
                   <span className="flex items-center justify-center">
                     <Image src="/icons/plus-white.png" alt={t("wallet.deposit")} width={14} height={14} />
@@ -450,7 +451,7 @@ export default function WalletSummary({
                     variant="icon-action"
                     data-testid="wallet-btn-buy"
                     onClick={handleBuyClick}
-                    aria-label="Buy"
+                    aria-label={t("common.buy")}
                   >
                     <span className="flex items-center justify-center">
                       <Image src="/icons/plus-white.png" alt={t("common.buy")} width={14} height={14} />
@@ -468,7 +469,7 @@ export default function WalletSummary({
                   data-testid="wallet-btn-transfer"
                   onClick={handleTransferClick}
                   disabled={actionsDisabled}
-                  aria-label="Transfer"
+                  aria-label={t("wallet.transfer")}
                 >
                   <span className="flex items-center justify-center">
                     <Image src="/icons/transfer-white.png" alt={t("wallet.transfer")} width={14} height={14} />
@@ -485,7 +486,7 @@ export default function WalletSummary({
                     variant="secondary-outline"
                     data-testid="wallet-btn-sell"
                     onClick={handleSellClick}
-                    aria-label="Sell"
+                    aria-label={t("common.sell")}
                     className="!rounded-full !w-12 !h-12 !p-0 !min-w-0"
                   >
                     <span className="flex items-center justify-center">
@@ -503,7 +504,7 @@ export default function WalletSummary({
                   variant="icon-action-outlined"
                   onClick={handleWithdrawClick}
                   disabled={isBalancesView && propBalance === "0.00"}
-                  aria-label="Withdraw"
+                  aria-label={t("wallet.withdraw")}
                   className={cn(
                     isBalancesView
                       ? propBalance === "0.00"
@@ -568,12 +569,12 @@ export default function WalletSummary({
           <div className="p-6 bg-slate-75">
             <div className="flex justify-start items-center mb-6">
               <Button
-                variant="ghost"
+                variant="icon-muted"
                 onClick={handleCloseTransactionDetails}
-                className="!p-0 w-8 h-8 flex items-center justify-center"
-                aria-label="Back to transactions"
+                className="!bg-black/[0.04] hover:!bg-black/[0.08]"
+                aria-label={t("common.back")}
               >
-                <Image src="/icons/back-circle.png" alt={t("common.back")} width={32} height={32} />
+                <StandaloneArrowLeftFillIcon width={24} height={24} className="rtl:rotate-180" aria-hidden />
               </Button>
             </div>
           </div>

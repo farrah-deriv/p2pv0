@@ -1227,6 +1227,7 @@
     "date": "Datum",
     "deposit": "Einzahlen",
     "depositNow": "Jetzt einzahlen",
+    "noFundsAvailable": "No funds available.",
     "depositToP2p": "Einzahlen",
     "depositWith": "Einzahlen mit",
     "directDepositDescription": "Zahlen Sie Geld direkt von Ihrem Bankkonto, E-Wallet oder anderen Zahlungsmethoden ein.",

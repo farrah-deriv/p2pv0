@@ -42,7 +42,7 @@ export default function AdConditionChipSelector({
             label={chip.label}
             state={isSelected ? "selected" : "default"}
             onClick={() => onValueChange(chip.value)}
-            className="flex-1"
+            className={cn("flex-1 !border-solid", isSelected ? "!border-black !bg-white !text-black" : "hover:!bg-neutral-50 hover:!border-neutral-300")}
             data-testid={testIdPrefix ? `${testIdPrefix}-${chip.key}` : undefined}
           />
         )

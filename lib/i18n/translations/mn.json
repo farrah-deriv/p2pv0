@@ -1200,6 +1200,7 @@
     "date": "Огноо",
     "deposit": "Хадгаламж",
     "depositNow": "Одоо хадгаламжаа аваарай",
+    "noFundsAvailable": "No funds available.",
     "depositToP2p": "Хадгаламж",
     "depositWith": "Хадгаламжтай",
     "directDepositDescription": "Deposit funds directly from your bank account, e-wallet, or other payment methods.",

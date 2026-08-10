@@ -1200,6 +1200,7 @@
     "date": "التاريخ",
     "deposit": "إيداع",
     "depositNow": "قم بالإيداع الآن",
+    "noFundsAvailable": "No funds available.",
     "depositToP2p": "إيداع",
     "depositWith": "الإيداع بـ",
     "directDepositDescription": "أودع الأموال مباشرة من حسابك البنكي أو محفظتك الإلكترونية أو طرق دفع أخرى.",

@@ -3,7 +3,7 @@
 import type React from "react"
 import { BackArrowIcon } from "@/components/ui/back-arrow-icon"
 import { Button } from "@/components/ui/button"
-import { StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
+import { StandaloneXmarkFillIcon } from "@deriv/quill-icons/Standalone"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import { isRtlLocale } from "@/lib/i18n/config"
 import { useTranslations } from "@/lib/i18n/use-translations"
@@ -33,7 +33,7 @@ export function PanelWrapper({ onBack, onClose, children }: PanelWrapperProps) {
               <BackArrowIcon alt={t("common.back")} width={24} height={24} />
             </Button>}
             <Button variant="icon-muted" onClick={onClose} aria-label={t("common.close")}>
-              <StandaloneXmarkRegularIcon width={24} height={24} aria-hidden />
+              <StandaloneXmarkFillIcon width={24} height={24} aria-hidden />
             </Button>
           </div>
           <div className="flex flex-col flex-1 min-h-0 overflow-hidden">{children}</div>
