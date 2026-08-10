@@ -39,6 +39,8 @@ export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonE
   type?: "button" | "submit" | "reset"
 }
 
+const RED_DISABLED_VARIANTS = new Set(["default", "primary", "hover", "destructive"])
+
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "default", size = "default", type = "button", disabled, onClick, children, ...rest }, ref) => {
     const quillType = variantToType[variant] ?? "primary"
@@ -69,6 +71,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                     ? "!rounded-full !border !border-neutral-200 !bg-transparent !text-neutral-600 !text-xs !font-medium !px-3 !py-2 !h-auto !min-h-0 !min-w-0"
                     : undefined
 
+    const disabledClass = disabled && RED_DISABLED_VARIANTS.has(variant) ? "!bg-brand-red/30 !opacity-100 !text-white" : undefined
+
     return (
       <QuillButton
         ref={ref}
@@ -78,7 +82,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled}
         state={disabled ? "disabled" : undefined}
         onClick={onClick}
-        className={["transition-colors", variantClass, className].filter(Boolean).join(" ") || undefined}
+        className={["transition-colors", variantClass, disabledClass, className].filter(Boolean).join(" ") || undefined}
         {...(rest as Partial<QuillButtonProps>)}
       >
         {children}

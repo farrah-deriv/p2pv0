@@ -111,11 +111,9 @@ export default function Header({ className }: { className?: string }) {
             </Button>
           )}
           {userId && (
-            <div
-              data-testid="header-btn-notifications"
-              className="flex h-8 w-8 shrink-0 overflow-hidden items-center justify-center rounded-full bg-header-icon text-slate-600 hover:text-slate-700"
-            >
+            <div data-testid="header-btn-notifications">
               <NovuBellLink
+                className="!text-white"
                 disabled={isMaintenanceActive}
                 onClick={() => guardP2PNavigation(isMaintenanceActive, () => track("ek_notifications_markets"))}
               />

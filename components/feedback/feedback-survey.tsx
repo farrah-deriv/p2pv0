@@ -43,7 +43,7 @@ function NpsScoreSelector({ selectedScore, onSelect, isSubmitting }: NpsScoreSel
           : "!border-slate-300 !text-slate-700 hover:!border-primary hover:!text-primary hover:!bg-transparent"
       )}
     >
-      {score}
+      {String(score)}
     </Button>
   )
 

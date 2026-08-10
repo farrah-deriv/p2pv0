@@ -31,7 +31,7 @@ import type { Transaction } from "../types"
 import { InfoCircleIcon } from "@/components/icons/info-circle"
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { StandaloneArrowUpArrowDownRegularIcon } from "@deriv/quill-icons"
-import { StandaloneArrowLeftFillIcon, StandaloneArrowRightFillIcon, StandaloneXmarkFillIcon } from "@deriv/quill-icons/Standalone"
+import { StandaloneArrowLeftFillIcon, StandaloneChevronRightBoldIcon, StandaloneXmarkFillIcon } from "@deriv/quill-icons/Standalone"
 
 interface TransferProps {
   currencySelected?: string
@@ -1637,14 +1637,14 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
             {t("wallet.transfer")}
           </h1>
           {allWalletsEmpty && (
-            <div className="flex items-center justify-between gap-3 rounded-2xl bg-warning-bg px-4 py-3 mb-4 mx-2 text-orange-100">
+            <div className="flex items-center justify-between gap-3 rounded-t-2xl bg-warning-bg px-4 py-3 mx-2 text-orange-100">
               <p className="text-sm">
                 {t("wallet.noFundsAvailable")}{" "}
                 <Button
                   variant="link"
                   type="button"
                   onClick={() => { onClose(); router.push("/?operation=buy") }}
-                  className="font-bold text-sm underline"
+                  className="!font-bold !text-sm !underline !text-orange-100"
                 >
                   {t("wallet.buyCurrency", { currency: selectedCurrency ?? "USD" })}
                 </Button>
@@ -1655,17 +1655,19 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                 type="button"
                 onClick={() => { onClose(); router.push("/?operation=buy") }}
                 aria-label={t("wallet.buyCurrency", { currency: selectedCurrency ?? "USD" })}
-                className="shrink-0 !bg-orange-100 !text-white hover:!opacity-90"
+                className="shrink-0 !bg-orange-100 !text-white hover:!opacity-90 hover:!bg-orange-100"
               >
-                <StandaloneArrowRightFillIcon width={16} height={16} aria-hidden />
+                <StandaloneChevronRightBoldIcon width={16} height={16} aria-hidden className="rtl:rotate-180" />
               </Button>
             </div>
           )}
           <div className={cn("-space-y-[18px] mb-6 px-2", allWalletsEmpty && "pointer-events-none opacity-40")} data-testid={isWalletSelectionLoading ? "transfer-wallet-skeleton" : undefined}>
             <div
               data-testid={sourceWalletData ? "transfer-btn-account-from" : "transfer-btn-select-from"}
-              className={`bg-neutral-50 px-6 py-4 flex items-center gap-3 rounded-2xl h-24 ${isWalletSelectionLoading ? "cursor-default pointer-events-none" : "cursor-pointer"
-                }`}
+              className={cn("bg-neutral-50 px-6 py-4 flex items-center gap-3 h-24",
+                allWalletsEmpty ? "rounded-b-2xl" : "rounded-2xl",
+                isWalletSelectionLoading ? "cursor-default pointer-events-none" : "cursor-pointer"
+              )}
               onClick={() => {
                 if (isWalletSelectionLoading) return
                 track("ek_from_wallet_transfer")

@@ -21,7 +21,7 @@ const OrderDetailItem = ({ hasCopy, label, value, testId, isBlockLayout, copyTes
       data-testid={testId}
     >
       <h3 className="text-sm text-slate-500">{label}</h3>
-      <div className={cn("flex justify-between", !isBlockLayout && "md:justify-start md:gap-2")}>
+      <div className={cn("flex items-center justify-between", !isBlockLayout && "md:justify-start md:gap-2")}>
         <p className="text-sm font-bold">{value}</p>
         {hasCopy && (
           <Button
@@ -95,7 +95,7 @@ export const OrderDetails = ({ order, setShowChat }) => {
     ? `${formatAmount(order.amount)} ${order.advert?.account_currency}`
     : `${formatAmount(order.payment_amount)} ${order.payment_currency}`
 
-  const secondLineLabel = isUserSeller ? t("orderDetails.youReceive") : t("orderDetails.youReceive")
+  const secondLineLabel = t("orderDetails.youReceive")
   const secondLineValue = isUserSeller
     ? `${formatAmount(order.payment_amount)} ${order.payment_currency}`
     : `${formatAmount(order.amount)} ${order.advert?.account_currency}`

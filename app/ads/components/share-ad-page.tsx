@@ -242,103 +242,104 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
         </div>
         <h2 className="text-[24px] font-bold md:px-0">{t("shareAdPage.shareAdTitle")}</h2>
         <div className="flex flex-col items-center space-y-6 py-6 md:px-0">
-            <div
-              ref={cardRef}
-              className="w-full md:w-[358px] bg-share-card-gradient py-4 md:py-6 px-6 md:px-8 text-white"
-            >
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Image src="/icons/p2p-logo-white.svg" alt="Deriv P2P" width={100} height={24} />
-                </div>
-                <div className="text-lg font-bold">
-                  {ad.type === "buy" ? t("common.sell") : t("common.buy")} {ad.account_currency}
-                </div>
+          <div
+            ref={cardRef}
+            className="w-full md:w-[358px] bg-share-card-gradient py-4 md:py-6 px-6 md:px-8 text-white"
+          >
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Image src="/icons/p2p-logo-white.svg" alt="Deriv P2P" width={100} height={24} />
               </div>
-
-              <div className="mb-4 grid grid-cols-[max-content_1fr] gap-x-8 gap-y-1 md:grid-cols-[85px_1fr] md:gap-x-6">
-                <span className="whitespace-nowrap text-sm font-medium md:font-normal">
-                  {t("shareAdPage.idNumber")}
-                </span>
-                <span className="text-start text-base font-bold md:text-sm">{ad.id}</span>
-                <span className="whitespace-nowrap text-sm font-medium md:font-normal">
-                  {t("shareAdPage.limits")}
-                </span>
-                <span className="text-start text-base font-bold md:text-sm">
-                  {ad.limits && typeof ad.limits === "object"
-                    ? `${ad.limits.min} - ${ad.limits.max} ${ad.limits.currency}`
-                    : ad.limits}
-                </span>
-                <span className="whitespace-nowrap text-sm font-medium md:font-normal">
-                  {t("shareAdPage.rate")}
-                </span>
-                <span className="text-start text-base font-bold md:text-sm">
-                  {buildShareAdRateValue(ad)}
-                </span>
+              <div className="text-lg font-bold">
+                {ad.type === "buy" ? t("common.sell") : t("common.buy")} {ad.account_currency}
               </div>
-
-              {qrCodeUrl && (
-                <>
-                  <div className="bg-white rounded-lg p-2 flex flex-col items-center w-fit mx-auto">
-                    <img src={qrCodeUrl || "/placeholder.svg"} alt="QR Code" width={110} height={110} />
-                  </div>
-                  <p className="text-grayscale-text-muted text-xs mt-3 text-center">{t("shareAdPage.qrCodeDescription")}</p>
-                </>
-              )}
             </div>
 
-            {isMobile && adUrl && (
-              <div className="w-full space-y-2">
-                <p className="text-sm text-start">{t("shareAdPage.adLinkLabel")}</p>
-                <div className="flex items-center gap-2 rounded-lg border border-grayscale-400 py-2 ps-4 pe-2">
-                  <p className="min-w-0 flex-1 truncate text-sm text-start">{adUrl}</p>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0"
-                    onClick={handleCopyLink}
-                  >
-                    {t("shareAdPage.copyButton")}
-                  </Button>
+            <div className="mb-4 grid grid-cols-[max-content_1fr] gap-x-8 gap-y-1 md:grid-cols-[85px_1fr] md:gap-x-6">
+              <span className="whitespace-nowrap text-sm font-medium md:font-normal">
+                {t("shareAdPage.idNumber")}
+              </span>
+              <span className="text-start text-base font-bold md:text-sm">{ad.id}</span>
+              <span className="whitespace-nowrap text-sm font-medium md:font-normal">
+                {t("shareAdPage.limits")}
+              </span>
+              <span className="text-start text-base font-bold md:text-sm">
+                {ad.limits && typeof ad.limits === "object"
+                  ? `${ad.limits.min} - ${ad.limits.max} ${ad.limits.currency}`
+                  : ad.limits}
+              </span>
+              <span className="whitespace-nowrap text-sm font-medium md:font-normal">
+                {t("shareAdPage.rate")}
+              </span>
+              <span className="text-start text-base font-bold md:text-sm">
+                {buildShareAdRateValue(ad)}
+              </span>
+            </div>
+
+            {qrCodeUrl && (
+              <>
+                <div className="bg-white rounded-lg p-2 flex flex-col items-center w-fit mx-auto">
+                  <img src={qrCodeUrl || "/placeholder.svg"} alt="QR Code" width={110} height={110} />
                 </div>
-              </div>
-            )}
-
-            {!isMobile && (
-              <div className="flex gap-6">
-                {[
-                  { label: "WhatsApp", icon: "/icons/whatsapp.svg", onClick: () => handleShare("whatsapp") },
-                  { label: "Facebook", icon: "/icons/facebook.svg", onClick: () => handleShare("facebook") },
-                  { label: "Telegram", icon: "/icons/telegram.svg", onClick: () => handleShare("telegram") },
-                  { label: "Gmail", icon: "/icons/google.svg", onClick: () => handleShare("gmail") },
-                  { label: t("shareAdPage.copyLink"), icon: "/icons/link.svg", onClick: handleCopyLink },
-                  { label: t("shareAdPage.saveImage"), icon: "/icons/download.svg", onClick: handleSaveImage },
-                ].map(({ label, icon, onClick }) => (
-                  <div key={label} className="flex flex-col items-center gap-2">
-                    <ButtonIcon
-                      type="secondary"
-                      size="lg"
-                      icon={<Image src={icon} alt="" width={36} height={36} aria-hidden />}
-                      onClick={onClick}
-                      aria-label={label}
-                    />
-                    <span className="text-[10px] font-normal text-slate-1600" aria-hidden>{label}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {isMobile && (
-              <div className="flex w-full flex-col gap-2">
-                <Button className="h-12 w-full" onClick={handleShareImage}>
-                  {t("shareAdPage.shareImage")}
-                </Button>
-                <Button className="h-12 w-full" variant="outline" onClick={handleSaveImage}>
-                  {t("shareAdPage.saveImage")}
-                </Button>
-              </div>
+                <p className="text-grayscale-text-muted text-xs mt-3 text-center">{t("shareAdPage.qrCodeDescription")}</p>
+              </>
             )}
           </div>
+
+          {isMobile && adUrl && (
+            <div className="w-full space-y-2">
+              <p className="text-sm text-start">{t("shareAdPage.adLinkLabel")}</p>
+              <div className="flex items-center gap-2 rounded-lg border border-grayscale-400 py-2 ps-4 pe-2">
+                <p className="min-w-0 flex-1 truncate text-sm text-start">{adUrl}</p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={handleCopyLink}
+                >
+                  {t("shareAdPage.copyButton")}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {!isMobile && (
+            <div className="flex gap-6">
+              {[
+                { label: "WhatsApp", icon: "/icons/whatsapp.svg", onClick: () => handleShare("whatsapp") },
+                { label: "Facebook", icon: "/icons/facebook.svg", onClick: () => handleShare("facebook") },
+                { label: "Telegram", icon: "/icons/telegram.svg", onClick: () => handleShare("telegram") },
+                { label: "Gmail", icon: "/icons/google.svg", onClick: () => handleShare("gmail") },
+                { label: t("shareAdPage.copyLink"), icon: "/icons/link.svg", onClick: handleCopyLink },
+                { label: t("shareAdPage.saveImage"), icon: "/icons/download.svg", onClick: handleSaveImage },
+              ].map(({ label, icon, onClick }) => (
+                <div key={label} className="flex flex-col items-center gap-2">
+                  <ButtonIcon
+                    type="secondary"
+                    size="lg"
+                    icon={<Image src={icon} alt="" width={36} height={36} aria-hidden />}
+                    onClick={onClick}
+                    aria-label={label}
+                    className="!bg-neutral-50 !border-0"
+                  />
+                  <span className="text-[10px] font-normal text-slate-1600" aria-hidden>{label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {isMobile && (
+            <div className="flex w-full flex-col gap-2">
+              <Button className="h-12 w-full" onClick={handleShareImage}>
+                {t("shareAdPage.shareImage")}
+              </Button>
+              <Button className="h-12 w-full" variant="outline" onClick={handleSaveImage}>
+                {t("shareAdPage.saveImage")}
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

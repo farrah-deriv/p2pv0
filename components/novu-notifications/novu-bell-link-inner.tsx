@@ -3,14 +3,14 @@
 import { useState, useCallback } from "react"
 import { Inbox, Bell, Notifications } from "@novu/nextjs"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
-import { useIsMobile } from "@/hooks/use-mobile"
+import { StandaloneBellRegularIcon } from "@deriv/quill-icons/Standalone"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useNovuSubscriber } from "@/hooks/use-novu-subscriber"
 import type { UnreadCount } from "@novu/nextjs"
 import { Sheet, SheetContent, SheetClose, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { BackArrowIcon } from "@/components/ui/back-arrow-icon"
+import { cn } from "@/lib/utils"
 
 const APPEARANCE_VARIABLES = {
   borderRadius: "8px",
@@ -36,12 +36,12 @@ const APPLICATION_ID = process.env.NEXT_PUBLIC_NOTIFICATION_APPLICATION_ID!
 interface NovuBellLinkInnerProps {
   disabled?: boolean
   onClick?: () => void
+  className?: string
 }
 
-function NovuBellLinkInner({ disabled = false, onClick }: NovuBellLinkInnerProps) {
+function NovuBellLinkInner({ disabled = false, onClick, className }: NovuBellLinkInnerProps) {
   const router = useRouter()
   const { t } = useTranslations()
-  const isMobile = useIsMobile()
   const { subscriberHash, subscriberId, isLoading, error } = useNovuSubscriber(disabled)
   const [open, setOpen] = useState(false)
 
@@ -51,46 +51,36 @@ function NovuBellLinkInner({ disabled = false, onClick }: NovuBellLinkInnerProps
   }, [onClick])
 
   const renderBell = useCallback((unreadCount: UnreadCount) => (
-    <Button
-      type="button"
-      variant="ghost"
-      onClick={handleClick}
-      aria-label={t("notifications.title")}
-      className="relative flex h-8 w-8 min-w-0 min-h-0 items-center justify-center rounded-full bg-header-icon p-0 hover:!bg-header-icon focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
-    >
-      <Image
-        src={isMobile ? "/icons/bell-sm.png" : "/icons/bell-desktop.png"}
-        alt=""
-        aria-hidden="true"
-        width={24}
-        height={24}
-        style={{ width: "24px", height: "24px" }}
-      />
+    <span className="relative inline-flex">
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={handleClick}
+        aria-label={t("notifications.title")}
+        className={cn("!flex !h-8 !w-8 !min-w-0 !min-h-0 !items-center !justify-center !rounded-full !bg-header-icon !p-0 hover:!bg-header-icon focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300", className)}
+      >
+        <StandaloneBellRegularIcon width={24} height={24} fill="currentColor" aria-hidden="true" />
+      </Button>
       {unreadCount.total > 0 && (
-        <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-notification-badge" aria-hidden="true" />
+        <span className="pointer-events-none absolute top-0 right-0 h-2 w-2 rounded-full bg-notification-badge" aria-hidden="true" />
       )}
-    </Button>
-  ), [handleClick, isMobile, t])
+    </span>
+  ), [handleClick, t])
 
   if (disabled) {
     return (
       <div
-        className="relative inline-flex h-8 w-8 items-center justify-center rounded-full bg-header-icon opacity-50 pointer-events-none"
+        className={cn("relative inline-flex h-8 w-8 items-center justify-center rounded-full bg-header-icon opacity-50 pointer-events-none", className)}
         aria-hidden="true"
       >
-        <Image
-          src={isMobile ? "/icons/bell-sm.png" : "/icons/bell-desktop.png"}
-          alt=""
-          width={24}
-          height={24}
-        />
+        <StandaloneBellRegularIcon width={24} height={24} fill="currentColor" aria-hidden="true" />
       </div>
     )
   }
 
   if (isLoading) {
     return (
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-header-icon">
+      <div className={cn("flex h-8 w-8 items-center justify-center rounded-full bg-header-icon", className)}>
         <span className="sr-only">{t("notifications.loading")}</span>
       </div>
     )
@@ -99,7 +89,7 @@ function NovuBellLinkInner({ disabled = false, onClick }: NovuBellLinkInnerProps
   if (error || !subscriberHash || !subscriberId) {
     return (
       <div
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-header-icon"
+        className={cn("flex h-8 w-8 items-center justify-center rounded-full bg-header-icon", className)}
         title={error || t("notifications.loadFailed")}
       >
         <span className="sr-only">{t("notifications.error")}</span>
@@ -116,7 +106,9 @@ function NovuBellLinkInner({ disabled = false, onClick }: NovuBellLinkInnerProps
       colorScheme="light"
       appearance={{ variables: APPEARANCE_VARIABLES, elements: APPEARANCE_ELEMENTS }}
     >
-      <Bell renderBell={renderBell} />
+      <span className="inline-flex h-8 w-8 shrink-0 overflow-hidden">
+        <Bell renderBell={renderBell} />
+      </span>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="right" className="w-full p-0 sm:max-w-sm" hideCloseButton>
           <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3">

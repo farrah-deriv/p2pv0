@@ -60,9 +60,7 @@ export default function Navigation({
               <h1 className="text-xl font-bold">{title}</h1>
             </div>
             {showNotificationIcon && (
-              <div className="text-slate-600 hover:text-slate-700">
-                <NovuBellLink />
-              </div>
+              <NovuBellLink className="!text-white" />
             )}
           </div>
         )

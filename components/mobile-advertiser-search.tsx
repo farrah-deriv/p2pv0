@@ -196,7 +196,6 @@ export default function MobileAdvertiserSearch({ isOpen, onClose }: MobileAdvert
                         data-testid="mobile-search-btn-back"
                         variant="icon-muted"
                         onClick={handleBack}
-                        className="!bg-header-icon hover:!bg-header-icon"
                     >
                         <BackArrowIcon alt={t("common.back")} width={24} height={24} />
                     </Button>
