@@ -29,19 +29,18 @@ function NpsScoreSelector({ selectedScore, onSelect, isSubmitting }: NpsScoreSel
       key={score}
       type="button"
       variant="ghost"
-      size="icon"
       disabled={isSubmitting}
       data-testid={`feedback-btn-score-${score}`}
       aria-label={`${score} out of 10`}
       onClick={() => onSelect(score)}
       className={cn(
-        "rounded-md border text-sm font-bold transition-colors disabled:opacity-50",
+        "!rounded-md !border !text-sm !font-bold !transition-colors !disabled:opacity-50 !justify-center !aspect-square !p-0 !min-w-0",
         isMobile
           ? "min-w-[44px] max-w-[56px] w-[clamp(44px,calc((100vw-88px)/6),56px)]"
-          : "flex-1 w-auto min-w-[36px]",
+          : "flex-1 min-w-[36px] !h-10",
         selectedScore === score
-          ? "bg-primary text-white border-primary hover:bg-primary hover:text-white"
-          : "border-slate-300 text-slate-700 hover:bg-transparent hover:border-primary hover:text-primary"
+          ? "!bg-primary !text-white !border-primary"
+          : "!border-slate-300 !text-slate-700 hover:!border-primary hover:!text-primary hover:!bg-transparent"
       )}
     >
       {score}
@@ -148,10 +147,10 @@ export function FeedbackSurvey({ onSubmit, onClose, isSubmitting }: FeedbackSurv
         </Button>
         <Button
           data-testid="feedback-btn-later"
-          variant="ghost"
+          variant="secondary-outline"
           onClick={onClose}
           disabled={isSubmitting}
-          className="w-full text-sm font-bold underline disabled:opacity-50"
+          className="w-full disabled:opacity-50"
         >
           {t("nps.askMeLater")}
         </Button>

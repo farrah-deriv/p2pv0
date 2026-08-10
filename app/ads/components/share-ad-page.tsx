@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState, useRef } from "react"
 import Image from "next/image"
-import { StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
+import { ButtonIcon } from "@deriv-com/quill-ui-v2"
+import { StandaloneXmarkBoldIcon } from "@deriv/quill-icons/Standalone"
 import QRCode from "qrcode"
 import * as htmlToImage from "html-to-image"
 import type { Ad } from "@/types"
@@ -108,7 +109,7 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
       whatsapp: `https://wa.me/?text=${encodeURIComponent(`${text}`)}`,
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${url}`)}`,
       telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(telegramText)}`,
-      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
+      twitter: `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`,
       gmail: `https://mail.google.com/mail/?view=cm&fs=1&body=${encodeURIComponent(`${text}`)}`,
     }
 
@@ -236,7 +237,7 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
       <div className="mx-auto flex min-h-full max-w-xl flex-col px-4 pb-6 md:px-0">
         <div className="flex items-center justify-end py-[12px] md:p-6 md:pb-4">
           <Button onClick={() => { track("ek_close_share_ad"); onClose() }} variant="icon-muted" aria-label={t("common.close")}>
-            <StandaloneXmarkRegularIcon width={24} height={24} aria-hidden />
+            <StandaloneXmarkBoldIcon width={24} height={24} aria-hidden />
           </Button>
         </div>
         <h2 className="text-[24px] font-bold md:px-0">{t("shareAdPage.shareAdTitle")}</h2>
@@ -247,7 +248,7 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
             >
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <Image src="/icons/p2p-logo-white.svg" alt="Deriv P2P" />
+                  <Image src="/icons/p2p-logo-white.svg" alt="Deriv P2P" width={100} height={24} />
                 </div>
                 <div className="text-lg font-bold">
                   {ad.type === "buy" ? t("common.sell") : t("common.buy")} {ad.account_currency}
@@ -305,71 +306,25 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
 
             {!isMobile && (
               <div className="flex gap-6">
-                <Button
-                  variant="ghost"
-                  onClick={() => handleShare("whatsapp")}
-                  className="flex flex-col items-center gap-2 rounded-lg transition-colors min-w-fit min-h-fit p-0 hover:bg-transparent"
-                >
-                  <div className="bg-slate-75 p-2 rounded-full flex items-center justify-center">
-                    <Image src="/icons/whatsapp.svg" alt="WhatsApp" width={36} height={36} />
+                {[
+                  { label: "WhatsApp", icon: "/icons/whatsapp.svg", onClick: () => handleShare("whatsapp") },
+                  { label: "Facebook", icon: "/icons/facebook.svg", onClick: () => handleShare("facebook") },
+                  { label: "Telegram", icon: "/icons/telegram.svg", onClick: () => handleShare("telegram") },
+                  { label: "Gmail", icon: "/icons/google.svg", onClick: () => handleShare("gmail") },
+                  { label: t("shareAdPage.copyLink"), icon: "/icons/link.svg", onClick: handleCopyLink },
+                  { label: t("shareAdPage.saveImage"), icon: "/icons/download.svg", onClick: handleSaveImage },
+                ].map(({ label, icon, onClick }) => (
+                  <div key={label} className="flex flex-col items-center gap-2">
+                    <ButtonIcon
+                      type="secondary"
+                      size="lg"
+                      icon={<Image src={icon} alt="" width={36} height={36} aria-hidden />}
+                      onClick={onClick}
+                      aria-label={label}
+                    />
+                    <span className="text-[10px] font-normal text-slate-1600" aria-hidden>{label}</span>
                   </div>
-                  <span className="text-[10px] font-normal text-slate-1600">WhatsApp</span>
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  onClick={() => handleShare("facebook")}
-                  className="flex flex-col items-center gap-2 rounded-lg transition-colors min-w-fit min-h-fit p-0 hover:bg-transparent"
-                >
-                  <div className="bg-slate-75 p-2 rounded-full flex items-center justify-center">
-                    <Image src="/icons/facebook.svg" alt="Facebook" width={36} height={36} />
-                  </div>
-                  <span className="text-[10px] font-normal text-slate-1600">Facebook</span>
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  onClick={() => handleShare("telegram")}
-                  className="flex flex-col items-center gap-2 rounded-lg transition-colors min-w-fit min-h-fit p-0 hover:bg-transparent"
-                >
-                  <div className="bg-slate-75 p-2 rounded-full flex items-center justify-center">
-                    <Image src="/icons/telegram.svg" alt="Telegram" width={36} height={36} />
-                  </div>
-                  <span className="text-[10px] font-normal text-slate-1600">Telegram</span>
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  onClick={() => handleShare("gmail")}
-                  className="flex flex-col items-center gap-2 rounded-lg transition-colors min-w-fit min-h-fit p-0 hover:bg-transparent"
-                >
-                  <div className="bg-slate-75 p-2 rounded-full flex items-center justify-center">
-                    <Image src="/icons/google.svg" alt="Gmail" width={36} height={36} />
-                  </div>
-                  <span className="text-[10px] font-normal text-slate-1600">Gmail</span>
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  onClick={handleCopyLink}
-                  className="flex flex-col items-center gap-2 rounded-lg transition-colors min-w-fit min-h-fit p-0 hover:bg-transparent"
-                >
-                  <div className="bg-slate-75 p-2 rounded-full flex items-center justify-center">
-                    <Image src="/icons/link.svg" alt="link" width={36} height={36} />
-                  </div>
-                  <span className="text-[10px] font-normal text-slate-1600">{t("shareAdPage.copyLink")}</span>
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  onClick={handleSaveImage}
-                  className="flex flex-col items-center gap-2 rounded-lg transition-colors min-w-fit min-h-fit p-0 hover:bg-transparent"
-                >
-                  <div className="bg-slate-75 p-2 rounded-full flex items-center justify-center">
-                    <Image src="/icons/download.svg" alt="download" width={36} height={36} />
-                  </div>
-                  <span className="text-[10px] font-normal text-slate-1600">{t("shareAdPage.saveImage")}</span>
-                </Button>
+                ))}
               </div>
             )}
 

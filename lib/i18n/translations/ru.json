@@ -1232,6 +1232,7 @@
     "date": "Дата",
     "deposit": "Пополнить",
     "depositNow": "Пополнить сейчас",
+    "buyCurrency": "Купить {currency}",
     "noFundsAvailable": "No funds available.",
     "depositToP2p": "Пополнить",
     "depositWith": "Пополнить с",

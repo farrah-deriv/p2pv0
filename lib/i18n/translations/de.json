@@ -1227,6 +1227,7 @@
     "date": "Datum",
     "deposit": "Einzahlen",
     "depositNow": "Jetzt einzahlen",
+    "buyCurrency": "{currency} kaufen",
     "noFundsAvailable": "No funds available.",
     "depositToP2p": "Einzahlen",
     "depositWith": "Einzahlen mit",

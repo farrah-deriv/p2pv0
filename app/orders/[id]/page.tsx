@@ -496,10 +496,10 @@ export default function OrderDetailsPage() {
                 : "py-4 flex flex-col-reverse md:flex-row gap-2 md:gap-4 sticky bottom-0 bg-white md:static md:bg-transparent",
             )}
           >
-            <Button variant="secondary-outline" className="flex-1" onClick={handleCancelOrder} data-testid="order-details-btn-cancel">
+            <Button variant="secondary-outline" className="md:flex-1" onClick={handleCancelOrder} data-testid="order-details-btn-cancel">
               {t("orderDetails.cancelOrder")}
             </Button>
-            <Button className="flex-1" onClick={handleShowPaymentConfirmation} data-testid="order-details-btn-paid">
+            <Button className="md:flex-1" onClick={handleShowPaymentConfirmation} data-testid="order-details-btn-paid">
               {t("orderDetails.ivePaid")}
             </Button>
           </div>

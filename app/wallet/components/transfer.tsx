@@ -31,7 +31,7 @@ import type { Transaction } from "../types"
 import { InfoCircleIcon } from "@/components/icons/info-circle"
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { StandaloneArrowUpArrowDownRegularIcon } from "@deriv/quill-icons"
-import { StandaloneArrowLeftFillIcon, StandaloneXmarkFillIcon } from "@deriv/quill-icons/Standalone"
+import { StandaloneArrowLeftFillIcon, StandaloneArrowRightFillIcon, StandaloneXmarkFillIcon } from "@deriv/quill-icons/Standalone"
 
 interface TransferProps {
   currencySelected?: string
@@ -1637,26 +1637,27 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
             {t("wallet.transfer")}
           </h1>
           {allWalletsEmpty && (
-            <div className="flex items-center justify-between gap-3 rounded-2xl bg-warning-bg px-4 py-3 mb-4 mx-2">
-              <p className="text-sm text-warning-icon">
+            <div className="flex items-center justify-between gap-3 rounded-2xl bg-warning-bg px-4 py-3 mb-4 mx-2 text-orange-100">
+              <p className="text-sm">
                 {t("wallet.noFundsAvailable")}{" "}
                 <Button
+                  variant="link"
                   type="button"
-                  variant="ghost"
                   onClick={() => { onClose(); router.push("/?operation=buy") }}
-                  className="!inline !h-auto !p-0 !min-w-0 underline font-semibold text-warning-icon hover:!bg-transparent"
+                  className="font-bold text-sm underline"
                 >
-                  {t("wallet.depositNow")}
+                  {t("wallet.buyCurrency", { currency: selectedCurrency ?? "USD" })}
                 </Button>
               </p>
               <Button
+                variant="icon-muted"
+                size="sm"
                 type="button"
-                variant="icon-action"
                 onClick={() => { onClose(); router.push("/?operation=buy") }}
-                aria-label={t("wallet.depositNow")}
-                className="shrink-0 !rounded-full !w-8 !h-8 !p-0 !min-w-0 !bg-warning-icon hover:!opacity-90"
+                aria-label={t("wallet.buyCurrency", { currency: selectedCurrency ?? "USD" })}
+                className="shrink-0 !bg-orange-100 !text-white hover:!opacity-90"
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden><path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <StandaloneArrowRightFillIcon width={16} height={16} aria-hidden />
               </Button>
             </div>
           )}

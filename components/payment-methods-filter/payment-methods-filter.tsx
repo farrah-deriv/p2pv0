@@ -86,9 +86,6 @@ export default function PaymentMethodsFilter({
     paymentMethods.length > 0 &&
     paymentMethods.every((method) => tempSelectedMethods.includes(method.method))
 
-  const isIndeterminate =
-    paymentMethods.some((method) => tempSelectedMethods.includes(method.method)) && !isAllSelected
-
   const handleSelectAll = (checked: boolean) => {
     if (scrollContainerRef.current) {
       scrollPositionRef.current = scrollContainerRef.current.scrollTop
@@ -272,7 +269,7 @@ export default function PaymentMethodsFilter({
           <div className={cn(CHECKBOX_LABEL_ROW, "mb-4")}>
             <Checkbox
               id="select-all"
-              checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
+              checked={isAllSelected}
               onCheckedChange={handleSelectAll}
               className="shrink-0 data-[state=checked]:bg-black"
               disabled={isLoading || filteredPaymentMethods.length === 0}

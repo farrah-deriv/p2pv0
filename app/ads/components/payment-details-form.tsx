@@ -691,6 +691,8 @@ export default function PaymentDetailsForm({
     onBottomSheetOpenChange?.(true)
     if (initialData.type === "buy") {
       setShowFullPageModal(true)
+    } else if (userPaymentMethods.length === 0) {
+      setShowAddPaymentPanel(true)
     } else {
       openSellPaymentSelection()
     }

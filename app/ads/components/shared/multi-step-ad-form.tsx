@@ -840,6 +840,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     (currentStep === 1 && formData.type === "sell" && !hasSelectedPaymentMethods) ||
     (currentStep === 2 && mode === "edit" && (!adFormValid || !hasEditChanges)) ||
     (currentStep === 2 && mustSwitchEveryone) ||
+    (currentStep === 2 && selectedCountries !== null && selectedCountries.length === 0) ||
     isBottomSheetOpen
 
   const getButtonText = () => {

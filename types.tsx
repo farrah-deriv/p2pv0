@@ -32,6 +32,7 @@ export interface Ad {
   exchange_rate_type?: string
   payment_methods?: string[]
   is_active?: boolean
+  is_orderable?: boolean
   user?: {
     id: string
     name?: string

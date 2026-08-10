@@ -1200,6 +1200,7 @@
     "date": "Огноо",
     "deposit": "Хадгаламж",
     "depositNow": "Одоо хадгаламжаа аваарай",
+    "buyCurrency": "{currency} худалдан авах",
     "noFundsAvailable": "No funds available.",
     "depositToP2p": "Хадгаламж",
     "depositWith": "Хадгаламжтай",

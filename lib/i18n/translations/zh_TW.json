@@ -1200,6 +1200,7 @@
     "date": "日期",
     "deposit": "押金",
     "depositNow": "立即存款",
+    "buyCurrency": "購買 {currency}",
     "noFundsAvailable": "No funds available.",
     "depositToP2p": "押金",
     "depositWith": "存款於",

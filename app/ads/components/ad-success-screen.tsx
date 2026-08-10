@@ -55,25 +55,27 @@ export default function AdSuccessScreen({ ad, onShareClick }: AdSuccessScreenPro
         </div>
 
         {/* Buttons */}
-        <div className="flex flex-col md:flex-row-reverse gap-2 w-full max-w-none md:max-w-2xl mb-4 md:mb-0">
-          <Button
-            onClick={onShareClick}
-            className="w-full rounded-full transition-colors"
-            data-testid="ad-form-btn-share"
-          >
-            {t("shareAdPage.shareAdTitle")}
-          </Button>
+        <div className="flex flex-col md:flex-row gap-2 w-full max-w-none md:max-w-2xl mb-4 md:mb-0">
           <Button
             onClick={() => {
               track("ek_go_to_my_ads_ad_created_sucess")
               router.push("/ads")
             }}
-            variant="outline"
-            className="w-full text-white border-white hover:bg-transparent rounded-full transition-colors"
+            className="w-full rounded-full transition-colors"
             data-testid="ad-form-btn-done"
           >
             {t("navigation.goToMyAds")}
           </Button>
+          {ad.is_orderable !== false && (
+            <Button
+              onClick={onShareClick}
+              variant="secondary-outline"
+              className="w-full rounded-full transition-colors !border-white !text-white hover:!bg-white/10"
+              data-testid="ad-form-btn-share"
+            >
+              {t("shareAdPage.shareAdTitle")}
+            </Button>
+          )}
         </div>
       </div>
     </div>

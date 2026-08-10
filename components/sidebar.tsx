@@ -391,6 +391,7 @@ export default function Sidebar({ className }: SidebarProps) {
                     <a
                       data-testid={item.testId}
                       href={item.href}
+                      target="_blank"
                       className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50 transition-colors"
                       rel="noopener noreferrer"
                     >
@@ -417,9 +418,10 @@ export default function Sidebar({ className }: SidebarProps) {
         {!userData?.feedback_exist && !isDisabled && userId && verificationStatus?.phone_verified && !isPoiExpired && !isPoaExpired && (
           <Button
             variant="ghost"
+            type="button"
             data-testid="sidebar-btn-feedback"
             onClick={() => setShowFeedbackDialog(true)}
-            className="hidden md:flex w-full !justify-start items-center gap-3 !rounded-lg !px-3 !py-2.5 !h-auto text-sm !text-neutral-600 hover:!bg-neutral-50 !transition-colors"
+            className="hidden md:flex w-full !justify-start gap-3 !rounded-lg !px-3 !py-2.5 !h-auto !text-sm !text-neutral-600 hover:!bg-neutral-50"
           >
             <div className="h-5 w-5 flex items-center justify-center">
               <Image src="/icons/ic-feedback.svg" alt="" width={20} height={20} aria-hidden />
@@ -434,7 +436,7 @@ export default function Sidebar({ className }: SidebarProps) {
             aria-label={t("navigation.askAmy")}
             variant="ghost"
             size="lg"
-            className="hidden md:flex w-full my-1 p-0 !hover:bg-transparent"
+            className="hidden md:flex w-full my-1 p-0 hover:!bg-transparent"
           >
             <Image src="/icons/ic-ask-amy.svg" alt={t("navigation.askAmy")} width={263} height={40} />
           </Button>

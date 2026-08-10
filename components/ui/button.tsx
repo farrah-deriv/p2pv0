@@ -9,6 +9,7 @@ const variantToType: Record<string, QuillButtonProps["type"]> = {
   hover: "primary",
   secondary: "secondary",
   ghost: "ghost",
+  link: "ghost",
   chip: "ghost",
   outline: "tertiary",
   destructive: "primary",
@@ -31,7 +32,7 @@ const sizeMap: Record<string, QuillButtonProps["size"]> = {
 }
 
 export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "type"> {
-  variant?: "default" | "primary" | "hover" | "black" | "outline" | "destructive" | "secondary" | "ghost" | "buy" | "chip" | "icon-muted" | "icon-action" | "icon-action-outlined" | "outline-white" | "secondary-outline"
+  variant?: "default" | "primary" | "hover" | "black" | "outline" | "destructive" | "secondary" | "ghost" | "link" | "buy" | "chip" | "icon-muted" | "icon-action" | "icon-action-outlined" | "outline-white" | "secondary-outline"
   size?: "default" | "sm" | "xs" | "lg" | "icon"
   asChild?: boolean
   /** HTML button type — passed as htmlType to Quill Button */
@@ -60,7 +61,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
               ? "!bg-success-text-secondary hover:!bg-success-text-secondary-hover !text-white !border-0"
               : variant === "outline-white"
                 ? "!bg-transparent !border !border-white !text-white hover:!bg-white/10 !flex-row !items-center"
-                : variant === "ghost" || variant === "outline"
+                : variant === "link"
+                  ? "!inline !h-auto !p-0 !min-w-0 !bg-transparent hover:!bg-transparent"
+                  : variant === "ghost" || variant === "outline"
                   ? "!flex-row !items-center"
                   : variant === "chip"
                     ? "!rounded-full !border !border-neutral-200 !bg-transparent !text-neutral-600 !text-xs !font-medium !px-3 !py-2 !h-auto !min-h-0 !min-w-0"

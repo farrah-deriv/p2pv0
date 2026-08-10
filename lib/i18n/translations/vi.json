@@ -1244,6 +1244,7 @@
     "date": "Ngày",
     "deposit": "Nạp tiền",
     "depositNow": "Nạp tiền ngay",
+    "buyCurrency": "Mua {currency}",
     "noFundsAvailable": "No funds available.",
     "depositToP2p": "Nạp tiền",
     "depositWith": "Nạp tiền bằng",

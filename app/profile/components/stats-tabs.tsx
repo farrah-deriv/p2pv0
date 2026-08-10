@@ -455,7 +455,7 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
               data-testid="profile-menu-help"
               onClick={() => {
                 track("ek_help_centre_profile")
-                window.location.href = helpCentreUrl
+                window.open(helpCentreUrl, "_blank", "noopener,noreferrer")
               }}
               className="grid grid-cols-[auto_1fr_1fr] items-center justify-between p-6 cursor-pointer hover:bg-gray-50 transition-colors"
             >

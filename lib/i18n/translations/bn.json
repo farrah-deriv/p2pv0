@@ -1210,6 +1210,7 @@
     "date": "তারিখ",
     "deposit": "জমা",
     "depositNow": "এখনই জমা দিন",
+    "buyCurrency": "{currency} কিনুন",
     "noFundsAvailable": "No funds available.",
     "depositToP2p": "জমা",
     "depositWith": "দিয়ে জমা করুন",

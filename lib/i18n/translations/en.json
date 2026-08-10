@@ -687,6 +687,7 @@
     "tryAgain": "Try again",
     "contactUs": "Contact us",
     "depositNow": "Deposit now",
+    "buyCurrency": "Buy {currency}",
     "noFundsAvailable": "No funds available.",
     "p2pWallet": "P2P Wallet",
     "p2pWallets": "P2P Wallets",
