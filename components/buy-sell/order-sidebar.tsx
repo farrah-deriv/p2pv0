@@ -253,91 +253,91 @@ const PaymentSelectionContent = ({
           </div>
         ) : (
           <>
-          <SelectedPaymentMethodsSection
-            methods={compatibleMethods}
-            selectedIds={selectedPMs}
-            onRemove={handlePaymentMethodToggle}
-          />
-          {/* Mobile list gap: QuillSpacing.sm (8px) */}
-          <div ref={scrollRootRef} className="min-h-0 flex-1 space-y-2 overflow-y-auto">
-          {sortedPaymentMethods.map((method) => {
-            const methodId = normalizePaymentMethodId(method.id)
-            const isSelected = isPaymentMethodIdSelected(selectedPMs, methodId)
-            const isDisabled = isUserPaymentMethodSelectionDisabled(
-              compatibleMethods,
-              selectedPMs,
-              methodId,
-            )
-            const lines = getPaymentMethodSelectionLines(method, t)
+            <SelectedPaymentMethodsSection
+              methods={compatibleMethods}
+              selectedIds={selectedPMs}
+              onRemove={handlePaymentMethodToggle}
+            />
+            {/* Mobile list gap: QuillSpacing.sm (8px) */}
+            <div ref={scrollRootRef} className="min-h-0 flex-1 space-y-2 overflow-y-auto">
+              {sortedPaymentMethods.map((method) => {
+                const methodId = normalizePaymentMethodId(method.id)
+                const isSelected = isPaymentMethodIdSelected(selectedPMs, methodId)
+                const isDisabled = isUserPaymentMethodSelectionDisabled(
+                  compatibleMethods,
+                  selectedPMs,
+                  methodId,
+                )
+                const lines = getPaymentMethodSelectionLines(method, t)
 
-            return (
-              <div
-                key={methodId}
-                data-payment-method-id={methodId}
-                className={`bg-grayscale-500 rounded-lg ps-6 pe-6 py-4 cursor-pointer hover:bg-grayscale-300 transition-colors ${isSelected ? "border border-black" : ""
-                  } ${isDisabled
-                    ? "opacity-30 cursor-not-allowed hover:bg-grayscale-300"
-                    : ""
-                  }`}
-                onClick={() => {
-                  if (!isDisabled) {
-                    handlePaymentMethodToggle(methodId)
-                  }
-                }}
-              >
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="flex items-center gap-4 min-w-0 flex-1">
-                    <div
-                      className={`h-3 w-3 shrink-0 rounded-full ${method.type === "bank" ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"
-                        }`}
-                    />
-                    <div className="min-w-0 flex flex-col gap-0.5">
-                      <span className="truncate text-base leading-6 text-slate-1200">{lines.title}</span>
-                      {lines.subtitle ? (
-                        <span className="truncate text-xs leading-4 text-grayscale-text-muted">{lines.subtitle}</span>
-                      ) : null}
+                return (
+                  <div
+                    key={methodId}
+                    data-payment-method-id={methodId}
+                    className={`bg-grayscale-500 rounded-lg ps-6 pe-6 py-4 cursor-pointer hover:bg-grayscale-300 transition-colors ${isSelected ? "border border-black" : ""
+                      } ${isDisabled
+                        ? "opacity-30 cursor-not-allowed hover:bg-grayscale-300"
+                        : ""
+                      }`}
+                    onClick={() => {
+                      if (!isDisabled) {
+                        handlePaymentMethodToggle(methodId)
+                      }
+                    }}
+                  >
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className="flex items-center gap-4 min-w-0 flex-1">
+                        <div
+                          className={`h-3 w-3 shrink-0 rounded-full ${method.type === "bank" ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"
+                            }`}
+                        />
+                        <div className="min-w-0 flex flex-col gap-0.5">
+                          <span className="truncate text-base leading-6 text-slate-1200">{lines.title}</span>
+                          {lines.subtitle ? (
+                            <span className="truncate text-xs leading-4 text-grayscale-text-muted">{lines.subtitle}</span>
+                          ) : null}
+                        </div>
+                      </div>
+                      <Checkbox
+                        data-testid={`order-sidebar-checkbox-payment-${methodId}`}
+                        checked={isSelected}
+                        onCheckedChange={() => handlePaymentMethodToggle(methodId)}
+                        disabled={isDisabled}
+                        className="shrink-0 border-neutral-7 data-[state=checked]:bg-black data-[state=checked]:border-black w-[20px] h-[20px] rounded-sm border-[2px] disabled:opacity-30 disabled:cursor-not-allowed pointer-events-none"
+                      />
                     </div>
                   </div>
-                  <Checkbox
-                    data-testid={`order-sidebar-checkbox-payment-${methodId}`}
-                    checked={isSelected}
-                    onCheckedChange={() => handlePaymentMethodToggle(methodId)}
-                    disabled={isDisabled}
-                    className="shrink-0 border-neutral-7 data-[state=checked]:bg-black data-[state=checked]:border-black w-[20px] h-[20px] rounded-sm border-[2px] disabled:opacity-30 disabled:cursor-not-allowed pointer-events-none"
-                  />
+                )
+              })}
+
+              {hasNextPage && (
+                <div ref={sentinelRef} className="h-1 w-full" data-testid="order-sidebar-payment-methods-sentinel" />
+              )}
+              {isFetchingNextPage && (
+                <div className="flex justify-center py-2">
+                  <Spinner size="md" />
                 </div>
-              </div>
-            )
-          })}
+              )}
 
-        {hasNextPage && (
-          <div ref={sentinelRef} className="h-1 w-full" data-testid="order-sidebar-payment-methods-sentinel" />
-        )}
-        {isFetchingNextPage && (
-          <div className="flex justify-center py-2">
-            <Spinner size="md" />
-          </div>
-        )}
-
-        {compatibleMethods.length > 0 && (
-          <Button
-            type="button"
-            variant="ghost"
-            data-testid="order-sidebar-link-add-payment"
-            className="h-auto w-full justify-start rounded-lg border border-grayscale-200 p-4 font-normal"
-            onClick={() => {
-              handleAddPaymentMethodClick(selectedPMs)
-            }}
-          >
-            <span className="flex items-center">
-              <Image src="/icons/plus_icon.png" alt={t("common.plus")} width={14} height={24} className="me-2" />
-              <span className="text-slate-1200 text-base font-normal">
-                {t("paymentMethod.addPaymentMethod")}
-              </span>
-            </span>
-          </Button>
-        )}
-          </div>
+              {compatibleMethods.length > 0 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  data-testid="order-sidebar-link-add-payment"
+                  className="h-auto w-full justify-start rounded-lg border border-grayscale-200 p-4 font-normal"
+                  onClick={() => {
+                    handleAddPaymentMethodClick(selectedPMs)
+                  }}
+                >
+                  <span className="flex items-center">
+                    <Image src="/icons/plus_icon.png" alt={t("common.plus")} width={14} height={24} className="me-2" />
+                    <span className="text-slate-1200 text-base font-normal">
+                      {t("paymentMethod.addPaymentMethod")}
+                    </span>
+                  </span>
+                </Button>
+              )}
+            </div>
           </>
         )}
       </div>
@@ -927,7 +927,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
               <div className="flex flex-col h-auto overflow-y-auto">
                 <div className="p-4 pb-0">
                   <Alert variant="warning" dir={dir}>
-                    <h3 className="font-bold text-sm mb-1">
+                    <h3 className="font-bold text-sm">
                       {t("order.secureTradeReminder.title")}
                     </h3>
                     <div className="text-sm">

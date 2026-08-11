@@ -166,6 +166,13 @@ export default function AdDetailsForm({
   const prevPriceTypeRef = useRef<"fixed" | "float">(initialData?.priceType || "fixed")
   const exchangeRatePairRef = useRef<string | null>(null)
   const ratesByCurrencyRef = useRef<Record<string, CachedExchangeRate>>({})
+  // Tracks which forCurrency the current marketPrice belongs to.
+  // State (not ref) so it batches with setMarketPrice — the auto-fill effect
+  // always sees both values in the same commit, preventing stale-rate carry-over.
+  const [marketPriceCurrency, setMarketPriceCurrency] = useState<string | null>(null)
+  // Tracks whether the server has acknowledged the exchange_rates channel join.
+  // Prevents "must be in channel" errors from sending a request before the join ack.
+  const channelJoinedRef = useRef(false)
 
   const isMobile = useIsMobile()
   const {
@@ -290,6 +297,7 @@ export default function AdDetailsForm({
   const applyRateForCurrency = (currency: string) => {
     const cached = ratesByCurrencyRef.current[currency]
     if (!cached) return false
+    setMarketPriceCurrency(currency)
     setMarketPrice(cached.rate)
     setIsExchangeRateLoading(false)
     if (cached.status === "stale") {
@@ -311,6 +319,7 @@ export default function AdDetailsForm({
 
     if (applyRateForCurrency(forCurrency)) return
 
+    setMarketPriceCurrency(null)
     setMarketPrice(null)
     setIsExchangeRateLoading(true)
   }, [buyCurrency, forCurrency])
@@ -329,6 +338,7 @@ export default function AdDetailsForm({
   useEffect(() => {
     if (!isConnected || !buyCurrency) return
 
+    channelJoinedRef.current = false
     ratesByCurrencyRef.current = {}
     joinExchangeRatesChannel(buyCurrency, ALL_EXCHANGE_RATES)
     return () => {
@@ -342,7 +352,19 @@ export default function AdDetailsForm({
     const pairKey = `${buyCurrency}:${forCurrency}`
     const accountChannel = `exchange_rates/${buyCurrency}`
 
-    requestExchangeRate(buyCurrency, ALL_EXCHANGE_RATES)
+    // If already joined (only forCurrency changed), request immediately.
+    // If not yet joined (new connection / reconnect), defer to next macrotask so
+    // the join message is fully sent before the request — prevents the server
+    // from receiving both in the same tick and rejecting with "must be in channel".
+    let joinTimer: ReturnType<typeof setTimeout> | undefined
+    if (channelJoinedRef.current) {
+      requestExchangeRate(buyCurrency, ALL_EXCHANGE_RATES)
+    } else {
+      joinTimer = setTimeout(() => {
+        channelJoinedRef.current = true
+        requestExchangeRate(buyCurrency, ALL_EXCHANGE_RATES)
+      }, 400)
+    }
 
     // Don't leave the rate section skeleton forever if WS is silent.
     const settleTimer = setTimeout(() => {
@@ -369,6 +391,7 @@ export default function AdDetailsForm({
 
       const selected = ratesByCurrencyRef.current[forCurrency]
       if (selected) {
+        setMarketPriceCurrency(forCurrency)
         setMarketPrice(selected.rate)
         setIsExchangeRateLoading(false)
         if (selected.status === "stale") {
@@ -380,6 +403,7 @@ export default function AdDetailsForm({
     })
 
     return () => {
+      clearTimeout(joinTimer)
       clearTimeout(settleTimer)
       unsubscribe()
     }
@@ -389,6 +413,13 @@ export default function AdDetailsForm({
   useEffect(() => {
     if (priceType !== "fixed" || marketPrice == null) {
       prevPriceTypeRef.current = priceType
+      return
+    }
+
+    // Guard: marketPrice belongs to a different currency (stale from previous selection).
+    // This prevents the old rate from bleeding into the newly selected currency's field
+    // before the rate-loading effect has had a chance to clear marketPrice.
+    if (marketPriceCurrency !== forCurrency) {
       return
     }
 
@@ -418,7 +449,7 @@ export default function AdDetailsForm({
     if (switchedToFixed) {
       userEditedFixedRateRef.current = false
     }
-  }, [marketPrice, priceType, buyCurrency, forCurrency, isEditMode, fixedRate, fixedRateDecimals])
+  }, [marketPrice, marketPriceCurrency, priceType, buyCurrency, forCurrency, isEditMode, fixedRate, fixedRateDecimals])
 
   useEffect(() => {
     if (initialData) {
