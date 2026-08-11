@@ -464,8 +464,8 @@ const PaymentSelectionContent = ({
             {handleAddPaymentMethodClick && (
               <Button
                 type="button"
-                variant="ghost"
-                className="box-border h-auto w-full max-w-full min-w-0 justify-start rounded-lg bg-grayscale-500 p-4 font-normal hover:bg-grayscale-300"
+                variant="secondary-outline"
+                className="box-border h-auto w-full max-w-full min-w-0 justify-start p-4 font-normal"
                 onClick={() => {
                   handleAddPaymentMethodClick(selectedPMs)
                 }}
@@ -551,8 +551,8 @@ const PaymentSelectionContent = ({
               {handleAddPaymentMethodClick && (
                 <Button
                   type="button"
-                  variant="ghost"
-                  className="box-border h-auto w-full max-w-full min-w-0 justify-start rounded-lg bg-grayscale-500 p-4 font-normal hover:bg-grayscale-300"
+                  variant="secondary-outline"
+                  className="box-border h-auto w-full max-w-full min-w-0 justify-start p-4 font-normal"
                   onClick={() => {
                     handleAddPaymentMethodClick(selectedPMs)
                   }}
@@ -623,6 +623,9 @@ export default function PaymentDetailsForm({
   // When true, Drawer/Dialog onOpenChange from programmatic hideAlert (add-PM
   // transition) must not wipe the draft selection back to last confirmed.
   const isTransitioningToAddPanelRef = useRef(false)
+  // When true, the add-payment panel was opened from within the selection sheet,
+  // so closing it without adding should reopen the sheet.
+  const addPanelOpenedFromSelectionRef = useRef(false)
   const { hideAlert, showAlert } = useAdvertAlertDialog()
   const { toast } = useToast()
   const { selectedPaymentMethodIds, setSelectedPaymentMethodIds } = usePaymentSelection()
@@ -707,6 +710,7 @@ export default function PaymentDetailsForm({
   const handleAddPaymentMethodClick = useCallback((currentSelection: string[]) => {
     setTempSelectedPaymentMethods(currentSelection)
     isTransitioningToAddPanelRef.current = true
+    addPanelOpenedFromSelectionRef.current = true
     setShowAddPaymentPanel(true)
     hideAlert()
   }, [hideAlert])
@@ -784,6 +788,7 @@ export default function PaymentDetailsForm({
     if (initialData.type === "buy") {
       setShowFullPageModal(true)
     } else if (userPaymentMethods.length === 0) {
+      addPanelOpenedFromSelectionRef.current = false
       setShowAddPaymentPanel(true)
     } else {
       openSellPaymentSelection()
@@ -1123,11 +1128,15 @@ export default function PaymentDetailsForm({
           onAdd={handleAddPaymentMethod}
           isLoading={isAddingPaymentMethod}
           onClose={() => {
-            // Closing without adding anything returns to the "Select payment
-            // methods" popup rather than dropping the user onto the bare
-            // wizard step.
-            openSellPaymentSelection()
+            const fromSelection = addPanelOpenedFromSelectionRef.current
+            addPanelOpenedFromSelectionRef.current = false
             setShowAddPaymentPanel(false)
+            if (fromSelection) {
+              // Came from the selection sheet — reopen it so the user can still pick.
+              openSellPaymentSelection()
+            } else {
+              onBottomSheetOpenChange?.(false)
+            }
           }}
         />
       )}
