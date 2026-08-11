@@ -5,6 +5,7 @@ import { TradeBandBadge } from "@/components/trade-band-badge"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTranslations } from "@/lib/i18n/use-translations"
+import DevLogoutButton from "./dev-logout-button"
 
 interface UserInfoProps {
   username: string
@@ -68,6 +69,8 @@ export default function UserInfo({
           </div>
         </div>
       </div>
+      {/* Renders null outside `next dev`. */}
+      <DevLogoutButton />
     </div>
   )
 }

@@ -94,6 +94,48 @@ const getAuthHeader = () => ({
   "Content-Type": "application/json",
 })
 
+/** Origins we are willing to follow an Ory-issued link to. */
+const getAllowedOryOrigins = () =>
+  [process.env.NEXT_PUBLIC_ORY_URL, process.env.NEXT_PUBLIC_ORY_ME_URL, process.env.NEXT_PUBLIC_ORY_BE_URL].flatMap(
+    (url) => {
+      if (!url) return []
+      try {
+        return [new URL(url).origin]
+      } catch {
+        return []
+      }
+    },
+  )
+
+/**
+ * Rewrite an absolute Ory URL onto whatever base `getOryUrl()` resolves to.
+ *
+ * In local dev that base is the relative `/api/auth` proxy, so an absolute
+ * `recovery_link` pointing at `staging-auth.deriv.com` has to be re-pointed at
+ * the proxy — otherwise the request is blocked by CORS and the session cookie
+ * would be scoped to `deriv.com` rather than localhost. Deployed builds get an
+ * absolute base and the URL passes through unchanged.
+ *
+ * The origin allowlist keeps a manipulated link from redirecting elsewhere.
+ */
+const getOryBrowserUrl = (url: string) => {
+  const parsedUrl = new URL(url)
+  if (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:") {
+    throw new Error("Unsupported Ory URL protocol")
+  }
+
+  if (!getAllowedOryOrigins().includes(parsedUrl.origin)) {
+    throw new Error("Unexpected Ory URL origin")
+  }
+
+  const oryBaseUrl = getOryUrl()
+  if (oryBaseUrl.startsWith("/")) {
+    return `${oryBaseUrl}${parsedUrl.pathname}${parsedUrl.search}`
+  }
+
+  return parsedUrl.toString()
+}
+
 /**
  * Initiate login with email
  */
@@ -169,7 +211,7 @@ export async function verifyToken(token: string): Promise<VerificationResponse> 
       const { data } = result
 
       if (data.recovery_link) {
-        const recoveryResponse = await p2pFetch(data.recovery_link, {
+        const recoveryResponse = await p2pFetch(getOryBrowserUrl(data.recovery_link), {
           method: "GET",
           redirect: "manual",
           credentials: "include",

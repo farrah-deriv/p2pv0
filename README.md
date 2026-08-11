@@ -42,6 +42,73 @@ pnpm install
 pnpm dev          # http://localhost:3000
 ```
 
+`.env.local` is gitignored and not templated in the repo. Create one pointing at
+staging — these are the same values the staging deploy uses, and none of them are
+secrets:
+
+```bash
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+NEXT_PUBLIC_CORE_URL=https://staging-api-core.deriv.com
+NEXT_PUBLIC_CORE_ME_URL=https://staging-api-core.deriv.me
+NEXT_PUBLIC_CORE_BE_URL=https://staging-api-core.deriv.be
+NEXT_PUBLIC_SOCKET_URL=wss://staging-api-core.deriv.com
+NEXT_PUBLIC_SOCKET_ME_URL=wss://staging-api-core.deriv.me
+NEXT_PUBLIC_SOCKET_BE_URL=wss://staging-api-core.deriv.be
+NEXT_PUBLIC_IS_ORY_ENABLED=1
+NEXT_PUBLIC_ORY_URL=https://staging-auth.deriv.com
+NEXT_PUBLIC_ORY_ME_URL=https://staging-auth.deriv.me
+NEXT_PUBLIC_ORY_BE_URL=https://staging-auth.deriv.be
+NEXT_PUBLIC_NODE_ENV=staging
+```
+
+Anything else the app reads (Datadog, Novu, PostHog, feature flags) is optional
+locally and can be left unset. For the full list, see the `env:` block of
+`.github/workflows/build-and-deploy-staging.yml`, or the repo's staging
+environment variables on GitHub.
+
+Then log in at [http://localhost:3000/login](http://localhost:3000/login) with your
+staging credentials — email + password, or email + OTP.
+
+`package.json` pins `"packageManager": "pnpm@9.15.9"`, so pnpm 10+ automatically
+switches to 9 inside this repo. On pnpm 9 the `pnpm.overrides` block is honoured
+and the lockfile stays stable; without the pin, `pnpm dev` fails with
+`ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`.
+
+### How local dev reaches the API
+
+The Deriv upstreams only accept browser traffic from Deriv origins:
+
+- the Core API answers CORS preflights from `localhost` with a **403**
+- Ory omits `access-control-allow-origin` for `localhost`
+- Ory cookies come back scoped to `Domain=deriv.com`, which a `localhost` origin
+  cannot store
+
+So `next dev` serves same-origin BFF proxies. The browser only ever talks to
+`localhost`; the dev server makes the cross-origin call (servers have no CORS)
+and strips the cookie `Domain` attribute on the way back.
+
+| Browser calls | Proxy | Upstream |
+|---|---|---|
+| `/api/proxy/api/*` | `app/api/proxy/api/[...path]/route.ts` | `NEXT_PUBLIC_CORE_URL` |
+| `/api/auth/*` | `app/api/auth/[...path]/route.ts` | `NEXT_PUBLIC_ORY_URL` |
+| `/api/ory/{login,login-otp,verify-login-otp}` | `app/api/ory/*/route.ts` | Ory Kratos login flows |
+
+WebSockets are **not** proxied — WS is exempt from CORS and the token travels as
+a subprotocol, so the browser connects to `NEXT_PUBLIC_SOCKET_URL` directly.
+
+All of it is gated on `isLocalDev()` (`lib/is-local-dev.ts`), which checks
+`process.env.NODE_ENV === "development"`. Next inlines that at build time, so in
+a deployed build the proxy branches are dead-code eliminated (the proxy paths do
+not appear in `.next/static` at all) and the proxy routes return 404. Deployed
+environments authenticate through home.deriv.com as before.
+
+`/login` renders nothing in a deployed build — the guard is in the server
+component, so the form and its client JS are unreachable. It does serve the
+"Page not found" body with a **200** status rather than 404: the root layout is
+edge-rendered, calls `cookies()`, and wraps `children` in `<Suspense>`, so the
+response is committed before the page component runs. That applies to any
+rendered-then-`notFound()` route here.
+
 ## Commands
 
 ```bash
