@@ -9,8 +9,9 @@ interface GuideState {
   hasSeenIntro: boolean
   isGuideActive: boolean
   isIntroOpen: boolean
-  pendingReopenIntro: boolean
   pendingStartGuide: boolean
+  guideStartedFromIntro: boolean
+  adTradeType: "buy" | "sell" | null
   guideType: GuideType
   currentStep: number
   advertsSettled: boolean
@@ -19,10 +20,11 @@ interface GuideState {
   reopenIntro: () => void
   dismissIntro: () => void
   startGuide: (type?: GuideType) => void
+  setGuideStartedFromIntro: (value: boolean) => void
+  setAdTradeType: (type: "buy" | "sell" | null) => void
   nextStep: () => void
   goToStep: (step: number) => void
   completeGuide: () => void
-  setPendingReopenIntro: (value: boolean) => void
   setPendingStartGuide: (value: boolean) => void
 }
 
@@ -33,8 +35,9 @@ export const useGuideStore = create<GuideState>()(
       hasSeenIntro: false,
       isGuideActive: false,
       isIntroOpen: false,
-      pendingReopenIntro: false,
       pendingStartGuide: false,
+      guideStartedFromIntro: false,
+      adTradeType: null,
       guideType: "markets" as GuideType,
       currentStep: 0,
       advertsSettled: false,
@@ -45,7 +48,8 @@ export const useGuideStore = create<GuideState>()(
       reopenIntro: () => set({ isIntroOpen: true }),
       dismissIntro: () => set({ isIntroOpen: false, hasSeenIntro: true }),
       startGuide: (type: GuideType = "markets") => set({ isGuideActive: true, currentStep: 0, guideType: type }),
-      setPendingReopenIntro: (value: boolean) => set({ pendingReopenIntro: value }),
+      setGuideStartedFromIntro: (value: boolean) => set({ guideStartedFromIntro: value }),
+      setAdTradeType: (type: "buy" | "sell" | null) => set({ adTradeType: type }),
       setPendingStartGuide: (value: boolean) => set({ pendingStartGuide: value }),
       nextStep: () => {
         const { currentStep } = get()
@@ -60,7 +64,11 @@ export const useGuideStore = create<GuideState>()(
           set({ currentStep: step })
         }
       },
-      completeGuide: () => set({ hasSeenGuide: true, isGuideActive: false, currentStep: 0 }),
+      completeGuide: () => {
+        const fromIntro = get().guideStartedFromIntro
+        set({ hasSeenGuide: true, isGuideActive: false, currentStep: 0, guideStartedFromIntro: false, adTradeType: null })
+        if (fromIntro) get().reopenIntro()
+      },
     }),
     {
       name: "p2p-guide",

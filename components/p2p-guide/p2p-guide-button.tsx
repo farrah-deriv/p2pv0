@@ -15,7 +15,7 @@ export function P2PGuideButton({ className, guideType = "markets" }: { className
       aria-label={t("guideIntro.openGuide")}
       className={className ?? "flex h-10 w-10 items-center justify-center rounded-3xl border border-neutral-200 transition-colors hover:bg-neutral-50"}
     >
-      <Image src="/icons/ic-guide-notebook.svg" alt="" width={20} height={20} aria-hidden />
+      <Image src={guideType === "ads" ? "/icons/ic-ad-guide.svg" : "/icons/ic-guide-notebook.svg"} alt="" width={20} height={20} aria-hidden />
     </button>
   )
 }

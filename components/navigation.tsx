@@ -86,7 +86,7 @@ export default function Navigation({
       <>
         <h1 className={cn(titleClassName, "flex-1 min-w-0")}>{title}</h1>
         {onGuide && (
-          <Button variant="icon-muted" onClick={onGuide} aria-label={t("guideIntro.openGuide")} className="me-1">
+          <Button variant="icon-muted" onClick={onGuide} aria-label={t("guideIntro.openGuide")} className="me-2">
             <Image src="/icons/ic-guide-notebook.svg" alt="" width={20} height={20} aria-hidden />
           </Button>
         )}

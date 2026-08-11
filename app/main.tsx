@@ -50,8 +50,6 @@ export default function Main({
   const { isTransactionListVisible } = useWalletViewStore()
   const openIntro = useGuideStore((state) => state.openIntro)
   const reopenIntro = useGuideStore((state) => state.reopenIntro)
-  const pendingReopenIntro = useGuideStore((state) => state.pendingReopenIntro)
-  const setPendingReopenIntro = useGuideStore((state) => state.setPendingReopenIntro)
   const showMobileFooterNav = shouldShowMobileFooterNav(pathname, isChatVisible, isTransactionListVisible)
   const { data: onboardingStatus, isLoading: isOnboardingLoading } = useOnboardingStatus(
     isAuthenticated && !isMaintenanceActive,
@@ -144,12 +142,6 @@ export default function Main({
     if (isReady && isAuthenticated) openIntro()
   }, [isReady, isAuthenticated]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    if (pathname === "/" && pendingReopenIntro) {
-      setPendingReopenIntro(false)
-      reopenIntro()
-    }
-  }, [pathname, pendingReopenIntro]) // eslint-disable-line react-hooks/exhaustive-deps
 
 
   useEffect(() => {

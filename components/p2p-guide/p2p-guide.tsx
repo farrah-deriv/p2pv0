@@ -57,6 +57,15 @@ const STEP_CONFIG_BY_TYPE: Record<GuideType, StepConfig[]> = {
 const SPOTLIGHT_PADDING = 8
 const TOOLTIP_GAP = 8
 
+function renderBold(text: string) {
+  const parts = text.split(/\*\*(.+?)\*\*/)
+  return parts.map((part, i) =>
+    i % 2 === 1
+      ? <strong key={i} style={{ color: "var(--quill-primitive-colour-black-opacity-900)" }}>{part}</strong>
+      : part
+  )
+}
+
 function stepWouldBeSkipped(stepConfig: StepConfig): boolean {
   const els = document.querySelectorAll<HTMLElement>(`[data-guide-id="${stepConfig.targetId}"]`)
   if (stepConfig.skipIfAbsent && els.length === 0) return true
@@ -73,7 +82,7 @@ function stepWouldBeSkipped(stepConfig: StepConfig): boolean {
 export function P2PGuide() {
   const { t } = useTranslations()
   const router = useRouter()
-  const { isGuideActive, guideType, currentStep, nextStep, goToStep, completeGuide, reopenIntro, setPendingReopenIntro } = useGuideStore()
+  const { isGuideActive, guideType, currentStep, nextStep, goToStep, completeGuide, guideStartedFromIntro, adTradeType } = useGuideStore()
   const [targetRect, setTargetRect] = useState<TargetRect | null>(null)
   const [usingFallback, setUsingFallback] = useState(false)
   // Tracks which step owns the current targetRect; -1 means stale/unset
@@ -326,12 +335,15 @@ export function P2PGuide() {
           <div ref={tooltipRef} tabIndex={-1} className="relative bg-white rounded-2xl shadow-xl p-5 outline-none">
 
             {/* Title row with X dismiss button */}
-            <div className="flex items-end justify-between mb-2">
+            <div className="flex items-center justify-between mb-2">
               <p id="p2p-guide-title" className="font-bold text-base text-slate-1200 leading-snug pe-2">{t(config.titleKey)}</p>
               <Button
                 type="button"
                 variant="icon-muted"
-                onClick={completeGuide}
+                onClick={() => {
+                    completeGuide()
+                    if (guideType === "ads" && guideStartedFromIntro) router.push("/")
+                  }}
                 aria-label={t("guide.closeLabel")}
                 className="shrink-0"
               >
@@ -339,7 +351,12 @@ export function P2PGuide() {
               </Button>
             </div>
 
-            <p className="text-sm text-grayscale-600 mb-5 leading-relaxed">{t(usingFallback && config.fallbackBodyKey ? config.fallbackBodyKey : config.bodyKey)}</p>
+            <p className="text-sm text-grayscale-600 mb-5 leading-relaxed">{renderBold(t((() => {
+              const key = usingFallback && config.fallbackBodyKey ? config.fallbackBodyKey : config.bodyKey
+              if (key === "adGuide.step4Body")
+                return adTradeType === "sell" ? "adGuide.step4BodySell" : "adGuide.step4BodyBuy"
+              return key
+            })()))}</p>
 
             {/* Bottom row: step counter left, buttons right */}
             <div className="flex items-center justify-between gap-2">
@@ -349,7 +366,7 @@ export function P2PGuide() {
               <div className="flex gap-2">
                 {currentStep > 0 && (
                   <Button
-                    variant="outline"
+                    variant="secondary-outline"
                     size="sm"
                     className="rounded-full font-bold"
                     onClick={handlePrevStep}
@@ -363,12 +380,7 @@ export function P2PGuide() {
                   className="rounded-full font-bold"
                   onClick={isEffectiveLastStep ? () => {
                     completeGuide()
-                    if (guideType === "ads") {
-                      setPendingReopenIntro(true)
-                      router.push("/")
-                    } else {
-                      reopenIntro()
-                    }
+                    if (guideType === "ads" && guideStartedFromIntro) router.push("/")
                   } : nextStep}
                 >
                   {isEffectiveLastStep ? t("guide.done") : t("guide.next")}

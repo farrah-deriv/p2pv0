@@ -135,6 +135,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
   const guideStep = useGuideStore((s) => s.currentStep)
   const guideType = useGuideStore((s) => s.guideType)
   const startGuide = useGuideStore((s) => s.startGuide)
+  const setAdTradeType = useGuideStore((s) => s.setAdTradeType)
 
   // Start the ads guide when the ?guide=true URL param is present (create mode only)
   useEffect(() => {
@@ -152,6 +153,14 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     else if (guideStep <= 4) setCurrentStep(1)
     else if (guideStep === 5) setCurrentStep(2)
   }, [guideStep, guideType])
+
+  // Keep guide store in sync with the selected trade type so step 4 body is correct
+  useEffect(() => {
+    if (guideType !== "ads") return
+    if (formData.type === "buy" || formData.type === "sell") {
+      setAdTradeType(formData.type)
+    }
+  }, [formData.type, guideType, setAdTradeType])
 
   const createAdMutation = useCreateAd()
   const updateAdMutation = useUpdateAd()

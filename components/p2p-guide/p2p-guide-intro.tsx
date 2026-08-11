@@ -12,38 +12,44 @@ import { Button } from "@/components/ui/button"
 
 interface OptionCardProps {
   icon: React.ReactNode
-  iconBg: string
   title: string
   subtitle: string
-  variant: "light" | "primary" | "dark"
+  variant: "light" | "primary" | "dark" | "outlined"
   onClick: () => void
 }
 
-function OptionCard({ icon, iconBg, title, subtitle, variant, onClick }: OptionCardProps) {
+function OptionCard({ icon, title, subtitle, variant, onClick }: OptionCardProps) {
   const bgClass =
     variant === "primary"
       ? "bg-primary"
       : variant === "dark"
         ? "bg-slate-1200"
-        : "bg-grayscale-300"
+        : variant === "outlined"
+          ? "bg-transparent"
+          : "bg-[var(--quill-primitive-colour-black-opacity-75)]"
 
   const titleClass =
-    variant === "light" ? "text-slate-1200" : "text-white"
+    variant === "light" || variant === "outlined" ? "text-slate-1200" : "text-white"
 
   const subtitleClass =
-    variant === "light" ? "text-grayscale-text-muted" : "text-white/70"
+    variant === "light" || variant === "outlined" ? "text-grayscale-text-muted" : "text-white/70"
+
+  const borderStyle = variant === "outlined"
+    ? { border: "1px solid var(--semantic-color-monochrome-border-normal-highest, rgba(0, 0, 0, 0.24))" }
+    : undefined
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center gap-3 rounded-lg px-4 py-3.5 text-start transition-opacity hover:opacity-90 active:opacity-80 ${bgClass}`}
+      style={borderStyle}
+      className={`flex w-full items-center gap-3 rounded-lg p-4 text-start transition-opacity hover:opacity-90 active:opacity-80 ${bgClass}`}
     >
-      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl`}>
+      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl`}>
         {icon}
       </span>
       <span className="flex flex-col min-w-0">
-        <span className={`font-bold text-sm leading-tight ${titleClass}`}>{title}</span>
+        <span className={`font-bold text-base leading-tight ${titleClass}`}>{title}</span>
         <span className={`text-xs mt-0.5 ${subtitleClass}`}>{subtitle}</span>
       </span>
     </button>
@@ -52,15 +58,17 @@ function OptionCard({ icon, iconBg, title, subtitle, variant, onClick }: OptionC
 
 function IntroContent({ onClose }: { onClose: () => void }) {
   const { t } = useTranslations()
-  const { dismissIntro, startGuide } = useGuideStore()
+  const { dismissIntro, startGuide, setGuideStartedFromIntro } = useGuideStore()
   const router = useRouter()
 
   const handlePlaceOrder = () => {
+    setGuideStartedFromIntro(true)
     dismissIntro()
     startGuide()
   }
 
   const handleCreateAd = () => {
+    setGuideStartedFromIntro(true)
     dismissIntro()
     router.push("/ads/create?guide=true")
   }
@@ -80,19 +88,18 @@ function IntroContent({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex flex-col items-center px-6 pb-8 pt-6">
       {/* Title + description */}
-      <p className="mb-2 text-center text-xl font-bold text-slate-1200 leading-tight">
+      <p className="mb-6 w-full text-left text-2xl font-extrabold text-slate-1200 leading-tight">
         {t("guideIntro.title")}
       </p>
-      <p className="mb-6 text-sm text-grayscale-text-muted leading-relaxed">
+      <p className="mb-4 text-base leading-relaxed" style={{ color: "var(--quill-primitive-colour-black-opacity-900)" }}>
         {t("guideIntro.description")}
       </p>
 
       {/* Option cards */}
-      <div className="flex w-full flex-col gap-3">
+      <div className="flex w-full flex-col gap-2">
         <OptionCard
           variant="light"
           icon={<Image src="/icons/ic-play.svg" alt="" width={20} height={20} aria-hidden className="text-white" />}
-          iconBg="bg-white/20"
           title={t("guideIntro.orderTitle")}
           subtitle={t("guideIntro.orderSubtitle")}
           onClick={handlePlaceOrder}
@@ -100,15 +107,13 @@ function IntroContent({ onClose }: { onClose: () => void }) {
         <OptionCard
           variant="light"
           icon={<Image src="/icons/ic-play.svg" alt="" width={20} height={20} aria-hidden className="text-white" />}
-          iconBg="bg-white/10"
           title={t("guideIntro.adTitle")}
           subtitle={t("guideIntro.adSubtitle")}
           onClick={handleCreateAd}
         />
         <OptionCard
-          variant="light"
+          variant="outlined"
           icon={<Image src="/icons/ic-ask-amy-sparkle.svg" alt="" width={32} height={32} aria-hidden />}
-          iconBg="bg-red-50"
           title={t("guideIntro.amyTitle")}
           subtitle={t("guideIntro.amySubtitle")}
           onClick={handleAskAmy}
@@ -120,7 +125,7 @@ function IntroContent({ onClose }: { onClose: () => void }) {
         type="button"
         variant="ghost"
         onClick={handleSkip}
-        className="mt-5 h-auto min-h-0 min-w-0 rounded-none p-0 text-sm font-normal text-grayscale-text-muted hover:bg-transparent hover:text-slate-1200"
+        className="mt-5 h-auto min-h-0 min-w-0 rounded-none p-0 !underline !text-sm !font-normal !hover:bg-transparent hover:text-slate-1200"
       >
         {t("guideIntro.skip")}
       </Button>
