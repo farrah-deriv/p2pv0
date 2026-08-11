@@ -316,6 +316,7 @@ export default function Sidebar({ className }: SidebarProps) {
                   data-testid="sidebar-btn-search-clear"
                   onClick={handleClear}
                   aria-label={t("common.clearSearch")}
+                  className="!bg-transparent hover:!bg-transparent"
                 >
                   <Image src="/icons/clear-search-icon.png" alt="" aria-hidden="true" width={16} height={16} />
                 </Button>

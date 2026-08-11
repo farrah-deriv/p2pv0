@@ -805,6 +805,7 @@
     "sellerRealName": "Vrai nom du vendeur",
     "status": "Statut",
     "textCopiedToClipboard": "Le texte a été copié dans votre presse-papiers.",
+    "copiedToClipboard": "{label} copié.",
     "timeLeft": "Temps restant :",
     "title": "Détails de la commande",
     "total": "Total",

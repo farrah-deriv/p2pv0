@@ -788,6 +788,7 @@
     "sellerRealName": "卖家真实姓名",
     "status": "状态",
     "textCopiedToClipboard": "文本已复制到您的剪贴板。",
+    "copiedToClipboard": "{label}已复制。",
     "timeLeft": "剩余时间：",
     "title": "订单详情",
     "total": "总计",

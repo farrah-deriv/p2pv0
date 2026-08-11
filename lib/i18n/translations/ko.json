@@ -837,6 +837,7 @@
     "sellerRealName": "판매자의 실명",
     "status": "상태",
     "textCopiedToClipboard": "텍스트가 클립보드에 복사되었습니다.",
+    "copiedToClipboard": "{label} 복사됨.",
     "timeLeft": "남은 시간:",
     "title": "주문 상세정보",
     "total": "합계",

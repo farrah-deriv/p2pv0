@@ -796,6 +796,7 @@
     "sellerRealName": "Jina halisi la muuzaji",
     "status": "Hali",
     "textCopiedToClipboard": "Maandishi yameandikilwa kwenye ubao wako wa kunakili.",
+    "copiedToClipboard": "{label} imenakiliwa.",
     "timeLeft": "Wakati uliobaki:",
     "title": "Maelezo ya amri",
     "total": "Jumla",

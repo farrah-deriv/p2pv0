@@ -832,6 +832,7 @@
     "sellerRealName": "Tên thật của người bán",
     "status": "Trạng thái",
     "textCopiedToClipboard": "Văn bản đã được sao chép vào clipboard của bạn.",
+    "copiedToClipboard": "Đã sao chép {label}.",
     "timeLeft": "Thời gian còn lại:",
     "title": "Chi tiết đơn hàng",
     "total": "Tổng cộng",

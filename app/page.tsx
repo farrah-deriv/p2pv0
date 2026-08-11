@@ -572,7 +572,7 @@ export default function BuySellPage() {
           </div>
           {tempBanUntil && !isMaintenanceActive && <TemporaryBanAlert tempBanUntil={tempBanUntil} />}
           <div className="flex flex-wrap gap-2 md:gap-3 md:px-0 md:mb-4 md:justify-end">
-            <div className="flex gap-2 items-center md:ms-auto md:flex-none">
+            <div className="flex gap-2 items-center md:ms-auto md:flex-none max-md:w-full">
               {!isV1Signup && (
                 <div className="flex gap-2 mb-3 flex-1 hidden">
                   {accountCurrencies.map((curr) => (
@@ -640,6 +640,8 @@ export default function BuySellPage() {
                     </Button>
                   }
                 />
+              </div>
+              <div className="flex-shrink-0 max-md:ml-auto">
                 <P2PGuideButton guideType="markets" />
               </div>
             </div>
@@ -755,7 +757,7 @@ export default function BuySellPage() {
                                 <Button
                                   variant="ghost"
                                   onClick={() => handleAdvertiserClick(ad.user?.id || 0)}
-                                  className="hover:underline hover:!bg-transparent cursor-pointer !p-0 !h-auto"
+                                  className="hover:underline hover:!bg-transparent cursor-pointer !p-0 !h-auto !shrink-0 !overflow-visible !leading-normal !text-sm"
                                   data-testid={`markets-link-advertiser-${ad.advertiser_id ?? ad.user?.id}`}
                                   size="sm"
                                 >

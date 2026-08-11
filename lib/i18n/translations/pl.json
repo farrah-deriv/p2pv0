@@ -800,6 +800,7 @@
     "sellerRealName": "Prawdziwe imię i nazwisko sprzedawcy",
     "status": "Stan",
     "textCopiedToClipboard": "Tekst został skopiowany do schowka.",
+    "copiedToClipboard": "{label} skopiowano.",
     "timeLeft": "Pozostały czas:",
     "title": "Szczegóły zamówienia",
     "total": "Razem",

@@ -788,6 +788,7 @@
     "sellerRealName": "اسم البائع الحقيقي",
     "status": "الحالة",
     "textCopiedToClipboard": "تم نسخ النص إلى الحافظة.",
+    "copiedToClipboard": "تم نسخ {label}.",
     "timeLeft": "الوقت المتبقي:",
     "title": "تفاصيل الطلب",
     "total": "الإجمالي",

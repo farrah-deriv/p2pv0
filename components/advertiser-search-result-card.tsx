@@ -35,8 +35,9 @@ export function AdvertiserSearchResultCard({ ad, onAdvertiserClick, onBuySellCli
                         <Button
                             variant="ghost"
                             data-testid={`mobile-search-btn-advertiser-${ad.user.id}`}
-                            className="text-sm hover:underline cursor-pointer truncate !p-0 !h-auto"
+                            className="hover:underline hover:!bg-transparent cursor-pointer !p-0 !h-auto !shrink-0 !overflow-visible !leading-normal !text-sm"
                             onClick={() => onAdvertiserClick(ad.user.id)}
+                            size="sm"
                         >
                             {ad.user?.nickname}
                         </Button>

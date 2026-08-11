@@ -818,6 +818,7 @@
     "sellerRealName": "Настоящее имя продавца",
     "status": "Статус",
     "textCopiedToClipboard": "Текст скопирован в буфер обмена.",
+    "copiedToClipboard": "{label} скопировано.",
     "timeLeft": "Осталось времени:",
     "title": "Детали заказа",
     "total": "Итого",

@@ -25,12 +25,26 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => <>
 export const ToastViewport = (_props: React.HTMLAttributes<HTMLDivElement>) => null
 
 export const Toast = React.forwardRef<HTMLDivElement, ToastProps & { children?: React.ReactNode }>(
-  ({ open = true, onOpenChange, duration, variant, className, children }, ref) => {
+  ({ open = true, onOpenChange, duration, variant, className, children }, _ref) => {
     const handleClose = React.useCallback(() => onOpenChange?.(false), [onOpenChange])
+    const snackbarRef = React.useRef<HTMLDivElement>(null)
+
+    // Quill's mobile media query forces full-width left-aligned via !important.
+    // Inline !important (setProperty) is the only way to reliably override it.
+    React.useLayoutEffect(() => {
+      const el = snackbarRef.current
+      if (!el || typeof window === "undefined" || window.innerWidth > 640) return
+      el.style.setProperty("min-width", "auto", "important")
+      el.style.setProperty("max-width", "min(24rem, calc(100vw - 2rem))", "important")
+      el.style.setProperty("left", "50%", "important")
+      el.style.setProperty("right", "auto", "important")
+      el.style.setProperty("transform", "translateX(-50%)", "important")
+    }, [open])
+
     return (
       <ToastCloseCtx.Provider value={handleClose}>
         <Snackbar
-          ref={ref}
+          ref={snackbarRef}
           visible={open}
           type={variant === "destructive" ? "fail" : "default"}
           position="top-center"

@@ -815,6 +815,7 @@
     "sellerRealName": "Echter Name des Verkäufers",
     "status": "Status",
     "textCopiedToClipboard": "Der Text wurde in Ihre Zwischenablage kopiert.",
+    "copiedToClipboard": "{label} kopiert.",
     "timeLeft": "Verbleibende Zeit:",
     "title": "Bestelldetails",
     "total": "Gesamt",

@@ -788,6 +788,7 @@
     "sellerRealName": "විකුණුම්කරුගේ සැබෑ නම",
     "status": "තත්ත්වය",
     "textCopiedToClipboard": "පෙළ ඔබගේ පසුරු පුවරුවට පිටපත් කර ඇත.",
+    "copiedToClipboard": "{label} පිටපත් කරන ලදී.",
     "timeLeft": "ඉතිරි කාලය:",
     "title": "ඇණවුම් විස්තර",
     "total": "මුළු",

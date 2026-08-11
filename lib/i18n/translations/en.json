@@ -500,6 +500,7 @@
     "keepOrder": "Keep order",
     "proofOfTransferSubmitted": "Proof of transfer submitted",
     "textCopiedToClipboard": "The text has been copied to your clipboard.",
+    "copiedToClipboard": "{label} copied.",
     "ratingDeadline": "You have until {deadline} to rate this transaction.",
     "awaitingPaymentTooltip": "Wait for the buyer to complete their payment.",
     "loadingOrderDetails": "Loading order details...",

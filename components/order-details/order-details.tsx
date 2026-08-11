@@ -32,7 +32,7 @@ const OrderDetailItem = ({ hasCopy, label, value, testId, isBlockLayout, copyTes
                   description: (
                     <div className="flex items-center gap-2">
                       <Image src="/icons/tick.svg" alt="Success" width={24} height={24} className="text-white" />
-                      <span>{t("orderDetails.textCopiedToClipboard")}</span>
+                      <span>{t("orderDetails.copiedToClipboard", { label })}</span>
                     </div>
                   ),
                   className: TOAST_SUCCESS_CLASS,

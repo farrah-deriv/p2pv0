@@ -807,6 +807,7 @@
     "sellerRealName": "Il vero nome del venditore",
     "status": "Stato",
     "textCopiedToClipboard": "Il testo è stato copiato negli appunti.",
+    "copiedToClipboard": "{label} copiato.",
     "timeLeft": "Tempo rimasto:",
     "title": "Dettagli ordine",
     "total": "Totale",

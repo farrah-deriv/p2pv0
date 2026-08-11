@@ -797,6 +797,7 @@
     "sellerRealName": "বিক্রেতার আসল নাম",
     "status": "স্ট্যাটাস",
     "textCopiedToClipboard": "টেক্সটটি আপনার ক্লিপবোর্ডে কপি করা হয়েছে।",
+    "copiedToClipboard": "{label} কপি হয়েছে।",
     "timeLeft": "সময় বাকি:",
     "title": "অর্ডার বিবরণ",
     "total": "মোট",

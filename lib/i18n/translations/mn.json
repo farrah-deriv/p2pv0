@@ -788,6 +788,7 @@
     "sellerRealName": "Худалдагчийн жинхэнэ нэр",
     "status": "Статус",
     "textCopiedToClipboard": "Текстийг таны санах ойд хуулсан.",
+    "copiedToClipboard": "{label} хуулагдлаа.",
     "timeLeft": "Үлдсэн хугацаа:",
     "title": "Захиалгын дэлгэрэнгүй мэдээлэл",
     "total": "Нийт",
