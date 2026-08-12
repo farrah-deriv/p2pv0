@@ -214,8 +214,8 @@
     "removeFromClosedGroup": "Xóa khỏi nhóm đóng",
     "removedFromClosedGroup": "Đã xóa khỏi nhóm đóng thành công.",
     "sellCompletionRate30d": "Tỷ lệ hoàn thành bán (30 ngày)",
-    "successfullyFollowed": "Đã theo dõi thành công",
-    "successfullyUnfollowed": "Đã bỏ theo dõi thành công",
+    "successfullyFollowed": "Đã theo dõi thành công.",
+    "successfullyUnfollowed": "Đã bỏ theo dõi thành công.",
     "timeLimit": "Giới hạn thời gian",
     "totalAllTimeTrades": "Tổng giao dịch mọi thời gian",
     "totalTrades30d": "Tổng giao dịch (30 ngày)",
@@ -820,7 +820,7 @@
     "orderTime": "Thời gian đặt hàng",
     "paymentMethod": "Phương thức thanh toán",
     "processing": "Đang xử lý...",
-    "proofOfTransferSubmitted": "Đã nộp bằng chứng chuyển khoản",
+    "proofOfTransferSubmitted": "Đã nộp bằng chứng chuyển khoản.",
     "rate": "Tỷ giá",
     "rateTransaction": "Đánh giá giao dịch",
     "ratingDeadline": "Bạn có đến {deadline} để đánh giá giao dịch này.",
@@ -1131,13 +1131,13 @@
     "yes": "Có"
   },
   "shareAdPage": {
-    "adLinkCopied": "Đã sao chép liên kết quảng cáo",
+    "adLinkCopied": "Đã sao chép liên kết quảng cáo.",
     "copyLink": "Sao chép liên kết",
-    "failedToCopyLink": "Không thể sao chép liên kết",
-    "failedToGenerateQR": "Không thể tạo mã QR",
-    "failedToSaveImage": "Không thể lưu hình ảnh",
+    "failedToCopyLink": "Không thể sao chép liên kết.",
+    "failedToGenerateQR": "Không thể tạo mã QR.",
+    "failedToSaveImage": "Không thể lưu hình ảnh.",
     "idNumber": "Số ID",
-    "imageSavedSuccessfully": "Đã lưu hình ảnh thành công",
+    "imageSavedSuccessfully": "Đã lưu hình ảnh thành công.",
     "limits": "Giới hạn",
     "qrCodeDescription": "Quét mã này để đặt hàng qua Deriv P2P",
     "rate": "Tỷ giá",
@@ -1148,7 +1148,8 @@
     "shareImage": "Chia sẻ hình ảnh",
     "shareMessage": "Xin chào! Tôi muốn trao đổi {currency} với tỷ giá {rate} trên Deriv P2P. Nếu bạn quan tâm, hãy xem quảng cáo của tôi {url}. Cảm ơn!",
     "shareTelegramMessage": "Xin chào! Tôi muốn trao đổi {currency} với tỷ giá {rate} trên Deriv P2P. Nếu bạn quan tâm, hãy xem quảng cáo của tôi. Cảm ơn!",
-    "sharedSuccessfully": "Đã chia sẻ thành công"
+    "sharedSuccessfully": "Đã chia sẻ thành công.",
+    "sharingNotSupported": "Sharing is not supported on this device."
   },
   "status": {
     "awaitingPayment": "Đang chờ thanh toán",

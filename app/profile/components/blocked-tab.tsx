@@ -91,18 +91,18 @@ export default function BlockedTab() {
   }
 
   const UserCard = ({ user }: { user: BlockedUser }) => (
-    <div className="h-[72px] flex items-center justify-between gap-3 min-w-0">
+    <div className="min-h-[72px] flex items-center justify-between gap-3 min-w-0">
       <div className="w-10 h-10 rounded-full bg-grayscale-300 flex items-center justify-center text-slate-700 font-bold text-sm flex-shrink-0">
         {user.nickname?.charAt(0).toUpperCase()}
       </div>
       <div className="flex-1 min-w-0 border-b border-gray-100 py-4 flex items-center justify-between gap-3">
         <Button
           onClick={() => onUserClick(user.user_id)}
-          className="min-w-0 justify-start text-start hover:underline !hover:bg-transparent cursor-pointer font-normal text-slate-1200 px-0 text-base overflow-hidden"
+          className="min-w-0 justify-start text-start hover:underline !hover:bg-transparent cursor-pointer font-normal text-slate-1200 px-0 text-base break-words"
           size="sm"
           variant="ghost"
         >
-          <span className="block truncate">{user.nickname}</span>
+          {user.nickname}
         </Button>
         <Button
           variant="secondary-outline"

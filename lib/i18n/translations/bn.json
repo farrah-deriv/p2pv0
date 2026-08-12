@@ -206,8 +206,8 @@
     "removeFromClosedGroup": "ক্লোজড গ্রুপ থেকে সরান",
     "removedFromClosedGroup": "সফলভাবে ক্লোজড গ্রুপ থেকে সরানো হয়েছে।",
     "sellCompletionRate30d": "বিক্রয় সম্পূর্ণের হার (৩০দিন)",
-    "successfullyFollowed": "সফলভাবে ফলো করা হয়েছে",
-    "successfullyUnfollowed": "সফলভাবে আনফলো করা হয়েছে",
+    "successfullyFollowed": "সফলভাবে ফলো করা হয়েছে.",
+    "successfullyUnfollowed": "সফলভাবে আনফলো করা হয়েছে.",
     "timeLimit": "সময় সীমা",
     "totalAllTimeTrades": "মোট সকল সময়ের ব্যবসা",
     "totalTrades30d": "মোট ব্যবসা (৩০দিন)",
@@ -785,7 +785,7 @@
     "orderTime": "অর্ডারের সময়",
     "paymentMethod": "পেমেন্ট পদ্ধতি",
     "processing": "প্রক্রিয়াকরণ...",
-    "proofOfTransferSubmitted": "ট্রান্সফারের প্রমাণ জমা দেওয়া হয়েছে",
+    "proofOfTransferSubmitted": "ট্রান্সফারের প্রমাণ জমা দেওয়া হয়েছে.",
     "rate": "রেট",
     "rateTransaction": "লেনদেন রেট করুন",
     "ratingDeadline": "এই লেনদেনের রেটিং দিতে আপনার {deadline} পর্যন্ত সময় আছে।",
@@ -1097,13 +1097,13 @@
     "yes": "হ্যাঁ"
   },
   "shareAdPage": {
-    "adLinkCopied": "বিজ্ঞাপন লিঙ্ক কপি করা হয়েছে",
+    "adLinkCopied": "বিজ্ঞাপন লিঙ্ক কপি করা হয়েছে.",
     "copyLink": "লিঙ্ক কপি করুন",
-    "failedToCopyLink": "লিঙ্ক কপি করতে ব্যর্থ",
-    "failedToGenerateQR": "QR কোড তৈরি করতে ব্যর্থ",
-    "failedToSaveImage": "ছবি সংরক্ষণ করতে ব্যর্থ",
+    "failedToCopyLink": "লিঙ্ক কপি করতে ব্যর্থ.",
+    "failedToGenerateQR": "QR কোড তৈরি করতে ব্যর্থ.",
+    "failedToSaveImage": "ছবি সংরক্ষণ করতে ব্যর্থ.",
     "idNumber": "আইডি নম্বর",
-    "imageSavedSuccessfully": "ছবি সফলভাবে সংরক্ষিত হয়েছে",
+    "imageSavedSuccessfully": "ছবি সফলভাবে সংরক্ষিত হয়েছে.",
     "limits": "সীমা",
     "qrCodeDescription": "Deriv P2P-এর মাধ্যমে অর্ডার করতে এই কোড স্ক্যান করুন",
     "rate": "রেট",
@@ -1114,7 +1114,8 @@
     "shareImage": "ছবি শেয়ার করুন",
     "shareMessage": "হাই! আমি Deriv P2P-তে {currency} {rate}-এ বিনিময় করতে চাই। আগ্রহী হলে, আমার বিজ্ঞাপন দেখুন {url}। ধন্যবাদ!",
     "shareTelegramMessage": "হাই! আমি Deriv P2P-তে {currency} {rate}-এ বিনিময় করতে চাই। আগ্রহী হলে, আমার বিজ্ঞাপন দেখুন। ধন্যবাদ!",
-    "sharedSuccessfully": "সফলভাবে শেয়ার করা হয়েছে"
+    "sharedSuccessfully": "সফলভাবে শেয়ার করা হয়েছে.",
+    "sharingNotSupported": "Sharing is not supported on this device."
   },
   "status": {
     "awaitingPayment": "পেমেন্টের জন্য অপেক্ষা করা হচ্ছে",

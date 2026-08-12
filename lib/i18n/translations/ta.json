@@ -197,8 +197,8 @@
     "removeFromClosedGroup": "மூடிய குழுவிலிருந்து அகற்று",
     "removedFromClosedGroup": "மூடப்பட்ட குழுவிலிருந்து வெற்றிகரமாக அகற்றப்பட்டது.",
     "sellCompletionRate30d": "விற்பனை நிறைவு விகிதம் (30நா)",
-    "successfullyFollowed": "வெற்றிகரமாக பின்பற்றப்பட்டது",
-    "successfullyUnfollowed": "வெற்றிகரமாக பின்தொடரவில்லை",
+    "successfullyFollowed": "வெற்றிகரமாக பின்பற்றப்பட்டது.",
+    "successfullyUnfollowed": "வெற்றிகரமாக பின்தொடரவில்லை.",
     "timeLimit": "கால வரம்பு",
     "totalAllTimeTrades": "மொத்த அனைத்து நேர வர்த்தகம்",
     "totalTrades30d": "மொத்த வர்த்தகம் (30நா)",
@@ -776,7 +776,7 @@
     "orderTime": "ஆர்டர் நேரம்",
     "paymentMethod": "பணம் செலுத்தும் முறை",
     "processing": "செயலாக்குகிறது...",
-    "proofOfTransferSubmitted": "பரிமாற்றச் சான்று சமர்ப்பிக்கப்பட்டது",
+    "proofOfTransferSubmitted": "பரிமாற்றச் சான்று சமர்ப்பிக்கப்பட்டது.",
     "rate": "மதிப்பிடவும்",
     "rateTransaction": "விகித பரிவர்த்தனை",
     "ratingDeadline": "இந்தப் பரிவர்த்தனையை மதிப்பிட உங்களுக்கு {deadline} வரை உள்ளது.",
@@ -1087,13 +1087,13 @@
     "yes": "ஆம்"
   },
   "shareAdPage": {
-    "adLinkCopied": "விளம்பர இணைப்பு நகலெடுக்கப்பட்டது",
+    "adLinkCopied": "விளம்பர இணைப்பு நகலெடுக்கப்பட்டது.",
     "copyLink": "இணைப்பை நகலெடுக்கவும்",
-    "failedToCopyLink": "இணைப்பை நகலெடுக்க முடியவில்லை",
-    "failedToGenerateQR": "QR குறியீட்டை உருவாக்க முடியவில்லை",
-    "failedToSaveImage": "படத்தைச் சேமிப்பதில் தோல்வி",
+    "failedToCopyLink": "இணைப்பை நகலெடுக்க முடியவில்லை.",
+    "failedToGenerateQR": "QR குறியீட்டை உருவாக்க முடியவில்லை.",
+    "failedToSaveImage": "படத்தைச் சேமிப்பதில் தோல்வி.",
     "idNumber": "அடையாள எண்",
-    "imageSavedSuccessfully": "படம் வெற்றிகரமாக சேமிக்கப்பட்டது",
+    "imageSavedSuccessfully": "படம் வெற்றிகரமாக சேமிக்கப்பட்டது.",
     "limits": "வரம்புகள்",
     "qrCodeDescription": "Deriv P2P வழியாக ஆர்டர் செய்ய இந்தக் குறியீட்டை ஸ்கேன் செய்யவும்",
     "rate": "மதிப்பிடவும்",
@@ -1104,7 +1104,8 @@
     "shareImage": "படத்தைப் பகிரவும்",
     "shareMessage": "ஹாய்! நான் பரிமாற்றம் செய்ய விரும்புகிறேன்{currency}மணிக்கு{rate}__TOKEN90__ இல். நீங்கள் ஆர்வமாக இருந்தால், எனது விளம்பரத்தைப் பாருங்கள்{url}. நன்றி!",
     "shareTelegramMessage": "ஹாய்! நான் பரிமாற்றம் செய்ய விரும்புகிறேன்{currency}மணிக்கு{rate}__TOKEN90__ இல். நீங்கள் ஆர்வமாக இருந்தால், எனது விளம்பரத்தைப் பாருங்கள். நன்றி!",
-    "sharedSuccessfully": "வெற்றிகரமாகப் பகிரப்பட்டது"
+    "sharedSuccessfully": "வெற்றிகரமாகப் பகிரப்பட்டது.",
+    "sharingNotSupported": "Sharing is not supported on this device."
   },
   "status": {
     "awaitingPayment": "பணம் செலுத்த காத்திருக்கிறது",

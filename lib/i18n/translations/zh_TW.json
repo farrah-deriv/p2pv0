@@ -197,8 +197,8 @@
     "removeFromClosedGroup": "從封閉群組中刪除",
     "removedFromClosedGroup": "已成功從封閉群組中刪除。",
     "sellCompletionRate30d": "銷售完成率（30天）",
-    "successfullyFollowed": "已成功關注",
-    "successfullyUnfollowed": "成功取消關注",
+    "successfullyFollowed": "已成功關注。",
+    "successfullyUnfollowed": "成功取消關注。",
     "timeLimit": "時間限制",
     "totalAllTimeTrades": "所有時間交易總數",
     "totalTrades30d": "總交易量（30天）",
@@ -776,7 +776,7 @@
     "orderTime": "下單時間",
     "paymentMethod": "付款方式",
     "processing": "處理中...",
-    "proofOfTransferSubmitted": "提交轉讓證明",
+    "proofOfTransferSubmitted": "提交轉讓證明。",
     "rate": "率",
     "rateTransaction": "利率交易",
     "ratingDeadline": "您必須在 {deadline} 之前對該交易進行評分。",
@@ -1087,13 +1087,13 @@
     "yes": "是的"
   },
   "shareAdPage": {
-    "adLinkCopied": "廣告連結已複製",
+    "adLinkCopied": "廣告連結已複製。",
     "copyLink": "複製連結",
-    "failedToCopyLink": "複製連結失敗",
-    "failedToGenerateQR": "產生二維碼失敗",
-    "failedToSaveImage": "儲存映像失敗",
+    "failedToCopyLink": "複製連結失敗。",
+    "failedToGenerateQR": "產生二維碼失敗。",
+    "failedToSaveImage": "儲存映像失敗。",
     "idNumber": "身分證號碼",
-    "imageSavedSuccessfully": "圖片保存成功",
+    "imageSavedSuccessfully": "圖片保存成功。",
     "limits": "限制",
     "qrCodeDescription": "掃描此代碼透過 Deriv P2P 訂購",
     "rate": "率",
@@ -1104,7 +1104,8 @@
     "shareImage": "分享圖片",
     "shareMessage": "嗨！我想交換{currency}在{rate}在 __TOKEN90__ 上。有興趣的話可以看看我的廣告{url}。謝謝！",
     "shareTelegramMessage": "嗨！我想交換{currency}在{rate}在 __TOKEN90__ 上。如果您有興趣，請查看我的廣告。謝謝！",
-    "sharedSuccessfully": "分享成功"
+    "sharedSuccessfully": "分享成功。",
+    "sharingNotSupported": "此裝置不支援分享。"
   },
   "status": {
     "awaitingPayment": "等待付款",

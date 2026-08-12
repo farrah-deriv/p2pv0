@@ -105,7 +105,10 @@ function stepWouldBeSkipped(stepConfig: StepConfig): boolean {
   const allHidden = (id: string) => {
     const nodes = document.querySelectorAll<HTMLElement>(`[data-guide-id="${id}"]`)
     if (nodes.length === 0) return false
-    return Array.from(nodes).every(e => e.offsetParent === null)
+    return Array.from(nodes).every(e => {
+      const r = e.getBoundingClientRect()
+      return r.width === 0 && r.height === 0
+    })
   }
   if (!allHidden(stepConfig.targetId)) return false
   if (stepConfig.fallbackTargetId && !allHidden(stepConfig.fallbackTargetId)) return false
@@ -145,7 +148,14 @@ export function P2PGuide() {
 
     const findVisible = (id: string) => {
       const all = document.querySelectorAll<HTMLElement>(`[data-guide-id="${id}"]`)
-      return { el: Array.from(all).find(e => e.offsetParent !== null) ?? null, count: all.length }
+      // offsetParent is unreliable on Safari iOS for below-fold elements inside flex/overflow-y:auto
+      // chains — it returns null even though the element is in the layout. getBoundingClientRect()
+      // is consistent: display:none → all zeros; below-fold → non-zero width/height.
+      const el = Array.from(all).find(e => {
+        const r = e.getBoundingClientRect()
+        return r.width > 0 || r.height > 0
+      }) ?? null
+      return { el, count: all.length }
     }
 
     let { el, count } = findVisible(config.targetId)

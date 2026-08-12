@@ -197,8 +197,8 @@
     "removeFromClosedGroup": "Хаалттай бүлгээс хасах",
     "removedFromClosedGroup": "Хаалттай бүлгээс амжилттай хасагдсан.",
     "sellCompletionRate30d": "Борлуулалтын гүйцэтгэлийн хувь хэмжээ (30 өдөр)",
-    "successfullyFollowed": "Амжилттай дагасан",
-    "successfullyUnfollowed": "Амжилттай дагахаа болилоо",
+    "successfullyFollowed": "Амжилттай дагасан.",
+    "successfullyUnfollowed": "Амжилттай дагахаа болилоо.",
     "timeLimit": "Цагийн хязгаар",
     "totalAllTimeTrades": "Бүх цаг үеийн нийт арилжаа",
     "totalTrades30d": "Нийт арилжаа (30 өдөр)",
@@ -776,7 +776,7 @@
     "orderTime": "Захиалгын хугацаа",
     "paymentMethod": "Төлбөрийн арга",
     "processing": "Боловсруулж байна...",
-    "proofOfTransferSubmitted": "Шилжүүлгийн нотлох баримтыг ирүүлсэн",
+    "proofOfTransferSubmitted": "Шилжүүлгийн нотлох баримтыг ирүүлсэн.",
     "rate": "Үнэлгээ",
     "rateTransaction": "Гүйлгээний үнэлгээ",
     "ratingDeadline": "Та {deadline} хүртэл энэ гүйлгээг үнэлэх боломжтой.",
@@ -1087,13 +1087,13 @@
     "yes": "Тиймээ"
   },
   "shareAdPage": {
-    "adLinkCopied": "Зарын холбоосыг хуулсан",
+    "adLinkCopied": "Зарын холбоосыг хуулсан.",
     "copyLink": "Холбоосыг хуулах",
-    "failedToCopyLink": "Холбоосыг хуулж чадсангүй",
-    "failedToGenerateQR": "QR код үүсгэж чадсангүй",
-    "failedToSaveImage": "Зургийг хадгалж чадсангүй",
+    "failedToCopyLink": "Холбоосыг хуулж чадсангүй.",
+    "failedToGenerateQR": "QR код үүсгэж чадсангүй.",
+    "failedToSaveImage": "Зургийг хадгалж чадсангүй.",
     "idNumber": "ID дугаар",
-    "imageSavedSuccessfully": "Зургийг амжилттай хадгаллаа",
+    "imageSavedSuccessfully": "Зургийг амжилттай хадгаллаа.",
     "limits": "Хязгаарлалт",
     "qrCodeDescription": "Deriv P2P-р захиалахын тулд энэ кодыг уншина уу.",
     "rate": "Үнэлгээ",
@@ -1104,7 +1104,8 @@
     "shareImage": "Зураг хуваалцах",
     "shareMessage": "Сайн уу! Би солилцох хүсэлтэй байна{currency}цагт{rate}__TOKEN90__ дээр. Хэрэв та сонирхож байвал миний зарыг үзээрэй{url}. Баярлалаа!",
     "shareTelegramMessage": "Сайн уу! Би солилцох хүсэлтэй байна{currency}цагт{rate}__TOKEN90__ дээр. Хэрэв та сонирхож байвал миний зарыг үзээрэй. Баярлалаа!",
-    "sharedSuccessfully": "Амжилттай хуваалцлаа"
+    "sharedSuccessfully": "Амжилттай хуваалцлаа.",
+    "sharingNotSupported": "Sharing is not supported on this device."
   },
   "status": {
     "awaitingPayment": "Төлбөрийг хүлээж байна",

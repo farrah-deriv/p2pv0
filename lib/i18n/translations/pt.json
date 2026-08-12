@@ -202,8 +202,8 @@
     "removeFromClosedGroup": "Remover do grupo fechado",
     "removedFromClosedGroup": "Removido do grupo fechado com sucesso.",
     "sellCompletionRate30d": "Taxa de conclusão de vendas (30d)",
-    "successfullyFollowed": "Seguido com sucesso",
-    "successfullyUnfollowed": "Deixou de seguir com sucesso",
+    "successfullyFollowed": "Seguido com sucesso.",
+    "successfullyUnfollowed": "Deixou de seguir com sucesso.",
     "timeLimit": "Limite de tempo",
     "totalAllTimeTrades": "Total de negociações de todos os tempos",
     "totalTrades30d": "Total de negociações (30d)",
@@ -797,7 +797,7 @@
     "orderTime": "Tempo do pedido",
     "paymentMethod": "Método de pagamento",
     "processing": "Processando...",
-    "proofOfTransferSubmitted": "Comprovante de transferência enviado",
+    "proofOfTransferSubmitted": "Comprovante de transferência enviado.",
     "rate": "Taxa",
     "rateTransaction": "Avaliar transação",
     "ratingDeadline": "Você tem até {deadline} para avaliar esta transação.",
@@ -1109,13 +1109,13 @@
     "yes": "Sim"
   },
   "shareAdPage": {
-    "adLinkCopied": "Link do anúncio copiado",
+    "adLinkCopied": "Link do anúncio copiado.",
     "copyLink": "Copiar link",
-    "failedToCopyLink": "Falha ao copiar o link",
-    "failedToGenerateQR": "Falha ao gerar o código QR",
-    "failedToSaveImage": "Falha ao salvar a imagem",
+    "failedToCopyLink": "Falha ao copiar o link.",
+    "failedToGenerateQR": "Falha ao gerar o código QR.",
+    "failedToSaveImage": "Falha ao salvar a imagem.",
     "idNumber": "Número de identificação",
-    "imageSavedSuccessfully": "Imagem salva com sucesso",
+    "imageSavedSuccessfully": "Imagem salva com sucesso.",
     "limits": "Limites",
     "qrCodeDescription": "Digitalize este código para fazer o pedido via Deriv P2P",
     "rate": "Taxa",
@@ -1126,7 +1126,8 @@
     "shareImage": "Compartilhar imagem",
     "shareMessage": "Olá! Gostaria de trocar {currency} em {rate} em Deriv P2P. Se você estiver interessado, confira meu anúncio {url}. Obrigado!",
     "shareTelegramMessage": "Olá! Gostaria de trocar {currency} em {rate} em Deriv P2P. Se você estiver interessado, confira meu anúncio. Obrigado!",
-    "sharedSuccessfully": "Compartilhado com sucesso"
+    "sharedSuccessfully": "Compartilhado com sucesso.",
+    "sharingNotSupported": "O compartilhamento não é suportado neste dispositivo."
   },
   "status": {
     "awaitingPayment": "Aguardando pagamento",

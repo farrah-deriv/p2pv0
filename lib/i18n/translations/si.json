@@ -197,8 +197,8 @@
     "removeFromClosedGroup": "සංවෘත කණ්ඩායමෙන් ඉවත් කරන්න",
     "removedFromClosedGroup": "සංවෘත කණ්ඩායමෙන් සාර්ථකව ඉවත් කරන ලදී.",
     "sellCompletionRate30d": "විකුණුම් සම්පූර්ණ කිරීමේ අනුපාතය (30d)",
-    "successfullyFollowed": "සාර්ථකව අනුගමනය කරන ලදී",
-    "successfullyUnfollowed": "සාර්ථකව අනුගමනය කිරීමෙන් ඉවත් විය",
+    "successfullyFollowed": "සාර්ථකව අනුගමනය කරන ලදී.",
+    "successfullyUnfollowed": "සාර්ථකව අනුගමනය කිරීමෙන් ඉවත් විය.",
     "timeLimit": "කාල සීමාව",
     "totalAllTimeTrades": "මුළු සර්වකාලීන වෙළඳාම්",
     "totalTrades30d": "මුළු ගනුදෙනු (30d)",
@@ -776,7 +776,7 @@
     "orderTime": "ඇණවුම් කාලය",
     "paymentMethod": "ගෙවීම් ක්රමය",
     "processing": "සකසමින්...",
-    "proofOfTransferSubmitted": "මාරු කිරීමේ සාක්ෂි ඉදිරිපත් කරන ලදී",
+    "proofOfTransferSubmitted": "මාරු කිරීමේ සාක්ෂි ඉදිරිපත් කරන ලදී.",
     "rate": "අගය කරන්න",
     "rateTransaction": "අනුපාත ගනුදෙනුව",
     "ratingDeadline": "මෙම ගනුදෙනුව ඇගයීමට ඔබට {deadline} දක්වා ඇත.",
@@ -1087,13 +1087,13 @@
     "yes": "ඔව්"
   },
   "shareAdPage": {
-    "adLinkCopied": "දැන්වීම් සබැඳිය පිටපත් කර ඇත",
+    "adLinkCopied": "දැන්වීම් සබැඳිය පිටපත් කර ඇත.",
     "copyLink": "සබැඳිය පිටපත් කරන්න",
-    "failedToCopyLink": "සබැඳිය පිටපත් කිරීමට අසමත් විය",
-    "failedToGenerateQR": "QR කේතය උත්පාදනය කිරීමට අසමත් විය",
-    "failedToSaveImage": "රූපය සුරැකීමට අසමත් විය",
+    "failedToCopyLink": "සබැඳිය පිටපත් කිරීමට අසමත් විය.",
+    "failedToGenerateQR": "QR කේතය උත්පාදනය කිරීමට අසමත් විය.",
+    "failedToSaveImage": "රූපය සුරැකීමට අසමත් විය.",
     "idNumber": "හැඳුනුම්පත අංකය",
-    "imageSavedSuccessfully": "රූපය සාර්ථකව සුරැකිණි",
+    "imageSavedSuccessfully": "රූපය සාර්ථකව සුරැකිණි.",
     "limits": "සීමාවන්",
     "qrCodeDescription": "Deriv P2P හරහා ඇණවුම් කිරීමට මෙම කේතය පරිලෝකනය කරන්න",
     "rate": "අගය කරන්න",
@@ -1104,7 +1104,8 @@
     "shareImage": "රූපය බෙදාගන්න",
     "shareMessage": "හායි! මම හුවමාරු කර ගැනීමට කැමතියි{currency}දී{rate}__TOKEN90__ මත. ඔබ කැමති නම්, මගේ දැන්වීම බලන්න{url}. ස්තුතියි!",
     "shareTelegramMessage": "හායි! මම හුවමාරු කර ගැනීමට කැමතියි{currency}දී{rate}__TOKEN90__ මත. ඔබ කැමති නම්, මගේ දැන්වීම බලන්න. ස්තුතියි!",
-    "sharedSuccessfully": "සාර්ථකව බෙදා ගන්නා ලදී"
+    "sharedSuccessfully": "සාර්ථකව බෙදා ගන්නා ලදී.",
+    "sharingNotSupported": "Sharing is not supported on this device."
   },
   "status": {
     "awaitingPayment": "ගෙවීමක් බලාපොරොත්තුවෙන්",

@@ -137,13 +137,13 @@ export default function ClosedGroupTab({ isInAlert = false }: ClosedGroupTabProp
   }, [refetch, t, showToast, handleClosedGroupError])
 
   const GroupCard = ({ group }: { group: ClosedGroup }) => (
-    <div className="h-[72px] flex items-center justify-between gap-3 min-w-0">
+    <div className="min-h-[72px] flex items-center justify-between gap-3 min-w-0">
       <div className="w-10 h-10 rounded-full bg-grayscale-300 flex items-center justify-center text-slate-700 font-bold text-sm flex-shrink-0">
         {group.nickname?.charAt(0).toUpperCase()}
       </div>
       <div className="flex-1 min-w-0 border-b border-gray-100 py-4 flex items-center justify-between gap-3">
-        <div className="min-w-0 flex-1 overflow-hidden text-start text-slate-1200">
-          <span className="block truncate">{group.nickname}</span>
+        <div className="min-w-0 text-start text-slate-1200 text-sm break-words">
+          {group.nickname}
         </div>
         <Button
           onClick={() => handleToggleMembership(group)}

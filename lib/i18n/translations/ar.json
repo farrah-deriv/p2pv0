@@ -197,8 +197,8 @@
     "removeFromClosedGroup": "إزالة من المجموعة المغلقة",
     "removedFromClosedGroup": "تمت الإزالة بنجاح من المجموعة المغلقة.",
     "sellCompletionRate30d": "معدل إتمام البيع (30 يومًا)",
-    "successfullyFollowed": "تمت المتابعة بنجاح",
-    "successfullyUnfollowed": "تم إلغاء المتابعة بنجاح",
+    "successfullyFollowed": "تمت المتابعة بنجاح.",
+    "successfullyUnfollowed": "تم إلغاء المتابعة بنجاح.",
     "timeLimit": "الحد الزمني",
     "totalAllTimeTrades": "إجمالي جميع الصفقات الوقت",
     "totalTrades30d": "إجمالي الصفقات (30 يومًا)",
@@ -776,7 +776,7 @@
     "orderTime": "وقت الطلب",
     "paymentMethod": "طريقة الدفع",
     "processing": "جارٍ المعالجة...",
-    "proofOfTransferSubmitted": "تم تقديم إثبات النقل",
+    "proofOfTransferSubmitted": "تم تقديم إثبات النقل.",
     "rate": "معدل",
     "rateTransaction": "معدل المعاملة",
     "ratingDeadline": "لديك حتى {deadline} لتقييم هذه المعاملة.",
@@ -1087,13 +1087,13 @@
     "yes": "نعم"
   },
   "shareAdPage": {
-    "adLinkCopied": "تم نسخ رابط الإعلان",
+    "adLinkCopied": "تم نسخ رابط الإعلان.",
     "copyLink": "نسخ الرابط",
-    "failedToCopyLink": "فشل نسخ الرابط",
-    "failedToGenerateQR": "فشل إنشاء رمز QR",
-    "failedToSaveImage": "فشل حفظ الصورة",
+    "failedToCopyLink": "فشل نسخ الرابط.",
+    "failedToGenerateQR": "فشل إنشاء رمز QR.",
+    "failedToSaveImage": "فشل حفظ الصورة.",
     "idNumber": "رقم الهوية",
-    "imageSavedSuccessfully": "تم حفظ الصورة بنجاح",
+    "imageSavedSuccessfully": "تم حفظ الصورة بنجاح.",
     "limits": "حدود",
     "qrCodeDescription": "امسح هذا الرمز ضوئيًا للطلب عبر Deriv P2P",
     "rate": "معدل",
@@ -1104,7 +1104,8 @@
     "shareImage": "مشاركة الصورة",
     "shareMessage": "مرحباً! أريد تبادل {currency} بسعر {rate} على Deriv P2P. إذا كنت مهتماً، تحقق من إعلاني {url}. شكراً!",
     "shareTelegramMessage": "مرحباً! أريد تبادل {currency} بسعر {rate} على Deriv P2P. إذا كنت مهتماً، تحقق من إعلاني. شكراً!",
-    "sharedSuccessfully": "تمت المشاركة بنجاح"
+    "sharedSuccessfully": "تمت المشاركة بنجاح.",
+    "sharingNotSupported": "المشاركة غير مدعومة على هذا الجهاز."
   },
   "status": {
     "awaitingPayment": "في انتظار الدفع",

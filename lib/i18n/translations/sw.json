@@ -197,8 +197,8 @@
     "removeFromClosedGroup": "Ondoa kwenye kikundi kilichofungwa",
     "removedFromClosedGroup": "Imeondolewa kwenye kikundi kilichofungwa.",
     "sellCompletionRate30d": "Kiwango cha kukamilika kwa mauzo (30d)",
-    "successfullyFollowed": "Imefuatwa",
-    "successfullyUnfollowed": "Imefaulu kuacha kufuata",
+    "successfullyFollowed": "Imefuatwa.",
+    "successfullyUnfollowed": "Imefaulu kuacha kufuata.",
     "timeLimit": "Kikomo cha muda",
     "totalAllTimeTrades": "Jumla ya biashara za wakati wote",
     "totalTrades30d": "Jumla ya biashara (d 30)",
@@ -784,7 +784,7 @@
     "orderTime": "Wakati wa amri",
     "paymentMethod": "Njia ya kulipa",
     "processing": "Inachakata...",
-    "proofOfTransferSubmitted": "Ushahidi wa uhamisho umewasilishwa",
+    "proofOfTransferSubmitted": "Ushahidi wa uhamisho umewasilishwa.",
     "rate": "Kiwango",
     "rateTransaction": "Kadiria muamala",
     "ratingDeadline": "Una hadi {deadline} kukadiria muamala huu.",
@@ -1095,13 +1095,13 @@
     "yes": "Ndiyo"
   },
   "shareAdPage": {
-    "adLinkCopied": "Kiungo cha tangazo kimenakiliwa",
+    "adLinkCopied": "Kiungo cha tangazo kimenakiliwa.",
     "copyLink": "Nakili kiungo",
-    "failedToCopyLink": "Imeshindwa kunakili kiungo",
-    "failedToGenerateQR": "Imeshindwa kuzalisha msimbo wa QR",
-    "failedToSaveImage": "Imeshindwa kuhifadhi picha",
+    "failedToCopyLink": "Imeshindwa kunakili kiungo.",
+    "failedToGenerateQR": "Imeshindwa kuzalisha msimbo wa QR.",
+    "failedToSaveImage": "Imeshindwa kuhifadhi picha.",
     "idNumber": "Nambari ya kitambulisho",
-    "imageSavedSuccessfully": "Picha imehifadhiwa",
+    "imageSavedSuccessfully": "Picha imehifadhiwa.",
     "limits": "Mipaka",
     "qrCodeDescription": "Changanua msimbo huu ili kuagiza kupitia Deriv P2P",
     "rate": "Kiwango",
@@ -1112,7 +1112,8 @@
     "shareImage": "Shiriki picha",
     "shareMessage": "Habari! Ningependa kubadilisha {currency} kwa {rate} kwenye Deriv P2P. Ikiwa una nia, angalia tangazo langu {url}. Asante!",
     "shareTelegramMessage": "Habari! Ningependa kubadilisha {currency} kwa {rate} kwenye Deriv P2P. Ikiwa una nia, angalia tangazo langu. Asante!",
-    "sharedSuccessfully": "Imeshirikiwa kwa mafanikio"
+    "sharedSuccessfully": "Imeshirikiwa kwa mafanikio.",
+    "sharingNotSupported": "Sharing is not supported on this device."
   },
   "status": {
     "awaitingPayment": "Inasubiri malipo",

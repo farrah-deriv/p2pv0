@@ -131,6 +131,19 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
     }
   }
 
+  const getEmbeddedFontCSS = (): string =>
+    Array.from(document.styleSheets)
+      .flatMap((sheet) => {
+        try {
+          return Array.from(sheet.cssRules)
+        } catch {
+          return []
+        }
+      })
+      .filter((rule) => rule instanceof CSSFontFaceRule)
+      .map((rule) => rule.cssText)
+      .join("\n")
+
   const handleSaveImage = async () => {
     if (!cardRef.current) return
     track("ek_save_image_share_ad")
@@ -142,6 +155,7 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
         quality: 1.0,
         pixelRatio: 2,
         backgroundColor: "#ffffff",
+        fontEmbedCSS: getEmbeddedFontCSS(),
       })
 
       const link = document.createElement("a")
@@ -189,10 +203,16 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
         quality: 0.95,
         pixelRatio: isMobile ? 2 : 3,
         backgroundColor: "#ffffff",
+        fontEmbedCSS: getEmbeddedFontCSS(),
       })
 
-      const response = await fetch(dataUrl)
-      const blob = await response.blob()
+      const [header, base64] = dataUrl.split(",")
+      const mimeMatch = header.match(/:(.*?);/)
+      const mime = mimeMatch ? mimeMatch[1] : "image/png"
+      const binary = atob(base64)
+      const bytes = new Uint8Array(binary.length)
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+      const blob = new Blob([bytes], { type: mime })
 
       const file = new File([blob], `deriv-p2p-ad-${ad.id}.png`, {
         type: "image/png",
@@ -205,21 +225,19 @@ export default function ShareAdPage({ ad, onClose }: ShareAdPageProps) {
 
       if (navigator.share && navigator.canShare?.(sharePayload)) {
         await navigator.share(sharePayload)
-        track("ek_image_shared_share_ad")
-        toast({ description: t("shareAdPage.sharedSuccessfully") })
-        return
-      }
-
-      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      } else if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], text: shareText })
-        track("ek_image_shared_share_ad")
-        toast({ description: t("shareAdPage.sharedSuccessfully") })
+      } else {
+        toast({ description: t("shareAdPage.sharingNotSupported"), variant: "destructive" })
         return
       }
 
-      await handleSaveImage()
+      track("ek_image_shared_share_ad")
+      toast({ description: t("shareAdPage.sharedSuccessfully") })
     } catch (error) {
-      console.log(error)
+      if (error instanceof DOMException && error.name === "AbortError") return
+      console.error(error)
+      toast({ description: t("shareAdPage.failedToSaveImage"), variant: "destructive" })
     }
   }
 

@@ -185,7 +185,7 @@ export default function MarketFilterDropdown({
           <div className="relative" data-testid="market-filter-btn-trigger">
             {trigger}
             {hasActiveFilters && (
-              <div className="absolute top-[5px] right-[12px] w-2 h-2 bg-red-500 rounded-full"></div>
+              <div className="absolute top-[10px] right-[20px] w-2 h-2 bg-red-500 rounded-full"></div>
             )}
           </div>
         </DrawerTrigger>

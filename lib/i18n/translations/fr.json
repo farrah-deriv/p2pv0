@@ -198,8 +198,8 @@
     "removeFromClosedGroup": "Retirer du groupe fermé",
     "removedFromClosedGroup": "Retiré avec succès du groupe fermé.",
     "sellCompletionRate30d": "Taux d'achèvement des ventes (30j)",
-    "successfullyFollowed": "Suivi avec succès",
-    "successfullyUnfollowed": "Ne suit plus avec succès",
+    "successfullyFollowed": "Suivi avec succès.",
+    "successfullyUnfollowed": "Ne suit plus avec succès.",
     "timeLimit": "Limite de temps",
     "totalAllTimeTrades": "Total des échanges de tous les temps",
     "totalTrades30d": "Total des échanges (30j)",
@@ -793,7 +793,7 @@
     "orderTime": "Heure de la commande",
     "paymentMethod": "Méthode de paiement",
     "processing": "Traitement en cours...",
-    "proofOfTransferSubmitted": "Preuve de transfert soumise",
+    "proofOfTransferSubmitted": "Preuve de transfert soumise.",
     "rate": "Taux",
     "rateTransaction": "Évaluer la transaction",
     "ratingDeadline": "Vous avez jusqu'au {deadline} pour évaluer cette transaction.",
@@ -1103,13 +1103,13 @@
     "yes": "Oui"
   },
   "shareAdPage": {
-    "adLinkCopied": "Lien d'annonce copié",
+    "adLinkCopied": "Lien d'annonce copié.",
     "copyLink": "Copier le lien",
-    "failedToCopyLink": "Échec de la copie du lien",
-    "failedToGenerateQR": "Échec de la génération du code QR",
-    "failedToSaveImage": "Échec de l'enregistrement de l'image",
+    "failedToCopyLink": "Échec de la copie du lien.",
+    "failedToGenerateQR": "Échec de la génération du code QR.",
+    "failedToSaveImage": "Échec de l'enregistrement de l'image.",
     "idNumber": "Numéro d'identification",
-    "imageSavedSuccessfully": "Image enregistrée avec succès",
+    "imageSavedSuccessfully": "Image enregistrée avec succès.",
     "limits": "Limites",
     "qrCodeDescription": "Scannez ce code pour commander via Deriv P2P",
     "rate": "Taux",
@@ -1120,7 +1120,8 @@
     "shareImage": "Partager l'image",
     "shareMessage": "Salut ! J'aimerais échanger {currency} contre {rate} contre Deriv P2P. Si vous êtes intéressé, consultez mon annonce {url}. Merci!",
     "shareTelegramMessage": "Salut ! J'aimerais échanger {currency} contre {rate} contre Deriv P2P. Si vous êtes intéressé, consultez mon annonce. Merci!",
-    "sharedSuccessfully": "Partagé avec succès"
+    "sharedSuccessfully": "Partagé avec succès.",
+    "sharingNotSupported": "Le partage n'est pas pris en charge sur cet appareil."
   },
   "status": {
     "awaitingPayment": "En attente de paiement",

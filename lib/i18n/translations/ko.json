@@ -197,7 +197,7 @@
     "removeFromClosedGroup": "비공개 그룹에서 삭제",
     "removedFromClosedGroup": "비공개 그룹에서 성공적으로 제거되었습니다.",
     "sellCompletionRate30d": "판매 완료율(30일)",
-    "successfullyFollowed": "성공적으로 팔로우했습니다",
+    "successfullyFollowed": "성공적으로 팔로우했습니다.",
     "successfullyUnfollowed": "팔로우를 취소했습니다.",
     "timeLimit": "시간 제한",
     "totalAllTimeTrades": "총 전체 시간 거래",
@@ -825,7 +825,7 @@
     "orderTime": "주문 시간",
     "paymentMethod": "결제 방법",
     "processing": "처리 중...",
-    "proofOfTransferSubmitted": "송금 증명서 제출됨",
+    "proofOfTransferSubmitted": "송금 증명서 제출됨.",
     "rate": "환율",
     "rateTransaction": "거래 평가",
     "ratingDeadline": "{deadline}까지 이 거래에 대해 평가해야 합니다.",
@@ -1153,7 +1153,8 @@
     "shareImage": "이미지 공유",
     "shareMessage": "안녕하세요! Deriv P2P에서 {currency}를 {rate}에 교환하고 싶습니다. 관심 있으시면 제 광고 {url}를 확인해 주세요. 감사합니다!",
     "shareTelegramMessage": "안녕하세요! Deriv P2P에서 {currency}를 {rate}에 교환하고 싶습니다. 관심 있으시면 제 광고를 확인해 주세요. 감사합니다!",
-    "sharedSuccessfully": "성공적으로 공유되었습니다"
+    "sharedSuccessfully": "성공적으로 공유되었습니다.",
+    "sharingNotSupported": "Sharing is not supported on this device."
   },
   "status": {
     "awaitingPayment": "결제 대기 중",
