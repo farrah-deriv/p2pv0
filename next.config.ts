@@ -1,20 +1,20 @@
 import type { NextConfig } from "next"
 
 const csp = [
-  // Scripts: self + Next.js inline/eval + GTM + RudderStack + Datadog agent + blob workers
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.rudderlabs.com https://cdn.datafile.net blob:",
+  // Scripts: self + Next.js inline/eval + GTM + RudderStack + Datadog agent + Intercom + blob workers
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.rudderlabs.com https://cdn.datafile.net https://widget.intercom.io https://js.intercomcdn.com blob:",
   // Workers: Datadog RUM spawns a blob worker
   "worker-src 'self' blob:",
-  // XHR/WS: Deriv APIs, Datadog intake, GTM, RudderStack, PostHog (host may vary)
-  "connect-src 'self' https://*.deriv.com wss://*.deriv.com https://browser-intake-datadoghq.com https://*.datadoghq.com https://www.google-analytics.com https://www.googletagmanager.com https://cdn.rudderlabs.com https://*.rudderstack.com https://*.posthog.com",
+  // XHR/WS: Deriv APIs, Datadog intake, GTM, RudderStack, PostHog, Intercom
+  "connect-src 'self' https://*.deriv.com wss://*.deriv.com https://browser-intake-datadoghq.com https://*.datadoghq.com https://www.google-analytics.com https://www.googletagmanager.com https://cdn.rudderlabs.com https://*.rudderstack.com https://*.posthog.com https://api-iam.intercom.io https://*.intercom.io wss://nexus-websocket-a.intercom.io wss://nexus-websocket-b.intercom.io https://uploads.intercomcdn.com https://uploads.intercomusercontent.com",
   // Frames: GTM noscript iframe
-  "frame-src https://www.googletagmanager.com",
-  // Images
-  "img-src 'self' data: blob: https:",
-  // Styles: inline styles used throughout
-  "style-src 'self' 'unsafe-inline'",
-  // Fonts
-  "font-src 'self' data:",
+  "frame-src https://www.googletagmanager.com https://*.intercom.io",
+  // Images: Intercom avatars and uploads
+  "img-src 'self' data: blob: https: https://js.intercomcdn.com https://static.intercomassets.com https://uploads.intercomcdn.com https://uploads.intercomusercontent.com https://gifs.intercomcdn.com",
+  // Styles: inline styles + Google Fonts (used by Intercom widget)
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  // Fonts: Intercom widget fonts
+  "font-src 'self' data: https://js.intercomcdn.com https://fonts.intercomcdn.com https://fonts.gstatic.com",
   // Everything else defaults to self
   "default-src 'self'",
 ].join("; ")
