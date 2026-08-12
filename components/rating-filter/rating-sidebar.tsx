@@ -78,19 +78,21 @@ const RatingContent = ({
               onClick={() => setRecommend(recommend === true ? null : true)}
               data-testid="rating-btn-recommend-yes"
             >
-              <Image
-                src={recommend === true ? "/icons/thumbs-up-white.png" : "/icons/thumbs-up-custom.png"}
-                alt={t("common.recommended")}
-                width={14}
-                height={14}
-              />
-              <span
-                className={cn(
-                  "text-sm ms-[8px] font-normal ",
-                  recommend === true ? "text-white" : "text-grayscale-100",
-                )}
-              >
-                {t("ratingSidebar.yes")}
+              <span className="flex items-center gap-2">
+                <Image
+                  src={recommend === true ? "/icons/thumbs-up-white.png" : "/icons/thumbs-up-custom.png"}
+                  alt={t("common.recommended")}
+                  width={14}
+                  height={14}
+                />
+                <span
+                  className={cn(
+                    "text-sm font-normal",
+                    recommend === true ? "text-white" : "text-grayscale-100",
+                  )}
+                >
+                  {t("ratingSidebar.yes")}
+                </span>
               </span>
             </Button>
             <Button
@@ -100,26 +102,28 @@ const RatingContent = ({
               onClick={() => setRecommend(recommend === false ? null : false)}
               data-testid="rating-btn-recommend-no"
             >
-              <Image
-                src={recommend === false ? "/icons/thumbs-down-white.png" : "/icons/thumbs-down-custom.png"}
-                alt={t("common.thumbsDown")}
-                width={14}
-                height={14}
-              />
-              <span
-                className={cn(
-                  "text-sm ms-[8px] font-normal ",
-                  recommend === false ? "text-white" : "text-grayscale-100",
-                )}
-              >
-                {t("ratingSidebar.no")}
+              <span className="flex items-center gap-2">
+                <Image
+                  src={recommend === false ? "/icons/thumbs-down-white.png" : "/icons/thumbs-down-custom.png"}
+                  alt={t("common.thumbsDown")}
+                  width={14}
+                  height={14}
+                />
+                <span
+                  className={cn(
+                    "text-sm font-normal",
+                    recommend === false ? "text-white" : "text-grayscale-100",
+                  )}
+                >
+                  {t("ratingSidebar.no")}
+                </span>
               </span>
             </Button>
           </div>
         </div>
       </div>
     </div>
-    <div className="px-4 md:px-0">
+    <div className="p-4 md:p-0">
       <Button onClick={onSubmit} disabled={rating === 0 || isSubmitting} className="w-full" data-testid="rating-btn-submit">
         {isSubmitting ? (
           <Spinner size="xs" />

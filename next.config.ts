@@ -74,7 +74,7 @@ const googleCcTldSources = [
 // These are subdomains of *.deriv.{com,me,be} which covers connect-src, but
 // default-src does NOT fall back for scripts when script-src is explicitly
 // set — they must be listed here explicitly (same fix as home-app).
-const scriptSources = `'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.google-analytics.com https://cdn.rudderlabs.com https://cdn.datafile.net https://ph.deriv.com https://ph.deriv.me https://ph.deriv.be https://widget.intercom.io https://js.intercomcdn.com https://static.cloudflareinsights.com https://challenges.cloudflare.com blob:`
+const scriptSources = `'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.google-analytics.com https://cdn.rudderlabs.com https://cdn.datafile.net https://ph.deriv.com https://ph.deriv.me https://ph.deriv.be https://eu-assets.i.posthog.com https://widget.intercom.io https://js.intercomcdn.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://googleads.g.doubleclick.net https://cdn0.match2one.net https://*.taboola.com blob:`
 
 // style-src and style-src-elem share the same allowlist — same rationale as scripts.
 const styleSources = `'self' 'unsafe-inline' https://fonts.googleapis.com`
@@ -102,7 +102,7 @@ const csp = [
   // googleCcTldSources — GTM fires 1p-user-list image beacons to the visitor's
   // local Google domain; same list as connect-src.
   // cdn.novu.co — Novu notification icons/avatars.
-  `img-src 'self' data: blob: https://www.googletagmanager.com ${googleCcTldSources} https://translate.google.com https://fonts.gstatic.com https://assets.deriv.com https://assets.deriv.be https://assets.deriv.me https://static.intercomassets.com https://js.intercomcdn.com https://uploads.intercomcdn.com https://uploads.intercomusercontent.com https://gifs.intercomcdn.com https://downloads.intercomcdn.com https://cdn.novu.co`,
+  `img-src 'self' data: blob: https://www.googletagmanager.com ${googleCcTldSources} https://translate.google.com https://fonts.gstatic.com https://googleads.g.doubleclick.net https://cnv.event.prod.bidr.io https://assets.deriv.com https://assets.deriv.be https://assets.deriv.me https://static.intercomassets.com https://js.intercomcdn.com https://uploads.intercomcdn.com https://uploads.intercomusercontent.com https://gifs.intercomcdn.com https://downloads.intercomcdn.com https://cdn.novu.co`,
 
   // media-src: Deriv asset CDNs (video / audio used in onboarding flows).
   "media-src 'self' https://assets.deriv.com https://assets.deriv.be https://assets.deriv.me",
@@ -120,7 +120,7 @@ const csp = [
   // wss://*.novu.co — Novu real-time WebSocket (unread count, live notifications).
   // translate.googleapis.com — Chrome browser auto-translate; blocking it
   //   generates ~2 k+ RUM events/day on translated pages.
-  `connect-src 'self' https://*.deriv.com wss://*.deriv.com https://*.deriv.be https://*.deriv.me https://browser-intake-datadoghq.com https://*.datadoghq.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com ${googleCcTldSources} https://www.googletagmanager.com https://cdn.rudderlabs.com https://api.rudderstack.com https://deriv-dataplane.rudderstack.com https://cdn.datafile.net https://eu.i.posthog.com https://eu-assets.i.posthog.com https://api-iam.intercom.io https://widget.intercom.io https://js.intercomcdn.com https://uploads.intercomcdn.com https://uploads.intercomusercontent.com wss://*.intercom.io https://*.intercom-messenger.com wss://*.intercom-messenger.com https://api.novu.co wss://*.novu.co https://static.cloudflareinsights.com https://cloudflareinsights.com https://challenges.cloudflare.com https://translate.googleapis.com https://translate-pa.googleapis.com`,
+  `connect-src 'self' https://*.deriv.com wss://*.deriv.com https://*.deriv.be https://*.deriv.me https://browser-intake-datadoghq.com https://*.datadoghq.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com ${googleCcTldSources} https://www.googletagmanager.com https://cdn.rudderlabs.com https://api.rudderstack.com https://deriv-dataplane.rudderstack.com https://cdn.datafile.net https://eu.i.posthog.com https://eu-assets.i.posthog.com https://api-iam.intercom.io https://widget.intercom.io https://js.intercomcdn.com https://uploads.intercomcdn.com https://uploads.intercomusercontent.com wss://*.intercom.io https://*.intercom-messenger.com wss://*.intercom-messenger.com https://api.novu.co wss://*.novu.co https://ad.doubleclick.net https://*.taboola.com https://static.cloudflareinsights.com https://cloudflareinsights.com https://challenges.cloudflare.com https://translate.googleapis.com https://translate-pa.googleapis.com`,
 
   // frame-src: GTM noscript iframe, Intercom, Cloudflare Turnstile widget.
   "frame-src 'self' https://www.googletagmanager.com https://*.intercom.io https://challenges.cloudflare.com",

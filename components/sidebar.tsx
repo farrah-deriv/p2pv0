@@ -441,7 +441,7 @@ export default function Sidebar({ className }: SidebarProps) {
             size="lg"
             className="hidden md:flex w-full my-1 p-0 hover:!bg-transparent"
           >
-            <Image src="/icons/ic-ask-amy.svg" alt={t("navigation.askAmy")} width={263} height={40} />
+            <Image src="/icons/ic-ask-amy.svg" alt={t("navigation.askAmy")} width={263} height={40} priority />
           </Button>
         )}
       </nav>
@@ -457,7 +457,7 @@ export default function Sidebar({ className }: SidebarProps) {
             </div>
             <div className="flex flex-col min-w-0 gap-1">
               <span className="text-base font-semibold text-slate-1200 whitespace-pre-wrap wrap-anywhere">{fullName}</span>
-              {email && <span className="text-xs text-slate-1200 whitespace-pre-wrap wrap-anywhere">{email}</span>}
+              {email && <span className="text-xs text-neutral-500 whitespace-pre-wrap wrap-anywhere">{email}</span>}
             </div>
           </div>
           <StandaloneChevronRightRegularIcon width={16} height={16} className="text-neutral-400 shrink-0 rtl:rotate-180 ml-auto" />

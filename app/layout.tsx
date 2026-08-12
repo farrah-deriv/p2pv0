@@ -22,6 +22,7 @@ import { LanguageSync } from "@/lib/i18n/language-sync"
 import { LoadingIndicator } from "@/components/loading-indicator"
 import Script from "next/script"
 import { ReactQueryProvider } from "@/components/providers/react-query-provider"
+import { DevFastRefreshFilter } from "@/components/dev-fast-refresh-filter"
 
 export const runtime = "edge"
 
@@ -54,7 +55,7 @@ export default async function RootLayout({
   const htmlDir = isRtlLocale(htmlLocale) ? "rtl" : "ltr"
 
   return (
-    <html lang={htmlLang} dir={htmlDir}>
+    <html lang={htmlLang} dir={htmlDir} suppressHydrationWarning>
       <head>
         <Script
           id="gtm-script"
@@ -68,6 +69,7 @@ export default async function RootLayout({
         </Script>
       </head>
       <body className={inter.className}>
+        <DevFastRefreshFilter />
         <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NF7884S"
         height="0" width="0" style={{ display: 'none', visibility: 'hidden' }}></iframe></noscript>
         <DatadogRumInit />
