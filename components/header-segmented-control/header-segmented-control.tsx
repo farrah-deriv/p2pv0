@@ -31,7 +31,7 @@ const MIN_WIDTH_CLASS: Record<HeaderSegmentedControlWidth, string> = {
 const TRACK_PADDING = "0.25rem"
 
 const triggerClassName =
-  "relative z-[1] flex-1 h-8 min-w-0 rounded-full border-0 bg-transparent px-3 py-0 text-sm font-normal text-white/60 shadow-none transition-colors whitespace-nowrap text-center " +
+  "relative z-[1] flex-1 h-8 min-w-0 rounded-full border-0 bg-transparent px-3 py-0 text-sm font-bold text-white/60 shadow-none transition-colors whitespace-nowrap text-center " +
   "data-[state=active]:bg-transparent data-[state=active]:font-bold data-[state=active]:text-white " +
   "data-[state=active]:shadow-none focus-visible:ring-white/30"
 

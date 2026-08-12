@@ -1349,7 +1349,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
         className="flex items-center justify-between w-full gap-3"
       >
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-sm font-normal text-grayscale-text-muted whitespace-nowrap">
+          <span className="text-sm font-normal text-slate-1200 whitespace-nowrap">
             {t("wallet.youllReceive")}
           </span>
           {IS_TRANSFER_FEE_DISPLAY_ENABLED &&
@@ -1657,7 +1657,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                 aria-label={t("wallet.buyCurrency", { currency: selectedCurrency ?? "USD" })}
                 className="shrink-0 !bg-orange-100 !text-white hover:!opacity-90 hover:!bg-orange-100"
               >
-                <StandaloneChevronRightBoldIcon width={16} height={16} aria-hidden className="rtl:rotate-180" />
+                <StandaloneChevronRightBoldIcon width={16} height={16} fill="white" aria-hidden className="rtl:rotate-180" />
               </Button>
             </div>
           )}
@@ -1880,10 +1880,10 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                   variant="chip"
                   data-testid={`transfer-btn-pct-${pct}`}
                   onClick={() => handlePercentageClick(pct)}
-                  className={cn("!border-solid",
+                  className={cn(
                     selectedPercentage === pct
-                      ? "!border-black !bg-white !text-black"
-                      : "hover:!bg-neutral-50 hover:!border-neutral-300",
+                      ? "!bg-neutral-800/5 !text-black !shadow-[inset_0_0_0_1.5px_#000000] !border-transparent"
+                      : "!border-solid hover:!bg-neutral-50 hover:!border-neutral-300",
                   )}
                 >
                   {pct}%

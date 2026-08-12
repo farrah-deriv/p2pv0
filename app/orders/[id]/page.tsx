@@ -263,7 +263,7 @@ export default function OrderDetailsPage() {
                 }}
                 variant="ghost"
                 size="sm"
-                className="p-0 h-auto"
+                className="!rounded-full !p-1 !min-w-0 !h-auto !bg-transparent hover:!bg-black/10"
                 data-testid={`order-details-btn-copy-${key}`}
               >
                 <Image src="/icons/copy-icon.png" alt={t("common.copy")} width={24} height={24} className="text-slate-500" />

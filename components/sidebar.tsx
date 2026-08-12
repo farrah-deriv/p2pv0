@@ -260,7 +260,7 @@ export default function Sidebar({ className }: SidebarProps) {
   }
 
   return (
-    <div data-testid="sidebar-container" className={cn("w-[296px] flex flex-col border-e border-neutral-200 bg-white me-[8px]", className)}>
+    <div data-testid="sidebar-container" className={cn("relative z-20 w-[296px] flex flex-col border-e border-neutral-200 bg-white me-[8px]", className)}>
       <div className="flex flex-row justify-between items-center gap-4 px-6 py-5">
         <Image src="/icons/deriv-p2p.png" alt={t("common.derivLogo")} width={128} height={24} />
         {userId && (

@@ -42,7 +42,7 @@ const OrderDetailItem = ({ hasCopy, label, value, testId, isBlockLayout, copyTes
             }}
             variant="ghost"
             size="sm"
-            className="p-0 h-auto"
+            className="!rounded-full !p-1 !min-w-0 !h-auto !bg-transparent hover:!bg-black/10"
             data-testid={copyTestId}
           >
             <Image src="/icons/copy-icon.png" alt="Copy" width={24} height={24} className="text-slate-500" />

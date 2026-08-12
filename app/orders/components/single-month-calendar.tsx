@@ -51,13 +51,6 @@ export function SingleMonthCalendar({ selected, onSelect }: SingleMonthCalendarP
     }
   }
 
-  const isDateSelected = (date: Date) => {
-    if (!selected.from) return false
-    if (selected.to) {
-      return date >= selected.from && date <= selected.to
-    }
-    return isSameDay(date, selected.from)
-  }
 
   const isDateInRange = (date: Date) => {
     if (!selected.from || !selected.to) return false
@@ -99,9 +92,9 @@ export function SingleMonthCalendar({ selected, onSelect }: SingleMonthCalendarP
         </Button>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 mb-2">
+      <div className="grid grid-cols-7 mb-2">
         {weekdayLabels.map((day, index) => (
-          <div key={index} className="text-center text-sm text-gray-400 font-normal py-2">
+          <div key={index} className="text-center text-xs text-gray-400 font-normal py-2">
             {day}
           </div>
         ))}
@@ -109,32 +102,33 @@ export function SingleMonthCalendar({ selected, onSelect }: SingleMonthCalendarP
 
       <div className="grid grid-cols-7 gap-1">
         {Array.from({ length: paddingDays }).map((_, index) => (
-          <div key={`padding-${index}`} className="h-10" />
+          <div key={`padding-${index}`} className="aspect-square" />
         ))}
         {days.map((date) => {
-          const isSelected = isDateSelected(date)
           const inRange = isDateInRange(date)
+          const isStart = selected.from ? isSameDay(date, selected.from) : false
+          const isEnd = selected.to ? isSameDay(date, selected.to) : false
+          const isEndpoint = isStart || isEnd
           const today = isToday(date)
           const isFuture = isFutureDate(date)
 
           return (
             <Button
               key={date.toISOString()}
-              size="sm"
               variant="ghost"
               onClick={() => handleDateClick(date)}
               disabled={isFuture}
               className={cn(
-                "font-normal rounded-md hover:bg-gray-100 transition-colors text-grayscale-600 relative",
-                isSelected && "bg-black text-white hover:bg-black hover:text-white",
-                inRange && "bg-gray-100 hover:text-white text-grayscale-600",
-                !isSameMonth(date, currentMonth) && "text-gray-300",
-                isFuture && "opacity-50 cursor-not-allowed hover:bg-transparent",
+                "!w-full !aspect-square !h-auto !min-w-0 !min-h-0 !p-0 !text-sm font-normal !rounded-2xl transition-colors relative",
+                (isFuture || !isSameMonth(date, currentMonth)) && "!text-gray-300 cursor-not-allowed",
+                !isFuture && isSameMonth(date, currentMonth) && "!text-grayscale-600 hover:!bg-gray-100",
+                inRange && "!bg-gray-100 !text-black",
+                isEndpoint && "!bg-black !text-white hover:!bg-black hover:!text-white",
               )}
             >
               <span className="flex flex-col items-center gap-0.5">
                 {format(date, "d")}
-                {today && <span className={cn("w-1 h-1 rounded-full", isSelected ? "bg-white" : "bg-black")} />}
+                {today && <span className={cn("w-1 h-1 rounded-full", isEndpoint ? "bg-white" : "bg-black")} />}
               </span>
             </Button>
           )

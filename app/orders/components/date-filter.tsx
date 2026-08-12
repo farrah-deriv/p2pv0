@@ -9,12 +9,15 @@ import type { DateFilterType, DateRange } from "@/stores/orders-filter-store"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { SingleMonthCalendar } from "./single-month-calendar"
 import { DualMonthCalendar } from "./dual-month-calendar"
-import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { useTranslations } from "@/lib/i18n/use-translations"
+import {
+  StandaloneCalendarRegularIcon,
+  StandaloneChevronDownRegularIcon,
+  StandaloneChevronUpRegularIcon,
+} from "@deriv/quill-icons/Standalone"
 
 interface DateFilterProps {
-  value: DateFilterType
   customRange: DateRange
   onValueChange: (value: DateFilterType) => void
   onCustomRangeChange: (range: DateRange) => void
@@ -79,18 +82,17 @@ export function DateFilter({ customRange, onValueChange, onCustomRangeChange, cl
         <DrawerTrigger asChild>
           <Button
             variant="outline"
-            size="sm"
             className={cn(
-              "rounded-3xl border border-input bg-background font-normal px-3 hover:bg-transparent focus:outline-none focus-visible:border-black",
+              "!h-10 !min-h-10 !rounded-3xl !border !border-solid !border-neutral-200 !bg-transparent !font-normal !px-3 !text-sm hover:!bg-transparent focus:!outline-none",
               className,
             )}
           >
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-2">
-                <Image src="/icons/calendar.png" alt={t("common.calendar")} width={24} height={24} className="text-gray-500" />
+                <StandaloneCalendarRegularIcon iconSize="xs" aria-hidden />
                 <span>{getDisplayLabel()}</span>
               </div>
-              <Image src="/icons/chevron-down.png" alt={t("common.arrow")} width={24} height={24} className="ms-2" />
+              <StandaloneChevronDownRegularIcon iconSize="xs" className="ms-2" aria-hidden />
             </div>
           </Button>
         </DrawerTrigger>
@@ -116,19 +118,21 @@ export function DateFilter({ customRange, onValueChange, onCustomRangeChange, cl
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          size="sm"
           className={cn(
-            "rounded-3xl border border-input bg-background font-normal px-3 hover:bg-transparent focus:outline-none focus-visible:border-black",
+            "!h-10 !min-h-10 !rounded-3xl !border !border-solid !border-neutral-200 !bg-transparent !font-normal !px-3 !text-sm hover:!bg-transparent focus:!outline-none",
             className,
-            isOpen && "bg-grayscale-800",
           )}
         >
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
-              <Image src="/icons/calendar.png" alt={t("common.calendar")} width={24} height={24} className="text-gray-500" />
+              <StandaloneCalendarRegularIcon iconSize="xs" aria-hidden />
               <span>{getDisplayLabel()}</span>
             </div>
-            <Image src="/icons/chevron-down.png" alt={t("common.arrow")} width={24} height={24} className="ms-2" />
+            {isOpen ? (
+              <StandaloneChevronUpRegularIcon iconSize="xs" className="ms-2" aria-hidden />
+            ) : (
+              <StandaloneChevronDownRegularIcon iconSize="xs" className="ms-2" aria-hidden />
+            )}
           </div>
         </Button>
       </PopoverTrigger>

@@ -631,7 +631,7 @@ export default function OrderChat({
                   <Tooltip open={attachTooltipOpen} onOpenChange={setAttachTooltipOpen}>
                     <TooltipTrigger asChild>
                       <Button
-                        className="absolute end-3 top-1/2 transform -translate-y-1/2 p-1 text-grayscale-text-muted hover:text-slate-700 h-auto opacity-40 cursor-not-allowed"
+                        className="absolute end-3 top-1/2 transform -translate-y-1/2 !rounded-full !p-1 !min-w-0 !h-auto !bg-transparent text-grayscale-text-muted opacity-40 cursor-not-allowed"
                         variant="ghost"
                         size="sm"
                         type="button"
@@ -657,7 +657,7 @@ export default function OrderChat({
                 </TooltipProvider>
               ) : (
                 <Button
-                  className="absolute end-3 top-1/2 transform -translate-y-1/2 p-1 text-grayscale-text-muted hover:text-slate-700 h-auto disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="absolute end-3 top-1/2 transform -translate-y-1/2 !rounded-full !p-1 !min-w-0 !h-auto !bg-transparent text-grayscale-text-muted hover:!bg-black/10 disabled:opacity-30 disabled:cursor-not-allowed"
                   onClick={() => fileInputRef.current?.click()}
                   variant="ghost"
                   size="sm"

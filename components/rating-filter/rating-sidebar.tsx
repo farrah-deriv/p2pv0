@@ -55,7 +55,7 @@ const RatingContent = ({
                 onClick={() => setRating(star)}
                 onMouseEnter={() => setHoverRating(star)}
                 onMouseLeave={() => setHoverRating(0)}
-                className="hover:bg-transparent p-0 me-[4px]"
+                className="hover:!bg-transparent !p-0 !min-w-0 me-1"
                 data-testid={`rating-btn-star-${star}`}
               >
                 <Image
@@ -73,7 +73,7 @@ const RatingContent = ({
           <div className="flex gap-4">
             <Button
               variant="outline"
-              className={cn("border-opacity-10", recommend === true ? "bg-success-text hover:bg-success-text" : "")}
+              className={cn(recommend === true ? "!bg-success-text hover:!bg-success-text" : "")}
               size="sm"
               onClick={() => setRecommend(recommend === true ? null : true)}
               data-testid="rating-btn-recommend-yes"
@@ -95,7 +95,7 @@ const RatingContent = ({
             </Button>
             <Button
               variant="outline"
-              className={cn("border-opacity-10", recommend === false ? "bg-disputed-icon hover:bg-disputed-icon" : "")}
+              className={cn(recommend === false ? "!bg-disputed-icon hover:!bg-disputed-icon" : "")}
               size="sm"
               onClick={() => setRecommend(recommend === false ? null : false)}
               data-testid="rating-btn-recommend-no"
@@ -119,7 +119,7 @@ const RatingContent = ({
         </div>
       </div>
     </div>
-    <div className="p-4 md:px-0">
+    <div className="px-4 md:px-0">
       <Button onClick={onSubmit} disabled={rating === 0 || isSubmitting} className="w-full" data-testid="rating-btn-submit">
         {isSubmitting ? (
           <Spinner size="xs" />

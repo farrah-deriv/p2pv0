@@ -8,7 +8,7 @@ interface ProofChecklistRowProps {
 export const ProofChecklistRow = ({ label, value }: ProofChecklistRowProps) => (
   <div className="flex items-start gap-[5px]">
     <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-success-icon text-white">
-      <StandaloneCheckRegularIcon iconSize="xs" style={{ width: 10, height: 10 }} aria-hidden="true" />
+      <StandaloneCheckRegularIcon iconSize="xs" fill="white" style={{ width: 10, height: 10 }} aria-hidden="true" />
     </span>
     <p className="text-sm text-slate-1200">
       {label}

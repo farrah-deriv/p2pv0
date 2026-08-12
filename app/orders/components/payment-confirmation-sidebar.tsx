@@ -322,7 +322,7 @@ export const PaymentConfirmationSidebar = ({
                     variant="ghost"
                     size="sm"
                     onClick={handleRemoveFile}
-                    className="absolute end-2 top-2 h-7 w-7 rounded-full !bg-black/50 !text-white p-0 hover:!bg-black/70"
+                    className="absolute end-2 top-2 !h-7 !w-7 !rounded-full !bg-black/50 !text-white !p-0 !min-w-0 hover:!bg-black/70"
                     aria-label={t("orders.removeFile")}
                   >
                     <StandaloneXmarkFillIcon width={16} height={16} aria-hidden />

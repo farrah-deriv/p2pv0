@@ -326,7 +326,6 @@ export default function OrdersPage() {
           {activeTab === "past" && !isLoading && hasPastOrders && (
             <div className="my-4 self-end rtl:self-start" data-testid="orders-select-date-filter">
               <DateFilter
-                value={dateFilter}
                 customRange={customDateRange}
                 onValueChange={(val) => {
                   track("ek_date_filter_orders")
@@ -461,7 +460,7 @@ export default function OrdersPage() {
                                 onClick={(e) => {
                                   handleChatClick(e, order)
                                 }}
-                                className="text-slate-500 hover:text-slate-700 z-auto p-0"
+                                className="!rounded-full !p-1 !min-w-0 !h-auto !bg-transparent text-slate-500 hover:!bg-black/10 z-auto"
                                 variant="ghost"
                                 size="sm"
                                 data-testid={`orders-btn-chat-${order.id}`}

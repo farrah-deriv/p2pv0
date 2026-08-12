@@ -382,7 +382,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button data-testid={`profile-btn-edit-payment-${method.id}`} variant="ghost" size="sm" className="p-1 h-auto w-auto flex-shrink-0">
+                        <Button data-testid={`profile-btn-edit-payment-${method.id}`} variant="ghost" size="sm" className="!rounded-full !p-1 !min-w-0 !h-auto !bg-transparent hover:!bg-black/10 flex-shrink-0">
                           <Image src="/icons/vertical.svg" alt={t("common.options")} width={24} height={24} />
                         </Button>
                       </DropdownMenuTrigger>
@@ -435,7 +435,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button data-testid={`profile-btn-edit-payment-${method.id}`} variant="ghost" size="sm" className="p-1 h-auto w-auto flex-shrink-0">
+                        <Button data-testid={`profile-btn-edit-payment-${method.id}`} variant="ghost" size="sm" className="!rounded-full !p-1 !min-w-0 !h-auto !bg-transparent hover:!bg-black/10 flex-shrink-0">
                           <Image src="/icons/vertical.svg" alt={t("common.options")} width={24} height={24} />
                         </Button>
                       </DropdownMenuTrigger>

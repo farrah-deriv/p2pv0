@@ -536,7 +536,7 @@ export default function MyAdsTable({
                         variant="ghost"
                         size="sm"
                         // size=sm defaults to h-32px — overrides so icon matches badge height
-                        className="size-6 h-6 w-6 min-h-0 min-w-0 p-0 hover:bg-transparent rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        className="!size-8 !h-8 !w-8 !min-h-0 !min-w-0 !p-1 !rounded-full !bg-transparent hover:!bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         onClick={() => handleVisibilityStatusClick(ad)}
                       >
                         <Image
@@ -555,7 +555,7 @@ export default function MyAdsTable({
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="size-6 h-6 w-6 min-h-0 min-w-0 p-0 hover:bg-gray-100 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          className="!size-8 !h-8 !w-8 !min-h-0 !min-w-0 !p-1 !rounded-full !bg-transparent hover:!bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           onClick={() => handleOpenDrawer(ad)}
                         >
                           <Image
@@ -572,7 +572,7 @@ export default function MyAdsTable({
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="size-6 h-6 w-6 min-h-0 min-w-0 p-0 hover:bg-gray-100 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                              className="!size-8 !h-8 !w-8 !min-h-0 !min-w-0 !p-1 !rounded-full !bg-transparent hover:!bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                               onClick={() => handleOpenDrawer(ad)}
                             >
                               <Image
@@ -589,7 +589,7 @@ export default function MyAdsTable({
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="size-6 h-6 w-6 min-h-0 min-w-0 p-0 hover:bg-gray-100 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                  className="!size-8 !h-8 !w-8 !min-h-0 !min-w-0 !p-1 !rounded-full !bg-transparent hover:!bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                 >
                                   <Image
                                     src="/icons/vertical.svg"
