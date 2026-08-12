@@ -283,19 +283,15 @@ const FullPagePaymentSelection = ({
       <Drawer open={isOpen} onOpenChange={onClose}>
         <DrawerContent
           dir={dir}
-          hideHandle
           className="!mt-0 flex h-[90dvh] max-h-[90dvh] flex-col overflow-hidden z-[60]"
           data-testid="ad-form-sheet-payment-methods"
         >
           <ModalHeaderRow
             title={t("paymentMethod.title")}
-            onClose={onClose}
             closeAriaLabel={t("common.close")}
+            hideCloseButton
             centerTitle
             titleClassName="text-xl font-extrabold"
-            closeIconSrc="/icons/button-close.png"
-            closeIconSize={48}
-            closeButtonClassName="hover:bg-transparent hover:opacity-80 px-0 min-w-[48px]"
             className="shrink-0 px-4 pt-4 pb-0"
           />
           {content}

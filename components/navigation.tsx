@@ -53,7 +53,7 @@ export default function Navigation({
             <h1 className={cn(titleClassName, "min-w-0 flex-1")}>{title}</h1>
             {onGuide && (
               <Button variant="icon-muted" onClick={onGuide} aria-label={t("guideIntro.openGuide")}>
-                <Image src="/icons/ic-guide-notebook.svg" alt="" width={20} height={20} aria-hidden />
+                <Image src="/icons/ic-ad-guide.svg" alt="" width={20} height={20} aria-hidden />
               </Button>
             )}
             <Button variant="icon-muted" onClick={onClose} aria-label={t("common.close")} data-testid="ad-form-btn-close">
@@ -87,7 +87,7 @@ export default function Navigation({
         <h1 className={cn(titleClassName, "flex-1 min-w-0")}>{title}</h1>
         {onGuide && (
           <Button variant="icon-muted" onClick={onGuide} aria-label={t("guideIntro.openGuide")} className="me-2">
-            <Image src="/icons/ic-guide-notebook.svg" alt="" width={20} height={20} aria-hidden />
+            <Image src="/icons/ic-ad-guide.svg" alt="" width={20} height={20} aria-hidden />
           </Button>
         )}
         <Button

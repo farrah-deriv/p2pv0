@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import { useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useGuideStore } from "@/stores/guide-store"
 import { useTranslations } from "@/lib/i18n/use-translations"
@@ -60,6 +61,13 @@ function IntroContent({ onClose }: { onClose: () => void }) {
   const { t } = useTranslations()
   const { dismissIntro, startGuide, setGuideStartedFromIntro } = useGuideStore()
   const router = useRouter()
+  const intercomTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (intercomTimerRef.current !== null) clearTimeout(intercomTimerRef.current)
+    }
+  }, [])
 
   const handlePlaceOrder = () => {
     setGuideStartedFromIntro(true)
@@ -75,9 +83,9 @@ function IntroContent({ onClose }: { onClose: () => void }) {
 
   const handleAskAmy = () => {
     dismissIntro()
-    if (window.Intercom) {
-      window.Intercom("show")
-    }
+    intercomTimerRef.current = setTimeout(() => {
+      window.Intercom?.("show")
+    }, 300)
   }
 
   const handleSkip = () => {

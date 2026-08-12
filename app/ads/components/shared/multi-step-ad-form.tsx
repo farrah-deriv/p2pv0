@@ -827,6 +827,14 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     }
 
     if (currentStep === 2) {
+      if (mode === "create" && (!adFormValid || !paymentFormValid)) {
+        return
+      }
+
+      if (mode === "create" && formData.type === "sell" && !hasSelectedPaymentMethods) {
+        return
+      }
+
       if (mode === "edit" && (!adFormValid || !hasEditChanges)) {
         return
       }
@@ -888,6 +896,8 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     (currentStep === 0 && !adFormValid) ||
     (currentStep === 1 && !paymentFormValid) ||
     (currentStep === 1 && formData.type === "sell" && !hasSelectedPaymentMethods) ||
+    (currentStep === 2 && mode === "create" && (!adFormValid || !paymentFormValid)) ||
+    (currentStep === 2 && mode === "create" && formData.type === "sell" && !hasSelectedPaymentMethods) ||
     (currentStep === 2 && mode === "edit" && (!adFormValid || !hasEditChanges)) ||
     (currentStep === 2 && mustSwitchEveryone) ||
     (currentStep === 2 && selectedCountries !== null && selectedCountries.length === 0) ||

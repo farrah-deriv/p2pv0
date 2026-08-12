@@ -49,7 +49,6 @@ export default function Main({
   const { isChatVisible } = useChatVisibilityStore()
   const { isTransactionListVisible } = useWalletViewStore()
   const openIntro = useGuideStore((state) => state.openIntro)
-  const reopenIntro = useGuideStore((state) => state.reopenIntro)
   const showMobileFooterNav = shouldShowMobileFooterNav(pathname, isChatVisible, isTransactionListVisible)
   const { data: onboardingStatus, isLoading: isOnboardingLoading } = useOnboardingStatus(
     isAuthenticated && !isMaintenanceActive,
@@ -139,12 +138,6 @@ export default function Main({
   }, [isMaintenanceActive, pathname, router, searchParams])
 
   useEffect(() => {
-    if (isReady && isAuthenticated) openIntro()
-  }, [isReady, isAuthenticated]) // eslint-disable-line react-hooks/exhaustive-deps
-
-
-
-  useEffect(() => {
     if (isMaintenanceActive || !isAuthenticated || isOnboardingLoading || !onboardingStatus) {
       return
     }
@@ -176,6 +169,7 @@ export default function Main({
           }
 
           await AuthAPI.fetchUserIdAndStore()
+          openIntro()
         }
       } catch (error) {
         if (abortController.signal.aborted) {
@@ -191,7 +185,7 @@ export default function Main({
       isMounted = false
       abortController.abort()
     }
-  }, [isAuthenticated, isMaintenanceActive, onboardingStatus, isOnboardingLoading, setVerificationStatus, setOnboardingStatus])
+  }, [isAuthenticated, isMaintenanceActive, onboardingStatus, isOnboardingLoading, setVerificationStatus, setOnboardingStatus, openIntro])
 
   if (pathname === "/login") {
     return <div className="container mx-auto overflow-hidden max-w-7xl">{children}</div>
