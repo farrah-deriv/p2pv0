@@ -1352,15 +1352,19 @@
     "step1Title": "Choose your trade type",
     "step1Body": "Select whether you want to buy or sell. Buyers browse existing ads; sellers create ads for others to respond to.",
     "step2Title": "Set your currency",
-    "step2Body": "Choose the local currency your counterparty will pay or receive. This determines how your rate and amount are displayed.",
+    "step2BodyBuy": "Select the currency you'll pay with.",
+    "step2BodySell": "Select the currency you'll receive in.",
     "step3Title": "Set your rate",
     "step3Body": "Enter a fixed rate or a floating rate as a percentage of the live market price. Floating rates keep your ad competitive automatically.",
     "step4Title": "Set your trade amount",
-    "step4Body": "Enter the total amount you want to trade and the minimum and maximum order sizes you'll accept.",
+    "step4BodyBuy": "Add the total amount you're buying. Then set the minimum and maximum amount sellers can order.",
+    "step4BodySell": "Add the total amount you're selling. Then set the minimum and maximum amount buyers can order.",
     "step5Title": "Add payment methods",
-    "step5Body": "Select the payment methods you accept. Buyers will use these details to send you funds.",
+    "step5BodyBuy": "Choose how you'll pay and add any instructions.",
+    "step5BodySell": "Choose how you'll get paid and add any instructions.",
     "step6Title": "Set your conditions",
-    "step6Body": "Optionally restrict your ad by order time limit, counterparty requirements, or country. These help you trade with trusted partners."
+    "step6BodyBuy": "Set how long sellers have to pay and who can respond. Then tap **Create ad** to publish.",
+    "step6BodySell": "Set how long buyers have to pay and who can respond. Then tap **Create ad** to publish."
   },
   "guide": {
     "back": "ආපසු",
@@ -1376,7 +1380,8 @@
     "step4Title": "උසස් පෙරහන්",
     "step4Body": "ස්ථර මට්ටම, විනිමය අනුපාතය සහ පරිශීලක ශ්‍රේණිගත කිරීම අනුව ප්‍රතිඵල පිරිපහදු කිරීමට මෙහි ස්පර්ශ කරන්න.",
     "step5Title": "ගනුදෙනුවක් ආරම්භ කරන්න",
-    "step5Body": "මෙම දැන්වීම්කරු සමඟ ගනුදෙනුවක් ආරම්භ කිරීමට Buy ස්පර්ශ කරන්න. තහවුරු කිරීමට පෙර ඔවුන්ගේ ගෙවීම් නියමයන් සමාලෝචනය කරනු ඇත.",
+    "step5BodyBuy": "මෙම දැන්වීම්කරු සමඟ ගනුදෙනුවක් ආරම්භ කිරීමට Buy ස්පර්ශ කරන්න. තහවුරු කිරීමට පෙර ඔවුන්ගේ ගෙවීම් නියමයන් සමාලෝචනය කරනු ඇත.",
+    "step5BodySell": "මෙම දැන්වීම්කරු සමඟ ගනුදෙනුවක් ආරම්භ කිරීමට Sell ස්පර්ශ කරන්න. තහවුරු කිරීමට පෙර ඔවුන්ගේ ගෙවීම් නියමයන් සමාලෝචනය කරනු ඇත.",
     "step6Title": "වේදිකාව ගමන් කරන්න",
     "step6Body": "වෙළෙඳ පොළ ප්‍රවේශ වීමට, සක්‍රීය ඇණවුම් නිරීක්ෂණය කිරීමට, ඔබේ දැන්වීම් කළමනාකරණය කිරීමට සහ Wallet ශේෂය බැලීමට පහළ ටැබ් භාවිතා කරන්න.",
     "step6BodyDesktop": "වෙළෙඳ පොළ ප්‍රවේශ වීමට, සක්‍රීය ඇණවුම් නිරීක්ෂණය කිරීමට, ඔබේ දැන්වීම් කළමනාකරණය කිරීමට සහ Wallet ශේෂය බැලීමට sidebar භාවිතා කරන්න."

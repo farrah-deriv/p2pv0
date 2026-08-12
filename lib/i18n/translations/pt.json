@@ -1374,15 +1374,19 @@
     "step1Title": "Choose your trade type",
     "step1Body": "Select whether you want to buy or sell. Buyers browse existing ads; sellers create ads for others to respond to.",
     "step2Title": "Set your currency",
-    "step2Body": "Choose the local currency your counterparty will pay or receive. This determines how your rate and amount are displayed.",
+    "step2BodyBuy": "Select the currency you'll pay with.",
+    "step2BodySell": "Select the currency you'll receive in.",
     "step3Title": "Set your rate",
     "step3Body": "Enter a fixed rate or a floating rate as a percentage of the live market price. Floating rates keep your ad competitive automatically.",
     "step4Title": "Set your trade amount",
-    "step4Body": "Enter the total amount you want to trade and the minimum and maximum order sizes you'll accept.",
+    "step4BodyBuy": "Add the total amount you're buying. Then set the minimum and maximum amount sellers can order.",
+    "step4BodySell": "Add the total amount you're selling. Then set the minimum and maximum amount buyers can order.",
     "step5Title": "Add payment methods",
-    "step5Body": "Select the payment methods you accept. Buyers will use these details to send you funds.",
+    "step5BodyBuy": "Choose how you'll pay and add any instructions.",
+    "step5BodySell": "Choose how you'll get paid and add any instructions.",
     "step6Title": "Set your conditions",
-    "step6Body": "Optionally restrict your ad by order time limit, counterparty requirements, or country. These help you trade with trusted partners."
+    "step6BodyBuy": "Set how long sellers have to pay and who can respond. Then tap **Create ad** to publish.",
+    "step6BodySell": "Set how long buyers have to pay and who can respond. Then tap **Create ad** to publish."
   },
   "guide": {
     "back": "Voltar",
@@ -1398,7 +1402,8 @@
     "step4Title": "Filtros avançados",
     "step4Body": "Toque aqui para refinar os resultados por nível de camada, taxa de câmbio e avaliação do usuário.",
     "step5Title": "Iniciar uma negociação",
-    "step5Body": "Toque em Comprar para iniciar uma negociação com este anunciante. Você revisará as condições de pagamento antes de confirmar.",
+    "step5BodyBuy": "Toque em Comprar para iniciar uma negociação com este anunciante. Você revisará as condições de pagamento antes de confirmar.",
+    "step5BodySell": "Toque em Vender para iniciar uma negociação com este anunciante. Você revisará as condições de pagamento antes de confirmar.",
     "step6Title": "Navegar pela plataforma",
     "step6Body": "Use as guias inferiores para acessar o mercado, rastrear pedidos ativos, gerenciar seus anúncios e visualizar o saldo da carteira.",
     "step6BodyDesktop": "Use a barra lateral para acessar o mercado, rastrear pedidos ativos, gerenciar seus anúncios e visualizar o saldo da carteira."

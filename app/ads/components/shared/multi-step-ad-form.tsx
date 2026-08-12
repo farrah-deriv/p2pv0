@@ -134,6 +134,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
 
   const guideStep = useGuideStore((s) => s.currentStep)
   const guideType = useGuideStore((s) => s.guideType)
+  const isGuideActive = useGuideStore((s) => s.isGuideActive)
   const startGuide = useGuideStore((s) => s.startGuide)
   const setAdTradeType = useGuideStore((s) => s.setAdTradeType)
 
@@ -146,21 +147,29 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Sync wizard page with active guide step
+  // Sync wizard page with active guide step.
+  // isGuideActive is intentionally in deps so the effect re-fires on every guide
+  // activation — even when guideStep and guideType haven't changed (e.g. second run
+  // of the ads guide). Without it the form stays on whatever step the user was on
+  // when they clicked the guide button, which causes the snapshot to be taken with
+  // the wrong DOM state and breaks the step counter.
   useEffect(() => {
-    if (guideType !== "ads") return
+    if (!isGuideActive || guideType !== "ads") return
     if (guideStep <= 2) setCurrentStep(0)
     else if (guideStep <= 4) setCurrentStep(1)
     else if (guideStep === 5) setCurrentStep(2)
-  }, [guideStep, guideType])
+  }, [isGuideActive, guideStep, guideType])
 
-  // Keep guide store in sync with the selected trade type so step 4 body is correct
+  // Keep guide store in sync with the selected trade type so step-body variants are correct.
+  // isGuideActive is intentionally in deps so the effect re-fires on every guide activation —
+  // completeGuide resets adTradeType to null but leaves guideType as "ads", so without
+  // isGuideActive a second run never restores adTradeType and step 2/5/6 show the wrong variant.
   useEffect(() => {
-    if (guideType !== "ads") return
+    if (!isGuideActive || guideType !== "ads") return
     if (formData.type === "buy" || formData.type === "sell") {
       setAdTradeType(formData.type)
     }
-  }, [formData.type, guideType, setAdTradeType])
+  }, [isGuideActive, formData.type, guideType, setAdTradeType])
 
   const createAdMutation = useCreateAd()
   const updateAdMutation = useUpdateAd()

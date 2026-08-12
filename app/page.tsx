@@ -65,6 +65,9 @@ export default function BuySellPage() {
   const pendingStartGuide = useGuideStore((s) => s.pendingStartGuide)
   const setPendingStartGuide = useGuideStore((s) => s.setPendingStartGuide)
   const startGuide = useGuideStore((s) => s.startGuide)
+  const isGuideActive = useGuideStore((s) => s.isGuideActive)
+  const guideType = useGuideStore((s) => s.guideType)
+  const setMarketTradeType = useGuideStore((s) => s.setMarketTradeType)
 
   useEffect(() => {
     if (pendingStartGuide) {
@@ -72,6 +75,7 @@ export default function BuySellPage() {
       startGuide("markets")
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const searchParams = useSearchParams()
   const {
     activeTab,
@@ -88,6 +92,14 @@ export default function BuySellPage() {
     setSelectedPaymentMethods,
     setSelectedAccountCurrency,
   } = useMarketFilterStore()
+
+  // Keep marketTradeType in sync with the active tab so guide step 5 shows the
+  // correct currency (Buy USD vs Sell USD). activeTab="buy" means the user is
+  // browsing buy-ads and wants to sell; activeTab="sell" means they want to buy.
+  useEffect(() => {
+    if (!isGuideActive || guideType !== "markets") return
+    setMarketTradeType(activeTab)
+  }, [isGuideActive, guideType, activeTab, setMarketTradeType])
 
   const queryClient = useQueryClient()
   const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false)

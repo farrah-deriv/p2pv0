@@ -1352,15 +1352,19 @@
     "step1Title": "Choose your trade type",
     "step1Body": "Select whether you want to buy or sell. Buyers browse existing ads; sellers create ads for others to respond to.",
     "step2Title": "Set your currency",
-    "step2Body": "Choose the local currency your counterparty will pay or receive. This determines how your rate and amount are displayed.",
+    "step2BodyBuy": "Select the currency you'll pay with.",
+    "step2BodySell": "Select the currency you'll receive in.",
     "step3Title": "Set your rate",
     "step3Body": "Enter a fixed rate or a floating rate as a percentage of the live market price. Floating rates keep your ad competitive automatically.",
     "step4Title": "Set your trade amount",
-    "step4Body": "Enter the total amount you want to trade and the minimum and maximum order sizes you'll accept.",
+    "step4BodyBuy": "Add the total amount you're buying. Then set the minimum and maximum amount sellers can order.",
+    "step4BodySell": "Add the total amount you're selling. Then set the minimum and maximum amount buyers can order.",
     "step5Title": "Add payment methods",
-    "step5Body": "Select the payment methods you accept. Buyers will use these details to send you funds.",
+    "step5BodyBuy": "Choose how you'll pay and add any instructions.",
+    "step5BodySell": "Choose how you'll get paid and add any instructions.",
     "step6Title": "Set your conditions",
-    "step6Body": "Optionally restrict your ad by order time limit, counterparty requirements, or country. These help you trade with trusted partners."
+    "step6BodyBuy": "Set how long sellers have to pay and who can respond. Then tap **Create ad** to publish.",
+    "step6BodySell": "Set how long buyers have to pay and who can respond. Then tap **Create ad** to publish."
   },
   "guide": {
     "back": "திரும்பு",
@@ -1376,7 +1380,8 @@
     "step4Title": "மேம்பட்ட வடிகட்டிகள்",
     "step4Body": "அடுக்கு நிலை, மாற்று விகிதம் மற்றும் பயனர் மதிப்பீட்டால் முடிவுகளை செம்மைப்படுத்த இங்கே தட்டவும்.",
     "step5Title": "வர்த்தகம் தொடங்கு",
-    "step5Body": "இந்த விளம்பரதாரருடன் வர்த்தகம் தொடங்க Buy ஐ தட்டவும். உறுதிப்படுத்துவதற்கு முன் அவர்களின் கட்டண விதிமுறைகளை மதிப்பாய்வு செய்வீர்கள்.",
+    "step5BodyBuy": "இந்த விளம்பரதாரருடன் வர்த்தகம் தொடங்க Buy ஐ தட்டவும். உறுதிப்படுத்துவதற்கு முன் அவர்களின் கட்டண விதிமுறைகளை மதிப்பாய்வு செய்வீர்கள்.",
+    "step5BodySell": "இந்த விளம்பரதாரருடன் வர்த்தகம் தொடங்க Sell ஐ தட்டவும். உறுதிப்படுத்துவதற்கு முன் அவர்களின் கட்டண விதிமுறைகளை மதிப்பாய்வு செய்வீர்கள்.",
     "step6Title": "தளத்தை வழிசெலுத்துங்கள்",
     "step6Body": "சந்தையை அணுக, செயலில் உள்ள ஆர்டர்களை கண்காணிக்க, உங்கள் விளம்பரங்களை நிர்வகிக்க மற்றும் Wallet இருப்பை பார்க்க கீழ் தாவல்களை பயன்படுத்துங்கள்.",
     "step6BodyDesktop": "சந்தையை அணுக, செயலில் உள்ள ஆர்டர்களை கண்காணிக்க, உங்கள் விளம்பரங்களை நிர்வகிக்க மற்றும் Wallet இருப்பை பார்க்க பக்கப்பட்டியை பயன்படுத்துங்கள்."

@@ -12,6 +12,7 @@ interface GuideState {
   pendingStartGuide: boolean
   guideStartedFromIntro: boolean
   adTradeType: "buy" | "sell" | null
+  marketTradeType: "buy" | "sell" | null
   guideType: GuideType
   currentStep: number
   advertsSettled: boolean
@@ -22,6 +23,7 @@ interface GuideState {
   startGuide: (type?: GuideType) => void
   setGuideStartedFromIntro: (value: boolean) => void
   setAdTradeType: (type: "buy" | "sell" | null) => void
+  setMarketTradeType: (type: "buy" | "sell" | null) => void
   nextStep: () => void
   goToStep: (step: number) => void
   completeGuide: () => void
@@ -38,6 +40,7 @@ export const useGuideStore = create<GuideState>()(
       pendingStartGuide: false,
       guideStartedFromIntro: false,
       adTradeType: null,
+      marketTradeType: null,
       guideType: "markets" as GuideType,
       currentStep: 0,
       advertsSettled: false,
@@ -50,6 +53,7 @@ export const useGuideStore = create<GuideState>()(
       startGuide: (type: GuideType = "markets") => set({ isGuideActive: true, currentStep: 0, guideType: type }),
       setGuideStartedFromIntro: (value: boolean) => set({ guideStartedFromIntro: value }),
       setAdTradeType: (type: "buy" | "sell" | null) => set({ adTradeType: type }),
+      setMarketTradeType: (type: "buy" | "sell" | null) => set({ marketTradeType: type }),
       setPendingStartGuide: (value: boolean) => set({ pendingStartGuide: value }),
       nextStep: () => {
         const { currentStep } = get()
@@ -66,7 +70,7 @@ export const useGuideStore = create<GuideState>()(
       },
       completeGuide: () => {
         const fromIntro = get().guideStartedFromIntro
-        set({ hasSeenGuide: true, isGuideActive: false, currentStep: 0, guideStartedFromIntro: false, adTradeType: null })
+        set({ hasSeenGuide: true, isGuideActive: false, currentStep: 0, guideStartedFromIntro: false, adTradeType: null, marketTradeType: null })
         if (fromIntro) get().reopenIntro()
       },
     }),

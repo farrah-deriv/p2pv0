@@ -1352,15 +1352,19 @@
     "step1Title": "Choose your trade type",
     "step1Body": "Select whether you want to buy or sell. Buyers browse existing ads; sellers create ads for others to respond to.",
     "step2Title": "Set your currency",
-    "step2Body": "Choose the local currency your counterparty will pay or receive. This determines how your rate and amount are displayed.",
+    "step2BodyBuy": "Select the currency you'll pay with.",
+    "step2BodySell": "Select the currency you'll receive in.",
     "step3Title": "Set your rate",
     "step3Body": "Enter a fixed rate or a floating rate as a percentage of the live market price. Floating rates keep your ad competitive automatically.",
     "step4Title": "Set your trade amount",
-    "step4Body": "Enter the total amount you want to trade and the minimum and maximum order sizes you'll accept.",
+    "step4BodyBuy": "Add the total amount you're buying. Then set the minimum and maximum amount sellers can order.",
+    "step4BodySell": "Add the total amount you're selling. Then set the minimum and maximum amount buyers can order.",
     "step5Title": "Add payment methods",
-    "step5Body": "Select the payment methods you accept. Buyers will use these details to send you funds.",
+    "step5BodyBuy": "Choose how you'll pay and add any instructions.",
+    "step5BodySell": "Choose how you'll get paid and add any instructions.",
     "step6Title": "Set your conditions",
-    "step6Body": "Optionally restrict your ad by order time limit, counterparty requirements, or country. These help you trade with trusted partners."
+    "step6BodyBuy": "Set how long sellers have to pay and who can respond. Then tap **Create ad** to publish.",
+    "step6BodySell": "Set how long buyers have to pay and who can respond. Then tap **Create ad** to publish."
   },
   "guide": {
     "back": "رجوع",
@@ -1376,7 +1380,8 @@
     "step4Title": "فلاتر متقدمة",
     "step4Body": "اضغط هنا لتصفية النتائج حسب مستوى الفئة وسعر الصرف وتقييم المستخدم.",
     "step5Title": "ابدأ تداولاً",
-    "step5Body": "اضغط على شراء لبدء تداول مع هذا المعلن. ستتحقق من شروط الدفع الخاصة به قبل التأكيد.",
+    "step5BodyBuy": "اضغط على شراء لبدء تداول مع هذا المعلن. ستتحقق من شروط الدفع الخاصة به قبل التأكيد.",
+    "step5BodySell": "اضغط على بيع لبدء تداول مع هذا المعلن. ستتحقق من شروط الدفع الخاصة به قبل التأكيد.",
     "step6Title": "تنقّل في المنصة",
     "step6Body": "استخدم التبويبات السفلية للوصول إلى السوق، وتتبع الطلبات النشطة، وإدارة إعلاناتك، وعرض رصيد محفظتك.",
     "step6BodyDesktop": "استخدم الشريط الجانبي للوصول إلى السوق، وتتبع الطلبات النشطة، وإدارة إعلاناتك، وعرض رصيد محفظتك."

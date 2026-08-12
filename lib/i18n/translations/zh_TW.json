@@ -1352,15 +1352,19 @@
     "step1Title": "Choose your trade type",
     "step1Body": "Select whether you want to buy or sell. Buyers browse existing ads; sellers create ads for others to respond to.",
     "step2Title": "Set your currency",
-    "step2Body": "Choose the local currency your counterparty will pay or receive. This determines how your rate and amount are displayed.",
+    "step2BodyBuy": "Select the currency you'll pay with.",
+    "step2BodySell": "Select the currency you'll receive in.",
     "step3Title": "Set your rate",
     "step3Body": "Enter a fixed rate or a floating rate as a percentage of the live market price. Floating rates keep your ad competitive automatically.",
     "step4Title": "Set your trade amount",
-    "step4Body": "Enter the total amount you want to trade and the minimum and maximum order sizes you'll accept.",
+    "step4BodyBuy": "Add the total amount you're buying. Then set the minimum and maximum amount sellers can order.",
+    "step4BodySell": "Add the total amount you're selling. Then set the minimum and maximum amount buyers can order.",
     "step5Title": "Add payment methods",
-    "step5Body": "Select the payment methods you accept. Buyers will use these details to send you funds.",
+    "step5BodyBuy": "Choose how you'll pay and add any instructions.",
+    "step5BodySell": "Choose how you'll get paid and add any instructions.",
     "step6Title": "Set your conditions",
-    "step6Body": "Optionally restrict your ad by order time limit, counterparty requirements, or country. These help you trade with trusted partners."
+    "step6BodyBuy": "Set how long sellers have to pay and who can respond. Then tap **Create ad** to publish.",
+    "step6BodySell": "Set how long buyers have to pay and who can respond. Then tap **Create ad** to publish."
   },
   "guide": {
     "back": "返回",
@@ -1376,7 +1380,8 @@
     "step4Title": "進階篩選",
     "step4Body": "點選此處依等級級別、匯率和使用者評分精細化結果。",
     "step5Title": "開始交易",
-    "step5Body": "點選買入以與此廣告商開始交易。確認之前，您將查看其付款條款。",
+    "step5BodyBuy": "點選買入以與此廣告商開始交易。確認之前，您將查看其付款條款。",
+    "step5BodySell": "點選賣出以與此廣告商開始交易。確認之前，您將查看其付款條款。",
     "step6Title": "瀏覽平台",
     "step6Body": "使用底部索引標籤存取市場、追蹤有效訂單、管理您的廣告以及查看錢包餘額。",
     "step6BodyDesktop": "使用側邊欄存取市場、追蹤有效訂單、管理您的廣告以及查看錢包餘額。"

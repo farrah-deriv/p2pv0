@@ -82,11 +82,15 @@ function stepWouldBeSkipped(stepConfig: StepConfig): boolean {
 export function P2PGuide() {
   const { t } = useTranslations()
   const router = useRouter()
-  const { isGuideActive, guideType, currentStep, nextStep, goToStep, completeGuide, guideStartedFromIntro, adTradeType } = useGuideStore()
+  const { isGuideActive, guideType, currentStep, nextStep, goToStep, completeGuide, guideStartedFromIntro, adTradeType, marketTradeType } = useGuideStore()
   const [targetRect, setTargetRect] = useState<TargetRect | null>(null)
   const [usingFallback, setUsingFallback] = useState(false)
   // Tracks which step owns the current targetRect; -1 means stale/unset
   const rectStepRef = useRef(-1)
+  // Populated lazily on the first readTargetRect call so the DOM has settled
+  // (the form sync effect fires before the 80ms timer, ensuring all guide targets
+  // are in the DOM before the snapshot is taken).
+  const skippedAtStartRef = useRef<boolean[] | null>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
   const [viewportHeight, setViewportHeight] = useState(() =>
     typeof window !== "undefined" ? (window.visualViewport?.height ?? window.innerHeight) : 0
@@ -99,6 +103,12 @@ export function P2PGuide() {
     const activeConfig = STEP_CONFIG_BY_TYPE[guideType] ?? MARKETS_STEP_CONFIG
     const config = activeConfig[currentStep]
     if (!config) return
+
+    // Capture stable skip state on first call so the DOM has already settled
+    // (the form sync useEffect fires before this 80ms timer fires).
+    if (skippedAtStartRef.current === null) {
+      skippedAtStartRef.current = activeConfig.map(s => stepWouldBeSkipped(s))
+    }
 
     const findVisible = (id: string) => {
       const all = document.querySelectorAll<HTMLElement>(`[data-guide-id="${id}"]`)
@@ -173,7 +183,10 @@ export function P2PGuide() {
   }, [currentStep, guideType, nextStep, completeGuide])
 
   useEffect(() => {
-    if (!isGuideActive) return
+    if (!isGuideActive) {
+      skippedAtStartRef.current = null
+      return
+    }
     const timer = setTimeout(readTargetRect, 80)
     return () => clearTimeout(timer)
   }, [isGuideActive, currentStep, readTargetRect])
@@ -225,12 +238,10 @@ export function P2PGuide() {
     () => isGuideActive ? activeStepConfig.map(s => stepWouldBeSkipped(s)) : [],
     [isGuideActive, currentStep], // eslint-disable-line react-hooks/exhaustive-deps
   )
-  // Stable snapshot taken once at guide activation — used for the X/Y counter so it
-  // doesn't shrink when wizard navigation moves earlier elements out of the DOM.
-  const skippedAtStart = useMemo(
-    () => isGuideActive ? activeStepConfig.map(s => stepWouldBeSkipped(s)) : [],
-    [isGuideActive], // eslint-disable-line react-hooks/exhaustive-deps
-  )
+  // Stable snapshot populated by readTargetRect on its first call — guaranteed to run
+  // after the form sync effect has moved the wizard back to step 0, so the snapshot
+  // reflects the real DOM state rather than the transient state at guide activation.
+  const skippedAtStart = skippedAtStartRef.current ?? []
 
   if (!isGuideActive) return null
 
@@ -353,8 +364,13 @@ export function P2PGuide() {
 
             <p className="text-sm text-grayscale-600 mb-5 leading-relaxed">{renderBold(t((() => {
               const key = usingFallback && config.fallbackBodyKey ? config.fallbackBodyKey : config.bodyKey
-              if (key === "adGuide.step4Body")
-                return adTradeType === "sell" ? "adGuide.step4BodySell" : "adGuide.step4BodyBuy"
+              const isSellAd = adTradeType === "sell"
+              const isSellMarket = marketTradeType === "buy"
+              if (key === "adGuide.step2Body") return isSellAd ? "adGuide.step2BodySell" : "adGuide.step2BodyBuy"
+              if (key === "adGuide.step4Body") return isSellAd ? "adGuide.step4BodySell" : "adGuide.step4BodyBuy"
+              if (key === "adGuide.step5Body") return isSellAd ? "adGuide.step5BodySell" : "adGuide.step5BodyBuy"
+              if (key === "adGuide.step6Body") return isSellAd ? "adGuide.step6BodySell" : "adGuide.step6BodyBuy"
+              if (key === "guide.step5Body") return isSellMarket ? "guide.step5BodySell" : "guide.step5BodyBuy"
               return key
             })()))}</p>
 

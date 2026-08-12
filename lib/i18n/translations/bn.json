@@ -1362,15 +1362,19 @@
     "step1Title": "Choose your trade type",
     "step1Body": "Select whether you want to buy or sell. Buyers browse existing ads; sellers create ads for others to respond to.",
     "step2Title": "Set your currency",
-    "step2Body": "Choose the local currency your counterparty will pay or receive. This determines how your rate and amount are displayed.",
+    "step2BodyBuy": "Select the currency you'll pay with.",
+    "step2BodySell": "Select the currency you'll receive in.",
     "step3Title": "Set your rate",
     "step3Body": "Enter a fixed rate or a floating rate as a percentage of the live market price. Floating rates keep your ad competitive automatically.",
     "step4Title": "Set your trade amount",
-    "step4Body": "Enter the total amount you want to trade and the minimum and maximum order sizes you'll accept.",
+    "step4BodyBuy": "Add the total amount you're buying. Then set the minimum and maximum amount sellers can order.",
+    "step4BodySell": "Add the total amount you're selling. Then set the minimum and maximum amount buyers can order.",
     "step5Title": "Add payment methods",
-    "step5Body": "Select the payment methods you accept. Buyers will use these details to send you funds.",
+    "step5BodyBuy": "Choose how you'll pay and add any instructions.",
+    "step5BodySell": "Choose how you'll get paid and add any instructions.",
     "step6Title": "Set your conditions",
-    "step6Body": "Optionally restrict your ad by order time limit, counterparty requirements, or country. These help you trade with trusted partners."
+    "step6BodyBuy": "Set how long sellers have to pay and who can respond. Then tap **Create ad** to publish.",
+    "step6BodySell": "Set how long buyers have to pay and who can respond. Then tap **Create ad** to publish."
   },
   "guide": {
     "back": "পিছনে",
@@ -1386,7 +1390,8 @@
     "step4Title": "উন্নত ফিল্টার",
     "step4Body": "টায়ার স্তর, বিনিময় হার এবং ব্যবহারকারীর রেটিং অনুযায়ী ফলাফল পরিমার্জন করতে এখানে ট্যাপ করুন।",
     "step5Title": "ট্রেড শুরু করুন",
-    "step5Body": "এই বিজ্ঞাপনদাতার সাথে ট্রেড শুরু করতে Buy-এ ট্যাপ করুন। নিশ্চিত করার আগে তাদের পেমেন্টের শর্তাবলী পর্যালোচনা করবেন।",
+    "step5BodyBuy": "এই বিজ্ঞাপনদাতার সাথে ট্রেড শুরু করতে Buy-এ ট্যাপ করুন। নিশ্চিত করার আগে তাদের পেমেন্টের শর্তাবলী পর্যালোচনা করবেন।",
+    "step5BodySell": "এই বিজ্ঞাপনদাতার সাথে ট্রেড শুরু করতে Sell-এ ট্যাপ করুন। নিশ্চিত করার আগে তাদের পেমেন্টের শর্তাবলী পর্যালোচনা করবেন।",
     "step6Title": "প্ল্যাটফর্মে নেভিগেট করুন",
     "step6Body": "মার্কেটে প্রবেশ করতে, সক্রিয় অর্ডার ট্র্যাক করতে, বিজ্ঞাপন পরিচালনা করতে এবং ওয়ালেট ব্যালেন্স দেখতে নীচের ট্যাবগুলি ব্যবহার করুন।",
     "step6BodyDesktop": "মার্কেটে প্রবেশ করতে, সক্রিয় অর্ডার ট্র্যাক করতে, বিজ্ঞাপন পরিচালনা করতে এবং ওয়ালেট ব্যালেন্স দেখতে সাইডবার ব্যবহার করুন।"
