@@ -169,7 +169,7 @@ export default function MarketFilterDropdown({
     >
       {trigger}
       {hasActiveFilters && (
-        <div className="absolute top-[5px] right-[12px] w-2 h-2 bg-red-500 rounded-full"></div>
+        <div className="absolute top-[10px] right-[20px] w-2 h-2 bg-red-500 rounded-full"></div>
       )}
     </div>
   )
@@ -204,7 +204,7 @@ export default function MarketFilterDropdown({
       <PopoverTrigger asChild>
         <div className="relative w-fit" data-testid="market-filter-btn-trigger">
           {trigger}
-          {hasActiveFilters && <div className="absolute top-[5px] right-[12px] w-2 h-2 bg-red-500 rounded-full"></div>}
+          {hasActiveFilters && <div className="absolute top-[10px] right-[20px] w-2 h-2 bg-red-500 rounded-full"></div>}
         </div>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-4" align="end">

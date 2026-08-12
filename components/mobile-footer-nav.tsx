@@ -112,7 +112,7 @@ export default function MobileFooterNav({ className }: { className?: string }) {
           href="/ads"
           data-testid="footer-nav-link-ads"
           className={cn(
-            "flex flex-col items-center gap-1.5 px-4 pt-2 pb-2 min-h-14 justify-center text-[12px] font-semibold transition-colors w-[100px]",
+            "flex flex-col items-center gap-1.5 px-4 pt-2 pb-2 min-h-14 justify-center text-[12px] font-semibold transition-colors w-[100px] whitespace-nowrap",
             isAdsActive ? "text-brand-red" : "text-neutral-600",
           )}
         >

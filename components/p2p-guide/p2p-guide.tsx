@@ -56,6 +56,39 @@ const STEP_CONFIG_BY_TYPE: Record<GuideType, StepConfig[]> = {
 
 const SPOTLIGHT_PADDING = 8
 const TOOLTIP_GAP = 8
+// Safe-area-inset on notched phones (iOS ≈ 34 px, Android ≈ 16–24 px).
+// Overflow within this band at the bottom is a layout artifact, not a sign
+// the element needs scrolling (the footer nav lives in a non-scrollable container).
+const SAFE_AREA_BOTTOM_THRESHOLD = 60
+
+// Walks up the ancestor chain to find the first container that *actually* scrolls
+// vertically (scrollHeight > clientHeight). Falls back to window scroll if none found.
+// Using this instead of el.scrollIntoView() avoids the Table wrapper's
+// overflow-auto div being picked as the scroll target even though it never overflows.
+function scrollToVisible(el: HTMLElement, vh: number) {
+  let container: HTMLElement | null = el.parentElement
+  while (container && container !== document.documentElement) {
+    const style = window.getComputedStyle(container)
+    const overflowY = style.overflowY
+    if ((overflowY === "auto" || overflowY === "scroll") && container.scrollHeight > container.clientHeight + 1) {
+      const containerRect = container.getBoundingClientRect()
+      const elRect = el.getBoundingClientRect()
+      if (elRect.top < 0) {
+        // Element scrolled above viewport (navigating backward in guide).
+        // Reset to top so all header/filter targets become visible.
+        container.scrollTop = 0
+      } else {
+        // Element is below viewport (navigating forward). Position at ~30% from top.
+        const desiredTop = container.scrollTop + (elRect.top - containerRect.top) - Math.round(vh * 0.3)
+        container.scrollTop = Math.max(0, desiredTop)
+      }
+      return
+    }
+    container = container.parentElement
+  }
+  // Fallback: plain scrollIntoView for document-level scroll
+  el.scrollIntoView({ behavior: "auto", block: "start" })
+}
 
 function renderBold(text: string) {
   const parts = text.split(/\*\*(.+?)\*\*/)
@@ -144,19 +177,21 @@ export function P2PGuide() {
     }
 
     const elRect = el.getBoundingClientRect()
-    const vh = window.innerHeight
+    // visualViewport.height accounts for the on-screen keyboard and browser chrome
+    // (URL bar) on real iOS/Android devices; falls back to innerHeight elsewhere.
+    const vh = window.visualViewport?.height ?? window.innerHeight
 
-    // If element is not fully in the viewport, scroll it into view. Use instant behaviour so
-    // the element is at its final position before we read the rect — smooth scroll causes the
-    // rect to be read mid-animation, pinning the spotlight to the wrong place.
-    // scrollMarginTop pushes the element ~30% from the top, leaving room below for the tooltip.
-    // scrollIntoView (not window.scrollTo) is used so the browser finds the right scroll
-    // container regardless of whether it is the document or an inner overflow div.
-    if (elRect.top < 0 || elRect.bottom > vh) {
-      const target = el
-      target.style.scrollMarginTop = `${Math.round(vh * 0.3)}px`
-      target.scrollIntoView({ behavior: "auto", block: "start" })
-      target.style.scrollMarginTop = ""
+    // Scroll and retry only when the element is meaningfully out of the viewport.
+    // Bottom overflow within SAFE_AREA_BOTTOM_THRESHOLD is a layout artifact
+    // (safe-area padding), not a sign the element needs scrolling.
+    const bottomOverflow = elRect.bottom - vh
+    const needsScroll =
+      elRect.top < 0 ||
+      (bottomOverflow > SAFE_AREA_BOTTOM_THRESHOLD) ||
+      (bottomOverflow > 0 && elRect.top >= vh)
+
+    if (needsScroll) {
+      scrollToVisible(el, vh)
       setTimeout(readTargetRect, 80)
       return
     }

@@ -47,6 +47,7 @@ import { useTrackers } from "@/analytics/useTrackers"
 import { PresenceLastSeen } from "@/components/presence-last-seen"
 import { useGuideStore } from "@/stores/guide-store"
 import { P2PGuideButton } from "@/components/p2p-guide/p2p-guide-button"
+import { StandaloneFilterRegularIcon } from "@deriv/quill-icons/Standalone"
 
 type Ad = Advertisement
 type AdType = "buy" | "sell"
@@ -644,11 +645,7 @@ export default function BuySellPage() {
                       onClick={() => track("ek_filter_markets")}
                       data-guide-id="guide-advanced-filter"
                     >
-                      {hasActiveFilters ? (
-                        <Image src="/icons/filter-icon-white.png" alt={t("common.filter")} width={16} height={16} />
-                      ) : (
-                        <Image src="/icons/filter-icon.png" alt={t("common.filter")} width={20} height={20} />
-                      )}
+                      <StandaloneFilterRegularIcon width={20} height={20} fill="currentColor" aria-hidden="true" />
                     </Button>
                   }
                 />
