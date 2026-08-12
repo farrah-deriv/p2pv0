@@ -1,8 +1,8 @@
 "use client"
 import { useState, type ReactNode } from "react"
 import { Button } from "@/components/ui/button"
-import { InfoCircleIcon } from "@/components/icons/info-circle"
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { StandaloneCircleInfoRegularIcon } from "@deriv/quill-icons/Standalone"
 import { formatAppDate } from "@/lib/format-date"
 import { localeToBcp47 } from "@/lib/i18n/config"
 import { useTranslations } from "@/lib/i18n/use-translations"
@@ -179,9 +179,8 @@ export default function TransactionDetails({ transaction }: TransactionDetailsPr
   }
 
   const renderAmountReceiveInfoControl = (infoBody: string) => {
-    const infoIconClassName = "size-[1.5rem] h-[1.5rem] w-[1.5rem] shrink-0"
     const infoButtonClassName =
-      "inline-flex shrink-0 items-center justify-center !size-[1.5rem] !h-[1.5rem] !w-[1.5rem] !min-h-[1.5rem] !max-h-[1.5rem] !min-w-[1.5rem] !max-w-[1.5rem] p-0 text-grayscale-text-muted hover:text-slate-1200 hover:bg-transparent [&_svg]:!size-[1.5rem] [&_svg]:!h-[1.5rem] [&_svg]:!w-[1.5rem]"
+      "!min-w-0 inline-flex shrink-0 items-center justify-center !size-[1.5rem] !h-[1.5rem] !w-[1.5rem] !min-h-[1.5rem] !max-h-[1.5rem] !max-w-[1.5rem] p-0 text-grayscale-text-muted hover:text-slate-1200 hover:bg-transparent"
 
     return (
       <>
@@ -196,7 +195,7 @@ export default function TransactionDetails({ transaction }: TransactionDetailsPr
                   className={infoButtonClassName}
                   aria-label={t("wallet.amountReceiveInfoTitle")}
                 >
-                  <InfoCircleIcon className={infoIconClassName} />
+                  <StandaloneCircleInfoRegularIcon iconSize="sm" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent className="max-w-[296px] text-white/70">
@@ -217,7 +216,7 @@ export default function TransactionDetails({ transaction }: TransactionDetailsPr
             setShowAmountReceiveInfoSheet(true)
           }}
         >
-          <InfoCircleIcon className={infoIconClassName} />
+          <StandaloneCircleInfoRegularIcon iconSize="sm" />
         </Button>
       </>
     )

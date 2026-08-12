@@ -28,10 +28,9 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { useTrackers } from "@/analytics/useTrackers"
 import { getWalletTransferRejectionInfo, type WalletTransferApiError, type WalletWithdrawalRejectionAmounts, type WalletWithdrawalRejectionCode, type WalletWithdrawalRejectionCta } from "@/lib/wallet-transfer"
 import type { Transaction } from "../types"
-import { InfoCircleIcon } from "@/components/icons/info-circle"
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { StandaloneArrowUpArrowDownRegularIcon } from "@deriv/quill-icons"
-import { StandaloneArrowLeftFillIcon, StandaloneChevronRightBoldIcon, StandaloneXmarkFillIcon } from "@deriv/quill-icons/Standalone"
+import { StandaloneArrowLeftFillIcon, StandaloneChevronRightBoldIcon, StandaloneCircleInfoRegularIcon, StandaloneXmarkFillIcon } from "@deriv/quill-icons/Standalone"
 
 interface TransferProps {
   currencySelected?: string
@@ -843,6 +842,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     setTransferValidateQuote(null)
     setSourceMinAmount(0)
     setDestinationMinAmount(0)
+    setSelectedPercentage(null)
   }
 
   const formatAmountByCurrency = useCallback(
@@ -1203,9 +1203,8 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     if (!transferValidateQuote || !hasTransferFee(transferValidateQuote)) return null
 
     const infoBody = getAmountReceiveInfoBody(transferValidateQuote)
-    const infoIconClassName = "size-[1.5rem] h-[1.5rem] w-[1.5rem]"
     const infoButtonClassName =
-      "size-[1.5rem] h-[1.5rem] w-[1.5rem] min-h-[1.5rem] max-h-[1.5rem] min-w-[1.5rem] max-w-[1.5rem] p-0 text-grayscale-text-muted hover:text-slate-1200 hover:bg-transparent disabled:opacity-40 disabled:pointer-events-none [&_svg]:!size-[1.5rem] [&_svg]:!h-[1.5rem] [&_svg]:!w-[1.5rem]"
+      "!min-w-0 size-[1.5rem] h-[1.5rem] w-[1.5rem] min-h-[1.5rem] max-h-[1.5rem] max-w-[1.5rem] p-0 text-grayscale-text-muted hover:text-slate-1200 hover:bg-transparent disabled:opacity-40 disabled:pointer-events-none"
 
     return (
       <>
@@ -1222,7 +1221,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                   aria-label={t("wallet.amountReceiveInfoTitle")}
                   disabled={isSubmitting}
                 >
-                  <InfoCircleIcon className={infoIconClassName} />
+                  <StandaloneCircleInfoRegularIcon iconSize="sm" />
                 </Button>
               </TooltipTrigger>
               {!isSubmitting && (
@@ -1249,7 +1248,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
               openAmountReceiveInfoSheet()
             }}
           >
-            <InfoCircleIcon className={infoIconClassName} />
+            <StandaloneCircleInfoRegularIcon iconSize="sm" />
           </Button>
         </div>
       </>
@@ -1319,7 +1318,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
         <div className={separatorClass} />
         <div className={rowPaddingClass}>
           <div className="flex items-center justify-between w-full gap-4">
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-1 min-w-0">
               <span className="text-base font-normal text-grayscale-text-muted whitespace-nowrap">
                 {t("wallet.youllReceive")}
               </span>
@@ -1348,7 +1347,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
         data-testid="transfer-youll-receive-preview"
         className="flex items-center justify-between w-full gap-3"
       >
-        <div className="flex items-center gap-1.5 min-w-0">
+        <div className="flex items-center gap-1 min-w-0">
           <span className="text-sm font-normal text-slate-1200 whitespace-nowrap">
             {t("wallet.youllReceive")}
           </span>
