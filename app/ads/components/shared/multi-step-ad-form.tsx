@@ -947,7 +947,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
         <form onSubmit={(e) => e.preventDefault()}>
           {/* Responsive: column shell — sticky header + scroll middle + sticky footer.
               Desktop (md+): page scroll with sticky header/footer as before. */}
-          <div className="fixed inset-0 flex flex-col bg-white md:overflow-y-auto md:px-[24px]">
+          <div className="fixed inset-0 z-30 flex flex-col bg-white md:overflow-y-auto md:px-[24px]">
             <div className="flex min-h-0 flex-1 flex-col md:mx-auto md:h-auto md:min-h-full md:w-full md:max-w-[620px] md:overflow-visible md:px-0 progress-steps-container overflow-x-hidden">
               {/* Top: close/back + progress — not part of scroll */}
               <div className="shrink-0 bg-white md:sticky md:top-0 md:z-10">

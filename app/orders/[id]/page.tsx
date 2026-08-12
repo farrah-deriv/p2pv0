@@ -610,7 +610,7 @@ export default function OrderDetailsPage() {
   }
 
   return (
-    <div className="lg:absolute inset-x-0 top-0 bottom-0 bg-white flex flex-col flex-1 min-h-0 h-full overflow-hidden md:overflow-y-auto lg:pt-6">
+    <div className="lg:absolute inset-x-0 top-0 bottom-0 lg:z-30 bg-white flex flex-col flex-1 min-h-0 h-full overflow-hidden md:overflow-y-auto lg:pt-6">
       {order?.type && (
         <Navigation
           isBackBtnVisible={false}

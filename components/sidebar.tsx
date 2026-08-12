@@ -456,7 +456,7 @@ export default function Sidebar({ className }: SidebarProps) {
               <StandaloneUserFillIcon width={20} height={20} fill="currentColor" />
             </div>
             <div className="flex flex-col min-w-0 gap-1">
-              <span className="text-sm font-semibold text-slate-1200 whitespace-pre-wrap wrap-anywhere">{fullName}</span>
+              <span className="text-base font-semibold text-slate-1200 whitespace-pre-wrap wrap-anywhere">{fullName}</span>
               {email && <span className="text-xs text-slate-1200 whitespace-pre-wrap wrap-anywhere">{email}</span>}
             </div>
           </div>
