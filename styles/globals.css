@@ -163,11 +163,35 @@ input[type="number"] {
    profile, ads pages all have h-screen overflow-hidden content divs which cause
    Floating UI to flip the popover upward, hiding it behind the header).
    position:fixed removes it from any clipping context; z-index ensures it
-   paints above the header (z-20 = 20) on all pages. */
+   paints above the header (z-20 = 20) on all pages.
+
+   The popover portals into the nearest `.novu` / `novu-root-{id}` ancestor, which on
+   desktop sits inside the sidebar's `relative z-20` stacking context. A fixed element
+   still participates in its DOM ancestors' stacking context, so the popover's own
+   z-index is trapped there and can paint behind content in a higher sibling context.
+   The `.novu` root must stay in-flow (it hosts the bell trigger), so we give it a
+   relative position + a high z-index to lift the whole subtree — including the trapped
+   fixed popover — above the markets content, while staying below app modals (z-50).
+
+   Inner option dropdowns (filter, preferences, snooze date picker) render as
+   nv-dropdownContent with Floating UI strategy "absolute" and no z-index of their own.
+   The main popover (nv-popoverContent) is overflow:hidden + z-9999 here, which clips
+   the absolute inner dropdown and paints it behind the popover. Lift them above the
+   popover content and make them fixed so they escape the popover's overflow clipping. */
+.novu {
+  position: relative;
+  z-index: 40;
+}
+
 [data-novu-popover-root],
 .nv-popoverContent {
   position: fixed !important;
   z-index: 9999 !important;
+}
+
+.nv-dropdownContent {
+  position: fixed !important;
+  z-index: 10000 !important;
 }
 
 .novu-popover-content {

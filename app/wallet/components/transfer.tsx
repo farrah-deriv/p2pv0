@@ -1643,9 +1643,11 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                   variant="link"
                   type="button"
                   onClick={() => { onClose(); router.push("/?operation=buy") }}
-                  className="!font-bold !text-sm !underline !text-orange-100"
+                  className="!font-bold !text-sm !text-orange-100"
                 >
-                  {t("wallet.buyCurrency", { currency: selectedCurrency ?? "USD" })}
+                  <span className="underline">
+                    {t("wallet.buyCurrency", { currency: selectedCurrency ?? "USD" })}
+                  </span>
                 </Button>
               </p>
               <Button
