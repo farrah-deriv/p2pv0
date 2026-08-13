@@ -28,22 +28,56 @@ function OptionCard({ icon, title, subtitle, variant, onClick }: OptionCardProps
           ? "bg-transparent"
           : "bg-[var(--quill-primitive-colour-black-opacity-75)]"
 
+  // Hover state is variant-aware: light surfaces tint toward neutral-50 (the
+  // codebase's standard card hover), the outlined Ask-Amy option carries a
+  // permanent rainbow gradient border so no hover change is needed, and
+  // dark/primary surfaces keep the opacity lift since a light tint would
+  // read poorly.
+  const hoverClass =
+    variant === "light"
+      ? "hover:bg-neutral-50"
+      : variant === "outlined"
+        ? ""
+        : "hover:opacity-90"
+
   const titleClass =
     variant === "light" || variant === "outlined" ? "text-slate-1200" : "text-white"
 
   const subtitleClass =
     variant === "light" || variant === "outlined" ? "text-grayscale-text-muted" : "text-white/70"
 
+  // The Ask-Amy (outlined) card has no fill of its own — only a permanent
+  // rainbow gradient border with Quill's 8px radius, matching the sparkle
+  // icon at public/icons/ic-ask-amy-sparkle.svg.
+  //
+  // border-image cannot respect border-radius, so the gradient border is
+  // rendered with the two-layer background-clip technique. The rainbow
+  // gradient fills the entire border-box; an OPAQUE layer in the surface
+  // color (--background-rgb, the dialog's white) clipped to the padding-box
+  // masks it everywhere except the 1px border ring. The opaque layer must
+  // not be transparent — a transparent mask would let the rainbow bleed
+  // into the card body. Using the surface color makes the body blend with
+  // the dialog so the card reads as fill-free with only a gradient border.
   const borderStyle = variant === "outlined"
-    ? { border: "1px solid var(--semantic-color-monochrome-border-normal-highest, rgba(0, 0, 0, 0.24))" }
+    ? {
+        border: "1px solid transparent",
+        borderRadius: "8px",
+        background:
+          "linear-gradient(rgb(var(--background-rgb)), rgb(var(--background-rgb))) padding-box, linear-gradient(to right, #17EABD, #2C9AFF, #0C28F7, #4902E0, #7F0DCF, #CB0DF7, #E6190E, #F55F0A, #FF9C13, #F7C60B, #E0DA02) border-box",
+      }
     : undefined
+
+  // The outlined variant must keep a transparent card body so only the
+  // gradient border ring shows. bgClass would set the card fill, so we drop
+  // it for the outlined variant.
+  const cardBgClass = variant === "outlined" ? "" : bgClass
 
   return (
     <button
       type="button"
       onClick={onClick}
       style={borderStyle}
-      className={`flex w-full items-center gap-3 rounded-lg p-4 text-start transition-opacity hover:opacity-90 active:opacity-80 ${bgClass}`}
+      className={`flex w-full items-center gap-3 rounded-lg p-4 text-start transition-colors ${hoverClass} active:opacity-80 focus:outline-none ${cardBgClass}`}
     >
       <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl`}>
         {icon}

@@ -196,12 +196,15 @@ export default function Main({
 
           openIntro()
         } else if (currentUserId && isFullyVerified && searchParams.get("show_kyc_popup") === "true") {
-          // A returning, fully verified user reloading with ?show_kyc_popup
-          // true: strip the param so the page-level KYC auto-popup does not
-          // reappear — verification is already complete, nothing to show.
+          // A returning, fully verified user arriving with ?show_kyc_popup:
+          // verification is already complete, so the KYC onboarding popup must
+          // not appear. Strip the param so the page-level KYC auto-popup never
+          // fires, and surface the guide intro instead as the onboarding entry.
           const next = new URL(window.location.href)
           next.searchParams.delete("show_kyc_popup")
           router.replace(next.pathname + next.search, { scroll: false })
+
+          openIntro()
         }
       } catch (error) {
         if (abortController.signal.aborted) {
