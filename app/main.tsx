@@ -46,6 +46,12 @@ export default function Main({
   const { setIsWalletAccount } = useUserDataStore()
   const [isReady, setIsReady] = useState(false)
   const [onboardingProcessed, setOnboardingProcessed] = useState(false)
+  // Set when we've decided to strip ?show_kyc_popup and open the guide intro
+  // (brand-new user, or fully verified returning user). The render gate below
+  // stays held until useSearchParams actually reflects the stripped URL, so
+  // the page-level KYC auto-popup never fires on the stale searchParams value
+  // that lingers for one render after router.replace before the hook updates.
+  const [stripPending, setStripPending] = useState(false)
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
   const { isChatVisible } = useChatVisibilityStore()
   const { isTransactionListVisible } = useWalletViewStore()
@@ -191,6 +197,7 @@ export default function Main({
           if (searchParams.get("show_kyc_popup") === "true") {
             const next = new URL(window.location.href)
             next.searchParams.delete("show_kyc_popup")
+            setStripPending(true)
             router.replace(next.pathname + next.search, { scroll: false })
           }
 
@@ -202,6 +209,7 @@ export default function Main({
           // fires, and surface the guide intro instead as the onboarding entry.
           const next = new URL(window.location.href)
           next.searchParams.delete("show_kyc_popup")
+          setStripPending(true)
           router.replace(next.pathname + next.search, { scroll: false })
 
           openIntro()
@@ -225,6 +233,15 @@ export default function Main({
       abortController.abort()
     }
   }, [isAuthenticated, isMaintenanceActive, onboardingStatus, isOnboardingLoading, setVerificationStatus, setOnboardingStatus, openIntro, searchParams, router])
+
+  // Once router.replace has committed and useSearchParams no longer reports
+  // show_kyc_popup, the gate has released (it short-circuits on the param) and
+  // stripPending has done its job — clear it so it doesn't linger in memory.
+  useEffect(() => {
+    if (stripPending && searchParams.get("show_kyc_popup") !== "true") {
+      setStripPending(false)
+    }
+  }, [stripPending, searchParams])
 
   if (pathname === "/login") {
     return <div className="container mx-auto overflow-hidden max-w-7xl">{children}</div>
@@ -262,14 +279,20 @@ export default function Main({
 
   // Hold the app surface (and therefore the page-level ?show_kyc_popup auto-popup
   // effect) until Main has resolved the onboarding decision. This is what
-  // prevents the KYC onboarding popup from flashing for a brand-new P2P user:
-  // once onboarding resolves, the intro branch strips the param and opens the
-  // intro before children ever mount; for everyone else we just fall through.
+  // prevents the KYC onboarding popup from flashing for a brand-new or fully
+  // verified P2P user: once onboarding resolves, the strip branches delete the
+  // param and open the intro before children ever mount. stripPending keeps the
+  // gate held for the extra render it takes useSearchParams to reflect the
+  // router.replace — without it, setOnboardingProcessed(true) would release the
+  // gate one render early (while searchParams still carries show_kyc_popup) and
+  // the page-level KYC auto-popup would fire on the stale value. For users who
+  // genuinely need KYC, no strip happens and the gate releases so that popup can
+  // show.
   const holdsForKycGate =
     searchParams.get("show_kyc_popup") === "true" &&
     isAuthenticated &&
-    !onboardingProcessed &&
-    !isMaintenanceActive
+    !isMaintenanceActive &&
+    (!onboardingProcessed || stripPending)
 
   if (holdsForKycGate) {
     return (
