@@ -45,6 +45,7 @@ export default function Main({
   const { userData } = useUserDataStore()
   const { setIsWalletAccount } = useUserDataStore()
   const [isReady, setIsReady] = useState(false)
+  const [onboardingProcessed, setOnboardingProcessed] = useState(false)
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
   const { isChatVisible } = useChatVisibilityStore()
   const { isTransactionListVisible } = useWalletViewStore()
@@ -138,7 +139,12 @@ export default function Main({
   }, [isMaintenanceActive, pathname, router, searchParams])
 
   useEffect(() => {
-    if (isMaintenanceActive || !isAuthenticated || isOnboardingLoading || !onboardingStatus) {
+    // Maintenance skips onboarding entirely — nothing to decide, release the gate.
+    if (isMaintenanceActive) {
+      setOnboardingProcessed(true)
+      return
+    }
+    if (!isAuthenticated || isOnboardingLoading || !onboardingStatus) {
       return
     }
 
@@ -169,6 +175,17 @@ export default function Main({
           }
 
           await AuthAPI.fetchUserIdAndStore()
+
+          // A brand-new P2P user is welcomed by the guide intro. If they landed
+          // with ?show_kyc_popup=true, strip the param before releasing the
+          // render gate so the page-level KYC auto-popup never fires (not even
+          // for a flash) — the intro is the sole onboarding surface here.
+          if (searchParams.get("show_kyc_popup") === "true") {
+            const next = new URL(window.location.href)
+            next.searchParams.delete("show_kyc_popup")
+            router.replace(next.pathname + next.search, { scroll: false })
+          }
+
           openIntro()
         }
       } catch (error) {
@@ -176,6 +193,10 @@ export default function Main({
           return
         }
         console.error("Error processing onboarding data:", error)
+      } finally {
+        if (isMounted && !abortController.signal.aborted) {
+          setOnboardingProcessed(true)
+        }
       }
     }
 
@@ -185,7 +206,7 @@ export default function Main({
       isMounted = false
       abortController.abort()
     }
-  }, [isAuthenticated, isMaintenanceActive, onboardingStatus, isOnboardingLoading, setVerificationStatus, setOnboardingStatus, openIntro])
+  }, [isAuthenticated, isMaintenanceActive, onboardingStatus, isOnboardingLoading, setVerificationStatus, setOnboardingStatus, openIntro, searchParams, router])
 
   if (pathname === "/login") {
     return <div className="container mx-auto overflow-hidden max-w-7xl">{children}</div>
@@ -214,6 +235,25 @@ export default function Main({
   }
 
   if (!isReady) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <LoadingIndicator />
+      </div>
+    )
+  }
+
+  // Hold the app surface (and therefore the page-level ?show_kyc_popup auto-popup
+  // effect) until Main has resolved the onboarding decision. This is what
+  // prevents the KYC onboarding popup from flashing for a brand-new P2P user:
+  // once onboarding resolves, the intro branch strips the param and opens the
+  // intro before children ever mount; for everyone else we just fall through.
+  const holdsForKycGate =
+    searchParams.get("show_kyc_popup") === "true" &&
+    isAuthenticated &&
+    !onboardingProcessed &&
+    !isMaintenanceActive
+
+  if (holdsForKycGate) {
     return (
       <div className="h-screen flex items-center justify-center">
         <LoadingIndicator />

@@ -1368,9 +1368,9 @@
   },
   "guide": {
     "step1Title": "Buy or sell",
-    "step1Body": "Switch between buying and selling. Tap **Buy** to browse available sellers, or **Sell** to post your own offer on the market.",
+    "step1Body": "Switch between buying and selling. Tap **Buy** to browse available sellers, or **Sell** to browse available buyers on the market.",
     "step2Title": "Choose your currency",
-    "step2Body": "Select your preferred local currency. Tap the dropdown to change it before browsing ads.",
+    "step2Body": "Select your preferred currency. Tap the dropdown to change it before browsing ads.",
     "step3Title": "Filter by payment method",
     "step3Body": "Find ads that match how you like to pay: E-wallets, bank transfer, and more.",
     "step4Title": "Advanced filters",
