@@ -153,11 +153,16 @@ export default function Main({
 
     const processOnboardingData = async () => {
       try {
+        const isPhoneVerified =
+          onboardingStatus.p2p?.criteria?.find((c) => c.code === "phone_verified")?.passed || false
+        const isKycVerified =
+          onboardingStatus.kyc.poi_status === "approved" && onboardingStatus.kyc.poa_status === "approved"
+        const isP2PAllowed = onboardingStatus.p2p?.allowed
+
         setVerificationStatus({
-          phone_verified: onboardingStatus.p2p?.criteria?.find((c) => c.code === "phone_verified")?.passed || false,
-          kyc_verified:
-            onboardingStatus.kyc.poi_status === "approved" && onboardingStatus.kyc.poa_status === "approved",
-          p2p_allowed: onboardingStatus.p2p?.allowed,
+          phone_verified: isPhoneVerified,
+          kyc_verified: isKycVerified,
+          p2p_allowed: isP2PAllowed,
         })
 
         if (!isMounted || abortController.signal.aborted) {
@@ -167,7 +172,11 @@ export default function Main({
         setOnboardingStatus(onboardingStatus)
 
         const currentUserId = useUserDataStore.getState().userId
-        if (!currentUserId && onboardingStatus.p2p?.allowed) {
+        const isFullyVerified = Boolean(isP2PAllowed && isPhoneVerified && isKycVerified)
+
+        // The guide intro is shown only to a newly registered P2P user (one
+        // who has no P2P userId yet). Existing users never re-trigger it.
+        if (!currentUserId && isP2PAllowed) {
           await AuthAPI.createP2PUser()
 
           if (!isMounted || abortController.signal.aborted) {
@@ -176,10 +185,9 @@ export default function Main({
 
           await AuthAPI.fetchUserIdAndStore()
 
-          // A brand-new P2P user is welcomed by the guide intro. If they landed
-          // with ?show_kyc_popup=true, strip the param before releasing the
-          // render gate so the page-level KYC auto-popup never fires (not even
-          // for a flash) — the intro is the sole onboarding surface here.
+          // Strip ?show_kyc_popup before releasing the render gate so the
+          // page-level KYC auto-popup never fires (not even for a flash) —
+          // the intro is the sole onboarding surface for a brand-new user.
           if (searchParams.get("show_kyc_popup") === "true") {
             const next = new URL(window.location.href)
             next.searchParams.delete("show_kyc_popup")
@@ -187,6 +195,13 @@ export default function Main({
           }
 
           openIntro()
+        } else if (currentUserId && isFullyVerified && searchParams.get("show_kyc_popup") === "true") {
+          // A returning, fully verified user reloading with ?show_kyc_popup
+          // true: strip the param so the page-level KYC auto-popup does not
+          // reappear — verification is already complete, nothing to show.
+          const next = new URL(window.location.href)
+          next.searchParams.delete("show_kyc_popup")
+          router.replace(next.pathname + next.search, { scroll: false })
         }
       } catch (error) {
         if (abortController.signal.aborted) {

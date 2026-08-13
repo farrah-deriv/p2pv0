@@ -1,6 +1,13 @@
 import { create } from "zustand"
 
-export const GUIDE_TOTAL_STEPS = 6
+// Step counts are per guide type — the markets and ads guides no longer have the
+// same number of steps (markets merges its payment-method + advanced-filter steps
+// into one, but adds a separate advertiser-profile step), so they are tracked
+// separately rather than via a single constant.
+export const GUIDE_STEP_COUNTS: Record<GuideType, number> = {
+  markets: 6,
+  ads: 6,
+}
 export type GuideType = "markets" | "ads"
 
 interface GuideState {
@@ -51,15 +58,15 @@ export const useGuideStore = create<GuideState>()((set, get) => ({
   setMarketTradeType: (type: "buy" | "sell" | null) => set({ marketTradeType: type }),
   setPendingStartGuide: (value: boolean) => set({ pendingStartGuide: value }),
   nextStep: () => {
-    const { currentStep } = get()
-    if (currentStep < GUIDE_TOTAL_STEPS - 1) {
+    const { currentStep, guideType } = get()
+    if (currentStep < GUIDE_STEP_COUNTS[guideType] - 1) {
       set({ currentStep: currentStep + 1 })
     } else {
       get().completeGuide()
     }
   },
   goToStep: (step: number) => {
-    if (step >= 0 && step < GUIDE_TOTAL_STEPS) {
+    if (step >= 0 && step < GUIDE_STEP_COUNTS[get().guideType]) {
       set({ currentStep: step })
     }
   },

@@ -752,8 +752,13 @@ export default function BuySellPage() {
                         key={ad.id}
                         data-testid={`markets-card-ad-${ad.id}`}
                       >
-                        <TableCell className="p-2 lg:p-4 lg:ps-0 align-top row-start-1 col-span-full whitespace-nowrap">
-                          <div className="flex items-center">
+                        <TableCell
+                          className="p-2 lg:p-4 lg:ps-0 align-top row-start-1 col-span-full whitespace-nowrap"
+                        >
+                          <div
+                            className="flex items-center"
+                            {...(adIndex === firstTradeableAdIndex ? { "data-guide-id": "guide-advertiser-name" } : {})}
+                          >
                             <div className="relative h-[40px] w-[40px] flex-shrink-0 rounded-full bg-black flex items-center justify-center text-white font-bold text-2xl me-[8px]">
                               {(ad.user?.nickname || "").charAt(0).toUpperCase()}
                               <div

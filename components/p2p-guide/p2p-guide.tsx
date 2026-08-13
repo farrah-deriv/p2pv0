@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
-import { useGuideStore, GUIDE_TOTAL_STEPS, type GuideType } from "@/stores/guide-store"
+import { useGuideStore, type GuideType } from "@/stores/guide-store"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { Button } from "@/components/ui/button"
 
@@ -33,8 +33,9 @@ interface StepConfig {
 const MARKETS_STEP_CONFIG: StepConfig[] = [
   { targetId: "guide-buy-sell-tabs", titleKey: "guide.step1Title", bodyKey: "guide.step1Body" },
   { targetId: "guide-currency-filter", titleKey: "guide.step2Title", bodyKey: "guide.step2Body" },
-  { targetId: "guide-payment-method-filter", titleKey: "guide.step3Title", bodyKey: "guide.step3Body" },
-  { targetId: "guide-advanced-filter", titleKey: "guide.step4Title", bodyKey: "guide.step4Body" },
+  // Payment-method + advanced-filter controls sit side by side; one spotlight covers both.
+  { targetId: "guide-payment-method-filter", additionalTargetIds: ["guide-advanced-filter"], titleKey: "guide.step3Title", bodyKey: "guide.step3Body" },
+  { targetId: "guide-advertiser-name", skipIfAbsent: true, titleKey: "guide.step4Title", bodyKey: "guide.step4Body" },
   { targetId: "guide-trade-button", skipIfAbsent: true, titleKey: "guide.step5Title", bodyKey: "guide.step5Body" },
   // Mobile: footer nav. Desktop: footer nav is md:hidden → sidebar nav, tooltip to its right.
   { targetId: "guide-footer-nav", fallbackTargetId: "guide-sidebar-nav", fallbackPlacement: "right", titleKey: "guide.step6Title", bodyKey: "guide.step6Body", fallbackBodyKey: "guide.step6BodyDesktop" },
@@ -296,7 +297,7 @@ export function P2PGuide() {
   // Hide spotlight and tooltip while readTargetRect is resolving; keep backdrop visible
   // so the overlay doesn't flash away and back during step transitions.
   const tooltipReady = rectStepRef.current === currentStep
-  const isLastStep = currentStep === GUIDE_TOTAL_STEPS - 1
+  const isLastStep = currentStep === STEP_CONFIG.length - 1
   const isEffectiveLastStep = isLastStep || STEP_CONFIG.slice(currentStep + 1).every((_, i) => skippedByStep[currentStep + 1 + i])
 
   const handlePrevStep = () => {
