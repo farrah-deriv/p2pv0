@@ -439,7 +439,7 @@ export default function Sidebar({ className }: SidebarProps) {
             aria-label={t("navigation.askAmy")}
             variant="ghost"
             size="lg"
-            className="hidden md:flex w-full my-1 p-0 !transition-opacity hover:!opacity-80 !h-10 !bg-transparent"
+            className="hidden md:flex w-full my-2 p-0 !transition-opacity hover:!opacity-80 !h-10 !bg-transparent"
           >
             <Image src="/icons/ic-ask-amy.svg" alt={t("navigation.askAmy")} width={263} height={40} priority />
           </Button>

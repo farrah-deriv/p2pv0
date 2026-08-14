@@ -1331,6 +1331,7 @@
     "loading": "Notifications loading",
     "poweredBy": "Notifications by",
     "title": "Notifications",
+    "unreadCountA11y": "{count} unread notifications",
     "fetchFailed": "Failed to retrieve subscriber data",
     "noUserId": "No user ID available"
   },

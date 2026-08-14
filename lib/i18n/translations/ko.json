@@ -632,6 +632,7 @@
     "loading": "로딩 중...",
     "poweredBy": "Notifications by",
     "title": "알림",
+    "unreadCountA11y": "읽지 않은 알림 {count}개",
     "fetchFailed": "구독자 데이터를 가져오지 못했습니다",
     "noUserId": "사용자 ID를 사용할 수 없습니다"
   },

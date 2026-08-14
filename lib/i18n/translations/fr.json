@@ -592,6 +592,7 @@
     "loading": "Chargement...",
     "poweredBy": "Notifications by",
     "title": "Notifications",
+    "unreadCountA11y": "{count} notifications non lues",
     "fetchFailed": "Impossible de récupérer les données de l'abonné",
     "noUserId": "Aucun identifiant utilisateur disponible"
   },

@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetClose, SheetTitle } from "@/components/ui/she
 import { Button } from "@/components/ui/button"
 import { BackArrowIcon } from "@/components/ui/back-arrow-icon"
 import { cn } from "@/lib/utils"
+import { NovuUnreadBadge } from "./novu-unread-badge"
 
 const APPEARANCE_VARIABLES = {
   borderRadius: "8px",
@@ -27,8 +28,18 @@ const APPEARANCE_VARIABLES = {
 }
 
 const APPEARANCE_ELEMENTS = {
+  // Defense-in-depth only — CSS hide does NOT stop the browser from
+  // requesting the avatar URL. The real guard is `renderAvatar` below.
   notificationImage: { display: "none" },
   preferences__button: { display: "none" },
+}
+
+// Novu renders `notification.avatar` into a real <img src=...>. Those URLs
+// come from the notification payload (often third-party hosts not in img-src)
+// and CSP blocks them. Returning null short-circuits the <img> entirely —
+// same approach as home-app's `renderNovuInboxAvatarNull`.
+function renderNovuAvatarNull() {
+  return null
 }
 
 const APPLICATION_ID = process.env.NEXT_PUBLIC_NOTIFICATION_APPLICATION_ID!
@@ -61,11 +72,12 @@ function NovuBellLinkInner({ disabled = false, onClick, className }: NovuBellLin
       >
         <StandaloneBellRegularIcon width={24} height={24} fill="currentColor" aria-hidden="true" />
       </Button>
-      {unreadCount.total > 0 && (
-        <span className="pointer-events-none absolute top-0 right-0 h-2 w-2 rounded-full bg-notification-badge" aria-hidden="true" />
-      )}
+      <NovuUnreadBadge
+        count={unreadCount.total}
+        aria-label={t("notifications.unreadCountA11y", { count: unreadCount.total })}
+      />
     </span>
-  ), [handleClick, t])
+  ), [handleClick, t, className])
 
   if (disabled) {
     return (
@@ -106,7 +118,7 @@ function NovuBellLinkInner({ disabled = false, onClick, className }: NovuBellLin
       colorScheme="light"
       appearance={{ variables: APPEARANCE_VARIABLES, elements: APPEARANCE_ELEMENTS }}
     >
-      <span className="inline-flex h-8 w-8 shrink-0 overflow-hidden">
+      <span className="relative inline-flex h-8 w-8 shrink-0 items-center justify-center">
         <Bell renderBell={renderBell} />
       </span>
       <Sheet open={open} onOpenChange={setOpen}>
@@ -120,6 +132,7 @@ function NovuBellLinkInner({ disabled = false, onClick, className }: NovuBellLin
             <SheetTitle className="sr-only">{t("notifications.title")}</SheetTitle>
           </div>
           <Notifications
+            renderAvatar={renderNovuAvatarNull}
             onNotificationClick={(notification) => {
               setOpen(false)
               const data = notification.data as Record<string, unknown>

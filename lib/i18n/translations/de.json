@@ -610,6 +610,7 @@
     "loading": "Wird geladen...",
     "poweredBy": "Benachrichtigungen von",
     "title": "Benachrichtigungen",
+    "unreadCountA11y": "{count} ungelesene Benachrichtigungen",
     "fetchFailed": "Abonnentendaten konnten nicht abgerufen werden",
     "noUserId": "Keine Benutzer-ID verfügbar"
   },

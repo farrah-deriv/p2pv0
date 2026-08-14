@@ -595,6 +595,7 @@
     "loading": "Ładowanie...",
     "poweredBy": "Notifications by",
     "title": "Powiadomienia",
+    "unreadCountA11y": "{count} nieprzeczytanych powiadomień",
     "fetchFailed": "Nie udało się pobrać danych subskrybenta",
     "noUserId": "Brak identyfikatora użytkownika"
   },

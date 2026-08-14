@@ -591,6 +591,7 @@
     "loading": "Inapakua...",
     "poweredBy": "Notifications by",
     "title": "Arifa",
+    "unreadCountA11y": "Arifa {count} ambazo hazijasomwa",
     "fetchFailed": "Imeshindwa kupata data ya mwanachama",
     "noUserId": "Hakuna kitambulisho cha mtumiaji"
   },

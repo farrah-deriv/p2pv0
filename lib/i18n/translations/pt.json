@@ -596,6 +596,7 @@
     "loading": "Carregando...",
     "poweredBy": "Notifications by",
     "title": "Notificações",
+    "unreadCountA11y": "{count} notificações não lidas",
     "fetchFailed": "Falha ao recuperar dados do assinante",
     "noUserId": "Nenhum ID de usuário disponível"
   },

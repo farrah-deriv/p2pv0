@@ -535,7 +535,7 @@ export default function BuySellPage() {
       <div ref={scrollContainerRef} className="flex flex-col flex-1 min-h-0 h-full md:h-screen px-3 overflow-y-auto md:overflow-hidden overscroll-y-none scrollbar-hide">
         <div className="flex flex-col md:flex-shrink-0 gap-4">
           {/* Desktop only — maintenance + mobile balance banners live in main.tsx. */}
-          <div className="relative z-10 flex w-full flex-col bg-slate-1200 p-6 max-md:w-[calc(100%+24px)] max-md:-mx-3 max-md:mb-2 rounded-b-3xl md:rounded-3xl overflow-hidden [transform:translateZ(0)]">
+          <div className="relative z-10 flex w-full flex-col bg-slate-1200 p-6 max-md:w-[calc(100%+24px)] max-md:-mx-3 max-md:mb-0 rounded-b-3xl md:rounded-3xl overflow-hidden [transform:translateZ(0)]">
             <div data-testid="markets-text-balance">
               <BalanceSection balance={balance} currency={balanceCurrency} isLoading={isLoadingBalance} />
             </div>
@@ -584,7 +584,7 @@ export default function BuySellPage() {
             </div>
           </div>
           {tempBanUntil && !isMaintenanceActive && <TemporaryBanAlert tempBanUntil={tempBanUntil} />}
-          <div className="flex flex-wrap gap-2 md:gap-3 md:px-0 md:mb-4 md:justify-end">
+          <div className="flex flex-wrap gap-2 md:gap-3 md:px-0 md:mb-0 md:justify-end">
             <div className="flex gap-2 items-center md:ms-auto md:flex-none max-md:w-full">
               {!isV1Signup && (
                 <div className="flex gap-2 mb-3 flex-1 hidden">
@@ -656,7 +656,7 @@ export default function BuySellPage() {
             </div>
           </div>
         </div>
-        <div ref={tableScrollRef} className="flex flex-col md:flex-1 md:min-h-0 md:overflow-y-auto md:overscroll-y-none md:scrollbar-hide pt-4 md:pt-2 pb-4">
+        <div ref={tableScrollRef} className="flex flex-col md:flex-1 md:min-h-0 md:overflow-y-auto md:overscroll-y-none md:scrollbar-hide pt-0 md:pt-2 pb-4">
           <div className="flex flex-col min-h-full">
             {isMaintenanceActive ? (
               <div className="flex-1 min-h-0 flex items-center md:items-start justify-center md:pt-16">
