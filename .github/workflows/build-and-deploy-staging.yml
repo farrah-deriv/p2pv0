@@ -84,6 +84,12 @@ jobs:
                 NEXT_PUBLIC_NODE_ENV: staging
                 NODE_ENV: staging
 
+            - name: Generate app-info.json
+              uses: "deriv-com/shared-actions/.github/actions/generate_app_info@master"
+              with:
+                version: ${{ github.sha }}
+                output_dir: .vercel/output/static
+
             - name: Replace placeholders in wrangler.toml
               run: |
                 sed -i "s/PROJECT_NAME/${{ secrets.CLOUDFLARE_PROJECT_NAME }}/g" wrangler.toml
