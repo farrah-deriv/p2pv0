@@ -168,6 +168,14 @@ export const PaymentConfirmationSidebar = ({
           type: "warning",
           onCancel: () => onClose(),
         })
+      } else if (errorCode === "ChatAttachmentCorrupted") {
+        showAlert({
+          title: t("chat.attachmentCorruptedTitle"),
+          description: t("chat.attachmentCorruptedDescription"),
+          confirmText: t("common.gotIt"),
+          type: "warning",
+          onConfirm: () => handleRemoveFile(),
+        })
       } else if (errorCode === "OrderChatAttachmentRejected") {
         showAlert({
           title: t("orders.attachmentRejectedTitle"),

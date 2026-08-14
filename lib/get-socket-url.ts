@@ -10,6 +10,13 @@ export function getSocketUrl(): string {
     return process.env.NEXT_PUBLIC_SOCKET_URL || ""
   }
 
+  // Local auth cookies belong to localhost, while the socket upstream is on a
+  // Deriv domain. Route through the dev server so it can forward that cookie
+  // during the WebSocket upgrade.
+  if (process.env.NODE_ENV === "development") {
+    return `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/api/proxy/ws`
+  }
+
   const domain = window.location.hostname
   const tld = domain.split(".").pop()?.toLowerCase()
 

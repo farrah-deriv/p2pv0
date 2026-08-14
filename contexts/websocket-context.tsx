@@ -13,15 +13,9 @@ export class WebSocketClient {
   private socket: WebSocket | null = null
   private options: WebSocketOptions
   private isConnecting = false
-  private currentToken: string | null = null
 
   constructor(options: WebSocketOptions = {}) {
     this.options = options
-  }
-
-  private getSocketToken(): string | null {
-    if (typeof window === "undefined") return null
-    return useUserDataStore.getState().socketToken
   }
 
   public connect(): Promise<WebSocket> {
@@ -33,8 +27,6 @@ export class WebSocketClient {
       this.disconnect()
       return Promise.reject(new Error("P2P user is not eligible for WebSocket"))
     }
-
-    const socketToken = this.getSocketToken()
 
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       return Promise.resolve(this.socket)
@@ -53,10 +45,10 @@ export class WebSocketClient {
     return new Promise((resolve, reject) => {
       try {
         const url = `${getSocketUrl()}/p2p/v1/events`
-        const protocols = socketToken && socketToken.trim() ? [socketToken] : undefined
-        this.socket = new WebSocket(url, protocols)
-        this.currentToken = socketToken
-
+        // The events endpoint authenticates using the session cookie. It does
+        // not negotiate a WebSocket subprotocol, so offering a socket token
+        // makes browsers reject an otherwise valid handshake.
+        this.socket = new WebSocket(url)
         this.socket.onopen = () => {
           this.isConnecting = false
           if (this.options.onOpen) {
@@ -86,7 +78,6 @@ export class WebSocketClient {
 
         this.socket.onclose = (event) => {
           this.isConnecting = false
-          this.currentToken = null
           if (this.options.onClose) {
             this.options.onClose(event, this.socket!)
           }
@@ -221,7 +212,6 @@ export class WebSocketClient {
       }
       this.socket = null
       this.isConnecting = false
-      this.currentToken = null
     }
   }
 
@@ -231,11 +221,6 @@ export class WebSocketClient {
 
   public isConnectingNow(): boolean {
     return this.isConnecting
-  }
-
-  public hasValidToken(): boolean {
-    const token = this.getSocketToken()
-    return token !== null && token.trim() !== ""
   }
 
   public subscribeToUserUpdates(): void {
@@ -278,6 +263,10 @@ const MAX_RETRIES = 5
 
 let wsClientInstance: WebSocketClient | null = null
 
+type InboundWebSocketMessage = WebSocketMessage & {
+  options: NonNullable<WebSocketMessage["options"]>
+}
+
 export function getWebSocketClient(options?: WebSocketOptions): WebSocketClient {
   if (!wsClientInstance) {
     wsClientInstance = new WebSocketClient(options)
@@ -290,7 +279,7 @@ interface WebSocketContextType {
   joinChannel: (channel: string, id: number) => boolean
   leaveChannel: (channel: string) => void
   getChatHistory: (channel: string, orderId: string) => void
-  subscribe: (callback: (data: any) => void) => () => void
+  subscribe: (callback: (data: InboundWebSocketMessage) => void) => () => void
   reconnect: () => void
   subscribeToUserUpdates: () => void
   unsubscribeFromUserUpdates: () => void
@@ -333,7 +322,7 @@ interface WebSocketProviderProps {
 
 export function WebSocketProvider({ children }: WebSocketProviderProps) {
   const wsClientRef = useRef<WebSocketClient | null>(null)
-  const subscribersRef = useRef<Set<(data: any) => void>>(new Set())
+  const subscribersRef = useRef<Set<(data: InboundWebSocketMessage) => void>>(new Set())
   const [isConnected, setIsConnected] = useState(false)
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const shouldReconnectRef = useRef(true)
@@ -448,7 +437,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     wsClientRef.current?.getChatHistory(channel, orderId)
   }, [isMaintenanceActive, isWebSocketEligible])
 
-  const subscribe = useCallback((callback: (data: any) => void) => {
+  const subscribe = useCallback((callback: (data: InboundWebSocketMessage) => void) => {
     subscribersRef.current.add(callback)
     return () => {
       subscribersRef.current.delete(callback)

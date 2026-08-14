@@ -32,6 +32,7 @@ jest.mock("@/lib/i18n/use-translations", () => ({
         "chat.disclaimerText": "Disclaimer",
         "chat.disclaimerNote": "Note:",
         "chat.disclaimerNoteText": "Note text",
+        "chat.disclaimerNoteItem2": "Only attach files relevant to this order.",
         "chat.enterMessage": "Enter message",
         "chat.conversationClosed": "Closed",
         "chat.attachmentUploadRequiresPot":

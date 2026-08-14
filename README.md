@@ -39,7 +39,7 @@ p2pv0/
 
 ```bash
 pnpm install
-pnpm dev          # http://localhost:3000
+pnpm dev          # http://localhost:3000 (includes the local WebSocket upgrade proxy)
 ```
 
 `.env.local` is gitignored and not templated in the repo. Create one pointing at
@@ -93,8 +93,9 @@ and strips the cookie `Domain` attribute on the way back.
 | `/api/auth/*` | `app/api/auth/[...path]/route.ts` | `NEXT_PUBLIC_ORY_URL` |
 | `/api/ory/{login,login-otp,verify-login-otp}` | `app/api/ory/*/route.ts` | Ory Kratos login flows |
 
-WebSockets are **not** proxied — WS is exempt from CORS and the token travels as
-a subprotocol, so the browser connects to `NEXT_PUBLIC_SOCKET_URL` directly.
+WebSockets use the local dev server as an upgrade proxy. This forwards the
+localhost session cookie to `NEXT_PUBLIC_SOCKET_URL` and presents the expected
+Deriv origin to the upstream, while the browser connects only to localhost.
 
 All of it is gated on `isLocalDev()` (`lib/is-local-dev.ts`), which checks
 `process.env.NODE_ENV === "development"`. Next inlines that at build time, so in

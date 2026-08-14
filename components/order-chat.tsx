@@ -40,6 +40,10 @@ function buildMessageId(raw: Record<string, unknown>): string {
     return String(raw.id)
   }
 
+  if (raw.row_id != null && String(raw.row_id) !== "") {
+    return `row:${raw.row_id}`
+  }
+
   const time = raw.time ?? raw.created_at ?? Date.now()
   const sender = raw.sender_is_self ?? ""
   const text = String(raw.message ?? "")
@@ -99,21 +103,7 @@ function stripMatchingLocalRejected(prev: Message[], incoming: Message): Message
 
 function isDuplicateMessage(prev: Message[], incoming: Message): boolean {
   const key = messageDedupeKey(incoming)
-  if (prev.some((msg) => messageDedupeKey(msg) === key)) {
-    return true
-  }
-
-  if (!incoming.sender_is_self) {
-    return false
-  }
-
-  return prev.some(
-    (msg) =>
-      msg.sender_is_self &&
-      msg.rejected === incoming.rejected &&
-      msg.message === incoming.message &&
-      (msg.attachment?.name ?? "") === (incoming.attachment?.name ?? ""),
-  )
+  return prev.some((msg) => messageDedupeKey(msg) === key)
 }
 
 function getChatSendErrorInfo(error: unknown): { code: string; tags: string[] } | null {
@@ -136,6 +126,29 @@ function normalizeChatMessages(rawMessages: unknown[]): Message[] {
   return rawMessages
     .filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null)
     .map(normalizeChatMessage)
+}
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = (error) => reject(error)
+  })
+}
+
+function groupMessagesByDate(messages: Message[]): Record<string, Message[]> {
+  const groups: Record<string, Message[]> = {}
+
+  messages.forEach((msg) => {
+    const dateKey = new Date(msg.time).toDateString()
+    if (!groups[dateKey]) {
+      groups[dateKey] = []
+    }
+    groups[dateKey].push(msg)
+  })
+
+  return groups
 }
 
 type OrderChatProps = {
@@ -218,7 +231,7 @@ export default function OrderChat({
           }
 
           if (payload.message || payload.attachment) {
-            if (payload.order_id == orderId) {
+            if (String(payload.order_id) === orderId) {
               const incoming = normalizeChatMessage(payload as Record<string, unknown>)
               const withoutStaleLocal = stripMatchingLocalRejected(prev, incoming)
 
@@ -243,11 +256,10 @@ export default function OrderChat({
   }, [subscribe, orderId, isChatModerationEnabled])
 
   useEffect(() => {
-    if (isConnected) {
-      setTimeout(() => {
-        getChatHistory("orders", orderId)
-      }, 100)
-    }
+    if (!isConnected) return
+
+    const timerId = setTimeout(() => getChatHistory("orders", orderId), 100)
+    return () => clearTimeout(timerId)
   }, [isConnected, getChatHistory, orderId])
 
   useEffect(() => {
@@ -368,6 +380,13 @@ export default function OrderChat({
 
         if (errorCode === "OrderChatFileSizeExceeded") {
           showFileTooLargeDialog()
+        } else if (errorCode === "ChatAttachmentCorrupted") {
+          showAlert({
+            title: t("chat.attachmentCorruptedTitle"),
+            description: t("chat.attachmentCorruptedDescription"),
+            confirmText: t("common.gotIt"),
+            type: "warning",
+          })
         } else if (errorCode === "OrderTempLocked") {
           showOrderTempLockedAlert()
         } else if (errorCode === "PendingPotSubmission") {
@@ -414,31 +433,6 @@ export default function OrderChat({
         focusMessageInput()
       }
     }
-  }
-
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.readAsDataURL(file)
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = (error) => reject(error)
-    })
-  }
-
-  const groupMessagesByDate = (messages: Message[]) => {
-    const groups: { [key: string]: Message[] } = {}
-
-    messages.forEach((msg) => {
-      const date = new Date(msg.time)
-      const dateKey = date.toDateString()
-
-      if (!groups[dateKey]) {
-        groups[dateKey] = []
-      }
-      groups[dateKey].push(msg)
-    })
-
-    return groups
   }
 
   const formatDateHeader = (dateString: string): string => {
@@ -490,7 +484,13 @@ export default function OrderChat({
         <Alert variant="warning" className="m-4">
           <AlertDescription>
             <p><span className="font-bold">{t("chat.disclaimerImportant")}</span>{" "}{t("chat.disclaimerText")}</p>
-            <p className="mt-4"><span className="font-bold">{t("chat.disclaimerNote")}</span>{" "}{t("chat.disclaimerNoteText")}</p>
+            <div className="mt-4">
+              <p className="font-bold">{t("chat.disclaimerNote")}</p>
+              <ol className="mt-2 list-decimal space-y-2 ps-5">
+                <li>{t("chat.disclaimerNoteText")}</li>
+                <li>{t("chat.disclaimerNoteItem2")}</li>
+              </ol>
+            </div>
           </AlertDescription>
         </Alert>
         <div className="p-4">
@@ -614,9 +614,9 @@ export default function OrderChat({
                 className="w-full rounded-[8px] pe-12 resize-none min-h-[56px] placeholder:text-grayscale-text-placeholder"
                 data-testid="order-chat-input-message"
               />
-              {message.trim() ? (
+              {message.trim() || isSending ? (
                 <Button
-                  className="absolute end-3 top-1/2 transform -translate-y-1/2 p-1 text-grayscale-text-muted hover:text-slate-700 h-auto"
+                  className="absolute end-3 top-1/2 transform -translate-y-1/2 !rounded-full !p-1 !min-w-0 !h-auto !bg-transparent text-grayscale-text-muted hover:!bg-black/10 hover:text-slate-700"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={handleSendMessage}
                   variant="ghost"
@@ -624,7 +624,11 @@ export default function OrderChat({
                   disabled={isSending}
                   data-testid="order-chat-btn-send"
                 >
-                  <Image src="/icons/send-message.png" alt={t("common.sendMessage")} width={20} height={20} className="h-5 w-5" />
+                  {isSending ? (
+                    <Spinner size="sm" />
+                  ) : (
+                    <Image src="/icons/send-message.png" alt={t("common.sendMessage")} width={20} height={20} className="h-5 w-5" />
+                  )}
                 </Button>
               ) : isAttachmentBlocked ? (
                 <TooltipProvider>
