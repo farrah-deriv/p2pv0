@@ -55,7 +55,7 @@ export default function AdSuccessScreen({ ad, onShareClick }: AdSuccessScreenPro
         </div>
 
         {/* Buttons */}
-        <div className="flex flex-col md:flex-row gap-2 w-full max-w-none md:max-w-2xl mb-4 md:mb-0">
+        <div className="flex flex-col md:flex-row gap-2 w-full max-w-none md:max-w-2xl mb-0">
           <Button
             onClick={() => {
               track("ek_go_to_my_ads_ad_created_sucess")

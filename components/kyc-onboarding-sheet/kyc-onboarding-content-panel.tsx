@@ -45,7 +45,7 @@ export function KycOnboardingContentPanel({
           data-testid="kyc-btn-close"
           onClick={onClose}
           variant="icon-muted"
-          className="absolute end-6 top-6 hidden md:inline-flex"
+          className="absolute end-6 top-6 !hidden md:!inline-flex"
           aria-label={t("common.close")}
         >
           <StandaloneXmarkRegularIcon width={24} height={24} aria-hidden />
