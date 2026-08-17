@@ -42,7 +42,8 @@ export function PriceTypeSelector({
   const { t, locale } = useTranslations()
   const dir = isRtlLocale(locale) ? "rtl" : "ltr"
 
-  const canChooseRateType = Boolean(marketPrice && isFloatingRateEnabled)
+  // marketPrice can be 0 in edge cases — only null/undefined means "no rate yet".
+  const canChooseRateType = marketPrice != null && isFloatingRateEnabled
   const rateTypeLabel = value === "fixed" ? t("adForm.fixed") : t("adForm.floating")
 
   const close = useCallback(() => setOpen(false), [])

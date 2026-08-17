@@ -344,9 +344,9 @@ export default function PaymentMethodsFilter({
       <span className="flex w-full flex-row items-center justify-between">
         <span className="min-w-0 flex-1 truncate overflow-hidden text-ellipsis whitespace-nowrap">{triggerLabel}</span>
         {isOpen && !isMobile ? (
-          <StandaloneChevronUpRegularIcon iconSize="xs" className="ms-1.5 shrink-0" />
+          <StandaloneChevronUpRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />
         ) : (
-          <StandaloneChevronDownRegularIcon iconSize="xs" className="ms-1.5 shrink-0" />
+          <StandaloneChevronDownRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />
         )}
       </span>
     </Button>
