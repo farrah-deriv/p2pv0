@@ -578,9 +578,16 @@ export default function AdDetailsForm({
     // market rate once it arrives — clear stale value + autofill guards now.
     userEditedFixedRateRef.current = false
     lastAutoFillPairRef.current = null
-    if (priceType === "fixed") {
-      setFixedRate("")
+    // Reset to fixed on currency switch. The new currency may not support
+    // floating (stale/no active rate), and the "keep floating when stale"
+    // guard — intended only for same-currency rate staleness — would otherwise
+    // leave priceType as "float", showing FloatingRateInput for a currency
+    // that can't use it. The rate-type selector re-evaluates availability for
+    // the new currency; the user can re-select Floating if it's supported.
+    if (priceType === "float") {
+      setPriceType("fixed")
     }
+    setFixedRate("")
     setForCurrency(code)
   }
 
