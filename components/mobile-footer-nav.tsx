@@ -46,6 +46,22 @@ export default function MobileFooterNav({ className }: { className?: string }) {
     }
   }, [userData?.signup])
 
+  // Optimistic pending state: the tapped tab flips red immediately and shows a
+  // pulsing dot while its route is still committing. Mirrors home-app's
+  // MobileNav. Cleared on pathname commit (covers redirects) and by a 15s
+  // safety fallback so a stuck navigation can't leave a tab permanently red.
+  const [pendingHref, setPendingHref] = useState<string | null>(null)
+
+  useEffect(() => {
+    setPendingHref(null)
+  }, [pathname])
+
+  useEffect(() => {
+    if (!pendingHref) return
+    const timer = window.setTimeout(() => setPendingHref(null), 15000)
+    return () => window.clearTimeout(timer)
+  }, [pendingHref])
+
   if (userData?.status === "disabled") {
     return null
   }
@@ -79,64 +95,133 @@ export default function MobileFooterNav({ className }: { className?: string }) {
           </div>
           {t("navigation.home")}
         </Link>
-        <Link
+        <FooterTab
           href="/"
-          data-testid="footer-nav-link-markets"
-          className={cn(
-            "flex flex-col items-center gap-1.5 px-4 pt-2 pb-2 min-h-14 justify-center text-[12px] font-semibold transition-colors w-[100px]",
-            isMarketActive ? "text-brand-red" : "text-neutral-600",
-          )}
-        >
-          <div className="h-5 w-5 flex items-center justify-center flex-shrink-0">
-            <SvgIcon
-              src={isMarketActive ? MarketSelectedIcon : MarketIcon}
-              fill={isMarketActive ? "var(--brand-red)" : "var(--color-neutral-600)"}
-            />
-          </div>
-          {t("navigation.market")}
-        </Link>
-        <Link
+          pathname={pathname}
+          testId="footer-nav-link-markets"
+          label={t("navigation.market")}
+          isSelected={pathname === "/" || isMarketActive}
+          pendingHref={pendingHref}
+          setPendingHref={setPendingHref}
+          activeIcon={MarketSelectedIcon}
+          inactiveIcon={MarketIcon}
+        />
+        <FooterTab
           href="/orders"
-          data-testid="footer-nav-link-orders"
-          className={cn(
-            "flex flex-col items-center gap-1.5 px-4 pt-2 pb-2 min-h-14 justify-center text-[12px] font-semibold transition-colors w-[100px]",
-            isOrdersActive ? "text-brand-red" : "text-neutral-600",
-          )}
-        >
-          <div className="h-5 w-5 flex items-center justify-center flex-shrink-0">
-            <SvgIcon src={isOrdersActive ? OrdersSelectedIcon : OrdersIcon} fill={isOrdersActive ? "var(--brand-red)" : "var(--color-neutral-600)"} />
-          </div>
-          {t("navigation.orders")}
-        </Link>
-        <Link
+          pathname={pathname}
+          testId="footer-nav-link-orders"
+          label={t("navigation.orders")}
+          isSelected={isOrdersActive}
+          pendingHref={pendingHref}
+          setPendingHref={setPendingHref}
+          activeIcon={OrdersSelectedIcon}
+          inactiveIcon={OrdersIcon}
+        />
+        <FooterTab
           href="/ads"
-          data-testid="footer-nav-link-ads"
-          className={cn(
-            "flex flex-col items-center gap-1.5 px-4 pt-2 pb-2 min-h-14 justify-center text-[12px] font-semibold transition-colors w-[100px] whitespace-nowrap",
-            isAdsActive ? "text-brand-red" : "text-neutral-600",
-          )}
-        >
-          <div className="h-5 w-5 flex items-center justify-center flex-shrink-0">
-            <SvgIcon src={isAdsActive ? AdsSelectedIcon : AdsIcon} fill={isAdsActive ? "var(--brand-red)" : "var(--color-neutral-600)"} />
-          </div>
-          {t("navigation.myAds")}
-        </Link>
+          pathname={pathname}
+          testId="footer-nav-link-ads"
+          label={t("navigation.myAds")}
+          isSelected={isAdsActive}
+          pendingHref={pendingHref}
+          setPendingHref={setPendingHref}
+          activeIcon={AdsSelectedIcon}
+          inactiveIcon={AdsIcon}
+          labelClassName="whitespace-nowrap"
+        />
         {showWallet && (
-          <Link
+          <FooterTab
             href="/wallet"
-            data-testid="footer-nav-link-wallet"
-            className={cn(
-              "flex flex-col items-center gap-1.5 px-4 pt-2 pb-2 min-h-14 justify-center text-[12px] font-semibold transition-colors w-[100px]",
-              isWalletActive ? "text-brand-red" : "text-neutral-600",
-            )}
-          >
-            <div className="h-5 w-5 flex items-center justify-center flex-shrink-0">
-              <SvgIcon src={isWalletActive ? WalletSelectedIcon : WalletIcon} fill={isWalletActive ? "var(--brand-red)" : "var(--color-neutral-600)"} />
-            </div>
-            {t("navigation.wallet")}
-          </Link>
+            pathname={pathname}
+            testId="footer-nav-link-wallet"
+            label={t("navigation.wallet")}
+            isSelected={isWalletActive}
+            pendingHref={pendingHref}
+            setPendingHref={setPendingHref}
+            activeIcon={WalletSelectedIcon}
+            inactiveIcon={WalletIcon}
+          />
         )}
       </div>
     </div>
+  )
+}
+
+/**
+ * A single bottom-nav tab with optimistic pending state.
+ *
+ * When tapped, the destination tab immediately flips to the selected (red)
+ * style and shows a pulsing dot under its icon until the route commits — the
+ * same pattern as home-app's `MobileNav`. Tapping the already-active tab is a
+ * no-op (prevents a stuck pending state on same-route taps).
+ */
+function FooterTab({
+  href,
+  pathname,
+  testId,
+  label,
+  isSelected,
+  pendingHref,
+  setPendingHref,
+  activeIcon,
+  inactiveIcon,
+  labelClassName,
+}: {
+  href: string
+  pathname: string
+  testId: string
+  label: string
+  isSelected: boolean
+  pendingHref: string | null
+  setPendingHref: (href: string | null) => void
+  activeIcon: typeof MarketIcon
+  inactiveIcon: typeof MarketIcon
+  labelClassName?: string
+}) {
+  const isExact = pathname === href
+  const isPending = pendingHref === href && !isExact
+  // Only the destination tab goes red during a cross-tab transition — otherwise
+  // a user on a sub-route (e.g. /orders/123) tapping another tab would see both
+  // the current parent tab and the pending tab highlighted at once.
+  const crossTabPending = pendingHref !== null && pendingHref !== href
+  const isTabSelected = isPending || (isSelected && !crossTabPending)
+  const Icon = isTabSelected ? activeIcon : inactiveIcon
+
+  return (
+    <Link
+      href={href}
+      data-testid={testId}
+      data-pending={isPending || undefined}
+      aria-busy={isPending || undefined}
+      aria-disabled={isPending || undefined}
+      // aria-disabled is semantic only — the <a> remains in the tab order and
+      // Enter still activates it. Remove it from the tab order while pending so
+      // keyboard users can't focus and re-trigger the in-flight navigation.
+      tabIndex={isPending ? -1 : undefined}
+      onClick={(e) => {
+        if (isExact || pendingHref === href) {
+          e.preventDefault()
+          return
+        }
+        setPendingHref(href)
+      }}
+      className={cn(
+        "flex flex-col items-center gap-1.5 px-4 pt-2 pb-2 min-h-14 justify-center text-[12px] font-semibold transition-colors w-[100px]",
+        labelClassName,
+        isTabSelected ? "text-brand-red" : "text-neutral-600",
+      )}
+    >
+      <div className="relative h-5 w-5 flex items-center justify-center flex-shrink-0">
+        <SvgIcon src={Icon} fill={isTabSelected ? "var(--brand-red)" : "var(--color-neutral-600)"} />
+        {isPending && (
+          <span
+            aria-hidden
+            data-testid={`${testId}-pending-dot`}
+            className="absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-brand-red animate-pulse"
+          />
+        )}
+      </div>
+      {label}
+    </Link>
   )
 }

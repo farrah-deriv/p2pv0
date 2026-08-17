@@ -3,12 +3,15 @@
 import { Inbox } from "@novu/nextjs"
 import { useMemo } from "react"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import "../../styles/globals.css"
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import { useNovuSubscriber } from "@/hooks/use-novu-subscriber"
+import { StandaloneBellRegularIcon } from "@deriv/quill-icons/Standalone"
+import type { UnreadCount } from "@novu/nextjs"
+import { NovuUnreadBadge } from "./novu-unread-badge"
+import { renderNovuAvatarNull } from "./novu-utils"
 
 const NOTIFICATIONS = {
   applicationId: process.env.NEXT_PUBLIC_NOTIFICATION_APPLICATION_ID,
@@ -49,13 +52,8 @@ const APPEARANCE_ELEMENTS = {
     justifyContent: "center",
     overflow: "visible",
   },
-  bellDot: {
-    top: "0px",
-    right: "0px",
-    width: "8px",
-    height: "8px",
-    border: "none",
-  },
+  // Defense-in-depth only — CSS hide does NOT stop the browser from
+  // requesting the avatar URL. The real guard is `renderAvatar` below.
   notificationImage: { display: "none" },
   preferences__button: { display: "none" },
   "inbox__popoverContent": "novu-popover-content",
@@ -75,31 +73,27 @@ function NovuNotifications({ disabled = false }: NovuNotificationsProps) {
 
   const { subscriberHash, subscriberId, isLoading, error } = useNovuSubscriber(isDisabled)
 
-  const appearance = useMemo(() => ({
-    icons: {
-      bell: () => (
-        <Image
-          src={isMobile ? "/icons/bell-sm.png" : "/icons/bell-desktop.png"}
-          alt={t("notifications.title")}
-          width={24}
-          height={24}
-          style={{ width: "24px", height: "24px", minWidth: "24px", minHeight: "24px" }}
+  const renderBell = useMemo(() => function NovuBell(unreadCount: UnreadCount) {
+    return (
+      <span className="relative inline-flex h-8 w-8 items-center justify-center">
+        <StandaloneBellRegularIcon width={24} height={24} fill="currentColor" aria-hidden="true" />
+        <NovuUnreadBadge
+          count={unreadCount.total}
+          aria-label={t("notifications.unreadCountA11y", { count: unreadCount.total })}
         />
-      ),
-    },
+      </span>
+    )
+  }, [t])
+
+  const appearance = useMemo(() => ({
     variables: APPEARANCE_VARIABLES,
     elements: APPEARANCE_ELEMENTS,
-  }), [isMobile, t])
+  }), [])
 
   if (isDisabled) {
     return (
       <div className="relative inline-flex h-8 w-8 items-center justify-center rounded-full opacity-50 pointer-events-none" aria-hidden="true">
-        <Image
-          src={isMobile ? "/icons/bell-sm.png" : "/icons/bell-desktop.png"}
-          alt=""
-          width={24}
-          height={24}
-        />
+        <StandaloneBellRegularIcon width={24} height={24} fill="currentColor" aria-hidden="true" />
       </div>
     )
   }
@@ -128,7 +122,7 @@ function NovuNotifications({ disabled = false }: NovuNotificationsProps) {
   }
 
   return (
-    <div className="flex h-8 w-8 items-center justify-center static">
+    <div className="relative flex h-8 w-8 items-center justify-center overflow-visible">
       <Inbox
         applicationIdentifier={applicationIdentifier}
         subscriber={subscriberId || ""}
@@ -136,6 +130,8 @@ function NovuNotifications({ disabled = false }: NovuNotificationsProps) {
         localization={{ "inbox.filters.labels.default": t("notifications.title") }}
         colorScheme="light"
         i18n={{ lang: locale, poweredBy: t("notifications.poweredBy") }}
+        renderAvatar={renderNovuAvatarNull}
+        renderBell={renderBell}
         onNotificationClick={(notification) => {
           const data = notification.data as Record<string, unknown>
           if (typeof data?.order_id === "string") {

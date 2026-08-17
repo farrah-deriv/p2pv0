@@ -1,9 +1,5 @@
 import type { NextConfig } from "next"
 
-// Turbopack's dev bundle uses eval() for HMR; production builds do not.
-// Scope 'unsafe-eval' to development only — same pattern as home-app.
-const isDev = process.env.NODE_ENV === "development"
-
 // Google ccTLDs the browser pings for GTM's Google Ads remarketing +
 // conversion beacons. Shared by `img-src` (1p-user-list image beacons)
 // and `connect-src` (/ccm/collect, /rmkt/collect, /pagead/form-data).
@@ -63,18 +59,18 @@ const googleCcTldSources = [
   "https://www.google.tg",
 ].join(" ")
 
-// script-src and script-src-elem share the same allowlist.
-// Setting script-src-elem explicitly avoids CSP L3 browser quirks where
-// browsers consult the element-specific directive for <script> tags even
-// when only the parent script-src is set (observed with Cloudflare Turnstile).
-// 'wasm-unsafe-eval' — minimal WASM compilation permission (dotlottie-web);
-// does NOT allow arbitrary JS eval.
-// ph.deriv.{com,me,be} — self-hosted PostHog proxy; the SDK loads recorder/
-// survey/web-vitals plugins dynamically from the configured API host.
-// These are subdomains of *.deriv.{com,me,be} which covers connect-src, but
-// default-src does NOT fall back for scripts when script-src is explicitly
-// set — they must be listed here explicitly (same fix as home-app).
-const scriptSources = `'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.google-analytics.com https://cdn.rudderlabs.com https://cdn.datafile.net https://ph.deriv.com https://ph.deriv.me https://ph.deriv.be https://eu-assets.i.posthog.com https://widget.intercom.io https://js.intercomcdn.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://googleads.g.doubleclick.net https://cdn0.match2one.net https://*.taboola.com blob:`
+// 'unsafe-eval' is required in ALL environments, not just dev:
+//   1. Turbopack's dev bundle uses eval() for HMR (the original reason this was
+//      dev-scoped — see home-app).
+//   2. Google Tag Manager's gtm.js uses eval()/new Function() to execute Custom
+//      HTML tags and Custom JavaScript variables. Without 'unsafe-eval' in prod,
+//      the browser reports `'eval' blocked by 'script-src' directive` (observed
+//      on ads/orders pages whose dataLayer events fire eval-based GTM tags) and
+//      those tags silently fail to fire.
+// The marginal security cost is negligible: 'unsafe-inline' is already present
+// below, so an attacker who can inject script already wins — 'unsafe-eval' does
+// not lower that bar further.
+const scriptSources = `'self' 'unsafe-inline' 'wasm-unsafe-eval' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.rudderlabs.com https://cdn.datafile.net https://ph.deriv.com https://ph.deriv.me https://ph.deriv.be https://eu-assets.i.posthog.com https://widget.intercom.io https://js.intercomcdn.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://googleads.g.doubleclick.net https://cdn0.match2one.net https://*.taboola.com blob:`
 
 // style-src and style-src-elem share the same allowlist — same rationale as scripts.
 const styleSources = `'self' 'unsafe-inline' https://fonts.googleapis.com`

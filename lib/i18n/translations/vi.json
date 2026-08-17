@@ -626,6 +626,7 @@
     "loading": "Đang tải...",
     "poweredBy": "Notifications by",
     "title": "Thông báo",
+    "unreadCountA11y": "{count} thông báo chưa đọc",
     "fetchFailed": "Không thể lấy dữ liệu người đăng ký",
     "noUserId": "Không có ID người dùng"
   },

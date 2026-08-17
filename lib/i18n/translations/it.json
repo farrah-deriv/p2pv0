@@ -594,6 +594,7 @@
     "loading": "Caricamento...",
     "poweredBy": "Notifications by",
     "title": "Notifiche",
+    "unreadCountA11y": "{count} notifiche non lette",
     "fetchFailed": "Impossibile recuperare i dati dell'abbonato",
     "noUserId": "Nessun ID utente disponibile"
   },

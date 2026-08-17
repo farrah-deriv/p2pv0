@@ -592,6 +592,7 @@
     "loading": "লোড হচ্ছে...",
     "poweredBy": "Notifications by",
     "title": "বিজ্ঞপ্তি",
+    "unreadCountA11y": "{count}টি অপঠিত বিজ্ঞপ্তি",
     "fetchFailed": "সাবস্ক্রাইবার ডেটা পুনরুদ্ধার করতে ব্যর্থ হয়েছে",
     "noUserId": "কোনো ব্যবহারকারী আইডি উপলব্ধ নেই"
   },
