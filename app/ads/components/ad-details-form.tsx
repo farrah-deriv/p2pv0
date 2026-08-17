@@ -193,12 +193,18 @@ export default function AdDetailsForm({
   // PriceTypeSelector via marketPrice + marketPriceStatus). Advert-stats float bounds
   // only drive the lowest/highest market rows — they must not gate the rate-type
   // selector, or currencies with a live rate but no existing ads would hide Floating.
+  //
+  // If the user already selected Floating, keep the option available even if the
+  // rate later becomes stale — do not force them back to Fixed mid-edit.
   const isFloatingRateEnabled = useMemo(() => {
     if (!settings?.float_rate_enabled) return false
     if (!forCurrency) return false
-    // Stale (or non-active) rates cannot back a floating ad — Fixed only.
-    if (marketPriceStatus === "stale") return false
-    if (marketPriceStatus != null && marketPriceStatus !== "active") return false
+    // Only block *selecting* floating when the rate is stale/non-active.
+    // Once Floating is already chosen, leave the selection alone.
+    if (priceType !== "float") {
+      if (marketPriceStatus === "stale") return false
+      if (marketPriceStatus != null && marketPriceStatus !== "active") return false
+    }
 
     const disabledCountries: string[] = Array.isArray(settings.float_rate_disabled_countries)
       ? settings.float_rate_disabled_countries.map((c: unknown) => String(c).toLowerCase())
@@ -224,7 +230,7 @@ export default function AdDetailsForm({
     }
 
     return true
-  }, [settings, forCurrency, marketPriceStatus])
+  }, [settings, forCurrency, marketPriceStatus, priceType])
 
   const formatMarketRateForInput = (rate: number): string => {
     const constraints = getDecimalConstraints(forCurrency || buyCurrency, accountCurrencies)
@@ -332,9 +338,6 @@ export default function AdDetailsForm({
     setMarketPrice(cached.rate)
     setMarketPriceStatus(cached.status ?? null)
     setIsExchangeRateLoading(false)
-    if (cached.status === "stale") {
-      setPriceType("fixed")
-    }
     return true
   }
 
@@ -428,9 +431,6 @@ export default function AdDetailsForm({
         setMarketPrice(selected.rate)
         setMarketPriceStatus(selected.status ?? null)
         setIsExchangeRateLoading(false)
-        if (selected.status === "stale") {
-          setPriceType("fixed")
-        }
       }
       // Partial all-currency maps may omit the selected currency; keep loading
       // until a later tick / settle timeout (mirrors mobile accumulate behaviour).
