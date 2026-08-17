@@ -11,6 +11,7 @@ import { useNovuSubscriber } from "@/hooks/use-novu-subscriber"
 import { StandaloneBellRegularIcon } from "@deriv/quill-icons/Standalone"
 import type { UnreadCount } from "@novu/nextjs"
 import { NovuUnreadBadge } from "./novu-unread-badge"
+import { renderNovuAvatarNull } from "./novu-utils"
 
 const NOTIFICATIONS = {
   applicationId: process.env.NEXT_PUBLIC_NOTIFICATION_APPLICATION_ID,
@@ -56,14 +57,6 @@ const APPEARANCE_ELEMENTS = {
   notificationImage: { display: "none" },
   preferences__button: { display: "none" },
   "inbox__popoverContent": "novu-popover-content",
-}
-
-// Novu renders `notification.avatar` into a real <img src=...>. Those URLs
-// come from the notification payload (often third-party hosts not in img-src)
-// and CSP blocks them. Returning null short-circuits the <img> entirely —
-// same approach as home-app's `renderNovuInboxAvatarNull`.
-function renderNovuAvatarNull() {
-  return null
 }
 
 interface NovuNotificationsProps {

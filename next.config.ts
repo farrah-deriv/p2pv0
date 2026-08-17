@@ -1,11 +1,5 @@
 import type { NextConfig } from "next"
 
-// Turbopack's dev bundle uses eval() for HMR; production builds do not.
-// 'unsafe-eval' is now kept in all envs (see the scriptSources note below) for
-// GTM, so this flag no longer gates CSP — retained for any future dev-only
-// script-src branching.
-const isDev = process.env.NODE_ENV === "development"
-
 // Google ccTLDs the browser pings for GTM's Google Ads remarketing +
 // conversion beacons. Shared by `img-src` (1p-user-list image beacons)
 // and `connect-src` (/ccm/collect, /rmkt/collect, /pagead/form-data).

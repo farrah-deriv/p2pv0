@@ -97,6 +97,7 @@ export default function MobileFooterNav({ className }: { className?: string }) {
         </Link>
         <FooterTab
           href="/"
+          pathname={pathname}
           testId="footer-nav-link-markets"
           label={t("navigation.market")}
           isSelected={pathname === "/" || isMarketActive}
@@ -107,6 +108,7 @@ export default function MobileFooterNav({ className }: { className?: string }) {
         />
         <FooterTab
           href="/orders"
+          pathname={pathname}
           testId="footer-nav-link-orders"
           label={t("navigation.orders")}
           isSelected={isOrdersActive}
@@ -117,6 +119,7 @@ export default function MobileFooterNav({ className }: { className?: string }) {
         />
         <FooterTab
           href="/ads"
+          pathname={pathname}
           testId="footer-nav-link-ads"
           label={t("navigation.myAds")}
           isSelected={isAdsActive}
@@ -129,6 +132,7 @@ export default function MobileFooterNav({ className }: { className?: string }) {
         {showWallet && (
           <FooterTab
             href="/wallet"
+            pathname={pathname}
             testId="footer-nav-link-wallet"
             label={t("navigation.wallet")}
             isSelected={isWalletActive}
@@ -153,6 +157,7 @@ export default function MobileFooterNav({ className }: { className?: string }) {
  */
 function FooterTab({
   href,
+  pathname,
   testId,
   label,
   isSelected,
@@ -163,6 +168,7 @@ function FooterTab({
   labelClassName,
 }: {
   href: string
+  pathname: string
   testId: string
   label: string
   isSelected: boolean
@@ -172,7 +178,7 @@ function FooterTab({
   inactiveIcon: typeof MarketIcon
   labelClassName?: string
 }) {
-  const isExact = usePathname() === href
+  const isExact = pathname === href
   const isPending = pendingHref === href && !isExact
   // Only the destination tab goes red during a cross-tab transition — otherwise
   // a user on a sub-route (e.g. /orders/123) tapping another tab would see both
@@ -188,6 +194,10 @@ function FooterTab({
       data-pending={isPending || undefined}
       aria-busy={isPending || undefined}
       aria-disabled={isPending || undefined}
+      // aria-disabled is semantic only — the <a> remains in the tab order and
+      // Enter still activates it. Remove it from the tab order while pending so
+      // keyboard users can't focus and re-trigger the in-flight navigation.
+      tabIndex={isPending ? -1 : undefined}
       onClick={(e) => {
         if (isExact || pendingHref === href) {
           e.preventDefault()
