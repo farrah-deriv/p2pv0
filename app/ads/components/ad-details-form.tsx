@@ -159,6 +159,9 @@ export default function AdDetailsForm({
     floatingRate: false,
   })
   const [marketPrice, setMarketPrice] = useState<number | null>(null)
+  // WS exchange-rate status for the selected currency ("active" | "stale" | ...).
+  // Floating ads require an active rate — stale rates force Fixed-only.
+  const [marketPriceStatus, setMarketPriceStatus] = useState<string | null>(null)
   const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(true)
   const [priceRange, setPriceRange] = useState<PriceRange>({ lowestPrice: null, highestPrice: null })
   const userEditedFixedRateRef = useRef(!!isEditMode && !!initialData?.fixedRate)
@@ -186,13 +189,16 @@ export default function AdDetailsForm({
   const { data: advertStats } = useAdvertStats(buyCurrency, !!buyCurrency)
 
   // Match mobile: floating is available when the global setting is on, the selected
-  // currency is not float-disabled, and an exchange rate exists (checked in
-  // PriceTypeSelector via marketPrice). Advert-stats float bounds only drive the
-  // lowest/highest market rows — they must not gate the rate-type selector, or
-  // currencies with a live rate but no existing ads would hide Floating.
+  // currency is not float-disabled, and an *active* exchange rate exists (checked in
+  // PriceTypeSelector via marketPrice + marketPriceStatus). Advert-stats float bounds
+  // only drive the lowest/highest market rows — they must not gate the rate-type
+  // selector, or currencies with a live rate but no existing ads would hide Floating.
   const isFloatingRateEnabled = useMemo(() => {
     if (!settings?.float_rate_enabled) return false
     if (!forCurrency) return false
+    // Stale (or non-active) rates cannot back a floating ad — Fixed only.
+    if (marketPriceStatus === "stale") return false
+    if (marketPriceStatus != null && marketPriceStatus !== "active") return false
 
     const disabledCountries: string[] = Array.isArray(settings.float_rate_disabled_countries)
       ? settings.float_rate_disabled_countries.map((c: unknown) => String(c).toLowerCase())
@@ -218,7 +224,7 @@ export default function AdDetailsForm({
     }
 
     return true
-  }, [settings, forCurrency])
+  }, [settings, forCurrency, marketPriceStatus])
 
   const formatMarketRateForInput = (rate: number): string => {
     const constraints = getDecimalConstraints(forCurrency || buyCurrency, accountCurrencies)
@@ -324,6 +330,7 @@ export default function AdDetailsForm({
     if (!cached) return false
     setMarketPriceCurrency(currency)
     setMarketPrice(cached.rate)
+    setMarketPriceStatus(cached.status ?? null)
     setIsExchangeRateLoading(false)
     if (cached.status === "stale") {
       setPriceType("fixed")
@@ -346,6 +353,7 @@ export default function AdDetailsForm({
 
     setMarketPriceCurrency(null)
     setMarketPrice(null)
+    setMarketPriceStatus(null)
     setIsExchangeRateLoading(true)
   }, [buyCurrency, forCurrency])
 
@@ -418,6 +426,7 @@ export default function AdDetailsForm({
       if (selected) {
         setMarketPriceCurrency(forCurrency)
         setMarketPrice(selected.rate)
+        setMarketPriceStatus(selected.status ?? null)
         setIsExchangeRateLoading(false)
         if (selected.status === "stale") {
           setPriceType("fixed")
