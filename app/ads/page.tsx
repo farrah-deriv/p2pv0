@@ -1,7 +1,5 @@
 "use client"
 
-import { TooltipTrigger } from "@/components/ui/tooltip"
-
 import { useEffect, useState, useRef, useCallback, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import MyAdsTable from "./components/my-ads-table"
@@ -16,7 +14,8 @@ import { HeaderSegmentedControl } from "@/components/header-segmented-control"
 import StatusBottomSheet from "./components/ui/status-bottom-sheet"
 import { useAdvertAlertDialog } from "@/app/ads/hooks/use-advert-alert-dialog"
 import { Switch } from "@/components/ui/switch"
-import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
+import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { TemporaryBanAlert } from "@/components/temporary-ban-alert"
@@ -45,6 +44,7 @@ export default function AdsPage() {
   const tempBanUntil = userData?.temp_ban_until
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
   const [hiddenAdverts, setHiddenAdverts] = useState(false)
+  const [isHideAdsInfoOpen, setIsHideAdsInfoOpen] = useState(false)
   const [errorModal, setErrorModal] = useState({
     show: false,
     title: "",
@@ -261,24 +261,42 @@ export default function AdsPage() {
         <label htmlFor="hide-ads" className="text-sm text-grayscale-600 cursor-pointer ms-2 whitespace-nowrap">
           {t("myAds.hideMyAds")}
         </label>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button type="button" variant="icon-muted" size="sm" data-testid="ads-btn-hide-ads-info" className="!bg-transparent hover:!bg-transparent">
-                <Image
-                  src="/icons/info-circle.svg"
-                  alt={t("common.info")}
-                  width={20}
-                  height={20}
-                />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="text-white">{t("myAds.hideMyAdsTooltip")}</p>
-              <TooltipArrow className="fill-black" />
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        {isMobile ? (
+          <Button
+            type="button"
+            variant="icon-muted"
+            size="sm"
+            data-testid="ads-btn-hide-ads-info"
+            className="!bg-transparent hover:!bg-transparent"
+            onClick={() => setIsHideAdsInfoOpen(true)}
+          >
+            <Image
+              src="/icons/info-circle.svg"
+              alt={t("common.info")}
+              width={20}
+              height={20}
+            />
+          </Button>
+        ) : (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button type="button" variant="icon-muted" size="sm" data-testid="ads-btn-hide-ads-info" className="!bg-transparent hover:!bg-transparent">
+                  <Image
+                    src="/icons/info-circle.svg"
+                    alt={t("common.info")}
+                    width={20}
+                    height={20}
+                  />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-white">{t("myAds.hideMyAdsTooltip")}</p>
+                <TooltipArrow className="fill-black" />
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
     )
   }
@@ -366,6 +384,21 @@ export default function AdsPage() {
           </div>
         )}
       </div>
+
+      <Drawer open={isHideAdsInfoOpen} onOpenChange={setIsHideAdsInfoOpen}>
+        <DrawerContent className="rounded-t-2xl">
+          <DrawerHeader className="px-4 pb-2 pt-3 text-start">
+            <div className="text-xl font-extrabold text-slate-1200">{t("myAds.hideMyAds")}</div>
+            {/* Visually hidden title for a11y */}
+            <DrawerTitle className="sr-only">{t("myAds.hideMyAds")}</DrawerTitle>
+          </DrawerHeader>
+          <div className="px-4 pb-6 text-start">
+            <p className="text-base text-grayscale-600 whitespace-pre-line">
+              {t("myAds.hideMyAdsTooltip")}
+            </p>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </>
   )
 }

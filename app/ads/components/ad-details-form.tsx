@@ -185,15 +185,40 @@ export default function AdDetailsForm({
   const { data: settings } = useSettings()
   const { data: advertStats } = useAdvertStats(buyCurrency, !!buyCurrency)
 
+  // Match mobile: floating is available when the global setting is on, the selected
+  // currency is not float-disabled, and an exchange rate exists (checked in
+  // PriceTypeSelector via marketPrice). Advert-stats float bounds only drive the
+  // lowest/highest market rows — they must not gate the rate-type selector, or
+  // currencies with a live rate but no existing ads would hide Floating.
   const isFloatingRateEnabled = useMemo(() => {
     if (!settings?.float_rate_enabled) return false
-    if (!Array.isArray(advertStats) || !forCurrency) return false
-    const currencyStats = advertStats.find((s) => s.payment_currency === forCurrency)
-    if (!currencyStats) return false
-    return type === "buy"
-      ? !!(currencyStats.buy_float_minimum_rate || currencyStats.buy_float_maximum_rate)
-      : !!(currencyStats.sell_float_minimum_rate || currencyStats.sell_float_maximum_rate)
-  }, [settings, advertStats, forCurrency, type])
+    if (!forCurrency) return false
+
+    const disabledCountries: string[] = Array.isArray(settings.float_rate_disabled_countries)
+      ? settings.float_rate_disabled_countries.map((c: unknown) => String(c).toLowerCase())
+      : []
+
+    if (disabledCountries.length > 0 && Array.isArray(settings.countries)) {
+      const matchingCountries = settings.countries.filter(
+        (c: { currency?: string; code?: string }) =>
+          typeof c?.currency === "string" &&
+          c.currency.toUpperCase() === forCurrency.toUpperCase(),
+      )
+      // Web selects by currency (countries are collapsed). Allow floating when at
+      // least one country that uses this currency is not in the disabled list.
+      if (
+        matchingCountries.length > 0 &&
+        matchingCountries.every(
+          (c: { code?: string }) =>
+            typeof c?.code !== "string" || disabledCountries.includes(c.code.toLowerCase()),
+        )
+      ) {
+        return false
+      }
+    }
+
+    return true
+  }, [settings, forCurrency])
 
   const formatMarketRateForInput = (rate: number): string => {
     const constraints = getDecimalConstraints(forCurrency || buyCurrency, accountCurrencies)
