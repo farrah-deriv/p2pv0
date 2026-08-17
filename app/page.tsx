@@ -656,7 +656,7 @@ export default function BuySellPage() {
             </div>
           </div>
         </div>
-        <div ref={tableScrollRef} className="flex flex-col md:flex-1 md:min-h-0 md:overflow-y-auto md:overscroll-y-none md:scrollbar-hide pt-0 md:pt-2 pb-4">
+        <div ref={tableScrollRef} className="flex flex-col md:flex-1 md:min-h-0 md:overflow-y-auto md:overscroll-y-none md:scrollbar-hide pt-2 pb-4">
           <div className="flex flex-col min-h-full">
             {isMaintenanceActive ? (
               <div className="flex-1 min-h-0 flex items-center md:items-start justify-center md:pt-16">
