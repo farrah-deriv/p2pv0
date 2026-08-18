@@ -170,27 +170,36 @@ export function P2PGuideIntro() {
   const dismissIntro = useGuideStore((s) => s.dismissIntro)
   const isMobile = useIsMobile()
 
-  if (!isIntroOpen) return null
+  // The Dialog/Drawer is always mounted and driven by the `open` prop. The
+  // previous early `return null` when closed unmounted the tree before Radix
+  // could run its exit transition, stranding the overlay portal, the
+  // react-remove-scroll lock, and the body aria-hidden — so the dark
+  // background stayed on screen after the intro closed. Letting Radix own
+  // the open→closed transition ensures the overlay fades out and its scroll
+  // lock / aria-hidden teardown runs. DialogContent/DrawerContent portal
+  // their children only while open (Radix Presence), so IntroContent mounts
+  // only when shown and animates out with the overlay on close.
+  const content = (
+    <>
+      <DialogTitle className="sr-only" />
+      <DialogDescription className="sr-only" />
+      <DrawerTitle className="sr-only" />
+      <DrawerDescription className="sr-only" />
+      <IntroContent onClose={dismissIntro} />
+    </>
+  )
 
   if (isMobile) {
     return (
       <Drawer open={isIntroOpen} onOpenChange={(open) => !open && dismissIntro()}>
-        <DrawerContent>
-          <DrawerTitle className="sr-only" />
-          <DrawerDescription className="sr-only" />
-          <IntroContent onClose={dismissIntro} />
-        </DrawerContent>
+        <DrawerContent>{content}</DrawerContent>
       </Drawer>
     )
   }
 
   return (
     <Dialog open={isIntroOpen} onOpenChange={(open) => !open && dismissIntro()}>
-      <DialogContent className="max-w-sm p-0 sm:rounded-3xl overflow-hidden">
-        <DialogTitle className="sr-only" />
-        <DialogDescription className="sr-only" />
-        <IntroContent onClose={dismissIntro} />
-      </DialogContent>
+      <DialogContent className="max-w-sm p-0 sm:rounded-3xl overflow-hidden">{content}</DialogContent>
     </Dialog>
   )
 }
