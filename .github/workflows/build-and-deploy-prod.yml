@@ -41,6 +41,16 @@ jobs:
             - name: Debug TypeScript version
               run: pnpm exec tsc --version
 
+            # Must run BEFORE next build / next-on-pages so the file is copied from
+            # public/ into the static output and registered in the worker's static
+            # asset manifest. Writing it after postbuild leaves it invisible to the
+            # worker, which then 404s /app-info.json as an unknown Next route.
+            - name: Generate app-info.json
+              uses: "deriv-com/shared-actions/.github/actions/generate_app_info@master"
+              with:
+                version: ${{ github.ref_name }}
+                output_dir: public
+
             - name: Build
               run: pnpm run build && pnpm run postbuild
               env:
@@ -85,12 +95,6 @@ jobs:
                 NEXT_PUBLIC_P2P_ORDER_CHAT_MODERATION_ENABLED: ${{ vars.NEXT_PUBLIC_P2P_ORDER_CHAT_MODERATION_ENABLED }}
                 NEXT_PUBLIC_NODE_ENV: production
                 NODE_ENV: production
-
-            - name: Generate app-info.json
-              uses: "deriv-com/shared-actions/.github/actions/generate_app_info@master"
-              with:
-                version: ${{ github.ref_name }}
-                output_dir: .vercel/output/static
 
             - name: Replace placeholders in wrangler.toml
               run: |

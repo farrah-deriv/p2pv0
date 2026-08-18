@@ -22,6 +22,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Generated at build time by the generate_app_info CI step (must not be committed)
+/public/app-info.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
