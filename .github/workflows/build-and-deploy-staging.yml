@@ -99,8 +99,10 @@ jobs:
                 sed -i "s/PROJECT_NAME/${{ secrets.CLOUDFLARE_PROJECT_NAME }}/g" wrangler.toml
               shell: bash
 
-            - name: List output folder contents for debugging
-              run: ls -lR .vercel/output/static && test -f .vercel/output/static/app-info.json && cat .vercel/output/static/app-info.json
+            - name: Verify app-info.json in output
+              run: |
+                ls -l .vercel/output/static/app-info.json
+                cat .vercel/output/static/app-info.json
 
             - name: Publish to Cloudflare Pages
               uses: "deriv-com/shared-actions/.github/actions/publish_to_pages_branch@master"
