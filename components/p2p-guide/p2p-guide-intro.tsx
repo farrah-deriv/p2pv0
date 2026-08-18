@@ -92,7 +92,10 @@ function OptionCard({ icon, title, subtitle, variant, onClick }: OptionCardProps
 
 function IntroContent({ onClose }: { onClose: () => void }) {
   const { t } = useTranslations()
-  const { dismissIntro, startGuide, setGuideStartedFromIntro } = useGuideStore()
+  const dismissIntro = useGuideStore((s) => s.dismissIntro)
+  const startGuide = useGuideStore((s) => s.startGuide)
+  const setGuideStartedFromIntro = useGuideStore((s) => s.setGuideStartedFromIntro)
+  const requestAskAmy = useGuideStore((s) => s.requestAskAmy)
   const router = useRouter()
 
   const handlePlaceOrder = () => {
@@ -107,15 +110,8 @@ function IntroContent({ onClose }: { onClose: () => void }) {
     router.push("/ads/create?guide=true")
   }
 
-  const handleAskAmy = () => {
-    dismissIntro()
-    if (typeof window !== "undefined") {
-      window.setTimeout(() => {
-        window.Intercom?.("show")
-      }, 300)
-    }
-  }
-
+  // requestAskAmy() dismisses the intro only; Main fires Intercom("show") once
+  // it has actually unmounted, so the two never race (see guide-store comment).
   const handleSkip = () => {
     dismissIntro()
     onClose()
@@ -152,7 +148,7 @@ function IntroContent({ onClose }: { onClose: () => void }) {
           icon={<Image src="/icons/ic-ask-amy-sparkle.svg" alt="" width={32} height={32} aria-hidden />}
           title={t("guideIntro.amyTitle")}
           subtitle={t("guideIntro.amySubtitle")}
-          onClick={handleAskAmy}
+          onClick={requestAskAmy}
         />
       </div>
 
@@ -170,7 +166,8 @@ function IntroContent({ onClose }: { onClose: () => void }) {
 }
 
 export function P2PGuideIntro() {
-  const { isIntroOpen, dismissIntro } = useGuideStore()
+  const isIntroOpen = useGuideStore((s) => s.isIntroOpen)
+  const dismissIntro = useGuideStore((s) => s.dismissIntro)
   const isMobile = useIsMobile()
 
   if (!isIntroOpen) return null
