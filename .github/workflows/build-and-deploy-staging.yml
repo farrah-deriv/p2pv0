@@ -87,6 +87,9 @@ jobs:
                 NEXT_PUBLIC_CLIENT_URL: ${{ vars.NEXT_PUBLIC_CLIENT_URL }}
                 NEXT_PUBLIC_IS_KYC_MANDATORY: ${{ vars.NEXT_PUBLIC_IS_KYC_MANDATORY }}
                 NEXT_PUBLIC_RELEASE_TAG: ${{ vars.NEXT_PUBLIC_RELEASE_TAG }}
+                # Must match generate_app_info `version` above so analytics
+                # event_metadata.app_version correlates with /app-info.json.
+                NEXT_PUBLIC_APP_VERSION: ${{ github.sha }}
                 NEXT_PUBLIC_P2P_WHATS_NEW_ENABLED: ${{ vars.NEXT_PUBLIC_P2P_WHATS_NEW_ENABLED }}
                 NEXT_PUBLIC_P2P_WHATS_COMING_TAG: ${{ vars.NEXT_PUBLIC_P2P_WHATS_COMING_TAG }}
                 NEXT_PUBLIC_P2P_SYSTEM_MAINTENANCE_ENABLED: ${{ vars.NEXT_PUBLIC_P2P_SYSTEM_MAINTENANCE_ENABLED }}

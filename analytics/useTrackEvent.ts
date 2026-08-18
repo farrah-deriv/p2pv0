@@ -31,6 +31,9 @@ function buildAndSend(params: SendParams) {
     country_of_residence: residenceCountry?.toLowerCase() ?? "",
     is_profile_completed: onboardingStatus?.p2p?.allowed ?? false,
     project_name: PROJECT_NAME,
+    // Matches app-info.json version stamped by generate_app_info.
+    // CI sets NEXT_PUBLIC_APP_VERSION = github.sha (staging) / production_* tag (prod).
+    app_version: process.env.NEXT_PUBLIC_APP_VERSION ?? "",
   };
 
   const ctaInformation =
