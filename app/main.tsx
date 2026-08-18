@@ -57,6 +57,9 @@ export default function Main({
   const { isChatVisible } = useChatVisibilityStore()
   const { isTransactionListVisible } = useWalletViewStore()
   const openIntro = useGuideStore((state) => state.openIntro)
+  const pendingAskAmy = useGuideStore((state) => state.pendingAskAmy)
+  const clearPendingAskAmy = useGuideStore((state) => state.clearPendingAskAmy)
+  const isIntroOpen = useGuideStore((state) => state.isIntroOpen)
   const showMobileFooterNav = shouldShowMobileFooterNav(pathname, isChatVisible, isTransactionListVisible)
   const { data: onboardingStatus, isLoading: isOnboardingLoading } = useOnboardingStatus(
     isAuthenticated && !isMaintenanceActive,
@@ -241,6 +244,30 @@ export default function Main({
       setStripPending(false)
     }
   }, [stripPending, searchParams])
+
+  // Ask Amy (Intercom messenger) is opened from Main — outside the intro's
+  // Radix Dialog/Drawer subtree — and only after the intro has fully closed.
+  // The previous implementation called window.Intercom("show") on a 300 ms
+  // setTimeout from inside the dialog's onClick, which raced Radix's exit
+  // transition. Intercom's overlay opening on top of Radix mid-teardown left
+  // the page's scroll-lock / aria-hidden state stuck, so the P2P page stayed
+  // greyed out after closing Ask Amy (issue #1469). Waiting for isIntroOpen to
+  // flip false and then deferring one frame lets Radix unmount its portal and
+  // run its FocusScope / react-remove-scroll cleanup before Intercom mounts.
+  useEffect(() => {
+    // requestAskAmy() sets isIntroOpen=false and pendingAskAmy=true in one set,
+    // so the two are never true simultaneously — pendingAskAmy implies the intro
+    // is already dismissed. The isIntroOpen check is therefore a belt-and-
+    // braces guard (and a contract assertion) rather than a reachable branch.
+    if (!pendingAskAmy || isIntroOpen) return
+    if (typeof window === "undefined") return
+
+    const frame = window.requestAnimationFrame(() => {
+      clearPendingAskAmy()
+      window.Intercom?.("show")
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [pendingAskAmy, isIntroOpen, clearPendingAskAmy])
 
   if (pathname === "/login") {
     return <div className="container mx-auto overflow-hidden max-w-7xl">{children}</div>

@@ -14,6 +14,7 @@ interface GuideState {
   isGuideActive: boolean
   isIntroOpen: boolean
   pendingStartGuide: boolean
+  pendingAskAmy: boolean
   guideStartedFromIntro: boolean
   adTradeType: "buy" | "sell" | null
   marketTradeType: "buy" | "sell" | null
@@ -24,6 +25,8 @@ interface GuideState {
   openIntro: () => void
   reopenIntro: () => void
   dismissIntro: () => void
+  requestAskAmy: () => void
+  clearPendingAskAmy: () => void
   startGuide: (type?: GuideType) => void
   setGuideStartedFromIntro: (value: boolean) => void
   setAdTradeType: (type: "buy" | "sell" | null) => void
@@ -42,6 +45,7 @@ export const useGuideStore = create<GuideState>()((set, get) => ({
   isGuideActive: false,
   isIntroOpen: false,
   pendingStartGuide: false,
+  pendingAskAmy: false,
   guideStartedFromIntro: false,
   adTradeType: null,
   marketTradeType: null,
@@ -52,6 +56,15 @@ export const useGuideStore = create<GuideState>()((set, get) => ({
   openIntro: () => set({ isIntroOpen: true }),
   reopenIntro: () => set({ isIntroOpen: true }),
   dismissIntro: () => set({ isIntroOpen: false }),
+  // Ask Amy opens the Intercom messenger. The dialog must fully unmount first —
+  // opening Intercom on top of Radix's exit transition leaves the page's
+  // scroll-lock / aria-hidden state stuck (the "greyed out" page after closing
+  // Ask Amy, see issue #1469). requestAskAmy() only dismisses the intro here;
+  // the Intercom("show") call is fired from Main *after* the intro has closed
+  // so it never races the Radix teardown. pendingAskAmy is cleared once Intercom
+  // is actually shown (see clearPendingAskAmy).
+  requestAskAmy: () => set({ isIntroOpen: false, pendingAskAmy: true }),
+  clearPendingAskAmy: () => set((s) => (s.pendingAskAmy ? { pendingAskAmy: false } : s)),
   startGuide: (type: GuideType = "markets") => set({ isGuideActive: true, currentStep: 0, guideType: type }),
   setGuideStartedFromIntro: (value: boolean) => set({ guideStartedFromIntro: value }),
   setAdTradeType: (type: "buy" | "sell" | null) => set({ adTradeType: type }),
