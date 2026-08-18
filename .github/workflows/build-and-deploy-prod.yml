@@ -91,7 +91,7 @@ jobs:
                 NEXT_PUBLIC_RELEASE_TAG: ${{ github.ref_name }}
                 # Must match generate_app_info `version` above so analytics
                 # event_metadata.app_version correlates with /app-info.json.
-                NEXT_PUBLIC_APP_VERSION: ${{ startsWith(github.ref, 'refs/tags/production_') && github.ref_name || '' }}
+                NEXT_PUBLIC_APP_VERSION: ${{ github.ref_name }}
                 NEXT_PUBLIC_P2P_WHATS_NEW_ENABLED: ${{ vars.NEXT_PUBLIC_P2P_WHATS_NEW_ENABLED }}
                 NEXT_PUBLIC_P2P_WHATS_COMING_TAG: ${{ vars.NEXT_PUBLIC_P2P_WHATS_COMING_TAG }}
                 NEXT_PUBLIC_P2P_SYSTEM_MAINTENANCE_ENABLED: ${{ vars.NEXT_PUBLIC_P2P_SYSTEM_MAINTENANCE_ENABLED }}
