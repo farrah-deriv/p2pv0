@@ -8,8 +8,11 @@ jest.mock("@deriv-com/analytics", () => ({
   },
 }))
 
+const APP_VERSION = "production_v20260818_0"
+
 beforeEach(() => {
   jest.clearAllMocks()
+  delete process.env.NEXT_PUBLIC_APP_VERSION
 })
 
 describe("useTrackEvent", () => {
@@ -81,6 +84,42 @@ describe("useTrackEvent", () => {
       "ce_p2p_page",
       expect.objectContaining({
         error: { error_message: "Insufficient balance", error_code: "ERR_BALANCE" },
+      })
+    )
+  })
+
+  it("stamps event_metadata.app_version from NEXT_PUBLIC_APP_VERSION", () => {
+    process.env.NEXT_PUBLIC_APP_VERSION = APP_VERSION
+
+    const { result } = renderHook(() => useTrackEvent())
+
+    result.current.send({
+      eventName: "ce_p2p_page",
+      action: "open",
+      pageName: "ads",
+    })
+
+    expect(Analytics.trackEvent).toHaveBeenCalledWith(
+      "ce_p2p_page",
+      expect.objectContaining({
+        event_metadata: expect.objectContaining({ app_version: APP_VERSION }),
+      })
+    )
+  })
+
+  it("defaults event_metadata.app_version to empty string when NEXT_PUBLIC_APP_VERSION is unset", () => {
+    const { result } = renderHook(() => useTrackEvent())
+
+    result.current.send({
+      eventName: "ce_p2p_page",
+      action: "open",
+      pageName: "ads",
+    })
+
+    expect(Analytics.trackEvent).toHaveBeenCalledWith(
+      "ce_p2p_page",
+      expect.objectContaining({
+        event_metadata: expect.objectContaining({ app_version: "" }),
       })
     )
   })

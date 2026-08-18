@@ -24,6 +24,10 @@ function buildAndSend(params: SendParams) {
   const { locale } = useLanguageStore.getState();
 
   const isLoggedIn = Boolean(userId);
+  // app_version matches app-info.json stamped by generate_app_info (CI sets
+  // NEXT_PUBLIC_APP_VERSION to the same value: github.sha on staging,
+  // production_* tag on prod) so Vision can correlate PostHog events
+  // against the deployed-version beacon.
   const eventMetadata: Record<string, unknown> = {
     page_name: params.pageName,
     ...(isLoggedIn && brand ? { account_type: brand.toLowerCase() } : {}),
@@ -31,6 +35,7 @@ function buildAndSend(params: SendParams) {
     country_of_residence: residenceCountry?.toLowerCase() ?? "",
     is_profile_completed: onboardingStatus?.p2p?.allowed ?? false,
     project_name: PROJECT_NAME,
+    app_version: process.env.NEXT_PUBLIC_APP_VERSION ?? "",
   };
 
   const ctaInformation =

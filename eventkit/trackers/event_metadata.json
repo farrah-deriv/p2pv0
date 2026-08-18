@@ -23,6 +23,10 @@
     "project_name": {
       "value": "p2p_web_app",
       "description": "Hardcoded value for the app. Defined when setting up event_metadata."
+    },
+    "app_version": {
+      "value": "{{app_version}}",
+      "description": "Deployed app version. Same value stamped into app-info.json by generate_app_info (NEXT_PUBLIC_APP_VERSION: github.sha on staging, production_* tag on prod). Used by Vision to correlate PostHog events against the deployed-version beacon."
     }
   }
 }
