@@ -179,27 +179,30 @@ export function P2PGuideIntro() {
   // lock / aria-hidden teardown runs. DialogContent/DrawerContent portal
   // their children only while open (Radix Presence), so IntroContent mounts
   // only when shown and animates out with the overlay on close.
-  const content = (
-    <>
-      <DialogTitle className="sr-only" />
-      <DialogDescription className="sr-only" />
-      <DrawerTitle className="sr-only" />
-      <DrawerDescription className="sr-only" />
-      <IntroContent onClose={dismissIntro} />
-    </>
-  )
-
+  //
+  // Each branch keeps its own title/description primitives scoped to its
+  // context — vaul's DrawerTitle/DrawerDescription wrap the same Radix
+  // Dialog primitives, so sharing a fragment would render duplicate
+  // title/description nodes in whichever branch is live.
   if (isMobile) {
     return (
       <Drawer open={isIntroOpen} onOpenChange={(open) => !open && dismissIntro()}>
-        <DrawerContent>{content}</DrawerContent>
+        <DrawerContent>
+          <DrawerTitle className="sr-only" />
+          <DrawerDescription className="sr-only" />
+          <IntroContent onClose={dismissIntro} />
+        </DrawerContent>
       </Drawer>
     )
   }
 
   return (
     <Dialog open={isIntroOpen} onOpenChange={(open) => !open && dismissIntro()}>
-      <DialogContent className="max-w-sm p-0 sm:rounded-3xl overflow-hidden">{content}</DialogContent>
+      <DialogContent className="max-w-sm p-0 sm:rounded-3xl overflow-hidden">
+        <DialogTitle className="sr-only" />
+        <DialogDescription className="sr-only" />
+        <IntroContent onClose={dismissIntro} />
+      </DialogContent>
     </Dialog>
   )
 }
