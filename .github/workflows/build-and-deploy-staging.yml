@@ -39,6 +39,16 @@ jobs:
             - name: Install dependencies
               run: pnpm install
 
+            # Must run BEFORE next build / next-on-pages so the file is copied from
+            # public/ into the static output and registered in the worker's static
+            # asset manifest. Writing it after postbuild leaves it invisible to the
+            # worker, which then 404s /app-info.json as an unknown Next route.
+            - name: Generate app-info.json
+              uses: "deriv-com/shared-actions/.github/actions/generate_app_info@master"
+              with:
+                version: ${{ github.sha }}
+                output_dir: public
+
             - name: Build
               run: pnpm run build && pnpm run postbuild
               env:
@@ -84,19 +94,15 @@ jobs:
                 NEXT_PUBLIC_NODE_ENV: staging
                 NODE_ENV: staging
 
-            - name: Generate app-info.json
-              uses: "deriv-com/shared-actions/.github/actions/generate_app_info@master"
-              with:
-                version: ${{ github.sha }}
-                output_dir: .vercel/output/static
-
             - name: Replace placeholders in wrangler.toml
               run: |
                 sed -i "s/PROJECT_NAME/${{ secrets.CLOUDFLARE_PROJECT_NAME }}/g" wrangler.toml
               shell: bash
 
-            - name: List output folder contents for debugging
-              run: ls -lR .vercel/output/static
+            - name: Verify app-info.json in output
+              run: |
+                ls -l .vercel/output/static/app-info.json
+                cat .vercel/output/static/app-info.json
 
             - name: Publish to Cloudflare Pages
               uses: "deriv-com/shared-actions/.github/actions/publish_to_pages_branch@master"
