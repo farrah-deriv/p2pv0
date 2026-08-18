@@ -1,4 +1,4 @@
-import { getKycStatus } from "@/services/api/api-auth"
+import { getKycStatus, getOnboardingStatus } from "@/services/api/api-auth"
 import * as AuthAPI from "@/services/api/api-auth"
 import * as RemoteConfigAPI from "@/services/api/api-remote-config"
 import { API, AUTH } from "@/lib/local-variables"
@@ -83,6 +83,33 @@ describe("getKycStatus", () => {
       biometrics_completed: false,
       show_onboarding: true,
     })
+  })
+})
+
+describe("getOnboardingStatus", () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it("bypasses the HTTP cache for a fresh onboarding decision", async () => {
+    const mockFetch = fetch as jest.MockedFunction<typeof fetch>
+    mockFetch.mockResolvedValue({
+      ok: true,
+      headers: { get: () => "application/json" },
+      clone: () => ({ json: async () => ({ data: {} }) }),
+      json: async () => ({ data: {} }),
+    } as unknown as Response)
+
+    await getOnboardingStatus()
+
+    expect(fetch).toHaveBeenCalledWith(
+      `${API.coreUrl}/client/onboarding-status`,
+      expect.objectContaining({
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      }),
+    )
   })
 })
 

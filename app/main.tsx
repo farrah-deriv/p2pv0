@@ -44,6 +44,7 @@ export default function Main({
   const userId = useUserDataStore((state) => state.userId)
   const { userData } = useUserDataStore()
   const { setIsWalletAccount } = useUserDataStore()
+  const isOnboardingStatusRefreshing = useUserDataStore((state) => state.isOnboardingStatusRefreshing)
   const [isReady, setIsReady] = useState(false)
   const [onboardingProcessed, setOnboardingProcessed] = useState(false)
   // Set when we've decided to strip ?show_kyc_popup and open the guide intro
@@ -183,13 +184,11 @@ export default function Main({
         // The guide intro is shown only to a newly registered P2P user (one
         // who has no P2P userId yet). Existing users never re-trigger it.
         if (!currentUserId && isP2PAllowed) {
-          await AuthAPI.createP2PUser()
+          await AuthAPI.ensureP2PUser()
 
           if (!isMounted || abortController.signal.aborted) {
             return
           }
-
-          await AuthAPI.fetchUserIdAndStore()
 
           // Strip ?show_kyc_popup before releasing the render gate so the
           // page-level KYC auto-popup never fires (not even for a flash) —
@@ -304,6 +303,11 @@ export default function Main({
 
   return (
     <WebSocketProvider>
+      {isOnboardingStatusRefreshing && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-[1px]">
+          <LoadingIndicator />
+        </div>
+      )}
       {process.env.NEXT_PUBLIC_INTERCOM_APP_ID && (
         <IntercomProvider appId={process.env.NEXT_PUBLIC_INTERCOM_APP_ID} />
       )}

@@ -1,10 +1,14 @@
 "use client"
 
-import { useEffect, useMemo } from "react"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { getHomeUrl } from "@/lib/utils"
+import { queryKeys } from "@/hooks/use-api-queries"
+import * as AuthAPI from "@/services/api/api-auth"
 import { onboardingKycStepStatusFromRaw } from "@/lib/kyc/onboarding-kyc-step-status"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { useTranslations } from "@/lib/i18n/use-translations"
+import { useGuideStore } from "@/stores/guide-store"
 import { KycOnboardingContentPanel } from "./kyc-onboarding-content-panel"
 import { KycOnboardingVisualPanel } from "./kyc-onboarding-visual-panel"
 import type { KycOnboardingStep } from "./kyc-onboarding-step-row"
@@ -22,7 +26,68 @@ function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
   const onboardingStatus = useUserDataStore((state) => state.onboardingStatus)
   const userId = useUserDataStore((state) => state.userId)
   const userData = useUserDataStore((state) => state.userData)
+  const queryClient = useQueryClient()
+  const setIsOnboardingStatusRefreshing = useUserDataStore((state) => state.setIsOnboardingStatusRefreshing)
+  const openIntro = useGuideStore((state) => state.openIntro)
+  const hasRefreshedOnboardingStatus = useRef(false)
+  const [isRefreshingOnboardingStatus, setIsRefreshingOnboardingStatus] = useState(!userId)
+  const [hasCreatedP2PUser, setHasCreatedP2PUser] = useState(false)
   const isV1Signup = userData?.signup === "v1"
+
+  useLayoutEffect(() => {
+    if (!userId) setIsOnboardingStatusRefreshing(true)
+  }, [setIsOnboardingStatusRefreshing, userId])
+
+  useEffect(() => {
+    let isMounted = true
+    // Match mobile's action guard: a user without a P2P profile can have
+    // completed onboarding since P2P first loaded, so refresh before showing
+    // this gate. Existing P2P users keep their normal cached status.
+    if (userId && !hasRefreshedOnboardingStatus.current) {
+      if (isMounted) setIsRefreshingOnboardingStatus(false)
+      return
+    }
+
+    // Do not clear the full-page loader if users/me finishes while this
+    // onboarding-status request is still in flight.
+    if (hasRefreshedOnboardingStatus.current) return
+
+    hasRefreshedOnboardingStatus.current = true
+    void (async () => {
+      try {
+        const status = await queryClient.fetchQuery({
+          queryKey: queryKeys.auth.onboardingStatus(),
+          queryFn: () => AuthAPI.getOnboardingStatus(),
+          staleTime: 0,
+        })
+        if (!isMounted) return
+
+        // The fresh status is authoritative. If onboarding has completed since
+        // P2P first loaded, create the P2P profile before opening this gate and
+        // show the same success screen used by the initial onboarding flow.
+        if (status.p2p.allowed && !useUserDataStore.getState().userId) {
+          await AuthAPI.ensureP2PUser()
+          if (!isMounted) return
+
+          if (useUserDataStore.getState().userId) {
+            setHasCreatedP2PUser(true)
+            onClose?.()
+            openIntro()
+          }
+        }
+      } finally {
+        if (isMounted) {
+          setIsRefreshingOnboardingStatus(false)
+          setIsOnboardingStatusRefreshing(false)
+        }
+      }
+    })()
+
+    return () => {
+      isMounted = false
+      setIsOnboardingStatusRefreshing(false)
+    }
+  }, [onClose, openIntro, queryClient, setIsOnboardingStatusRefreshing, userId])
 
   const isTncAccepted = onboardingStatus?.tnc?.accepted === true
   const isProfileCompleted = onboardingStatus?.profile?.status === "complete" && isTncAccepted
@@ -226,6 +291,10 @@ function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
     t("kyc.heroBenefitHigherLimits"),
     t("kyc.heroBenefitFasterWithdrawals"),
   ] as [string, string, string, string]
+
+  if (isRefreshingOnboardingStatus) return null
+
+  if (hasCreatedP2PUser) return null
 
   if (!onboardingStatus) {
     return null

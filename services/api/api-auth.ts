@@ -598,6 +598,8 @@ export async function getOnboardingStatus(): Promise<OnboardingStatusResponse> {
     const response = await p2pFetch(`${getCoreUrl()}/v1/client/onboarding-status`, {
       method: "GET",
       credentials: "include",
+      // CTA guards use this endpoint to make an up-to-date onboarding decision.
+      cache: "no-store",
       headers: getAuthHeader(),
     })
 
@@ -731,6 +733,24 @@ export async function createP2PUser(): Promise<CreateP2PUserResponse> {
     console.error("Error creating P2P user:", error)
     throw error
   }
+}
+
+let ensureP2PUserPromise: Promise<void> | null = null
+
+/** Creates and loads the P2P profile once when concurrent onboarding guards resolve. */
+export async function ensureP2PUser(): Promise<void> {
+  if (useUserDataStore.getState().userId) return
+
+  if (!ensureP2PUserPromise) {
+    ensureP2PUserPromise = (async () => {
+      await createP2PUser()
+      await fetchUserIdAndStore()
+    })().finally(() => {
+      ensureP2PUserPromise = null
+    })
+  }
+
+  await ensureP2PUserPromise
 }
 
 /**
