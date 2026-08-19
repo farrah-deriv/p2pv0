@@ -4,7 +4,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useGuideStore } from "@/stores/guide-store"
 import { useTranslations } from "@/lib/i18n/use-translations"
-import { useIsMobile } from "@/lib/hooks/use-is-mobile"
+import { useIsMobile } from "@/hooks/use-mobile"
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Drawer, DrawerContent, DrawerTitle, DrawerDescription } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
@@ -168,6 +168,11 @@ function IntroContent({ onClose }: { onClose: () => void }) {
 export function P2PGuideIntro() {
   const isIntroOpen = useGuideStore((s) => s.isIntroOpen)
   const dismissIntro = useGuideStore((s) => s.dismissIntro)
+  // useIsMobile() is undefined on first render and settles in an effect.
+  // Waiting for it before choosing Dialog vs Drawer avoids rendering the
+  // desktop Dialog on mobile's first paint and then swapping to the Drawer
+  // — that swap instantiates both Radix portals (two overlays) and is what
+  // left the duplicate backdrop on screen.
   const isMobile = useIsMobile()
 
   // The Dialog/Drawer is always mounted and driven by the `open` prop. The
@@ -184,6 +189,14 @@ export function P2PGuideIntro() {
   // context — vaul's DrawerTitle/DrawerDescription wrap the same Radix
   // Dialog primitives, so sharing a fragment would render duplicate
   // title/description nodes in whichever branch is live.
+  //
+  // isMobile is undefined until the first effect runs. Render nothing until
+  // it settles: choosing Dialog vs Drawer on a stale value renders the
+  // desktop Dialog on mobile's first paint, then swaps to the Drawer next
+  // tick — instantiating both Radix portals and leaving a duplicate overlay
+  // on screen. Waiting one render picks the right primitive the first time.
+  if (isMobile === undefined) return null
+
   if (isMobile) {
     return (
       <Drawer open={isIntroOpen} onOpenChange={(open) => !open && dismissIntro()}>

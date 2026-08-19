@@ -23,6 +23,7 @@ import { shouldShowP2PMaintenanceBanner } from "@/lib/p2p-maintenance-constants"
 import { shouldShowMobileFooterNav } from "@/lib/mobile-footer-nav"
 import { useWalletViewStore } from "@/stores/wallet-view-store"
 import { useGuideStore } from "@/stores/guide-store"
+import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { P2PGuide } from "@/components/p2p-guide/p2p-guide"
 import { P2PGuideIntro } from "@/components/p2p-guide/p2p-guide-intro"
 import "./globals.css"
@@ -60,6 +61,13 @@ export default function Main({
   const pendingAskAmy = useGuideStore((state) => state.pendingAskAmy)
   const clearPendingAskAmy = useGuideStore((state) => state.clearPendingAskAmy)
   const isIntroOpen = useGuideStore((state) => state.isIntroOpen)
+  const pendingOpenIntro = useGuideStore((state) => state.pendingOpenIntro)
+  const clearPendingOpenIntro = useGuideStore((state) => state.clearPendingOpenIntro)
+  // isOpen reflects the AlertDialogProvider state — the KYC onboarding popup
+  // is rendered through it. Main flushes pendingOpenIntro only once this is
+  // false, so the intro never mounts on top of the KYC overlay's Radix
+  // teardown (the stranded-backdrop / unclickable-CTA bug).
+  const { isOpen: isAlertDialogOpen } = useAlertDialog()
   const showMobileFooterNav = shouldShowMobileFooterNav(pathname, isChatVisible, isTransactionListVisible)
   const { data: onboardingStatus, isLoading: isOnboardingLoading } = useOnboardingStatus(
     isAuthenticated && !isMaintenanceActive,
@@ -268,6 +276,26 @@ export default function Main({
     })
     return () => window.cancelAnimationFrame(frame)
   }, [pendingAskAmy, isIntroOpen, clearPendingAskAmy])
+
+  // KycOnboardingSheet, when it detects verification has completed, queues
+  // the intro via requestOpenIntro() and calls its own onClose() to dismiss
+  // the KYC popup. Opening the intro in that same tick mounts the intro's
+  // Radix Dialog/Drawer on top of the KYC overlay mid-teardown — stranding a
+  // backdrop, leaving the intro CTAs unclickable, and (for Ask Amy) trapping
+  // the page after livechat closes. Main instead waits for the alert dialog
+  // to finish closing (isOpen=false) and defers one frame so Radix unmounts
+  // the KYC portal and releases its scroll-lock / aria-hidden before the
+  // intro's own portal mounts.
+  useEffect(() => {
+    if (!pendingOpenIntro || isAlertDialogOpen) return
+    if (typeof window === "undefined") return
+
+    const frame = window.requestAnimationFrame(() => {
+      openIntro()
+      clearPendingOpenIntro()
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [pendingOpenIntro, isAlertDialogOpen, openIntro, clearPendingOpenIntro])
 
   if (pathname === "/login") {
     return <div className="container mx-auto overflow-hidden max-w-7xl">{children}</div>

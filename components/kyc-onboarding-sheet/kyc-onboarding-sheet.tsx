@@ -28,7 +28,7 @@ function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
   const userData = useUserDataStore((state) => state.userData)
   const queryClient = useQueryClient()
   const setIsOnboardingStatusRefreshing = useUserDataStore((state) => state.setIsOnboardingStatusRefreshing)
-  const openIntro = useGuideStore((state) => state.openIntro)
+  const requestOpenIntro = useGuideStore((state) => state.requestOpenIntro)
   const hasRefreshedOnboardingStatus = useRef(false)
   const [isRefreshingOnboardingStatus, setIsRefreshingOnboardingStatus] = useState(!userId)
   const [hasCreatedP2PUser, setHasCreatedP2PUser] = useState(false)
@@ -71,8 +71,12 @@ function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
 
           if (useUserDataStore.getState().userId) {
             setHasCreatedP2PUser(true)
+            // Queue the intro; do not open it here. onClose() begins the KYC
+            // popup's Radix teardown, and mounting the intro's own portal on
+            // the same tick strands a backdrop (see app/main.tsx — Main opens
+            // the intro once this dialog has actually closed).
             onClose?.()
-            openIntro()
+            requestOpenIntro()
           }
         }
       } finally {
@@ -87,7 +91,7 @@ function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
       isMounted = false
       setIsOnboardingStatusRefreshing(false)
     }
-  }, [onClose, openIntro, queryClient, setIsOnboardingStatusRefreshing, userId])
+  }, [onClose, requestOpenIntro, queryClient, setIsOnboardingStatusRefreshing, userId])
 
   const isTncAccepted = onboardingStatus?.tnc?.accepted === true
   const isProfileCompleted = onboardingStatus?.profile?.status === "complete" && isTncAccepted
