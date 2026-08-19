@@ -1,30 +1,17 @@
 import { render, screen, fireEvent } from "@testing-library/react"
 import EmptyState from "@/components/empty-state"
-import { useUserDataStore } from "@/stores/user-data-store"
-import { useGuideStore } from "@/stores/guide-store"
-import { useAlertDialog } from "@/hooks/use-alert-dialog"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 import jest from "jest"
 
 const mockPush = jest.fn()
-const mockOpenIntro = jest.fn()
-const mockRequestOpenIntro = jest.fn()
-const mockShowAlert = jest.fn()
-const mockHideAlert = jest.fn()
+const mockRunGatedAction = jest.fn()
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
 }))
 
-jest.mock("@/stores/user-data-store", () => ({
-  useUserDataStore: jest.fn(),
-}))
-
-jest.mock("@/stores/guide-store", () => ({
-  useGuideStore: jest.fn(),
-}))
-
-jest.mock("@/hooks/use-alert-dialog", () => ({
-  useAlertDialog: jest.fn(),
+jest.mock("@/hooks/use-kyc-overlay", () => ({
+  useKycOverlay: jest.fn(),
 }))
 
 jest.mock("@/lib/i18n/use-translations", () => ({
@@ -38,38 +25,16 @@ jest.mock("@/analytics/useTrackers", () => ({
   useTrackers: () => ({ track: jest.fn() }),
 }))
 
-jest.mock("@/components/kyc-onboarding-sheet", () => ({
-  createKycOnboardingAlertConfig: (opts: unknown) => ({ kind: "kyc", opts }),
-}))
-
-const mockUseUserDataStore = useUserDataStore as jest.MockedFunction<typeof useUserDataStore>
-const mockUseGuideStore = useGuideStore as jest.MockedFunction<typeof useGuideStore>
-const mockUseAlertDialog = useAlertDialog as jest.MockedFunction<typeof useAlertDialog>
-
-const verifiedOnboarding = {
-  kyc: { status: "verified", poi_status: "approved", poa_status: "approved" },
-  verification: { email_verified: true, phone_verified: true },
-  p2p: { allowed: true, criteria: [{ code: "phone_verified", passed: true }] },
-}
-
-const unverifiedOnboarding = {
-  kyc: { status: "pending", poi_status: "none", poa_status: "none" },
-  verification: { email_verified: true, phone_verified: false },
-  p2p: { allowed: false, criteria: [{ code: "phone_verified", passed: false }] },
-}
+const mockUseKycOverlay = useKycOverlay as jest.MockedFunction<typeof useKycOverlay>
 
 describe("EmptyState create ad", () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockUseGuideStore.mockImplementation((selector?: (state: any) => unknown) => {
-      const state = { openIntro: mockOpenIntro, requestOpenIntro: mockRequestOpenIntro }
-      return selector ? selector(state) : state
+    mockRunGatedAction.mockImplementation((onAllow: () => void) => onAllow())
+    mockUseKycOverlay.mockReturnValue({
+      runGatedAction: mockRunGatedAction,
+      openKycIfUnverified: jest.fn(),
     })
-    mockUseAlertDialog.mockReturnValue({
-      showAlert: mockShowAlert,
-      hideAlert: mockHideAlert,
-      isOpen: false,
-    } as any)
   })
 
   const renderCreateAd = () =>
@@ -83,107 +48,21 @@ describe("EmptyState create ad", () => {
       />,
     )
 
-  it("opens only the guide intro when the user is verified but has no P2P profile yet", () => {
-    mockUseUserDataStore.mockImplementation((selector?: (state: any) => unknown) => {
-      const state = {
-        userId: null,
-        verificationStatus: null,
-        onboardingStatus: verifiedOnboarding,
-      }
-      return selector ? selector(state) : state
-    })
-
+  it("gates Create ad through the shared KYC overlay", () => {
     renderCreateAd()
     fireEvent.click(screen.getByText("myAds.createAd"))
 
-    expect(mockOpenIntro).toHaveBeenCalledTimes(1)
-    expect(mockRequestOpenIntro).not.toHaveBeenCalled()
-    expect(mockHideAlert).not.toHaveBeenCalled()
-    expect(mockShowAlert).not.toHaveBeenCalled()
-    expect(mockPush).not.toHaveBeenCalled()
-  })
-
-  it("queues the intro when KYC is already open so Main can wait for it to close", () => {
-    mockUseAlertDialog.mockReturnValue({
-      showAlert: mockShowAlert,
-      hideAlert: mockHideAlert,
-      isOpen: true,
-    } as any)
-    mockUseUserDataStore.mockImplementation((selector?: (state: any) => unknown) => {
-      const state = {
-        userId: null,
-        verificationStatus: null,
-        onboardingStatus: verifiedOnboarding,
-      }
-      return selector ? selector(state) : state
-    })
-
-    renderCreateAd()
-    fireEvent.click(screen.getByText("myAds.createAd"))
-
-    expect(mockHideAlert).toHaveBeenCalledTimes(1)
-    expect(mockRequestOpenIntro).toHaveBeenCalledTimes(1)
-    expect(mockOpenIntro).not.toHaveBeenCalled()
-    expect(mockShowAlert).not.toHaveBeenCalled()
-    expect(mockPush).not.toHaveBeenCalled()
-  })
-
-  it("does nothing when verification status has not loaded yet", () => {
-    mockUseUserDataStore.mockImplementation((selector?: (state: any) => unknown) => {
-      const state = {
-        userId: null,
-        verificationStatus: null,
-        onboardingStatus: null,
-      }
-      return selector ? selector(state) : state
-    })
-
-    renderCreateAd()
-    fireEvent.click(screen.getByText("myAds.createAd"))
-
-    expect(mockOpenIntro).not.toHaveBeenCalled()
-    expect(mockShowAlert).not.toHaveBeenCalled()
-    expect(mockPush).not.toHaveBeenCalled()
-  })
-
-  it("opens only the KYC sheet when the user is not verified", () => {
-    mockUseUserDataStore.mockImplementation((selector?: (state: any) => unknown) => {
-      const state = {
-        userId: null,
-        verificationStatus: { phone_verified: false, kyc_verified: false, p2p_allowed: false },
-        onboardingStatus: unverifiedOnboarding,
-      }
-      return selector ? selector(state) : state
-    })
-
-    renderCreateAd()
-    fireEvent.click(screen.getByText("myAds.createAd"))
-
-    expect(mockShowAlert).toHaveBeenCalledTimes(1)
-    expect(mockOpenIntro).not.toHaveBeenCalled()
-    expect(mockPush).not.toHaveBeenCalled()
-  })
-
-  it("navigates to create ad when the user is a verified P2P user", () => {
-    mockUseUserDataStore.mockImplementation((selector?: (state: any) => unknown) => {
-      const state = {
-        userId: "user-1",
-        verificationStatus: {
-          email_verified: true,
-          phone_verified: true,
-          kyc_verified: true,
-          p2p_allowed: true,
-        },
-        onboardingStatus: verifiedOnboarding,
-      }
-      return selector ? selector(state) : state
-    })
-
-    renderCreateAd()
-    fireEvent.click(screen.getByText("myAds.createAd"))
-
+    expect(mockUseKycOverlay).toHaveBeenCalledWith({ route: "markets" })
+    expect(mockRunGatedAction).toHaveBeenCalledTimes(1)
     expect(mockPush).toHaveBeenCalledWith("/ads/create?operation=sell")
-    expect(mockOpenIntro).not.toHaveBeenCalled()
-    expect(mockShowAlert).not.toHaveBeenCalled()
+  })
+
+  it("does not navigate when the overlay blocks the action", () => {
+    mockRunGatedAction.mockImplementation(() => undefined)
+    renderCreateAd()
+    fireEvent.click(screen.getByText("myAds.createAd"))
+
+    expect(mockRunGatedAction).toHaveBeenCalledTimes(1)
+    expect(mockPush).not.toHaveBeenCalled()
   })
 })

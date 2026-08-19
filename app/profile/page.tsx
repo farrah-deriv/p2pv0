@@ -5,23 +5,22 @@ import { useSearchParams } from "next/navigation"
 import UserInfo from "./components/user-info"
 import TradeLimits from "./components/trade-limits"
 import StatsTabs from "./components/stats-tabs"
-import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { useMe } from "@/hooks/use-api-queries"
 import { TemporaryBanAlert } from "@/components/temporary-ban-alert"
 import { P2PAccessRemoved } from "@/components/p2p-access-removed"
 import { useTranslations } from "@/lib/i18n/use-translations"
-import { createKycOnboardingAlertConfig } from "@/components/kyc-onboarding-sheet"
 import { useTrackers } from "@/analytics/useTrackers"
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import { useRouter } from "next/navigation"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 
 export default function ProfilePage() {
   const router = useRouter()
   const { track } = useTrackers()
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
-  const { hideAlert, showAlert } = useAlertDialog()
   const { userData: user } = useUserDataStore()
+  const { openKycIfUnverified } = useKycOverlay({ route: "profile" })
   const { data: meData, isLoading, error } = useMe()
   const tempBanUntil = user?.temp_ban_until
   const userEmail = user?.email
@@ -96,16 +95,11 @@ export default function ProfilePage() {
   }, [isMaintenanceActive, tabFromQuery, router])
 
   useEffect(() => {
-    if (shouldShowKyc && !showKycPopup) {
-      setShowKycPopup(true)
-      showAlert(createKycOnboardingAlertConfig({
-        route: "profile",
-        onClose: hideAlert,
-        onConfirm: () => setShowKycPopup(false),
-        onCancel: () => setShowKycPopup(false),
-      }))
-    }
-  }, [shouldShowKyc, showKycPopup, showAlert, hideAlert, t])
+    if (!shouldShowKyc || showKycPopup) return
+    void openKycIfUnverified().then((overlay) => {
+      if (overlay === "kyc") setShowKycPopup(true)
+    })
+  }, [shouldShowKyc, showKycPopup, openKycIfUnverified])
 
   if (isDisabled) {
     return (

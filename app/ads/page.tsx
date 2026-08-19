@@ -19,9 +19,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/u
 import { useUserDataStore } from "@/stores/user-data-store"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { TemporaryBanAlert } from "@/components/temporary-ban-alert"
-import { createKycOnboardingAlertConfig } from "@/components/kyc-onboarding-sheet"
-import { useGuideStore } from "@/stores/guide-store"
-import { isP2PVerified } from "@/lib/is-p2p-verified"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 import { useTrackers } from "@/analytics/useTrackers"
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import { MY_ADS_TAB_QUERY, parseMyAdsTab, type MyAdsTab } from "@/lib/ads/my-ads-tab"
@@ -40,10 +38,7 @@ export default function AdsPage() {
   const [showDeletedBanner, setShowDeletedBanner] = useState(false)
   const [statusData, setStatusData] = useState<StatusData | null>(null)
   const [activeTab, setActiveTab] = useState<MyAdsTab>("active")
-  const { userData, userId, onboardingStatus, verificationStatus } = useUserDataStore()
-  const openIntro = useGuideStore((state) => state.openIntro)
-  const requestOpenIntro = useGuideStore((state) => state.requestOpenIntro)
-  const isVerified = isP2PVerified({ verificationStatus, onboardingStatus })
+  const { userData, userId } = useUserDataStore()
   const tempBanUntil = userData?.temp_ban_until
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
   const [hiddenAdverts, setHiddenAdverts] = useState(false)
@@ -53,9 +48,14 @@ export default function AdsPage() {
     title: "",
     message: "",
   })
-  const { hideAlert, showAlert, isOpen: isAlertOpen } = useAdvertAlertDialog()
-  const [showKycPopup, setShowKycPopup] = useState(false)
+  const advertDialog = useAdvertAlertDialog()
+  const { showAlert } = advertDialog
+  const { runGatedAction, openKycIfUnverified } = useKycOverlay({
+    route: "ads",
+    dialog: advertDialog,
+  })
   const errorAlertShownRef = useRef(false)
+  const kycPopupHandledRef = useRef(false)
 
   const isMobile = useIsMobile()
   const router = useRouter()
@@ -89,50 +89,24 @@ export default function AdsPage() {
 
   useEffect(() => {
     const shouldShowKyc = searchParams.get("show_kyc_popup") === "true"
-    if (shouldShowKyc) {
-      setShowKycPopup(true)
+    // Verified users must never auto-open KYC. Main strips the param for
+    // brand-new / fully verified users, but a just-verified returning user
+    // can still land here with the param while status is already approved.
+    if (shouldShowKyc && !kycPopupHandledRef.current) {
+      kycPopupHandledRef.current = true
+      void openKycIfUnverified()
     }
 
     const tabFromUrl = parseMyAdsTab(searchParams.get(MY_ADS_TAB_QUERY))
     if (tabFromUrl) {
       setActiveTab(tabFromUrl)
     }
-  }, [searchParams])
-
-  useEffect(() => {
-    if (showKycPopup) {
-      showAlert(createKycOnboardingAlertConfig({
-        route: "ads",
-        onClose: () => {
-          hideAlert()
-          setShowKycPopup(false)
-        },
-        onConfirm: () => setShowKycPopup(false),
-        onCancel: () => setShowKycPopup(false),
-      }))
-    }
-  }, [showKycPopup, showAlert, hideAlert])
+  }, [searchParams, openKycIfUnverified])
 
   const handleCreateAd = () => {
     if (isMaintenanceActive) return
     track("ek_create_ad_my_ads")
-    // One overlay only. Unknown status → wait. Verified without a P2P
-    // profile → intro. Incomplete KYC → KYC sheet. Existing P2P user → form.
-    if (!verificationStatus && !onboardingStatus) return
-    if (isVerified) {
-      if (userId) {
-        router.push("/ads/create")
-        return
-      }
-      if (isAlertOpen) {
-        hideAlert()
-        requestOpenIntro()
-      } else {
-        openIntro()
-      }
-      return
-    }
-    setShowKycPopup(true)
+    runGatedAction(() => router.push("/ads/create"))
   }
 
   const handleTabChange = (tabValue: string) => {

@@ -1,14 +1,11 @@
 "use client"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { useUserDataStore } from "@/stores/user-data-store"
-import { useGuideStore } from "@/stores/guide-store"
 import { Button } from "@/components/ui/button"
-import { useAlertDialog } from "@/hooks/use-alert-dialog"
-import { createKycOnboardingAlertConfig } from "@/components/kyc-onboarding-sheet"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useTrackers } from "@/analytics/useTrackers"
-import { isP2PVerified } from "@/lib/is-p2p-verified"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
+import type { KycOnboardingRoute } from "@/components/kyc-onboarding-sheet"
 
 interface EmptyStateProps {
   adType?: "buy" | "sell"
@@ -32,39 +29,19 @@ export default function EmptyState({
   route,
 }: EmptyStateProps) {
   const router = useRouter()
-  const userId = useUserDataStore((state) => state.userId)
-  const verificationStatus = useUserDataStore((state) => state.verificationStatus)
-  const onboardingStatus = useUserDataStore((state) => state.onboardingStatus)
-  const openIntro = useGuideStore((state) => state.openIntro)
-  const requestOpenIntro = useGuideStore((state) => state.requestOpenIntro)
-  const { hideAlert, showAlert, isOpen: isAlertOpen } = useAlertDialog()
   const { t } = useTranslations()
   const { track } = useTrackers()
+  const { runGatedAction } = useKycOverlay({
+    route: (route as KycOnboardingRoute) || "ads",
+  })
   const displayTitle = title ?? t("market.noAdsMaintenanceTitle")
-  const isVerified = isP2PVerified({ verificationStatus, onboardingStatus })
 
   const createAd = () => {
     if (route === "markets") track("ek_create_ad_markets")
-    // One overlay only. Unknown status → wait (do not guess KYC). Verified
-    // without a P2P profile → intro. Incomplete KYC → KYC sheet. Never both:
-    // treating "status not loaded" as unverified opened KYC, then Main opened
-    // the intro on top and left the AlertDialog overlay stuck open.
-    if (!verificationStatus && !onboardingStatus) return
-    if (isVerified) {
-      if (userId) {
-        const operation = adType === "buy" ? "sell" : "buy"
-        router.push(`/ads/create?operation=${operation}`)
-        return
-      }
-      if (isAlertOpen) {
-        hideAlert()
-        requestOpenIntro()
-      } else {
-        openIntro()
-      }
-      return
-    }
-    showAlert(createKycOnboardingAlertConfig({ route: route || "ads", onClose: hideAlert }))
+    runGatedAction(() => {
+      const operation = adType === "buy" ? "sell" : "buy"
+      router.push(`/ads/create?operation=${operation}`)
+    })
   }
 
   const browseMarket = () => {

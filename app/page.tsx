@@ -35,9 +35,7 @@ import { ExchangeRateDisplay } from "@/components/exchange-rate-display"
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import { getTotalBalance } from "@/services/api/api-auth"
 import { useTranslations } from "@/lib/i18n/use-translations"
-import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { usePaymentMethods, useAdvertisements } from "@/hooks/use-api-queries"
-import { createKycOnboardingAlertConfig } from "@/components/kyc-onboarding-sheet"
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 import { VerifiedBadge } from "@/components/verified-badge"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -45,6 +43,7 @@ import { useWebSocketContext } from "@/contexts/websocket-context"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useTrackers } from "@/analytics/useTrackers"
 import { PresenceLastSeen } from "@/components/presence-last-seen"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 import { useGuideStore } from "@/stores/guide-store"
 import { P2PGuideButton } from "@/components/p2p-guide/p2p-guide-button"
 import { StandaloneFilterRegularIcon } from "@deriv/quill-icons/Standalone"
@@ -114,10 +113,10 @@ export default function BuySellPage() {
   const [balance, setBalance] = useState<string>("0.00")
   const [balanceCurrency, setBalanceCurrency] = useState<string>("USD")
   const [isLoadingBalance, setIsLoadingBalance] = useState<boolean>(true)
-  const [showKycPopup, setShowKycPopup] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const tableScrollRef = useRef<HTMLDivElement>(null)
   const isFetchingNextPageRef = useRef(false)
+  const kycPopupHandledRef = useRef(false)
 
   const { data: paymentMethods = [], isLoading: isLoadingPaymentMethods } = usePaymentMethods()
 
@@ -127,11 +126,7 @@ export default function BuySellPage() {
   const userId = useUserDataStore((state) => state.userId)
   const userData = useUserDataStore((state) => state.userData)
   const localCurrency = useUserDataStore((state) => state.localCurrency)
-  const verificationStatus = useUserDataStore((state) => state.verificationStatus)
-  const onboardingStatus = useUserDataStore((state) => state.onboardingStatus)
-  const isPoiExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poi_status !== "approved"
-  const isPoaExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poa_status !== "approved"
-  const { hideAlert, showAlert } = useAlertDialog()
+  const { runGatedAction, openKycIfUnverified } = useKycOverlay({ route: "markets" })
   const isMobile = useIsMobile()
   const { track } = useTrackers()
 
@@ -336,14 +331,7 @@ export default function BuySellPage() {
   const handleAdvertiserClick = (advertiserId: number) => {
     if (isMaintenanceActive) return
     track("ek_advertiser_profile_markets")
-    if (userId && verificationStatus?.phone_verified && !isPoiExpired && !isPoaExpired) {
-      router.push(`/advertiser/${advertiserId}`)
-    } else {
-      showAlert(createKycOnboardingAlertConfig({
-        route: "markets",
-        onClose: hideAlert
-      }))
-    }
+    runGatedAction(() => router.push(`/advertiser/${advertiserId}`))
   }
 
   const handleRiskContinue = () => {
@@ -365,7 +353,7 @@ export default function BuySellPage() {
   const handleOrderClick = (ad: Advertisement) => {
     if (isMaintenanceActive) return
     track("ek_advert_action_markets", { advert_type: ad.type === "buy" ? "sell" : "buy" })
-    if (userId && verificationStatus?.phone_verified && !isPoiExpired && !isPoaExpired) {
+    runGatedAction(() => {
       const risk = evaluateRisk(ad)
       if (risk) {
         setPendingRiskAd(ad)
@@ -375,12 +363,7 @@ export default function BuySellPage() {
       }
       setSelectedAd(ad)
       setIsOrderSidebarOpen(true)
-    } else {
-      showAlert(createKycOnboardingAlertConfig({
-        route: "markets",
-        onClose: hideAlert
-      }))
-    }
+    })
   }
 
   const handleCurrencySelect = (currencyCode: string) => {
@@ -520,15 +503,13 @@ export default function BuySellPage() {
   }, []) // fires once on mount
 
   useEffect(() => {
-    const shouldShowKyc = searchParams.get("show_kyc_popup") === "true"
-    if (shouldShowKyc && !showKycPopup) {
-      setShowKycPopup(true)
-      showAlert(createKycOnboardingAlertConfig({
-        route: "markets",
-        onClose: hideAlert
-      }))
-    }
-  }, [searchParams, showKycPopup, showAlert, t])
+    if (searchParams.get("show_kyc_popup") !== "true" || kycPopupHandledRef.current) return
+    kycPopupHandledRef.current = true
+    // Verified users must never auto-open KYC. After docs are approved on
+    // this same page, the leftover ?show_kyc_popup param would re-mount the
+    // sheet and then a later CTA would open the intro on top of it.
+    void openKycIfUnverified()
+  }, [searchParams, openKycIfUnverified])
 
   return (
     <>

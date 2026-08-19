@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { TransactionsTab } from "./components"
 import WalletSummary from "./components/wallet-summary"
 import WalletBalances from "./components/wallet-balances"
@@ -9,8 +9,6 @@ import { TemporaryBanAlert } from "@/components/temporary-ban-alert"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { P2PAccessRemoved } from "@/components/p2p-access-removed"
 import { useRouter } from "next/navigation"
-import { useAlertDialog } from "@/hooks/use-alert-dialog"
-import { createKycOnboardingAlertConfig } from "@/components/kyc-onboarding-sheet"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useWebSocketContext } from "@/contexts/websocket-context"
 import { useTrackers } from "@/analytics/useTrackers"
@@ -18,6 +16,7 @@ import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import EmptyState from "@/components/empty-state"
 import { useWalletViewStore } from "@/stores/wallet-view-store"
 import type { Transaction } from "./types"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 
 interface Balance {
   wallet_id: string
@@ -30,7 +29,8 @@ export default function WalletPage() {
   const router = useRouter()
   const { t } = useTranslations()
   const { track } = useTrackers()
-  const { hideAlert, showAlert } = useAlertDialog()
+  const { openKycIfUnverified } = useKycOverlay({ route: "wallets" })
+  const kycPopupHandledRef = useRef(false)
   const { data: currenciesResponse, isLoading: isCurrenciesLoading } = useCurrencies()
   const { data: balanceData, isLoading: isBalanceLoading } = useTotalBalance()
   const { isConnected, subscribeToUserUpdates, unsubscribeFromUserUpdates, subscribe } = useWebSocketContext()
@@ -41,7 +41,6 @@ export default function WalletPage() {
   const [p2pBalances, setP2pBalances] = useState<Balance[]>([])
   const [hasCheckedSignup, setHasCheckedSignup] = useState(false)
   const [hasBalance, setHasBalance] = useState(false)
-  const [showKycPopup, setShowKycPopup] = useState(false)
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
   const { userData } = useUserDataStore()
   const tempBanUntil = userData?.temp_ban_until
@@ -96,22 +95,10 @@ export default function WalletPage() {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search)
     const shouldShowKyc = searchParams.get("show_kyc_popup") === "true"
-    if (shouldShowKyc) {
-      setShowKycPopup(true)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (showKycPopup) {
-      showAlert(createKycOnboardingAlertConfig({
-        route: "wallets",
-        onClose: hideAlert,
-        onConfirm: () => setShowKycPopup(false),
-        onCancel: () => setShowKycPopup(false),
-      }))
-      setShowKycPopup(false)
-    }
-  }, [showKycPopup, showAlert, t])
+    if (!shouldShowKyc || kycPopupHandledRef.current) return
+    kycPopupHandledRef.current = true
+    void openKycIfUnverified()
+  }, [openKycIfUnverified])
 
   useEffect(() => {
     if (userData?.signup === "v1") {

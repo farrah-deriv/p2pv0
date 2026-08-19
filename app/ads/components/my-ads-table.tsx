@@ -24,7 +24,7 @@ import { useLanguageStore } from "@/stores/language-store"
 import { VisibilityStatusDialog } from "./visibility-status-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useUserDataStore } from "@/stores/user-data-store"
-import { createKycOnboardingAlertConfig } from "@/components/kyc-onboarding-sheet"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 import { useDeleteAd, useToggleAdActiveStatus } from "@/hooks/use-api-queries"
 import { useTrackers } from "@/analytics/useTrackers"
 import { editAdPath } from "@/lib/ads/my-ads-tab"
@@ -56,11 +56,11 @@ export default function MyAdsTable({
   const { track } = useTrackers()
   const router = useRouter()
   const { toast } = useToast()
-  const { showDeleteDialog, showAlert, hideAlert } = useAdvertAlertDialog()
+  const advertDialog = useAdvertAlertDialog()
+  const { showDeleteDialog, showAlert } = advertDialog
   const isMobile = useIsMobile()
-  const { userId, onboardingStatus, verificationStatus } = useUserDataStore()
-  const isPoiExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poi_status !== "approved"
-  const isPoaExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poa_status !== "approved"
+  const { userId, verificationStatus } = useUserDataStore()
+  const { runGatedAction } = useKycOverlay({ route: "ads", dialog: advertDialog })
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null)
   const [showShareView, setShowShareView] = useState(false)
@@ -297,13 +297,10 @@ export default function MyAdsTable({
 
   const handleOpenDrawer = (ad: Ad) => {
     track("ek_manage_ad_my_ads")
-    if (!userId || !verificationStatus?.phone_verified || isPoiExpired || isPoaExpired) {
-      showAlert(createKycOnboardingAlertConfig({ route: "ads",
-        onClose: hideAlert }))
-    } else {
+    runGatedAction(() => {
       setSelectedAd(ad)
       setDrawerOpen(true)
-    }
+    })
   }
 
   const handleVisibilityStatusClick = (ad: Ad) => {

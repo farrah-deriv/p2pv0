@@ -28,12 +28,11 @@ import { PreviousOrdersSection } from "./components/previous-orders-section"
 import { TemporaryBanAlert } from "@/components/temporary-ban-alert"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useAlertDialog } from "@/hooks/use-alert-dialog"
-import { createKycOnboardingAlertConfig } from "@/components/kyc-onboarding-sheet"
 import { useOrders } from "@/hooks/use-api-queries"
 import { useTrackers } from "@/analytics/useTrackers"
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import { shouldDisableChatAttachments } from "@/lib/orders/order-chat-gating"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 
 function TimeRemainingDisplay({ expiresAt, testId }: { expiresAt: string; testId?: string }) {
   const timeRemaining = useTimeRemaining(expiresAt)
@@ -52,7 +51,7 @@ export default function OrdersPage() {
   const { t, locale } = useTranslations()
   const { track } = useTrackers()
   const router = useRouter()
-  const { hideAlert, showAlert } = useAlertDialog()
+  const { openKycIfUnverified } = useKycOverlay({ route: "markets" })
   const { activeTab, setActiveTab, dateFilter, customDateRange, setDateFilter, setCustomDateRange } =
     useOrdersFilterStore()
   const { setIsChatVisible } = useChatVisibilityStore()
@@ -104,22 +103,11 @@ export default function OrdersPage() {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search)
     const shouldShowKyc = searchParams.get("show_kyc_popup") === "true"
-    if (shouldShowKyc) {
-      setShowKycPopup(true)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (showKycPopup) {
-      showAlert(createKycOnboardingAlertConfig({
-        route: "markets",
-        onClose: hideAlert,
-        onConfirm: () => setShowKycPopup(false),
-        onCancel: () => setShowKycPopup(false),
-      }))
-      setShowKycPopup(false)
-    }
-  }, [showKycPopup, showAlert, t])
+    if (!shouldShowKyc || showKycPopup) return
+    void openKycIfUnverified().then((overlay) => {
+      if (overlay === "kyc") setShowKycPopup(true)
+    })
+  }, [openKycIfUnverified, showKycPopup])
 
   // Observe last item for infinite scroll
   useEffect(() => {
