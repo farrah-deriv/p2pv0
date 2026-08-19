@@ -27,6 +27,10 @@ interface GuideState {
   // showing: hide the alert first, then Main opens the intro after the
   // overlay fade so the two DismissableLayers never stack.
   pendingOpenIntro: boolean
+  // First auto-open after verification (Main onboarding / CTA). Stops the
+  // intro from remounting when Main's effect re-runs after ensureP2PUser or
+  // a status refresh. reopenIntro() after a tour does not use this flag.
+  hasShownIntro: boolean
   guideStartedFromIntro: boolean
   adTradeType: "buy" | "sell" | null
   marketTradeType: "buy" | "sell" | null
@@ -34,14 +38,14 @@ interface GuideState {
   currentStep: number
   advertsSettled: boolean
   setAdvertsSettled: () => void
-  // First-time open (create ad, onboarding). Same state change as reopenIntro.
-  // Call only when no other overlay is open. If KYC is showing, use
-  // requestOpenIntro() after hideAlert() instead.
+  // First-time open (create ad, onboarding). Marks hasShownIntro so Main
+  // cannot auto-open a second copy after verification. If KYC is showing,
+  // use requestOpenIntro() after hideAlert() instead.
   openIntro: () => void
   requestOpenIntro: () => void
   clearPendingOpenIntro: () => void
-  // Alias of openIntro. completeGuide() uses this to bring the intro back
-  // after a tour that started from it — not a first-time open.
+  // Bring the intro back after a tour that started from it. Not a first-time
+  // open — does not consult hasShownIntro.
   reopenIntro: () => void
   dismissIntro: () => void
   requestAskAmy: () => void
@@ -60,10 +64,10 @@ interface GuideState {
   setPendingStartGuide: (value: boolean) => void
 }
 
-// The guide intro is shown once, right after the P2P user is created
-// (see app/main.tsx — the `!currentUserId` guard there is what prevents
-// re-showing, not any persisted "seen" flag). All transient guide state
-// lives in memory only; nothing here is persisted to localStorage.
+// The guide intro is shown once per session (hasShownIntro). Main's
+// !currentUserId guard is not enough: after ensureP2PUser the effect
+// re-runs with a userId and leftover ?show_kyc_popup and would open
+// again. All transient guide state lives in memory only.
 export const useGuideStore = create<GuideState>()((set, get) => ({
   isGuideActive: false,
   isIntroOpen: false,
@@ -71,6 +75,7 @@ export const useGuideStore = create<GuideState>()((set, get) => ({
   pendingAskAmy: false,
   pendingStartGuideFromIntro: false,
   pendingOpenIntro: false,
+  hasShownIntro: false,
   guideStartedFromIntro: false,
   adTradeType: null,
   marketTradeType: null,
@@ -78,10 +83,16 @@ export const useGuideStore = create<GuideState>()((set, get) => ({
   currentStep: 0,
   advertsSettled: false,
   setAdvertsSettled: () => set((s) => s.advertsSettled ? s : { advertsSettled: true }),
-  openIntro: () => set({ isIntroOpen: true }),
-  requestOpenIntro: () => set({ pendingOpenIntro: true }),
+  openIntro: () => {
+    if (get().hasShownIntro) return
+    set({ isIntroOpen: true, hasShownIntro: true })
+  },
+  requestOpenIntro: () => {
+    if (get().hasShownIntro) return
+    set({ pendingOpenIntro: true })
+  },
   clearPendingOpenIntro: () => set((s) => (s.pendingOpenIntro ? { pendingOpenIntro: false } : s)),
-  reopenIntro: () => get().openIntro(),
+  reopenIntro: () => set({ isIntroOpen: true }),
   dismissIntro: () => set({ isIntroOpen: false }),
   // Ask Amy opens the Intercom messenger. The dialog must fully unmount first —
   // opening Intercom on top of Radix's exit transition leaves the page's

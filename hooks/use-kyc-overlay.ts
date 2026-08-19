@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback } from "react"
+import { useCallback, useRef } from "react"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { useGuideStore } from "@/stores/guide-store"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
@@ -37,6 +37,16 @@ export function useKycOverlay(options?: {
   const { hideAlert, showAlert, isOpen: isAlertOpen } = options?.dialog ?? defaultDialog
   const refreshOnboardingStatus = useRefreshOnboardingStatus()
 
+  // isAlertOpen comes from React context, not a Zustand store, so there is no
+  // getState() to read fresh inside applyOverlay. A closure over it goes stale
+  // across the resolveLatestOverlay network gap: if the user dismisses the KYC
+  // alert while the refresh is in flight, the resolved "intro" overlay would
+  // hit requestOpenIntro() with a stale isAlertOpen=true and add an extra
+  // fade-wait before the intro appears. Keep a ref that always tracks the
+  // latest value and read it inside the callback.
+  const isAlertOpenRef = useRef(isAlertOpen)
+  isAlertOpenRef.current = isAlertOpen
+
   const applyOverlay = useCallback(
     (overlay: KycOverlay, onAllow?: () => void) => {
       if (overlay === "wait") return
@@ -45,10 +55,19 @@ export function useKycOverlay(options?: {
         return
       }
       if (overlay === "intro") {
+        // After verification the intro is shown once. A later CTA must not
+        // remount it — run the original action instead (Create ad, etc.).
+        const { hasShownIntro, isIntroOpen: introAlreadyOpen } = useGuideStore.getState()
+        if (hasShownIntro) {
+          if (!introAlreadyOpen) onAllow?.()
+          return
+        }
         // Close any leftover KYC sheet first. Opening the intro on top of an
         // already-open AlertDialog/Drawer stacks two backdrops; selecting an
-        // intro option then leaves the KYC overlay behind.
-        if (isAlertOpen) {
+        // intro option then leaves the KYC overlay behind. Read isOpen fresh
+        // from the ref so a dismiss during the refresh does not strand the
+        // intro behind a stale isAlertOpen=true.
+        if (isAlertOpenRef.current) {
           hideAlert()
           requestOpenIntro()
         } else {
@@ -58,7 +77,19 @@ export function useKycOverlay(options?: {
       }
       showAlert(createKycOnboardingAlertConfig({ route, onClose: hideAlert }))
     },
-    [hideAlert, isAlertOpen, openIntro, requestOpenIntro, route, showAlert],
+    [hideAlert, openIntro, requestOpenIntro, route, showAlert],
+  )
+
+  const applyRefreshedOverlay = useCallback(
+    (overlay: KycOverlay, onAllow?: () => void) => {
+      applyOverlay(overlay, onAllow)
+      // The sheet keeps the full-page loader for users without a P2P profile
+      // until it finishes. Everyone else is done with the status refresh.
+      if (overlay !== "kyc" || useUserDataStore.getState().userId) {
+        useUserDataStore.getState().setIsOnboardingStatusRefreshing(false)
+      }
+    },
+    [applyOverlay],
   )
 
   const resolveLatestOverlay = useCallback(async (cached: KycOverlay): Promise<KycOverlay> => {
@@ -87,12 +118,25 @@ export function useKycOverlay(options?: {
         onboardingStatus,
       })
       if (overlay === "kyc") {
-        void resolveLatestOverlay(overlay).then((latest) => applyOverlay(latest, onAllow))
+        // Show the loader on click — do not wait for /onboarding-status.
+        useUserDataStore.getState().setIsOnboardingStatusRefreshing(true)
+        void resolveLatestOverlay(overlay)
+          .then((latest) => applyRefreshedOverlay(latest, onAllow))
+          .catch(() => {
+            useUserDataStore.getState().setIsOnboardingStatusRefreshing(false)
+          })
         return
       }
       applyOverlay(overlay, onAllow)
     },
-    [applyOverlay, onboardingStatus, resolveLatestOverlay, userId, verificationStatus],
+    [
+      applyOverlay,
+      applyRefreshedOverlay,
+      onboardingStatus,
+      resolveLatestOverlay,
+      userId,
+      verificationStatus,
+    ],
   )
 
   const openKycIfUnverified = useCallback(async () => {
@@ -104,11 +148,19 @@ export function useKycOverlay(options?: {
     if (overlay !== "kyc") return overlay
     // Cached status can still say unverified after docs were approved on this
     // same page. Refresh before auto-opening so ?show_kyc_popup cannot remount
-    // the sheet under a later intro.
-    const latest = await resolveLatestOverlay(overlay)
-    if (latest === "kyc") applyOverlay(latest)
-    return latest
-  }, [applyOverlay, onboardingStatus, resolveLatestOverlay, userId, verificationStatus])
+    // the sheet under a later intro. Show the loader on click, not after
+    // /onboarding-status returns.
+    useUserDataStore.getState().setIsOnboardingStatusRefreshing(true)
+    try {
+      const latest = await resolveLatestOverlay(overlay)
+      if (latest === "kyc") applyRefreshedOverlay(latest)
+      else useUserDataStore.getState().setIsOnboardingStatusRefreshing(false)
+      return latest
+    } catch {
+      useUserDataStore.getState().setIsOnboardingStatusRefreshing(false)
+      return overlay
+    }
+  }, [applyRefreshedOverlay, onboardingStatus, resolveLatestOverlay, userId, verificationStatus])
 
   return {
     runGatedAction,

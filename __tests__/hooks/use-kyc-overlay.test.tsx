@@ -11,6 +11,7 @@ const mockRequestOpenIntro = jest.fn()
 const mockShowAlert = jest.fn()
 const mockHideAlert = jest.fn()
 const mockRefreshOnboardingStatus = jest.fn()
+const mockSetIsOnboardingStatusRefreshing = jest.fn()
 
 jest.mock("@/stores/user-data-store", () => ({
   useUserDataStore: jest.fn(),
@@ -61,6 +62,10 @@ describe("useKycOverlay", () => {
       const state = { openIntro: mockOpenIntro, requestOpenIntro: mockRequestOpenIntro }
       return selector ? selector(state) : state
     })
+    mockUseGuideStore.getState = jest.fn(() => ({
+      hasShownIntro: false,
+      isIntroOpen: false,
+    }))
     mockUseAlertDialog.mockReturnValue({
       showAlert: mockShowAlert,
       hideAlert: mockHideAlert,
@@ -72,6 +77,7 @@ describe("useKycOverlay", () => {
       userId: null,
       verificationStatus: { phone_verified: false, kyc_verified: false, p2p_allowed: false },
       onboardingStatus: unverifiedOnboarding,
+      setIsOnboardingStatusRefreshing: mockSetIsOnboardingStatusRefreshing,
     }))
   })
 
@@ -128,6 +134,24 @@ describe("useKycOverlay", () => {
     expect(mockShowAlert).not.toHaveBeenCalled()
   })
 
+  it("runs the original action instead of remounting the intro after it was already shown", () => {
+    mockUseGuideStore.getState = jest.fn(() => ({
+      hasShownIntro: true,
+      isIntroOpen: false,
+    }))
+    stubUser({ userId: null, onboardingStatus: verifiedOnboarding })
+    const onAllow = jest.fn()
+    const { result } = renderHook(() => useKycOverlay({ route: "ads" }))
+
+    act(() => {
+      result.current.runGatedAction(onAllow)
+    })
+
+    expect(onAllow).toHaveBeenCalledTimes(1)
+    expect(mockOpenIntro).not.toHaveBeenCalled()
+    expect(mockShowAlert).not.toHaveBeenCalled()
+  })
+
   it("queues the intro when KYC is already open so Main can wait for it to close", () => {
     mockUseAlertDialog.mockReturnValue({
       showAlert: mockShowAlert,
@@ -145,6 +169,63 @@ describe("useKycOverlay", () => {
     expect(mockRequestOpenIntro).toHaveBeenCalledTimes(1)
     expect(mockOpenIntro).not.toHaveBeenCalled()
     expect(mockShowAlert).not.toHaveBeenCalled()
+  })
+
+  it("opens the intro directly when KYC was dismissed during the refresh", async () => {
+    // isAlertOpen is true at click time, but the user closes the KYC sheet
+    // while /onboarding-status is still in flight. A stale closure would
+    // queue requestOpenIntro() (an extra 500ms fade-wait); the ref must see
+    // the dismissal and open the intro directly.
+    let resolveRefresh: (() => void) | undefined
+    mockRefreshOnboardingStatus.mockReturnValue(
+      new Promise<void>((resolve) => {
+        resolveRefresh = resolve
+      }),
+    )
+    mockUseAlertDialog.mockReturnValue({
+      showAlert: mockShowAlert,
+      hideAlert: mockHideAlert,
+      isOpen: true,
+    } as any)
+    stubUser({
+      userId: null,
+      verificationStatus: { phone_verified: false, kyc_verified: false, p2p_allowed: false },
+      onboardingStatus: unverifiedOnboarding,
+    })
+    mockUseUserDataStore.getState = jest.fn(() => ({
+      userId: null,
+      verificationStatus: {
+        email_verified: true,
+        phone_verified: true,
+        kyc_verified: true,
+        p2p_allowed: true,
+      },
+      onboardingStatus: verifiedOnboarding,
+      setIsOnboardingStatusRefreshing: mockSetIsOnboardingStatusRefreshing,
+    }))
+
+    const { result, rerender } = renderHook(() => useKycOverlay({ route: "markets" }))
+    act(() => {
+      result.current.runGatedAction(jest.fn())
+    })
+
+    // User dismisses the KYC sheet while the refresh is still pending.
+    mockUseAlertDialog.mockReturnValue({
+      showAlert: mockShowAlert,
+      hideAlert: mockHideAlert,
+      isOpen: false,
+    } as any)
+    rerender()
+
+    await act(async () => {
+      resolveRefresh?.()
+    })
+
+    await waitFor(() => {
+      expect(mockOpenIntro).toHaveBeenCalledTimes(1)
+    })
+    expect(mockRequestOpenIntro).not.toHaveBeenCalled()
+    expect(mockHideAlert).not.toHaveBeenCalled()
   })
 
   it("opens only the KYC sheet when the user is not verified", async () => {
@@ -168,6 +249,37 @@ describe("useKycOverlay", () => {
     expect(onAllow).not.toHaveBeenCalled()
   })
 
+  it("shows the loading indicator on click before onboarding-status returns", async () => {
+    let resolveRefresh: (() => void) | undefined
+    mockRefreshOnboardingStatus.mockReturnValue(
+      new Promise<void>((resolve) => {
+        resolveRefresh = resolve
+      }),
+    )
+    stubUser({
+      userId: null,
+      verificationStatus: { phone_verified: false, kyc_verified: false, p2p_allowed: false },
+      onboardingStatus: unverifiedOnboarding,
+    })
+    const { result } = renderHook(() => useKycOverlay({ route: "markets" }))
+
+    act(() => {
+      result.current.runGatedAction(jest.fn())
+    })
+
+    expect(mockSetIsOnboardingStatusRefreshing).toHaveBeenCalledWith(true)
+    expect(mockShowAlert).not.toHaveBeenCalled()
+    expect(mockOpenIntro).not.toHaveBeenCalled()
+
+    await act(async () => {
+      resolveRefresh?.()
+    })
+
+    await waitFor(() => {
+      expect(mockShowAlert).toHaveBeenCalledTimes(1)
+    })
+  })
+
   it("runs the original action when a refresh finds the user just became a P2P user", async () => {
     stubUser({
       userId: null,
@@ -183,6 +295,7 @@ describe("useKycOverlay", () => {
         p2p_allowed: true,
       },
       onboardingStatus: verifiedOnboarding,
+      setIsOnboardingStatusRefreshing: mockSetIsOnboardingStatusRefreshing,
     }))
     mockRefreshOnboardingStatus.mockResolvedValue(undefined)
     const onAllow = jest.fn()
@@ -223,6 +336,7 @@ describe("useKycOverlay", () => {
         p2p_allowed: true,
       },
       onboardingStatus: verifiedOnboarding,
+      setIsOnboardingStatusRefreshing: mockSetIsOnboardingStatusRefreshing,
     }))
     mockRefreshOnboardingStatus.mockResolvedValue(undefined)
     const { result } = renderHook(() => useKycOverlay({ route: "markets" }))

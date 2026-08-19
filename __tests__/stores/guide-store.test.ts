@@ -14,6 +14,7 @@ describe("useGuideStore", () => {
       pendingAskAmy: false,
       pendingStartGuideFromIntro: false,
       pendingOpenIntro: false,
+      hasShownIntro: false,
       guideStartedFromIntro: false,
       adTradeType: null,
       marketTradeType: null,
@@ -29,11 +30,50 @@ describe("useGuideStore", () => {
     expect(result.current.isIntroOpen).toBe(false)
   })
 
-  it("openIntro mounts the intro directly", () => {
+  it("openIntro mounts the intro directly and marks it shown", () => {
     const { result } = renderHook(() => useGuideStore())
 
     act(() => {
       result.current.openIntro()
+    })
+
+    expect(result.current.isIntroOpen).toBe(true)
+    expect(result.current.hasShownIntro).toBe(true)
+  })
+
+  it("openIntro does not mount a second copy once already shown", () => {
+    const { result } = renderHook(() => useGuideStore())
+
+    act(() => {
+      result.current.openIntro()
+      result.current.dismissIntro()
+      result.current.openIntro()
+    })
+
+    // The second open is ignored — the intro is only shown once per session.
+    expect(result.current.isIntroOpen).toBe(false)
+  })
+
+  it("requestOpenIntro is ignored after the intro has already been shown", () => {
+    const { result } = renderHook(() => useGuideStore())
+
+    act(() => {
+      result.current.openIntro()
+      result.current.dismissIntro()
+      result.current.requestOpenIntro()
+    })
+
+    expect(result.current.pendingOpenIntro).toBe(false)
+    expect(result.current.isIntroOpen).toBe(false)
+  })
+
+  it("reopenIntro can bring the intro back after a tour even if it was already shown", () => {
+    const { result } = renderHook(() => useGuideStore())
+
+    act(() => {
+      result.current.openIntro()
+      result.current.dismissIntro()
+      result.current.reopenIntro()
     })
 
     expect(result.current.isIntroOpen).toBe(true)
@@ -100,5 +140,24 @@ describe("useGuideStore", () => {
     expect(result.current.isGuideActive).toBe(true)
     expect(result.current.pendingStartGuideFromIntro).toBe(false)
     expect(result.current.guideType).toBe("markets")
+  })
+
+  it("off-markets Explore marketplace queues Markets to start the tour after navigation", () => {
+    const { result } = renderHook(() => useGuideStore())
+
+    act(() => {
+      result.current.requestStartGuide()
+    })
+
+    // Simulate Main: not on /, so hand the tour to Markets instead of
+    // starting it over Ads / Orders / Profile / Wallet.
+    act(() => {
+      result.current.setPendingStartGuide(true)
+      result.current.clearPendingStartGuideFromIntro()
+    })
+
+    expect(result.current.pendingStartGuide).toBe(true)
+    expect(result.current.pendingStartGuideFromIntro).toBe(false)
+    expect(result.current.isGuideActive).toBe(false)
   })
 })

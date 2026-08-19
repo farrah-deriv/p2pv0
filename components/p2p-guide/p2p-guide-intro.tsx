@@ -98,9 +98,10 @@ function IntroContent() {
   const requestAskAmy = useGuideStore((s) => s.requestAskAmy)
   const router = useRouter()
 
-  // requestStartGuide() dismisses the intro and queues the tour; Main starts
-  // it once the intro has actually unmounted, so the tour overlay never
-  // races the intro's Radix teardown (stranded backdrop → unclickable Next/X).
+  // requestStartGuide() dismisses the intro and queues the tour. Main starts
+  // it on Markets once the intro has unmounted — off Markets it redirects to
+  // / first so the tour targets exist. Starting in the same tick races the
+  // intro's Radix teardown (stranded backdrop → unclickable Next/X).
   const handlePlaceOrder = () => {
     setGuideStartedFromIntro(true)
     requestStartGuide()

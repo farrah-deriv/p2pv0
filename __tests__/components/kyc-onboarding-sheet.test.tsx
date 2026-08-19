@@ -93,15 +93,16 @@ describe("KycOnboardingSheet", () => {
     delete (window as any).location
     window.location = { href: "" } as any
 
+    const state = {
+      onboardingStatus: baseOnboardingStatus,
+      userId: "user-1",
+      userData: { signup: "v2" },
+      isWalletAccount: false,
+    }
     mockUseUserDataStore.mockImplementation((selector?: (state: any) => unknown) => {
-      const state = {
-        onboardingStatus: baseOnboardingStatus,
-        userId: "user-1",
-        userData: { signup: "v2" },
-        isWalletAccount: false,
-      }
       return selector ? selector(state) : state
     })
+    mockUseUserDataStore.getState = jest.fn(() => state)
   })
 
   it("renders revamped title, body, hero benefits, and default CTA", () => {
@@ -242,26 +243,28 @@ describe("KycOnboardingSheet", () => {
   })
 
   it("does not show Resubmit now when userId is null", () => {
-    mockUseUserDataStore.mockImplementation((selector?: (state: any) => unknown) => {
-      const state = {
-        onboardingStatus: {
-          ...baseOnboardingStatus,
-          kyc: {
-            status: "pending",
-            poi_status: "pending",
-            poa_status: "pending",
-          },
+    const state = {
+      onboardingStatus: {
+        ...baseOnboardingStatus,
+        kyc: {
+          status: "pending",
+          poi_status: "pending",
+          poa_status: "pending",
         },
-        userId: null,
-        userData: { signup: "v2" },
-        isWalletAccount: false,
-      }
+      },
+      userId: null,
+      userData: { signup: "v2" },
+      isWalletAccount: false,
+    }
+    mockUseUserDataStore.mockImplementation((selector?: (state: any) => unknown) => {
       return selector ? selector(state) : state
     })
+    mockUseUserDataStore.getState = jest.fn(() => state)
 
     render(<KycOnboardingSheet />)
 
     expect(screen.queryByText("Resubmit now")).not.toBeInTheDocument()
+    expect(mockFetchQuery).not.toHaveBeenCalled()
   })
 
   it("shows check proof of identity CTA when POI is rejected and POA is complete", () => {
@@ -309,34 +312,41 @@ describe("KycOnboardingSheet — verified during KYC popup", () => {
   // still finds itself open for a user who is now allowed, it must only
   // close — never open the intro. That swap is what stacked two backdrops.
   const setIsOnboardingStatusRefreshing = jest.fn()
+  const allowedStatus = {
+    ...baseOnboardingStatus,
+    p2p: { ...baseOnboardingStatus.p2p, allowed: true },
+  }
+
+  const stubStore = (overrides: Record<string, unknown> = {}) => {
+    const state = {
+      onboardingStatus: allowedStatus,
+      userId: null as string | null,
+      userData: { signup: "v2" },
+      isWalletAccount: false,
+      setIsOnboardingStatusRefreshing,
+      ...overrides,
+    }
+    mockUseUserDataStore.mockImplementation((selector?: (state: any) => unknown) => {
+      return selector ? selector(state) : state
+    })
+    mockUseUserDataStore.getState = jest.fn(() => state)
+    return state
+  }
 
   beforeEach(() => {
     jest.clearAllMocks()
     delete (window as any).location
     window.location = { href: "" } as any
 
-    ;(useUserDataStore as any).getState = jest.fn(() => ({ userId: "new-p2p-user" }))
-
-    mockUseUserDataStore.mockImplementation((selector?: (state: any) => unknown) => {
-      const state = {
-        onboardingStatus: baseOnboardingStatus,
-        userId: null,
-        userData: { signup: "v2" },
-        isWalletAccount: false,
-        setIsOnboardingStatusRefreshing,
-      }
-      return selector ? selector(state) : state
+    stubStore()
+    mockFetchQuery.mockResolvedValue(allowedStatus)
+    ;(AuthAPI.ensureP2PUser as jest.Mock).mockImplementation(async () => {
+      mockUseUserDataStore.getState = jest.fn(() => ({
+        onboardingStatus: allowedStatus,
+        userId: "new-p2p-user",
+      }))
     })
-
-    mockFetchQuery.mockResolvedValue({
-      ...baseOnboardingStatus,
-      p2p: { ...baseOnboardingStatus.p2p, allowed: true },
-    })
-    ;(AuthAPI.ensureP2PUser as jest.Mock).mockResolvedValue(undefined)
-    ;(AuthAPI.getOnboardingStatus as jest.Mock).mockResolvedValue({
-      ...baseOnboardingStatus,
-      p2p: { ...baseOnboardingStatus.p2p, allowed: true },
-    })
+    ;(AuthAPI.getOnboardingStatus as jest.Mock).mockResolvedValue(allowedStatus)
   })
 
   it("closes itself without opening the guide intro when verification completes", async () => {
@@ -350,5 +360,16 @@ describe("KycOnboardingSheet — verified during KYC popup", () => {
     await waitFor(() => {
       expect(onClose).toHaveBeenCalledTimes(1)
     })
+    expect(mockFetchQuery).not.toHaveBeenCalled()
+  })
+
+  it("fetches onboarding status only when the store has no snapshot", async () => {
+    stubStore({ onboardingStatus: null })
+    render(<KycOnboardingSheet route="markets" />)
+
+    await waitFor(() => {
+      expect(mockFetchQuery).toHaveBeenCalledTimes(1)
+    })
+    expect(AuthAPI.ensureP2PUser).toHaveBeenCalledTimes(1)
   })
 })

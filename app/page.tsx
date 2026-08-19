@@ -63,18 +63,21 @@ export default function BuySellPage() {
   const { t, locale } = useTranslations()
   const router = useRouter()
   const pendingStartGuide = useGuideStore((s) => s.pendingStartGuide)
-  const setPendingStartGuide = useGuideStore((s) => s.setPendingStartGuide)
-  const startGuide = useGuideStore((s) => s.startGuide)
   const isGuideActive = useGuideStore((s) => s.isGuideActive)
   const guideType = useGuideStore((s) => s.guideType)
   const setMarketTradeType = useGuideStore((s) => s.setMarketTradeType)
 
   useEffect(() => {
-    if (pendingStartGuide) {
-      setPendingStartGuide(false)
-      startGuide("markets")
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    // Explore marketplace from a non-Markets page sets this flag, then
+    // navigates here so the tour spotlights Markets UI, not Ads/Orders/etc.
+    // Subscribe to the flag (not mount-only) so a later set still starts the
+    // tour if Markets stays mounted instead of remounting. Read the store
+    // fresh so we never start on a stale snapshot.
+    if (!pendingStartGuide) return
+    const store = useGuideStore.getState()
+    store.setPendingStartGuide(false)
+    store.startGuide("markets")
+  }, [pendingStartGuide])
 
   const searchParams = useSearchParams()
   const {

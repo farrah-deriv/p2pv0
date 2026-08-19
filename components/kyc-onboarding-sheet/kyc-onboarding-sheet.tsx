@@ -38,10 +38,20 @@ function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
 
   useEffect(() => {
     let isMounted = true
-    // Match mobile's action guard: a user without a P2P profile can have
-    // completed onboarding since P2P first loaded, so refresh before showing
-    // this gate. Existing P2P users keep their normal cached status.
+    // Existing P2P users keep their cached status. Create ad / other gated
+    // CTAs already refreshed via useKycOverlay before this sheet mounts, so
+    // do not hit /onboarding-status again.
     if (userId && !hasRefreshedOnboardingStatus.current) {
+      if (isMounted) setIsRefreshingOnboardingStatus(false)
+      return
+    }
+
+    // userId appeared mid-fetch (ensureP2PUser resolved during the async gap,
+    // or the effect re-ran under Concurrent Mode before the .finally). The
+    // refresh already did its job — clear the local loader so the sheet does
+    // not render null forever (line ~298). The async .finally is guarded by
+    // isMounted and skips this when cleanup has run.
+    if (userId && hasRefreshedOnboardingStatus.current) {
       if (isMounted) setIsRefreshingOnboardingStatus(false)
       return
     }
@@ -53,17 +63,20 @@ function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
     hasRefreshedOnboardingStatus.current = true
     void (async () => {
       try {
-        const status = await queryClient.fetchQuery({
-          queryKey: queryKeys.auth.onboardingStatus(),
-          queryFn: () => AuthAPI.getOnboardingStatus(),
-          staleTime: 0,
-        })
-        if (!isMounted) return
+        // Gated CTAs already wrote a fresh snapshot via useKycOverlay. Reuse
+        // it so Create ad / other CTAs do not hit /onboarding-status twice.
+        const status =
+          useUserDataStore.getState().onboardingStatus ??
+          (await queryClient.fetchQuery({
+            queryKey: queryKeys.auth.onboardingStatus(),
+            queryFn: () => AuthAPI.getOnboardingStatus(),
+            staleTime: 0,
+          }))
+        if (!isMounted || !status) return
 
-        // The fresh status is authoritative. If onboarding has completed since
-        // P2P first loaded, create the P2P profile. Do not open the guide intro
-        // from here — Create ad (and other gated CTAs) pick intro vs KYC
-        // *before* this sheet mounts, so this path never races a second overlay.
+        // If onboarding has completed since P2P first loaded, create the P2P
+        // profile. Do not open the guide intro from here — Create ad (and
+        // other gated CTAs) pick intro vs KYC *before* this sheet mounts.
         if (status.p2p.allowed && !useUserDataStore.getState().userId) {
           await AuthAPI.ensureP2PUser()
           if (!isMounted) return

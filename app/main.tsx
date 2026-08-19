@@ -69,6 +69,7 @@ export default function Main({
   const isIntroOpen = useGuideStore((state) => state.isIntroOpen)
   const pendingStartGuideFromIntro = useGuideStore((state) => state.pendingStartGuideFromIntro)
   const clearPendingStartGuideFromIntro = useGuideStore((state) => state.clearPendingStartGuideFromIntro)
+  const setPendingStartGuide = useGuideStore((state) => state.setPendingStartGuide)
   const pendingOpenIntro = useGuideStore((state) => state.pendingOpenIntro)
   const clearPendingOpenIntro = useGuideStore((state) => state.clearPendingOpenIntro)
   const startGuide = useGuideStore((state) => state.startGuide)
@@ -199,6 +200,8 @@ export default function Main({
 
         // The guide intro is shown only to a newly registered P2P user (one
         // who has no P2P userId yet). Existing users never re-trigger it.
+        // hasShownIntro (set by openIntro) stops a second open after this
+        // effect re-runs post-ensureP2PUser / on a status refresh.
         if (!currentUserId && isP2PAllowed) {
           await AuthAPI.ensureP2PUser()
 
@@ -216,7 +219,7 @@ export default function Main({
             router.replace(next.pathname + next.search, { scroll: false })
           }
 
-          openIntro()
+          if (!useGuideStore.getState().hasShownIntro) openIntro()
         } else if (currentUserId && isFullyVerified && searchParams.get("show_kyc_popup") === "true") {
           // A returning, fully verified user arriving with ?show_kyc_popup:
           // verification is already complete, so the KYC onboarding popup must
@@ -227,7 +230,7 @@ export default function Main({
           setStripPending(true)
           router.replace(next.pathname + next.search, { scroll: false })
 
-          openIntro()
+          if (!useGuideStore.getState().hasShownIntro) openIntro()
         }
       } catch (error) {
         if (abortController.signal.aborted) {
@@ -279,22 +282,36 @@ export default function Main({
     return () => window.clearTimeout(timeout)
   }, [pendingAskAmy, isIntroOpen, clearPendingAskAmy])
 
-  // "Place an order" on the intro queues the markets tour via
+  // "Explore the marketplace" on the intro queues the markets tour via
   // requestStartGuide() (isIntroOpen=false + pendingStartGuideFromIntro=true
   // in one set). Starting the tour in that same tick mounted P2PGuide's
   // z-[60] overlay on top of the intro's still-fading portal, stranding a
   // backdrop so the tour's Next/Close CTAs could not be clicked. Wait out
-  // the intro fade before mounting the tour.
+  // the intro fade first. Off Markets the tour targets are not in the DOM,
+  // so send the user to / and let Markets start the tour on mount.
   useEffect(() => {
     if (!pendingStartGuideFromIntro || isIntroOpen) return
     if (typeof window === "undefined") return
 
     const timeout = window.setTimeout(() => {
-      startGuide("markets")
+      if (pathname !== "/") {
+        setPendingStartGuide(true)
+        router.push("/")
+      } else {
+        startGuide("markets")
+      }
       clearPendingStartGuideFromIntro()
     }, OVERLAY_FADE_WAIT_MS)
     return () => window.clearTimeout(timeout)
-  }, [pendingStartGuideFromIntro, isIntroOpen, startGuide, clearPendingStartGuideFromIntro])
+  }, [
+    pendingStartGuideFromIntro,
+    isIntroOpen,
+    pathname,
+    router,
+    setPendingStartGuide,
+    startGuide,
+    clearPendingStartGuideFromIntro,
+  ])
 
   // Create ad queues the intro (requestOpenIntro) when KYC is already
   // showing. Do not mount the intro until that AlertDialog has closed and
@@ -310,7 +327,7 @@ export default function Main({
     if (typeof window === "undefined") return
 
     const timeout = window.setTimeout(() => {
-      openIntro()
+      if (!useGuideStore.getState().hasShownIntro) openIntro()
       clearPendingOpenIntro()
     }, OVERLAY_FADE_WAIT_MS)
     return () => window.clearTimeout(timeout)
