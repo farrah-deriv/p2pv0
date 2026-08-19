@@ -7,6 +7,7 @@ import jest from "jest"
 
 const mockPush = jest.fn()
 const mockOpenIntro = jest.fn()
+const mockRequestOpenIntro = jest.fn()
 const mockShowAlert = jest.fn()
 const mockHideAlert = jest.fn()
 
@@ -61,7 +62,7 @@ describe("EmptyState create ad", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockUseGuideStore.mockImplementation((selector?: (state: any) => unknown) => {
-      const state = { openIntro: mockOpenIntro }
+      const state = { openIntro: mockOpenIntro, requestOpenIntro: mockRequestOpenIntro }
       return selector ? selector(state) : state
     })
     mockUseAlertDialog.mockReturnValue({
@@ -96,6 +97,51 @@ describe("EmptyState create ad", () => {
     fireEvent.click(screen.getByText("myAds.createAd"))
 
     expect(mockOpenIntro).toHaveBeenCalledTimes(1)
+    expect(mockRequestOpenIntro).not.toHaveBeenCalled()
+    expect(mockHideAlert).not.toHaveBeenCalled()
+    expect(mockShowAlert).not.toHaveBeenCalled()
+    expect(mockPush).not.toHaveBeenCalled()
+  })
+
+  it("queues the intro when KYC is already open so Main can wait for it to close", () => {
+    mockUseAlertDialog.mockReturnValue({
+      showAlert: mockShowAlert,
+      hideAlert: mockHideAlert,
+      isOpen: true,
+    } as any)
+    mockUseUserDataStore.mockImplementation((selector?: (state: any) => unknown) => {
+      const state = {
+        userId: null,
+        verificationStatus: null,
+        onboardingStatus: verifiedOnboarding,
+      }
+      return selector ? selector(state) : state
+    })
+
+    renderCreateAd()
+    fireEvent.click(screen.getByText("myAds.createAd"))
+
+    expect(mockHideAlert).toHaveBeenCalledTimes(1)
+    expect(mockRequestOpenIntro).toHaveBeenCalledTimes(1)
+    expect(mockOpenIntro).not.toHaveBeenCalled()
+    expect(mockShowAlert).not.toHaveBeenCalled()
+    expect(mockPush).not.toHaveBeenCalled()
+  })
+
+  it("does nothing when verification status has not loaded yet", () => {
+    mockUseUserDataStore.mockImplementation((selector?: (state: any) => unknown) => {
+      const state = {
+        userId: null,
+        verificationStatus: null,
+        onboardingStatus: null,
+      }
+      return selector ? selector(state) : state
+    })
+
+    renderCreateAd()
+    fireEvent.click(screen.getByText("myAds.createAd"))
+
+    expect(mockOpenIntro).not.toHaveBeenCalled()
     expect(mockShowAlert).not.toHaveBeenCalled()
     expect(mockPush).not.toHaveBeenCalled()
   })

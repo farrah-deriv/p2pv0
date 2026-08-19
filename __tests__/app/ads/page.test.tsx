@@ -9,6 +9,7 @@ import jest from "jest"
 
 const mockPush = jest.fn()
 const mockOpenIntro = jest.fn()
+const mockRequestOpenIntro = jest.fn()
 const mockShowAlert = jest.fn()
 const mockHideAlert = jest.fn()
 
@@ -103,12 +104,13 @@ describe("AdsPage create ad", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockUseGuideStore.mockImplementation((selector?: (state: any) => unknown) => {
-      const state = { openIntro: mockOpenIntro }
+      const state = { openIntro: mockOpenIntro, requestOpenIntro: mockRequestOpenIntro }
       return selector ? selector(state) : state
     })
     mockUseAdvertAlertDialog.mockReturnValue({
       showAlert: mockShowAlert,
       hideAlert: mockHideAlert,
+      isOpen: false,
     } as any)
     mockUseP2PSystemMaintenance.mockReturnValue({ isActive: false } as any)
     // Create ad only renders when the active tab already has ads.
@@ -141,6 +143,26 @@ describe("AdsPage create ad", () => {
     fireEvent.click(screen.getByTestId("ads-btn-create"))
 
     expect(mockOpenIntro).toHaveBeenCalledTimes(1)
+    expect(mockRequestOpenIntro).not.toHaveBeenCalled()
+    expect(mockHideAlert).not.toHaveBeenCalled()
+    expect(mockShowAlert).not.toHaveBeenCalled()
+    expect(mockPush).not.toHaveBeenCalled()
+  })
+
+  it("queues the intro when KYC is already open so Main can wait for it to close", () => {
+    mockUseAdvertAlertDialog.mockReturnValue({
+      showAlert: mockShowAlert,
+      hideAlert: mockHideAlert,
+      isOpen: true,
+    } as any)
+    stubUser({ userId: null, onboardingStatus: verifiedOnboarding })
+
+    render(<AdsPage />)
+    fireEvent.click(screen.getByTestId("ads-btn-create"))
+
+    expect(mockHideAlert).toHaveBeenCalledTimes(1)
+    expect(mockRequestOpenIntro).toHaveBeenCalledTimes(1)
+    expect(mockOpenIntro).not.toHaveBeenCalled()
     expect(mockShowAlert).not.toHaveBeenCalled()
     expect(mockPush).not.toHaveBeenCalled()
   })

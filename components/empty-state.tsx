@@ -36,7 +36,8 @@ export default function EmptyState({
   const verificationStatus = useUserDataStore((state) => state.verificationStatus)
   const onboardingStatus = useUserDataStore((state) => state.onboardingStatus)
   const openIntro = useGuideStore((state) => state.openIntro)
-  const { hideAlert, showAlert } = useAlertDialog()
+  const requestOpenIntro = useGuideStore((state) => state.requestOpenIntro)
+  const { hideAlert, showAlert, isOpen: isAlertOpen } = useAlertDialog()
   const { t } = useTranslations()
   const { track } = useTrackers()
   const displayTitle = title ?? t("market.noAdsMaintenanceTitle")
@@ -44,16 +45,23 @@ export default function EmptyState({
 
   const createAd = () => {
     if (route === "markets") track("ek_create_ad_markets")
-    // One overlay only. Verified (including "onboarding done, P2P user not
-    // created yet") → guide intro. Incomplete KYC → KYC sheet. Never both:
-    // the sheet used to open, then swap to the intro and stack two backdrops.
+    // One overlay only. Unknown status → wait (do not guess KYC). Verified
+    // without a P2P profile → intro. Incomplete KYC → KYC sheet. Never both:
+    // treating "status not loaded" as unverified opened KYC, then Main opened
+    // the intro on top and left the AlertDialog overlay stuck open.
+    if (!verificationStatus && !onboardingStatus) return
     if (isVerified) {
       if (userId) {
         const operation = adType === "buy" ? "sell" : "buy"
         router.push(`/ads/create?operation=${operation}`)
         return
       }
-      openIntro()
+      if (isAlertOpen) {
+        hideAlert()
+        requestOpenIntro()
+      } else {
+        openIntro()
+      }
       return
     }
     showAlert(createKycOnboardingAlertConfig({ route: route || "ads", onClose: hideAlert }))

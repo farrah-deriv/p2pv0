@@ -23,6 +23,7 @@ import { shouldShowP2PMaintenanceBanner } from "@/lib/p2p-maintenance-constants"
 import { shouldShowMobileFooterNav } from "@/lib/mobile-footer-nav"
 import { useWalletViewStore } from "@/stores/wallet-view-store"
 import { useGuideStore } from "@/stores/guide-store"
+import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { P2PGuide } from "@/components/p2p-guide/p2p-guide"
 import { P2PGuideIntro } from "@/components/p2p-guide/p2p-guide-intro"
 import "./globals.css"
@@ -68,7 +69,10 @@ export default function Main({
   const isIntroOpen = useGuideStore((state) => state.isIntroOpen)
   const pendingStartGuideFromIntro = useGuideStore((state) => state.pendingStartGuideFromIntro)
   const clearPendingStartGuideFromIntro = useGuideStore((state) => state.clearPendingStartGuideFromIntro)
+  const pendingOpenIntro = useGuideStore((state) => state.pendingOpenIntro)
+  const clearPendingOpenIntro = useGuideStore((state) => state.clearPendingOpenIntro)
   const startGuide = useGuideStore((state) => state.startGuide)
+  const { hideAlert, isOpen: isAlertOpen } = useAlertDialog()
   const showMobileFooterNav = shouldShowMobileFooterNav(pathname, isChatVisible, isTransactionListVisible)
   const { data: onboardingStatus, isLoading: isOnboardingLoading } = useOnboardingStatus(
     isAuthenticated && !isMaintenanceActive,
@@ -291,6 +295,26 @@ export default function Main({
     }, OVERLAY_FADE_WAIT_MS)
     return () => window.clearTimeout(timeout)
   }, [pendingStartGuideFromIntro, isIntroOpen, startGuide, clearPendingStartGuideFromIntro])
+
+  // Create ad queues the intro (requestOpenIntro) when KYC is already
+  // showing. Do not mount the intro until that AlertDialog has closed and
+  // finished fading — opening it in the same tick stacks two DismissableLayers
+  // and leaves the KYC overlay (bg-black/40, data-state="open") behind the
+  // intro, then restores body pointer-events: none after both close.
+  useEffect(() => {
+    if (!pendingOpenIntro) return
+    if (isAlertOpen) {
+      hideAlert()
+      return
+    }
+    if (typeof window === "undefined") return
+
+    const timeout = window.setTimeout(() => {
+      openIntro()
+      clearPendingOpenIntro()
+    }, OVERLAY_FADE_WAIT_MS)
+    return () => window.clearTimeout(timeout)
+  }, [pendingOpenIntro, isAlertOpen, hideAlert, openIntro, clearPendingOpenIntro])
 
   if (pathname === "/login") {
     return <div className="container mx-auto overflow-hidden max-w-7xl">{children}</div>

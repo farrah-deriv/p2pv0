@@ -23,6 +23,10 @@ interface GuideState {
   // only dismisses the intro and sets this flag; Main starts the tour once
   // isIntroOpen is false (see app/main.tsx). Mirrors pendingAskAmy.
   pendingStartGuideFromIntro: boolean
+  // Queue an intro open without mounting it. Used when KYC is already
+  // showing: hide the alert first, then Main opens the intro after the
+  // overlay fade so the two DismissableLayers never stack.
+  pendingOpenIntro: boolean
   guideStartedFromIntro: boolean
   adTradeType: "buy" | "sell" | null
   marketTradeType: "buy" | "sell" | null
@@ -31,7 +35,11 @@ interface GuideState {
   advertsSettled: boolean
   setAdvertsSettled: () => void
   // First-time open (create ad, onboarding). Same state change as reopenIntro.
+  // Call only when no other overlay is open. If KYC is showing, use
+  // requestOpenIntro() after hideAlert() instead.
   openIntro: () => void
+  requestOpenIntro: () => void
+  clearPendingOpenIntro: () => void
   // Alias of openIntro. completeGuide() uses this to bring the intro back
   // after a tour that started from it — not a first-time open.
   reopenIntro: () => void
@@ -62,6 +70,7 @@ export const useGuideStore = create<GuideState>()((set, get) => ({
   pendingStartGuide: false,
   pendingAskAmy: false,
   pendingStartGuideFromIntro: false,
+  pendingOpenIntro: false,
   guideStartedFromIntro: false,
   adTradeType: null,
   marketTradeType: null,
@@ -70,6 +79,8 @@ export const useGuideStore = create<GuideState>()((set, get) => ({
   advertsSettled: false,
   setAdvertsSettled: () => set((s) => s.advertsSettled ? s : { advertsSettled: true }),
   openIntro: () => set({ isIntroOpen: true }),
+  requestOpenIntro: () => set({ pendingOpenIntro: true }),
+  clearPendingOpenIntro: () => set((s) => (s.pendingOpenIntro ? { pendingOpenIntro: false } : s)),
   reopenIntro: () => get().openIntro(),
   dismissIntro: () => set({ isIntroOpen: false }),
   // Ask Amy opens the Intercom messenger. The dialog must fully unmount first —

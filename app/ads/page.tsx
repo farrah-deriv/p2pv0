@@ -42,6 +42,7 @@ export default function AdsPage() {
   const [activeTab, setActiveTab] = useState<MyAdsTab>("active")
   const { userData, userId, onboardingStatus, verificationStatus } = useUserDataStore()
   const openIntro = useGuideStore((state) => state.openIntro)
+  const requestOpenIntro = useGuideStore((state) => state.requestOpenIntro)
   const isVerified = isP2PVerified({ verificationStatus, onboardingStatus })
   const tempBanUntil = userData?.temp_ban_until
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
@@ -52,7 +53,7 @@ export default function AdsPage() {
     title: "",
     message: "",
   })
-  const { hideAlert, showAlert } = useAdvertAlertDialog()
+  const { hideAlert, showAlert, isOpen: isAlertOpen } = useAdvertAlertDialog()
   const [showKycPopup, setShowKycPopup] = useState(false)
   const errorAlertShownRef = useRef(false)
 
@@ -115,14 +116,20 @@ export default function AdsPage() {
   const handleCreateAd = () => {
     if (isMaintenanceActive) return
     track("ek_create_ad_my_ads")
-    // One overlay only. Verified without a P2P profile yet → guide intro.
-    // Incomplete KYC → KYC sheet. Existing P2P user → create form.
+    // One overlay only. Unknown status → wait. Verified without a P2P
+    // profile → intro. Incomplete KYC → KYC sheet. Existing P2P user → form.
+    if (!verificationStatus && !onboardingStatus) return
     if (isVerified) {
       if (userId) {
         router.push("/ads/create")
         return
       }
-      openIntro()
+      if (isAlertOpen) {
+        hideAlert()
+        requestOpenIntro()
+      } else {
+        openIntro()
+      }
       return
     }
     setShowKycPopup(true)

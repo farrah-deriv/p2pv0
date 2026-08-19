@@ -13,6 +13,7 @@ describe("useGuideStore", () => {
       pendingStartGuide: false,
       pendingAskAmy: false,
       pendingStartGuideFromIntro: false,
+      pendingOpenIntro: false,
       guideStartedFromIntro: false,
       adTradeType: null,
       marketTradeType: null,
@@ -36,6 +37,29 @@ describe("useGuideStore", () => {
     })
 
     expect(result.current.isIntroOpen).toBe(true)
+  })
+
+  it("requestOpenIntro queues the intro without mounting it", () => {
+    const { result } = renderHook(() => useGuideStore())
+
+    act(() => {
+      result.current.requestOpenIntro()
+    })
+
+    expect(result.current.pendingOpenIntro).toBe(true)
+    expect(result.current.isIntroOpen).toBe(false)
+  })
+
+  it("clearPendingOpenIntro drops the queued intro open", () => {
+    const { result } = renderHook(() => useGuideStore())
+
+    act(() => {
+      result.current.requestOpenIntro()
+      result.current.clearPendingOpenIntro()
+    })
+
+    expect(result.current.pendingOpenIntro).toBe(false)
+    expect(result.current.isIntroOpen).toBe(false)
   })
 
   it("requestStartGuide dismisses the intro and queues the tour without starting it", () => {
