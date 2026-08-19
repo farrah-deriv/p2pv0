@@ -15,8 +15,7 @@ import ChooseCurrencyStep from "./choose-currency-step"
 import WalletActionStep from "./wallet-action-step"
 import TransactionDetails from "./transaction-details"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { useAlertDialog } from "@/hooks/use-alert-dialog"
-import { createKycOnboardingAlertConfig } from "@/components/kyc-onboarding-sheet"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useTrackers } from "@/analytics/useTrackers"
 import type { Transaction } from "../types"
@@ -64,10 +63,7 @@ export default function WalletSummary({
   const router = useRouter()
   const searchParams = useSearchParams()
   const userId = useUserDataStore((state) => state.userId)
-  const verificationStatus = useUserDataStore((state) => state.verificationStatus)
-  const onboardingStatus = useUserDataStore((state) => state.onboardingStatus)
-  const isPoiExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poi_status !== "approved"
-  const isPoaExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poa_status !== "approved"
+  const { runGatedAction } = useKycOverlay({ route: "wallets" })
   const { data: currenciesResponse, isLoading: isCurrenciesLoading } = useCurrencies()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isIframeModalOpen, setIsIframeModalOpen] = useState(false)
@@ -77,7 +73,6 @@ export default function WalletSummary({
   const [currencies, setCurrencies] = useState<Currency[]>([])
   const [localSelectedTransaction, setLocalSelectedTransaction] = useState<Transaction | null>(null)
   const isMobile = useIsMobile()
-  const { hideAlert, showAlert } = useAlertDialog()
 
   // Use parent's transaction if provided, otherwise use local state
   const selectedTransaction = parentSelectedTransaction !== undefined ? parentSelectedTransaction : localSelectedTransaction
@@ -198,41 +193,29 @@ export default function WalletSummary({
     fetchCurrencies()
   }, [currenciesResponse])
 
-  const isVerified = !!(userId && verificationStatus?.phone_verified && !isPoiExpired && !isPoaExpired)
-
   const handleDepositClick = () => {
     if (actionsDisabled) return
-    if (isVerified) {
+    runGatedAction(() => {
       setCurrentOperation("DEPOSIT")
       setCurrentStep("chooseCurrency")
-    } else {
-      showAlert(createKycOnboardingAlertConfig({ route: "wallets",
-        onClose: hideAlert }))
-    }
+    })
   }
 
   const handleWithdrawClick = () => {
     if (actionsDisabled) return
-    if (isVerified) {
+    runGatedAction(() => {
       setCurrentOperation("WITHDRAW")
       setCurrentStep("chooseCurrency")
-    } else {
-      showAlert(createKycOnboardingAlertConfig({ route: "wallets",
-        onClose: hideAlert }))
-    }
+    })
   }
 
   const handleTransferClick = () => {
     if (actionsDisabled) return
-
-    if (!isVerified) {
-      showAlert(createKycOnboardingAlertConfig({ route: "wallets", onClose: hideAlert }))
-      return
-    }
-
-    track("ek_transfer_wallets")
-    setCurrentOperation("TRANSFER")
-    setIsSidebarOpen(true)
+    runGatedAction(() => {
+      track("ek_transfer_wallets")
+      setCurrentOperation("TRANSFER")
+      setIsSidebarOpen(true)
+    })
   }
 
   // Deep-link: Markets' zero-balance banner navigates here with
@@ -246,27 +229,12 @@ export default function WalletSummary({
     if (searchParams.get("operation") !== "TRANSFER") return
     if (!userId) return
     router.replace("/wallet")
-    if (isVerified) {
+    runGatedAction(() => {
       track("ek_transfer_wallets")
       setCurrentOperation("TRANSFER")
       setIsSidebarOpen(true)
-    } else {
-      showAlert(createKycOnboardingAlertConfig({ route: "wallets",
-        onClose: hideAlert }))
-    }
-  }, [
-    searchParams,
-    userId,
-    router,
-    verificationStatus,
-    isPoiExpired,
-    isPoaExpired,
-    track,
-    t,
-    showAlert,
-    hideAlert,
-    actionsDisabled,
-  ])
+    })
+  }, [searchParams, userId, router, runGatedAction, track, actionsDisabled])
 
   const handleBuyClick = () => {
     router.push("/?operation=buy")

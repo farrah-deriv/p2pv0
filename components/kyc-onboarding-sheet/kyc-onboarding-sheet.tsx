@@ -12,7 +12,7 @@ import { KycOnboardingContentPanel } from "./kyc-onboarding-content-panel"
 import { KycOnboardingVisualPanel } from "./kyc-onboarding-visual-panel"
 import type { KycOnboardingStep } from "./kyc-onboarding-step-row"
 
-export type KycOnboardingRoute = "markets" | "profile" | "wallets" | "ads"
+export type KycOnboardingRoute = "markets" | "profile" | "wallets" | "ads" | "orders"
 
 interface KycOnboardingSheetProps {
   route?: KycOnboardingRoute
@@ -112,6 +112,8 @@ function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
         return "from=p2p-wallet"
       case "ads":
         return "from=p2p-ads"
+      case "orders":
+        return "from=p2p-orders"
       default:
         return "from=p2p"
     }

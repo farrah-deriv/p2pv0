@@ -19,7 +19,7 @@ import { RTL_MIRROR_ICON } from "@/lib/rtl"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { useToast } from "@/hooks/use-toast"
 import { useUserDataStore } from "@/stores/user-data-store"
-import { createKycOnboardingAlertConfig } from "@/components/kyc-onboarding-sheet"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAddPaymentMethod, type PaymentMethodError } from "@/hooks/use-api-queries"
@@ -70,6 +70,7 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
   const onboardingStatus = useUserDataStore((state) => state.onboardingStatus)
   const isPoiExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poi_status !== "approved"
   const isPoaExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poa_status !== "approved"
+  const { runGatedAction } = useKycOverlay({ route: "profile" })
   const { t, locale } = useTranslations()
   const [paymentMethodsCount, setPaymentMethodsCount] = useState(0)
 
@@ -186,12 +187,7 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
   }
 
   const handleShowAddPaymentMethod = () => {
-    if (userId && verificationStatus?.phone_verified && !isPoiExpired && !isPoaExpired) {
-      setShowAddPaymentPanel(true)
-    } else {
-      showAlert(createKycOnboardingAlertConfig({ route: "profile",
-        onClose: hideAlert }))
-    }
+    runGatedAction(() => setShowAddPaymentPanel(true))
   }
 
   return (

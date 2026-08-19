@@ -17,9 +17,7 @@ import { AdvertiserSearchResultCard } from "@/components/advertiser-search-resul
 import { AdvertiserSearchSkeleton } from "@/components/advertiser-search-skeleton"
 import { TabHorizontal } from "@deriv-com/quill-ui-v2"
 import { useTranslations } from "@/lib/i18n/use-translations"
-import { useUserDataStore } from "@/stores/user-data-store"
-import { useAlertDialog } from "@/hooks/use-alert-dialog"
-import { createKycOnboardingAlertConfig } from "@/components/kyc-onboarding-sheet"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 import { useTrackers } from "@/analytics/useTrackers"
 import RiskWarningModal from "@/components/buy-sell/risk-warning/risk-warning-modal"
 import { evaluateRisk, type RiskWarningResult } from "@/components/buy-sell/risk-warning/risk-warning-rules"
@@ -103,26 +101,18 @@ export default function MobileAdvertiserSearch({ isOpen, onClose }: MobileAdvert
         }, 300)
     }
 
-    const userId = useUserDataStore((state) => state.userId)
-    const verificationStatus = useUserDataStore((state) => state.verificationStatus)
-    const onboardingStatus = useUserDataStore((state) => state.onboardingStatus)
-    const isPoiExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poi_status !== "approved"
-    const isPoaExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poa_status !== "approved"
-    const { hideAlert, showAlert } = useAlertDialog()
+    const { runGatedAction } = useKycOverlay({ route: "markets" })
 
     const { setPendingAd, setShouldReopenSearchOnReturn } = useOrderSidebarStore()
     const { track } = useTrackers()
 
     const handleAdvertiserClick = (advertiserId: number) => {
         track("ek_advertiser_profile_markets_search")
-        if (userId && verificationStatus?.phone_verified && !isPoiExpired && !isPoaExpired) {
+        runGatedAction(() => {
             setShouldReopenSearchOnReturn(true)
             router.push(`/advertiser/${advertiserId}`)
             onClose()
-        } else {
-      showAlert(createKycOnboardingAlertConfig({ route: "markets",
-        onClose: hideAlert }))
-        }
+        })
     }
 
     const [pendingRiskAd, setPendingRiskAd] = useState<Advertisement | null>(null)

@@ -1,4 +1,4 @@
-import { isP2PVerified } from "@/lib/is-p2p-verified"
+import { isP2PVerified, isP2PVerifiedFromStatus } from "@/lib/is-p2p-verified"
 import type { OnboardingStatusResponse } from "@/services/api/api-auth"
 import type { VerificationStatus } from "@/stores/user-data-store"
 
@@ -90,5 +90,40 @@ describe("isP2PVerified", () => {
 
   it("is false when nothing is loaded", () => {
     expect(isP2PVerified({})).toBe(false)
+  })
+})
+
+describe("isP2PVerifiedFromStatus", () => {
+  const originalKycMandatory = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY
+
+  beforeEach(() => {
+    process.env.NEXT_PUBLIC_IS_KYC_MANDATORY = "1"
+  })
+
+  afterEach(() => {
+    process.env.NEXT_PUBLIC_IS_KYC_MANDATORY = originalKycMandatory
+  })
+
+  it("is not ready when nothing is loaded", () => {
+    expect(isP2PVerifiedFromStatus({})).toEqual({ verified: false, ready: false })
+  })
+
+  it("is ready and verified when onboarding is complete", () => {
+    expect(isP2PVerifiedFromStatus({ onboardingStatus: verifiedOnboarding })).toEqual({
+      verified: true,
+      ready: true,
+    })
+  })
+
+  it("is ready and unverified when KYC is incomplete", () => {
+    expect(
+      isP2PVerifiedFromStatus({
+        verificationStatus: { ...verifiedStatus, kyc_verified: false },
+        onboardingStatus: {
+          ...verifiedOnboarding,
+          kyc: { status: "pending", poi_status: "pending", poa_status: "none" },
+        },
+      }),
+    ).toEqual({ verified: false, ready: true })
   })
 })
