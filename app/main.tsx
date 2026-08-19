@@ -23,10 +23,15 @@ import { shouldShowP2PMaintenanceBanner } from "@/lib/p2p-maintenance-constants"
 import { shouldShowMobileFooterNav } from "@/lib/mobile-footer-nav"
 import { useWalletViewStore } from "@/stores/wallet-view-store"
 import { useGuideStore } from "@/stores/guide-store"
-import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { P2PGuide } from "@/components/p2p-guide/p2p-guide"
 import { P2PGuideIntro } from "@/components/p2p-guide/p2p-guide-intro"
 import "./globals.css"
+
+// Matches the vaul Drawer exit animation — the longest overlay fade in the
+// app. Radix Dialog fades faster (~150ms), but the pending-flush effects below
+// wait for the worst case so a leftover backdrop can't strand the next overlay
+// (Ask Amy, the guide tour, or a queued intro) on top of it.
+const OVERLAY_FADE_WAIT_MS = 500
 
 export default function Main({
   children,
@@ -61,13 +66,9 @@ export default function Main({
   const pendingAskAmy = useGuideStore((state) => state.pendingAskAmy)
   const clearPendingAskAmy = useGuideStore((state) => state.clearPendingAskAmy)
   const isIntroOpen = useGuideStore((state) => state.isIntroOpen)
-  const pendingOpenIntro = useGuideStore((state) => state.pendingOpenIntro)
-  const clearPendingOpenIntro = useGuideStore((state) => state.clearPendingOpenIntro)
-  // isOpen reflects the AlertDialogProvider state — the KYC onboarding popup
-  // is rendered through it. Main flushes pendingOpenIntro only once this is
-  // false, so the intro never mounts on top of the KYC overlay's Radix
-  // teardown (the stranded-backdrop / unclickable-CTA bug).
-  const { isOpen: isAlertDialogOpen } = useAlertDialog()
+  const pendingStartGuideFromIntro = useGuideStore((state) => state.pendingStartGuideFromIntro)
+  const clearPendingStartGuideFromIntro = useGuideStore((state) => state.clearPendingStartGuideFromIntro)
+  const startGuide = useGuideStore((state) => state.startGuide)
   const showMobileFooterNav = shouldShowMobileFooterNav(pathname, isChatVisible, isTransactionListVisible)
   const { data: onboardingStatus, isLoading: isOnboardingLoading } = useOnboardingStatus(
     isAuthenticated && !isMaintenanceActive,
@@ -254,14 +255,11 @@ export default function Main({
   }, [stripPending, searchParams])
 
   // Ask Amy (Intercom messenger) is opened from Main — outside the intro's
-  // Radix Dialog/Drawer subtree — and only after the intro has fully closed.
-  // The previous implementation called window.Intercom("show") on a 300 ms
-  // setTimeout from inside the dialog's onClick, which raced Radix's exit
-  // transition. Intercom's overlay opening on top of Radix mid-teardown left
-  // the page's scroll-lock / aria-hidden state stuck, so the P2P page stayed
-  // greyed out after closing Ask Amy (issue #1469). Waiting for isIntroOpen to
-  // flip false and then deferring one frame lets Radix unmount its portal and
-  // run its FocusScope / react-remove-scroll cleanup before Intercom mounts.
+  // Dialog/Drawer subtree — and only after that overlay has finished fading.
+  // A single rAF (~16ms) is shorter than the intro fade (~150ms Dialog,
+  // ~500ms Drawer), so Intercom used to open on top of a still-fading
+  // backdrop. Closing livechat then left that leftover overlay on the page
+  // (issue #1469). Wait out the fade before showing Intercom.
   useEffect(() => {
     // requestAskAmy() sets isIntroOpen=false and pendingAskAmy=true in one set,
     // so the two are never true simultaneously — pendingAskAmy implies the intro
@@ -270,32 +268,29 @@ export default function Main({
     if (!pendingAskAmy || isIntroOpen) return
     if (typeof window === "undefined") return
 
-    const frame = window.requestAnimationFrame(() => {
+    const timeout = window.setTimeout(() => {
       clearPendingAskAmy()
       window.Intercom?.("show")
-    })
-    return () => window.cancelAnimationFrame(frame)
+    }, OVERLAY_FADE_WAIT_MS)
+    return () => window.clearTimeout(timeout)
   }, [pendingAskAmy, isIntroOpen, clearPendingAskAmy])
 
-  // KycOnboardingSheet, when it detects verification has completed, queues
-  // the intro via requestOpenIntro() and calls its own onClose() to dismiss
-  // the KYC popup. Opening the intro in that same tick mounts the intro's
-  // Radix Dialog/Drawer on top of the KYC overlay mid-teardown — stranding a
-  // backdrop, leaving the intro CTAs unclickable, and (for Ask Amy) trapping
-  // the page after livechat closes. Main instead waits for the alert dialog
-  // to finish closing (isOpen=false) and defers one frame so Radix unmounts
-  // the KYC portal and releases its scroll-lock / aria-hidden before the
-  // intro's own portal mounts.
+  // "Place an order" on the intro queues the markets tour via
+  // requestStartGuide() (isIntroOpen=false + pendingStartGuideFromIntro=true
+  // in one set). Starting the tour in that same tick mounted P2PGuide's
+  // z-[60] overlay on top of the intro's still-fading portal, stranding a
+  // backdrop so the tour's Next/Close CTAs could not be clicked. Wait out
+  // the intro fade before mounting the tour.
   useEffect(() => {
-    if (!pendingOpenIntro || isAlertDialogOpen) return
+    if (!pendingStartGuideFromIntro || isIntroOpen) return
     if (typeof window === "undefined") return
 
-    const frame = window.requestAnimationFrame(() => {
-      openIntro()
-      clearPendingOpenIntro()
-    })
-    return () => window.cancelAnimationFrame(frame)
-  }, [pendingOpenIntro, isAlertDialogOpen, openIntro, clearPendingOpenIntro])
+    const timeout = window.setTimeout(() => {
+      startGuide("markets")
+      clearPendingStartGuideFromIntro()
+    }, OVERLAY_FADE_WAIT_MS)
+    return () => window.clearTimeout(timeout)
+  }, [pendingStartGuideFromIntro, isIntroOpen, startGuide, clearPendingStartGuideFromIntro])
 
   if (pathname === "/login") {
     return <div className="container mx-auto overflow-hidden max-w-7xl">{children}</div>

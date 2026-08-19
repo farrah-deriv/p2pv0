@@ -2,11 +2,13 @@
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useUserDataStore } from "@/stores/user-data-store"
+import { useGuideStore } from "@/stores/guide-store"
 import { Button } from "@/components/ui/button"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { createKycOnboardingAlertConfig } from "@/components/kyc-onboarding-sheet"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useTrackers } from "@/analytics/useTrackers"
+import { isP2PVerified } from "@/lib/is-p2p-verified"
 
 interface EmptyStateProps {
   adType?: "buy" | "sell"
@@ -33,21 +35,28 @@ export default function EmptyState({
   const userId = useUserDataStore((state) => state.userId)
   const verificationStatus = useUserDataStore((state) => state.verificationStatus)
   const onboardingStatus = useUserDataStore((state) => state.onboardingStatus)
-  const isPoiExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poi_status !== "approved"
-  const isPoaExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poa_status !== "approved"
+  const openIntro = useGuideStore((state) => state.openIntro)
   const { hideAlert, showAlert } = useAlertDialog()
   const { t } = useTranslations()
   const { track } = useTrackers()
   const displayTitle = title ?? t("market.noAdsMaintenanceTitle")
+  const isVerified = isP2PVerified({ verificationStatus, onboardingStatus })
 
   const createAd = () => {
     if (route === "markets") track("ek_create_ad_markets")
-    if (userId && verificationStatus?.phone_verified && !isPoiExpired && !isPoaExpired) {
-      const operation = adType === "buy" ? "sell" : "buy"
-      router.push(`/ads/create?operation=${operation}`)
-    } else {
-      showAlert(createKycOnboardingAlertConfig({ route: route || "ads", onClose: hideAlert }))
+    // One overlay only. Verified (including "onboarding done, P2P user not
+    // created yet") → guide intro. Incomplete KYC → KYC sheet. Never both:
+    // the sheet used to open, then swap to the intro and stack two backdrops.
+    if (isVerified) {
+      if (userId) {
+        const operation = adType === "buy" ? "sell" : "buy"
+        router.push(`/ads/create?operation=${operation}`)
+        return
+      }
+      openIntro()
+      return
     }
+    showAlert(createKycOnboardingAlertConfig({ route: route || "ads", onClose: hideAlert }))
   }
 
   const browseMarket = () => {

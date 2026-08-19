@@ -15,12 +15,14 @@ interface GuideState {
   isIntroOpen: boolean
   pendingStartGuide: boolean
   pendingAskAmy: boolean
-  // Set when a caller wants the intro opened but cannot do so immediately —
-  // specifically when the KYC onboarding AlertDialog is still open and its
-  // Radix teardown has not finished. Main flushes this once the alert dialog
-  // is closed (see app/main.tsx). Mirrors pendingAskAmy: a signal that the
-  // actual open must wait for a Radix unmount to complete.
-  pendingOpenIntro: boolean
+  // Set when the intro's "Place an order" card is tapped. The intro must
+  // fully unmount first — starting the tour in the same tick as dismissIntro()
+  // mounts P2PGuide (z-[60] overlay + tooltip) on top of the intro's still-
+  // tearing-down Radix Dialog/Drawer, stranding a backdrop so the tour's
+  // Next/Close CTAs sit under it and cannot be clicked. requestStartGuide()
+  // only dismisses the intro and sets this flag; Main starts the tour once
+  // isIntroOpen is false (see app/main.tsx). Mirrors pendingAskAmy.
+  pendingStartGuideFromIntro: boolean
   guideStartedFromIntro: boolean
   adTradeType: "buy" | "sell" | null
   marketTradeType: "buy" | "sell" | null
@@ -28,19 +30,18 @@ interface GuideState {
   currentStep: number
   advertsSettled: boolean
   setAdvertsSettled: () => void
+  // First-time open (create ad, onboarding). Same state change as reopenIntro.
   openIntro: () => void
-  // Queue an intro open without mounting it. Used by KycOnboardingSheet when
-  // it closes itself after verification succeeds: calling openIntro() in the
-  // same tick as onClose() mounts the intro's Radix Dialog/Drawer on top of
-  // the still-tearing-down KYC overlay, stranding a backdrop and leaving the
-  // intro CTAs unclickable. requestOpenIntro() only sets the flag; Main opens
-  // the intro once the alert dialog has closed.
-  requestOpenIntro: () => void
-  clearPendingOpenIntro: () => void
+  // Alias of openIntro. completeGuide() uses this to bring the intro back
+  // after a tour that started from it — not a first-time open.
   reopenIntro: () => void
   dismissIntro: () => void
   requestAskAmy: () => void
   clearPendingAskAmy: () => void
+  // Dismiss the intro and queue the markets tour. Main starts the tour once
+  // the intro has actually closed (see pendingStartGuideFromIntro).
+  requestStartGuide: () => void
+  clearPendingStartGuideFromIntro: () => void
   startGuide: (type?: GuideType) => void
   setGuideStartedFromIntro: (value: boolean) => void
   setAdTradeType: (type: "buy" | "sell" | null) => void
@@ -60,7 +61,7 @@ export const useGuideStore = create<GuideState>()((set, get) => ({
   isIntroOpen: false,
   pendingStartGuide: false,
   pendingAskAmy: false,
-  pendingOpenIntro: false,
+  pendingStartGuideFromIntro: false,
   guideStartedFromIntro: false,
   adTradeType: null,
   marketTradeType: null,
@@ -69,11 +70,7 @@ export const useGuideStore = create<GuideState>()((set, get) => ({
   advertsSettled: false,
   setAdvertsSettled: () => set((s) => s.advertsSettled ? s : { advertsSettled: true }),
   openIntro: () => set({ isIntroOpen: true }),
-  // Only queue; do not mount. Main flips isIntroOpen once the alert dialog
-  // has closed and Radix has torn its overlay down.
-  requestOpenIntro: () => set({ pendingOpenIntro: true }),
-  clearPendingOpenIntro: () => set((s) => (s.pendingOpenIntro ? { pendingOpenIntro: false } : s)),
-  reopenIntro: () => set({ isIntroOpen: true }),
+  reopenIntro: () => get().openIntro(),
   dismissIntro: () => set({ isIntroOpen: false }),
   // Ask Amy opens the Intercom messenger. The dialog must fully unmount first —
   // opening Intercom on top of Radix's exit transition leaves the page's
@@ -84,6 +81,12 @@ export const useGuideStore = create<GuideState>()((set, get) => ({
   // is actually shown (see clearPendingAskAmy).
   requestAskAmy: () => set({ isIntroOpen: false, pendingAskAmy: true }),
   clearPendingAskAmy: () => set((s) => (s.pendingAskAmy ? { pendingAskAmy: false } : s)),
+  // Same contract as requestAskAmy: dismiss first, start later. The tour
+  // overlay (z-[60]) must not mount while the intro's Radix portal is still
+  // tearing down — that is what stranded a backdrop over the tour CTAs.
+  requestStartGuide: () => set({ isIntroOpen: false, pendingStartGuideFromIntro: true }),
+  clearPendingStartGuideFromIntro: () =>
+    set((s) => (s.pendingStartGuideFromIntro ? { pendingStartGuideFromIntro: false } : s)),
   startGuide: (type: GuideType = "markets") => set({ isGuideActive: true, currentStep: 0, guideType: type }),
   setGuideStartedFromIntro: (value: boolean) => set({ guideStartedFromIntro: value }),
   setAdTradeType: (type: "buy" | "sell" | null) => set({ adTradeType: type }),

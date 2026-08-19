@@ -1,16 +1,11 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { KycOnboardingSheet } from "@/components/kyc-onboarding-sheet/kyc-onboarding-sheet"
 import { useUserDataStore } from "@/stores/user-data-store"
-import { useGuideStore } from "@/stores/guide-store"
 import * as AuthAPI from "@/services/api/api-auth"
 import jest from "jest"
 
 jest.mock("@/stores/user-data-store", () => ({
   useUserDataStore: jest.fn(),
-}))
-
-jest.mock("@/stores/guide-store", () => ({
-  useGuideStore: jest.fn(),
 }))
 
 jest.mock("@/services/api/api-auth", () => ({
@@ -69,7 +64,6 @@ jest.mock("@/lib/i18n/use-translations", () => ({
 }))
 
 const mockUseUserDataStore = useUserDataStore as jest.MockedFunction<typeof useUserDataStore>
-const mockUseGuideStore = useGuideStore as jest.MockedFunction<typeof useGuideStore>
 
 const baseOnboardingStatus = {
   tnc: { accepted: true },
@@ -93,16 +87,6 @@ const baseOnboardingStatus = {
   },
 }
 
-// Default guide-store mock: track requestOpenIntro / openIntro calls so the
-// verified-during-KYC tests can assert the intro is queued, not mounted.
-const guideStoreState = {
-  requestOpenIntro: jest.fn(),
-  openIntro: jest.fn(),
-  dismissIntro: jest.fn(),
-  isIntroOpen: false,
-  pendingOpenIntro: false,
-}
-
 describe("KycOnboardingSheet", () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -115,15 +99,6 @@ describe("KycOnboardingSheet", () => {
         userId: "user-1",
         userData: { signup: "v2" },
         isWalletAccount: false,
-      }
-      return selector ? selector(state) : state
-    })
-
-    mockUseGuideStore.mockImplementation((selector?: (state: any) => unknown) => {
-      const state = {
-        ...guideStoreState,
-        requestOpenIntro: jest.fn(),
-        openIntro: jest.fn(),
       }
       return selector ? selector(state) : state
     })
@@ -330,13 +305,9 @@ describe("KycOnboardingSheet", () => {
 })
 
 describe("KycOnboardingSheet — verified during KYC popup", () => {
-  // The regression this guards: when the KYC sheet detects verification has
-  // completed, it must queue the intro (requestOpenIntro) rather than calling
-  // openIntro() on the same tick as onClose(). Mounting the intro's Radix
-  // portal on top of the KYC overlay mid-teardown strands a backdrop and
-  // leaves the intro CTAs unclickable.
-  const requestOpenIntro = jest.fn()
-  const openIntro = jest.fn()
+  // Create ad picks intro vs KYC *before* this sheet mounts. If the sheet
+  // still finds itself open for a user who is now allowed, it must only
+  // close — never open the intro. That swap is what stacked two backdrops.
   const setIsOnboardingStatusRefreshing = jest.fn()
 
   beforeEach(() => {
@@ -344,28 +315,11 @@ describe("KycOnboardingSheet — verified during KYC popup", () => {
     delete (window as any).location
     window.location = { href: "" } as any
 
-    // The sheet selects requestOpenIntro via useGuideStore(s => s.requestOpenIntro).
-    // Capture the action so we can assert it was called (and openIntro was not).
-    mockUseGuideStore.mockImplementation((selector?: (state: any) => unknown) => {
-      const state = {
-        requestOpenIntro,
-        openIntro,
-        dismissIntro: jest.fn(),
-        isIntroOpen: false,
-        pendingOpenIntro: false,
-      }
-      return selector ? selector(state) : state
-    })
-
-    // After ensureP2PUser resolves, the sheet re-reads userId from the store
-    // via getState(). Return the newly-created id so the sheet proceeds to
-    // onClose + requestOpenIntro.
     ;(useUserDataStore as any).getState = jest.fn(() => ({ userId: "new-p2p-user" }))
 
     mockUseUserDataStore.mockImplementation((selector?: (state: any) => unknown) => {
       const state = {
         onboardingStatus: baseOnboardingStatus,
-        // null userId is what triggers the refresh branch.
         userId: null,
         userData: { signup: "v2" },
         isWalletAccount: false,
@@ -374,8 +328,6 @@ describe("KycOnboardingSheet — verified during KYC popup", () => {
       return selector ? selector(state) : state
     })
 
-    // The refresh branch fetches onboarding status; return allowed=true so
-    // the sheet creates the P2P user and queues the intro.
     mockFetchQuery.mockResolvedValue({
       ...baseOnboardingStatus,
       p2p: { ...baseOnboardingStatus.p2p, allowed: true },
@@ -387,7 +339,7 @@ describe("KycOnboardingSheet — verified during KYC popup", () => {
     })
   })
 
-  it("queues the intro via requestOpenIntro (not openIntro) and calls onClose when verification completes", async () => {
+  it("closes itself without opening the guide intro when verification completes", async () => {
     const onClose = jest.fn()
     render(<KycOnboardingSheet route="markets" onClose={onClose} />)
 
@@ -396,12 +348,7 @@ describe("KycOnboardingSheet — verified during KYC popup", () => {
     })
 
     await waitFor(() => {
-      // Dismisses the KYC popup (begins Radix teardown)…
       expect(onClose).toHaveBeenCalledTimes(1)
-      // …and queues the intro without mounting it. openIntro must NOT fire
-      // synchronously — Main opens it once the alert dialog has closed.
-      expect(requestOpenIntro).toHaveBeenCalledTimes(1)
-      expect(openIntro).not.toHaveBeenCalled()
     })
   })
 })

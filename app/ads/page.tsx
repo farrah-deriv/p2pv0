@@ -20,6 +20,8 @@ import { useUserDataStore } from "@/stores/user-data-store"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { TemporaryBanAlert } from "@/components/temporary-ban-alert"
 import { createKycOnboardingAlertConfig } from "@/components/kyc-onboarding-sheet"
+import { useGuideStore } from "@/stores/guide-store"
+import { isP2PVerified } from "@/lib/is-p2p-verified"
 import { useTrackers } from "@/analytics/useTrackers"
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import { MY_ADS_TAB_QUERY, parseMyAdsTab, type MyAdsTab } from "@/lib/ads/my-ads-tab"
@@ -39,8 +41,8 @@ export default function AdsPage() {
   const [statusData, setStatusData] = useState<StatusData | null>(null)
   const [activeTab, setActiveTab] = useState<MyAdsTab>("active")
   const { userData, userId, onboardingStatus, verificationStatus } = useUserDataStore()
-  const isPoiExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poi_status !== "approved"
-  const isPoaExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poa_status !== "approved"
+  const openIntro = useGuideStore((state) => state.openIntro)
+  const isVerified = isP2PVerified({ verificationStatus, onboardingStatus })
   const tempBanUntil = userData?.temp_ban_until
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
   const [hiddenAdverts, setHiddenAdverts] = useState(false)
@@ -100,21 +102,30 @@ export default function AdsPage() {
     if (showKycPopup) {
       showAlert(createKycOnboardingAlertConfig({
         route: "ads",
-        onClose: hideAlert,
+        onClose: () => {
+          hideAlert()
+          setShowKycPopup(false)
+        },
         onConfirm: () => setShowKycPopup(false),
         onCancel: () => setShowKycPopup(false),
       }))
     }
-  }, [showKycPopup, showAlert, hideAlert, t, isPoiExpired, isPoaExpired])
+  }, [showKycPopup, showAlert, hideAlert])
 
   const handleCreateAd = () => {
     if (isMaintenanceActive) return
     track("ek_create_ad_my_ads")
-    if (!userId || !verificationStatus?.phone_verified || isPoiExpired || isPoaExpired) {
-      setShowKycPopup(true)
+    // One overlay only. Verified without a P2P profile yet → guide intro.
+    // Incomplete KYC → KYC sheet. Existing P2P user → create form.
+    if (isVerified) {
+      if (userId) {
+        router.push("/ads/create")
+        return
+      }
+      openIntro()
       return
     }
-    router.push("/ads/create")
+    setShowKycPopup(true)
   }
 
   const handleTabChange = (tabValue: string) => {

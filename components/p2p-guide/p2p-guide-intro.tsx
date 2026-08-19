@@ -90,18 +90,20 @@ function OptionCard({ icon, title, subtitle, variant, onClick }: OptionCardProps
   )
 }
 
-function IntroContent({ onClose }: { onClose: () => void }) {
+function IntroContent() {
   const { t } = useTranslations()
   const dismissIntro = useGuideStore((s) => s.dismissIntro)
-  const startGuide = useGuideStore((s) => s.startGuide)
+  const requestStartGuide = useGuideStore((s) => s.requestStartGuide)
   const setGuideStartedFromIntro = useGuideStore((s) => s.setGuideStartedFromIntro)
   const requestAskAmy = useGuideStore((s) => s.requestAskAmy)
   const router = useRouter()
 
+  // requestStartGuide() dismisses the intro and queues the tour; Main starts
+  // it once the intro has actually unmounted, so the tour overlay never
+  // races the intro's Radix teardown (stranded backdrop → unclickable Next/X).
   const handlePlaceOrder = () => {
     setGuideStartedFromIntro(true)
-    dismissIntro()
-    startGuide()
+    requestStartGuide()
   }
 
   const handleCreateAd = () => {
@@ -112,11 +114,6 @@ function IntroContent({ onClose }: { onClose: () => void }) {
 
   // requestAskAmy() dismisses the intro only; Main fires Intercom("show") once
   // it has actually unmounted, so the two never race (see guide-store comment).
-  const handleSkip = () => {
-    dismissIntro()
-    onClose()
-  }
-
   return (
     <div className="flex flex-col items-center px-6 pb-8 pt-6">
       {/* Title + description */}
@@ -156,7 +153,7 @@ function IntroContent({ onClose }: { onClose: () => void }) {
       <Button
         type="button"
         variant="ghost"
-        onClick={handleSkip}
+        onClick={dismissIntro}
         className="mt-5 h-auto min-h-0 min-w-0 rounded-none p-0 !underline !text-sm !font-normal !hover:bg-transparent hover:text-slate-1200"
       >
         {t("guideIntro.skip")}
@@ -203,7 +200,7 @@ export function P2PGuideIntro() {
         <DrawerContent>
           <DrawerTitle className="sr-only" />
           <DrawerDescription className="sr-only" />
-          <IntroContent onClose={dismissIntro} />
+          <IntroContent />
         </DrawerContent>
       </Drawer>
     )
@@ -214,7 +211,7 @@ export function P2PGuideIntro() {
       <DialogContent className="max-w-sm p-0 sm:rounded-3xl overflow-hidden">
         <DialogTitle className="sr-only" />
         <DialogDescription className="sr-only" />
-        <IntroContent onClose={dismissIntro} />
+        <IntroContent />
       </DialogContent>
     </Dialog>
   )

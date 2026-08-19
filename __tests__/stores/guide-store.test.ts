@@ -12,7 +12,7 @@ describe("useGuideStore", () => {
       isIntroOpen: false,
       pendingStartGuide: false,
       pendingAskAmy: false,
-      pendingOpenIntro: false,
+      pendingStartGuideFromIntro: false,
       guideStartedFromIntro: false,
       adTradeType: null,
       marketTradeType: null,
@@ -22,53 +22,10 @@ describe("useGuideStore", () => {
     })
   })
 
-  it("initializes with intro closed and no pending open", () => {
+  it("initializes with intro closed", () => {
     const { result } = renderHook(() => useGuideStore())
 
     expect(result.current.isIntroOpen).toBe(false)
-    expect(result.current.pendingOpenIntro).toBe(false)
-  })
-
-  it("requestOpenIntro queues the intro without mounting it", () => {
-    const { result } = renderHook(() => useGuideStore())
-
-    act(() => {
-      result.current.requestOpenIntro()
-    })
-
-    // The intro must NOT be opened synchronously — that's the bug. Only the
-    // pending flag flips; Main opens it once the alert dialog has closed.
-    expect(result.current.pendingOpenIntro).toBe(true)
-    expect(result.current.isIntroOpen).toBe(false)
-  })
-
-  it("Main flushing the pending flag opens the intro and clears the queue", () => {
-    const { result } = renderHook(() => useGuideStore())
-
-    act(() => {
-      result.current.requestOpenIntro()
-    })
-    expect(result.current.pendingOpenIntro).toBe(true)
-    expect(result.current.isIntroOpen).toBe(false)
-
-    // Simulate Main's rAF flush once the alert dialog has closed.
-    act(() => {
-      result.current.openIntro()
-      result.current.clearPendingOpenIntro()
-    })
-
-    expect(result.current.isIntroOpen).toBe(true)
-    expect(result.current.pendingOpenIntro).toBe(false)
-  })
-
-  it("clearPendingOpenIntro is a no-op when nothing is pending", () => {
-    const { result } = renderHook(() => useGuideStore())
-
-    act(() => {
-      result.current.clearPendingOpenIntro()
-    })
-
-    expect(result.current.pendingOpenIntro).toBe(false)
   })
 
   it("openIntro mounts the intro directly", () => {
@@ -79,6 +36,45 @@ describe("useGuideStore", () => {
     })
 
     expect(result.current.isIntroOpen).toBe(true)
-    expect(result.current.pendingOpenIntro).toBe(false)
+  })
+
+  it("requestStartGuide dismisses the intro and queues the tour without starting it", () => {
+    const { result } = renderHook(() => useGuideStore())
+
+    act(() => {
+      result.current.openIntro()
+    })
+    expect(result.current.isIntroOpen).toBe(true)
+
+    act(() => {
+      result.current.requestStartGuide()
+    })
+
+    // The tour must NOT start synchronously — that's the stranded-backdrop
+    // bug. Only the pending flag flips; Main starts the tour once the intro
+    // has actually unmounted.
+    expect(result.current.isIntroOpen).toBe(false)
+    expect(result.current.pendingStartGuideFromIntro).toBe(true)
+    expect(result.current.isGuideActive).toBe(false)
+  })
+
+  it("Main flushing the pending tour start activates the guide and clears the queue", () => {
+    const { result } = renderHook(() => useGuideStore())
+
+    act(() => {
+      result.current.requestStartGuide()
+    })
+    expect(result.current.pendingStartGuideFromIntro).toBe(true)
+    expect(result.current.isGuideActive).toBe(false)
+
+    // Simulate Main flushing once the intro overlay has left the DOM.
+    act(() => {
+      result.current.startGuide("markets")
+      result.current.clearPendingStartGuideFromIntro()
+    })
+
+    expect(result.current.isGuideActive).toBe(true)
+    expect(result.current.pendingStartGuideFromIntro).toBe(false)
+    expect(result.current.guideType).toBe("markets")
   })
 })

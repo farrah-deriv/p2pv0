@@ -1,5 +1,5 @@
 import jest from "jest"
-import { render, screen } from "@testing-library/react"
+import { render, screen, fireEvent } from "@testing-library/react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useGuideStore } from "@/stores/guide-store"
 import { P2PGuideIntro } from "@/components/p2p-guide/p2p-guide-intro"
@@ -56,8 +56,15 @@ const mockUseIsMobile = useIsMobile as jest.MockedFunction<typeof useIsMobile>
 const mockUseGuideStore = useGuideStore as jest.MockedFunction<typeof useGuideStore>
 
 describe("P2PGuideIntro", () => {
+  let requestStartGuide: jest.Mock
+  let startGuide: jest.Mock
+  let setGuideStartedFromIntro: jest.Mock
+
   beforeEach(() => {
     jest.clearAllMocks()
+    requestStartGuide = jest.fn()
+    startGuide = jest.fn()
+    setGuideStartedFromIntro = jest.fn()
     // Fresh object per test so a write to isIntroOpen (or any other field)
     // cannot leak into the next case. jest.clearAllMocks() only resets call
     // counts on the fns; it does not replace a module-scope object.
@@ -65,8 +72,9 @@ describe("P2PGuideIntro", () => {
       const state = {
         isIntroOpen: true,
         dismissIntro: jest.fn(),
-        startGuide: jest.fn(),
-        setGuideStartedFromIntro: jest.fn(),
+        startGuide,
+        requestStartGuide,
+        setGuideStartedFromIntro,
         requestAskAmy: jest.fn(),
       }
       return selector ? selector(state) : state
@@ -101,5 +109,19 @@ describe("P2PGuideIntro", () => {
 
     expect(screen.getByTestId("guide-intro-drawer")).toBeInTheDocument()
     expect(screen.queryByTestId("guide-intro-dialog")).not.toBeInTheDocument()
+  })
+
+  it("queues the tour via requestStartGuide (not startGuide) when Place an order is clicked", () => {
+    mockUseIsMobile.mockReturnValue(false)
+
+    render(<P2PGuideIntro />)
+    fireEvent.click(screen.getByText("guideIntro.orderTitle"))
+
+    // The tour must not start in the same tick as the intro dismiss — that
+    // mounts P2PGuide on top of the intro's still-tearing-down Radix portal
+    // and strands a backdrop over the tour CTAs.
+    expect(setGuideStartedFromIntro).toHaveBeenCalledWith(true)
+    expect(requestStartGuide).toHaveBeenCalledTimes(1)
+    expect(startGuide).not.toHaveBeenCalled()
   })
 })

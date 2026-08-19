@@ -8,7 +8,6 @@ import * as AuthAPI from "@/services/api/api-auth"
 import { onboardingKycStepStatusFromRaw } from "@/lib/kyc/onboarding-kyc-step-status"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { useTranslations } from "@/lib/i18n/use-translations"
-import { useGuideStore } from "@/stores/guide-store"
 import { KycOnboardingContentPanel } from "./kyc-onboarding-content-panel"
 import { KycOnboardingVisualPanel } from "./kyc-onboarding-visual-panel"
 import type { KycOnboardingStep } from "./kyc-onboarding-step-row"
@@ -28,7 +27,6 @@ function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
   const userData = useUserDataStore((state) => state.userData)
   const queryClient = useQueryClient()
   const setIsOnboardingStatusRefreshing = useUserDataStore((state) => state.setIsOnboardingStatusRefreshing)
-  const requestOpenIntro = useGuideStore((state) => state.requestOpenIntro)
   const hasRefreshedOnboardingStatus = useRef(false)
   const [isRefreshingOnboardingStatus, setIsRefreshingOnboardingStatus] = useState(!userId)
   const [hasCreatedP2PUser, setHasCreatedP2PUser] = useState(false)
@@ -63,20 +61,16 @@ function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
         if (!isMounted) return
 
         // The fresh status is authoritative. If onboarding has completed since
-        // P2P first loaded, create the P2P profile before opening this gate and
-        // show the same success screen used by the initial onboarding flow.
+        // P2P first loaded, create the P2P profile. Do not open the guide intro
+        // from here — Create ad (and other gated CTAs) pick intro vs KYC
+        // *before* this sheet mounts, so this path never races a second overlay.
         if (status.p2p.allowed && !useUserDataStore.getState().userId) {
           await AuthAPI.ensureP2PUser()
           if (!isMounted) return
 
           if (useUserDataStore.getState().userId) {
             setHasCreatedP2PUser(true)
-            // Queue the intro; do not open it here. onClose() begins the KYC
-            // popup's Radix teardown, and mounting the intro's own portal on
-            // the same tick strands a backdrop (see app/main.tsx — Main opens
-            // the intro once this dialog has actually closed).
             onClose?.()
-            requestOpenIntro()
           }
         }
       } finally {
@@ -91,7 +85,7 @@ function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
       isMounted = false
       setIsOnboardingStatusRefreshing(false)
     }
-  }, [onClose, requestOpenIntro, queryClient, setIsOnboardingStatusRefreshing, userId])
+  }, [onClose, queryClient, setIsOnboardingStatusRefreshing, userId])
 
   const isTncAccepted = onboardingStatus?.tnc?.accepted === true
   const isProfileCompleted = onboardingStatus?.profile?.status === "complete" && isTncAccepted
