@@ -12,7 +12,7 @@
  *
  * loginPage.login() validates TEST_EMAIL / TEST_PASSWORD internally.
  */
-import { test, expect } from "../../fixtures/fixtures";
+import { test } from "../../fixtures/fixtures";
 
 /**
  * Flow 3 — Create a Buy ad via the 3-step wizard (fixed rate).
@@ -61,9 +61,10 @@ test.describe("Ads — Create Buy ad", { tag: ["@ads", "@staging", "@desktop", "
         await adsCreatePage.selectFirstPaymentMethod();
         await adsCreatePage.proceedToStep2();
 
-        // Step 2 — Set ad conditions (order time limit pre-selected; no change needed)
+        // Step 2 — Set ad conditions (order time limit pre-selected; no change needed).
+        // The wizard has only 3 steps (0, 1, 2); on step 2 the footer button is the Submit
+        // button (ad-form-btn-submit) — there is no separate review step in the create flow.
         await adsCreatePage.verifyStep2Visible();
-        await adsCreatePage.proceedToReview();
         await adsCreatePage.submitCreateAd();
 
         // Success screen confirms the ad was created

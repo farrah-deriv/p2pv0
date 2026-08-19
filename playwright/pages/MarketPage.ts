@@ -173,27 +173,47 @@ export class MarketPage {
     }
 
     /**
-     * Rate display element for the ad matching the given rate value.
-     * Uses `.first()` because both desktop and mobile layouts render the same element;
-     * pairing with `adCardByRate`'s `visible: true` filter is preferred for strict assertions.
+     * Rate display element for the first ad matching the given rate value.
+     * `.first()` is required because multiple ads from different advertisers can share
+     * the same rate — the locator would otherwise resolve to N elements and trigger a
+     * strict mode violation in toBeVisible() / toContainText().
      * @param rate - Rate text to match, e.g. "1.50"
      */
     adRateByRate(rate: string): Locator {
-        return this.adCardByRate(rate).locator("[data-testid^='markets-text-rate-']");
+        return this.adCardByRate(rate).locator("[data-testid^='markets-text-rate-']").first();
     }
 
     /**
-     * Order limits display element inside the ad card for the given rate value.
+     * Order limits display element inside the first ad card matching the given rate value.
+     * `.first()` is required for the same reason as adRateByRate — multiple ads can share
+     * the same rate, producing multiple limit elements in the DOM.
      * Format rendered: "Order limits: {min} - {max}  {accountCurrency}"
      * @param rate - Rate text to match the parent card, e.g. "1.50"
      */
     adLimitsByRate(rate: string): Locator {
-        return this.adCardByRate(rate).locator("[data-testid^='markets-text-limits-']");
+        return this.adCardByRate(rate).locator("[data-testid^='markets-text-limits-']").first();
     }
 
     // ============================================
     // ACTIONS
     // ============================================
+
+    /**
+     * Dismiss the "Welcome to Deriv P2P" onboarding modal if it is present.
+     * The modal renders a full-screen backdrop (fixed inset-0 z-50 bg-black/80) that
+     * intercepts all pointer events, blocking currency filter and tab clicks until closed.
+     * It appears on the first visit to the market page in a fresh session.
+     */
+    private async dismissWelcomeModalIfVisible(): Promise<void> {
+        const skipBtn = this.page.getByRole("button", { name: /skip for now/i });
+        try {
+            await skipBtn.waitFor({ state: "visible", timeout: 4000 });
+            await skipBtn.click();
+            await skipBtn.waitFor({ state: "hidden", timeout: 5000 });
+        } catch {
+            // Modal not present — nothing to do
+        }
+    }
 
     /**
      * Dismiss the P2P onboarding guide dialog if it is currently open.
@@ -224,6 +244,7 @@ export class MarketPage {
     async gotoMarketPage(currency: string = "IDR"): Promise<void> {
         await this.page.goto("/");
         await this.page.waitForLoadState("domcontentloaded");
+        await this.dismissWelcomeModalIfVisible();
         await this.dismissGuideIfVisible();
         await this.selectCurrency(currency);
     }
@@ -237,6 +258,7 @@ export class MarketPage {
     async gotoMarketPageDefault(): Promise<void> {
         await this.page.goto("/");
         await this.page.waitForLoadState("domcontentloaded");
+        await this.dismissWelcomeModalIfVisible();
         await this.dismissGuideIfVisible();
     }
 

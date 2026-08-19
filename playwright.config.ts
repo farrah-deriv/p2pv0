@@ -40,10 +40,25 @@ if (!fs.existsSync(envFile)) {
 
 dotenv.config({ path: envFile });
 
+// Shared Chromium launch args used by both the desktop and mobile Chrome projects.
+// Keeping them in one place reduces the maintenance surface when flags need to change.
+const CHROME_ARGS = [
+  "--no-sandbox",
+  "--disable-dev-shm-usage",
+  "--disable-web-security",
+  "--disable-features=VizDisplayCompositor",
+  "--use-fake-ui-for-media-stream",
+  "--use-fake-device-for-media-stream",
+];
+
 export default defineConfig({
   testDir: "./playwright/tests",
 
-  timeout: 600000,
+  // Per-test timeout. Login + ad creation + market verification should complete in
+  // 2–3 minutes under normal staging conditions; 120000 gives headroom for slow staging
+  // while failing fast. With CI retries: 1, this still allows two full attempts before
+  // a test is marked failed — a 10-minute timeout delays CI failure feedback excessively.
+  timeout: 120000,
 
   expect: {
     timeout: 45000,
@@ -86,14 +101,7 @@ export default defineConfig({
         viewport: { width: 1536, height: 864 },
         userAgent: `${devices["Desktop Chrome"].userAgent} Playwright-Agent/deriv/1.9`,
         launchOptions: {
-          args: [
-            "--no-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-web-security",
-            "--disable-features=VizDisplayCompositor",
-            "--use-fake-ui-for-media-stream",
-            "--use-fake-device-for-media-stream",
-          ],
+          args: CHROME_ARGS,
         },
       },
     },
@@ -104,14 +112,7 @@ export default defineConfig({
         viewport: { width: 412, height: 915 },
         userAgent: `${devices["Pixel 7"].userAgent} Playwright-Agent/deriv/1.9`,
         launchOptions: {
-          args: [
-            "--no-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-web-security",
-            "--disable-features=VizDisplayCompositor",
-            "--use-fake-ui-for-media-stream",
-            "--use-fake-device-for-media-stream",
-          ],
+          args: CHROME_ARGS,
         },
       },
     },

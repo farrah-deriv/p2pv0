@@ -290,12 +290,67 @@ export class AdsPage {
     }
 
     /**
-     * Click the Create Ad button.
+     * Click the Create Ad button and wait for navigation to /ads/create.
+     *
+     * handleCreateAd() only router.push("/ads/create") when verificationStatus.phone_verified
+     * is set (populated from /onboarding-status). On fresh sessions under parallel load there
+     * is a race: the Create Ad button can be clicked before verificationStatus resolves, which
+     * instead opens the KYC onboarding AlertDialog (data-testid="kyc-sheet-container"). When
+     * that happens the URL never changes, so waitForURL would time out. Detect the popup,
+     * dismiss it (kyc-btn-close), and retry the click — up to a few attempts.
      */
     async clickCreateAd(): Promise<void> {
         await expect(this.createAdButton, "Create ad button should be visible").toBeVisible();
+
+        const kycSheet = this.page.getByTestId("kyc-sheet-container");
+        const kycCloseBtn = this.page.getByTestId("kyc-btn-close");
+
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            await this.createAdButton.click();
+
+            // Race between navigation and the KYC popup appearing. Resolve whichever
+            // happens first: success (URL changes to /ads/create) or the KYC popup opens.
+            const openedKyc = await Promise.race([
+                this.page.waitForURL(/\/ads\/create/, { timeout: 15000 }).then(() => false),
+                kycSheet.waitFor({ state: "visible", timeout: 15000 }).then(() => true),
+            ]).catch(() => false);
+
+            if (!openedKyc) {
+                // Navigation happened (or neither did — assume success on URL change).
+                await this.page.waitForURL(/\/ads\/create/, { timeout: 15000 }).catch(() => {});
+                return;
+            }
+
+            // KYC popup opened instead of navigating — dismiss it and retry.
+            if (await kycCloseBtn.isVisible().catch(() => false)) {
+                await kycCloseBtn.click().catch(() => {});
+                await kycSheet.waitFor({ state: "hidden", timeout: 5000 }).catch(() => {});
+            } else {
+                await this.page.keyboard.press("Escape").catch(() => {});
+                await kycSheet.waitFor({ state: "hidden", timeout: 5000 }).catch(() => {});
+            }
+        }
+
+        // Final attempt: one more click, then hard-wait for navigation (surfaces a clear
+        // timeout if the account genuinely isn't verified — distinct from a silent flake).
         await this.createAdButton.click();
         await this.page.waitForURL(/\/ads\/create/);
+    }
+
+    /**
+     * Dismiss the "Welcome to Deriv P2P" onboarding modal if it is present.
+     * The modal blocks the Create Ad button and appears on fresh accounts or after
+     * account state resets on staging. "Skip for now" closes it without taking a tour.
+     */
+    private async dismissWelcomeModalIfVisible(): Promise<void> {
+        const skipBtn = this.page.getByRole("button", { name: /skip for now/i });
+        try {
+            await skipBtn.waitFor({ state: "visible", timeout: 4000 });
+            await skipBtn.click();
+            await skipBtn.waitFor({ state: "hidden", timeout: 5000 });
+        } catch {
+            // Modal not present — nothing to do
+        }
     }
 
     // ============================================
@@ -306,6 +361,7 @@ export class AdsPage {
      * Assert the My Ads page has loaded.
      */
     async verifyAdsPageLoaded(): Promise<void> {
+        await this.dismissWelcomeModalIfVisible();
         await expect(this.createAdButton, "Create ad button should be visible on My Ads page").toBeVisible();
     }
 }

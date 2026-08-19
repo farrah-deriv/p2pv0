@@ -267,7 +267,11 @@ export class LoginPage {
         await this.clickP2P();
         const base = (process.env.BASE_URL ?? "https://staging-dp2p.deriv.com").replace(/\/$/, "");
         await this.page.waitForURL((url) => url.origin === base);
-        await this.page.waitForLoadState("domcontentloaded");
+        // Use "load" (not "domcontentloaded") so React effects — including the router.replace()
+        // that strips SSO query params — have time to run before returning. Without this,
+        // callers that immediately call page.goto("/") hit "Frame load interrupted" because
+        // the router.replace redirect is still in flight.
+        await this.page.waitForLoadState("load");
 
         return loginEmail;
     }

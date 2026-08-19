@@ -25,7 +25,7 @@ import { test } from "../../fixtures/fixtures";
  * when both specs run in parallel.
  */
 test.describe("Ads — Create Sell ad", { tag: ["@ads", "@staging", "@desktop", "@mobile"] }, () => {
-    let sellerEmail: string = undefined!;
+    let sellerEmail!: string;
 
     test.beforeAll(() => {
         const email = process.env.TEST_EMAIL_SELLER;
@@ -78,9 +78,10 @@ test.describe("Ads — Create Sell ad", { tag: ["@ads", "@staging", "@desktop", 
         await adsCreatePage.selectFirstPaymentMethodSellAd();
         await adsCreatePage.proceedToStep2();
 
-        // Step 2 — Set ad conditions (order time limit pre-selected; no change needed)
+        // Step 2 — Set ad conditions (order time limit pre-selected; no change needed).
+        // The wizard has only 3 steps (0, 1, 2); on step 2 the footer button is the Submit
+        // button (ad-form-btn-submit) — there is no separate review step in the create flow.
         await adsCreatePage.verifyStep2Visible();
-        await adsCreatePage.proceedToReview();
         await adsCreatePage.submitCreateAd();
 
         // Success screen confirms the ad was created

@@ -25,8 +25,12 @@ test.describe("Buy-sell — Buy-side order sidebar", { tag: ["@buy-sell", "@smok
     test("VERIFY buy-side order sidebar opens with correct content, place order is gated on amount entry, and sidebar closes", async ({
         marketPage,
     }) => {
-        // Navigate to market page — Buy tab is active by default
-        await marketPage.gotoMarketPage();
+        // Navigate to the market page using IDR — this currency reliably has active
+        // Sell-type ads from other test accounts on staging. The Sell-type ads are the
+        // ones that appear on the Buy tab and allow the buyer to open the order sidebar.
+        // The seller's ad created by setup-sell-ad cannot be relied on here because sell
+        // ads are inactive (hidden from the market) when the seller has zero P2P balance.
+        await marketPage.gotoMarketPage("IDR");
         await expect(marketPage.buyTab, "Buy tab should be active by default on the market page").toHaveAttribute("data-state", "active");
 
         // Open the order sidebar by clicking the first "Buy {currency}" button

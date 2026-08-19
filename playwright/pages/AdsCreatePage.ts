@@ -53,11 +53,6 @@ export class AdsCreatePage {
             .getByText("Set ad conditions", { exact: true });
     }
 
-    /** Review step summary (full page after conditions) */
-    get reviewSummary(): Locator {
-        return this.page.getByTestId("ad-form-review-summary").filter({ visible: true });
-    }
-
     /**
      * "I want to Buy" tab in the trade-type selector (step 0, create mode only).
      * Selected by default when the wizard opens.
@@ -103,13 +98,8 @@ export class AdsCreatePage {
         return this.page.getByTestId("ad-form-btn-next-step2").filter({ visible: true });
     }
 
-    /** Next button advancing from step 2 (conditions) to review */
-    get nextToReviewButton(): Locator {
-        return this.page.getByTestId("ad-form-btn-next-step3").filter({ visible: true });
-    }
-
     /**
-     * Submit button on review step.
+     * Submit button on the final step.
      * Reads "Create ad" in create mode and "Save changes" in edit mode.
      */
     get submitButton(): Locator {
@@ -239,9 +229,13 @@ export class AdsCreatePage {
 
         const firstCheckbox = this.page.locator("[data-testid^='ad-form-checkbox-payment-']").first();
         await expect(firstCheckbox, "First payment method checkbox should be visible in the payment dialog").toBeVisible();
-        // The Checkbox has pointer-events-none; click its immediate parent div which
-        // bubbles up to the row's onClick handler (no stopPropagation in between).
-        await firstCheckbox.locator("..").click();
+        // The Checkbox has pointer-events: none, so a normal click hits nothing. Force the
+        // click on the checkbox itself — { force: true } bypasses the pointer-events guard
+        // without coupling the test to the current parent-div wrapper hierarchy. Scroll into
+        // view first: force skips Playwright's auto-scroll, and on mobile the checkbox can
+        // be outside the viewport when the payment dialog opens.
+        await firstCheckbox.scrollIntoViewIfNeeded();
+        await firstCheckbox.click({ force: true });
 
         const confirmButton = this.page.getByRole("button", { name: /confirm/i }).filter({ visible: true });
         await expect(confirmButton, "Confirm button should be visible in the payment dialog").toBeVisible();
@@ -259,19 +253,10 @@ export class AdsCreatePage {
     }
 
     /**
-     * Click Next on step 2 to open the review screen.
-     */
-    async proceedToReview(): Promise<void> {
-        await expect(this.nextToReviewButton, "Next button (step 2 → review) should be visible").toBeVisible();
-        await this.nextToReviewButton.click();
-        await expect(this.reviewSummary, "Review summary should be visible").toBeVisible();
-    }
-
-    /**
-     * Click the Submit button on the review step to create or save the ad.
+     * Click the Submit button on the final step to create or save the ad.
      */
     async submitCreateAd(): Promise<void> {
-        await expect(this.submitButton, "Submit button should be visible on review step").toBeVisible();
+        await expect(this.submitButton, "Submit button should be visible").toBeVisible();
         await this.submitButton.click();
     }
 
