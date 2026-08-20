@@ -79,6 +79,50 @@ describe("useGuideStore", () => {
     expect(result.current.isIntroOpen).toBe(true)
   })
 
+  it("reopenIntro is a no-op when the intro is already open", () => {
+    const { result } = renderHook(() => useGuideStore())
+
+    act(() => {
+      result.current.openIntro()
+      result.current.reopenIntro()
+    })
+
+    expect(result.current.isIntroOpen).toBe(true)
+    expect(result.current.hasShownIntro).toBe(true)
+  })
+
+  it("completeGuide does not reopen the intro unless a tour actually started", () => {
+    const { result } = renderHook(() => useGuideStore())
+
+    act(() => {
+      result.current.openIntro()
+      result.current.dismissIntro()
+      result.current.setGuideStartedFromIntro(true)
+      result.current.completeGuide()
+    })
+
+    // Intro was closed and no startGuide() ran, so wasTourActive is false.
+    // Without that guard, reopenIntro() would bring it back.
+    expect(result.current.isIntroOpen).toBe(false)
+    expect(result.current.isGuideActive).toBe(false)
+    expect(result.current.guideStartedFromIntro).toBe(false)
+  })
+
+  it("completeGuide reopens the intro after a tour that started from it", () => {
+    const { result } = renderHook(() => useGuideStore())
+
+    act(() => {
+      result.current.openIntro()
+      result.current.setGuideStartedFromIntro(true)
+      result.current.requestStartGuide()
+      result.current.startGuide("markets")
+      result.current.completeGuide()
+    })
+
+    expect(result.current.isGuideActive).toBe(false)
+    expect(result.current.isIntroOpen).toBe(true)
+  })
+
   it("requestOpenIntro queues the intro without mounting it", () => {
     const { result } = renderHook(() => useGuideStore())
 

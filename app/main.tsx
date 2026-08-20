@@ -200,9 +200,13 @@ export default function Main({
 
         // The guide intro is shown only to a newly registered P2P user (one
         // who has no P2P userId yet). Existing users never re-trigger it.
-        // hasShownIntro (set by openIntro) stops a second open after this
-        // effect re-runs post-ensureP2PUser / on a status refresh.
+        // Open it *before* ensureP2PUser so the first paint after verification
+        // is the intro, not a few-seconds-later second copy after the
+        // create-user request returns. openIntro is once-per-session in the
+        // store, so this re-run after ensureP2PUser is a no-op.
         if (!currentUserId && isP2PAllowed) {
+          openIntro()
+
           await AuthAPI.ensureP2PUser()
 
           if (!isMounted || abortController.signal.aborted) {
@@ -218,8 +222,6 @@ export default function Main({
             setStripPending(true)
             router.replace(next.pathname + next.search, { scroll: false })
           }
-
-          if (!useGuideStore.getState().hasShownIntro) openIntro()
         } else if (currentUserId && isFullyVerified && searchParams.get("show_kyc_popup") === "true") {
           // A returning, fully verified user arriving with ?show_kyc_popup:
           // verification is already complete, so the KYC onboarding popup must
@@ -230,7 +232,7 @@ export default function Main({
           setStripPending(true)
           router.replace(next.pathname + next.search, { scroll: false })
 
-          if (!useGuideStore.getState().hasShownIntro) openIntro()
+          openIntro()
         }
       } catch (error) {
         if (abortController.signal.aborted) {
@@ -327,7 +329,7 @@ export default function Main({
     if (typeof window === "undefined") return
 
     const timeout = window.setTimeout(() => {
-      if (!useGuideStore.getState().hasShownIntro) openIntro()
+      openIntro()
       clearPendingOpenIntro()
     }, OVERLAY_FADE_WAIT_MS)
     return () => window.clearTimeout(timeout)
@@ -384,56 +386,61 @@ export default function Main({
     !isMaintenanceActive &&
     (!onboardingProcessed || stripPending)
 
-  if (holdsForKycGate) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <LoadingIndicator />
-      </div>
-    )
-  }
-
+  // P2PGuideIntro stays in the same parent slot across the KYC gate flip.
+  // An early-return loader used to unmount it; after ensureP2PUser + the
+  // ?show_kyc_popup strip, the shell remounted the Dialog/Drawer and Radix
+  // re-animated the intro a few seconds later — the second post-verification
+  // intro. Keeping one instance means the gate flip never remounts it.
   return (
-    <WebSocketProvider>
-      {isOnboardingStatusRefreshing && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-[1px]">
+    <>
+      {holdsForKycGate ? (
+        <div className="h-screen flex items-center justify-center">
           <LoadingIndicator />
         </div>
-      )}
-      {process.env.NEXT_PUBLIC_INTERCOM_APP_ID && (
-        <IntercomProvider appId={process.env.NEXT_PUBLIC_INTERCOM_APP_ID} />
-      )}
-      <P2PMaintenanceController />
-      <P2PAnnouncementController />
-      <div className="hidden md:flex px-6 h-screen overflow-hidden m-auto relative max-w-[1232px]">
-        {isHeaderVisible && <Sidebar className="hidden md:flex" />}
-        <div className="flex flex-1 flex-col min-h-0 py-6 overflow-hidden">
-          <div className="container mx-auto flex flex-1 flex-col min-h-0 h-full">
-            {showMaintenanceBanner && (
-              <div className="relative z-0 md:-mb-8 md:px-3 flex-shrink-0">
-                <P2PSystemMaintenanceBanner />
-              </div>
-            )}
-            {children}
-          </div>
-        </div>
-      </div>
-      <div className="md:hidden flex flex-col h-dvh overflow-hidden">
-        {showMaintenanceBanner && <P2PSystemMaintenanceBanner embeddedInDarkHeader />}
-        {isHeaderVisible && <Header className="flex-shrink-0" />}
-        <main
-          className={cn(
-            "flex flex-col flex-1 min-h-0 w-full",
-            pathname.startsWith("/profile") ? "overflow-y-auto overscroll-y-none" : "overflow-hidden",
+      ) : (
+        <WebSocketProvider>
+          {isOnboardingStatusRefreshing && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-[1px]">
+              <LoadingIndicator />
+            </div>
           )}
-        >
-          {children}
-        </main>
-        {showMobileFooterNav && (
-          <MobileFooterNav className="flex-shrink-0" />
-        )}
-      </div>
-      <P2PGuide />
+          {process.env.NEXT_PUBLIC_INTERCOM_APP_ID && (
+            <IntercomProvider appId={process.env.NEXT_PUBLIC_INTERCOM_APP_ID} />
+          )}
+          <P2PMaintenanceController />
+          <P2PAnnouncementController />
+          <div className="hidden md:flex px-6 h-screen overflow-hidden m-auto relative max-w-[1232px]">
+            {isHeaderVisible && <Sidebar className="hidden md:flex" />}
+            <div className="flex flex-1 flex-col min-h-0 py-6 overflow-hidden">
+              <div className="container mx-auto flex flex-1 flex-col min-h-0 h-full">
+                {showMaintenanceBanner && (
+                  <div className="relative z-0 md:-mb-8 md:px-3 flex-shrink-0">
+                    <P2PSystemMaintenanceBanner />
+                  </div>
+                )}
+                {children}
+              </div>
+            </div>
+          </div>
+          <div className="md:hidden flex flex-col h-dvh overflow-hidden">
+            {showMaintenanceBanner && <P2PSystemMaintenanceBanner embeddedInDarkHeader />}
+            {isHeaderVisible && <Header className="flex-shrink-0" />}
+            <main
+              className={cn(
+                "flex flex-col flex-1 min-h-0 w-full",
+                pathname.startsWith("/profile") ? "overflow-y-auto overscroll-y-none" : "overflow-hidden",
+              )}
+            >
+              {children}
+            </main>
+            {showMobileFooterNav && (
+              <MobileFooterNav className="flex-shrink-0" />
+            )}
+          </div>
+          <P2PGuide />
+        </WebSocketProvider>
+      )}
       <P2PGuideIntro />
-    </WebSocketProvider>
+    </>
   )
 }

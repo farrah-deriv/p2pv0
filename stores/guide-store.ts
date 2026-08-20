@@ -29,7 +29,8 @@ interface GuideState {
   pendingOpenIntro: boolean
   // First auto-open after verification (Main onboarding / CTA). Stops the
   // intro from remounting when Main's effect re-runs after ensureP2PUser or
-  // a status refresh. reopenIntro() after a tour does not use this flag.
+  // a status refresh. reopenIntro() after a completed tour does not use this
+  // flag, but it still refuses if the intro is already open.
   hasShownIntro: boolean
   guideStartedFromIntro: boolean
   adTradeType: "buy" | "sell" | null
@@ -45,7 +46,7 @@ interface GuideState {
   requestOpenIntro: () => void
   clearPendingOpenIntro: () => void
   // Bring the intro back after a tour that started from it. Not a first-time
-  // open — does not consult hasShownIntro.
+  // open — does not consult hasShownIntro, but no-ops if already open.
   reopenIntro: () => void
   dismissIntro: () => void
   requestAskAmy: () => void
@@ -84,15 +85,20 @@ export const useGuideStore = create<GuideState>()((set, get) => ({
   advertsSettled: false,
   setAdvertsSettled: () => set((s) => s.advertsSettled ? s : { advertsSettled: true }),
   openIntro: () => {
-    if (get().hasShownIntro) return
+    if (get().hasShownIntro || get().isIntroOpen) return
     set({ isIntroOpen: true, hasShownIntro: true })
   },
   requestOpenIntro: () => {
-    if (get().hasShownIntro) return
+    if (get().hasShownIntro || get().isIntroOpen) return
     set({ pendingOpenIntro: true })
   },
   clearPendingOpenIntro: () => set((s) => (s.pendingOpenIntro ? { pendingOpenIntro: false } : s)),
-  reopenIntro: () => set({ isIntroOpen: true }),
+  reopenIntro: () => {
+    // completeGuide() after a tour that never left the intro (or that
+    // auto-completed before the first close) must not flash a second copy.
+    if (get().isIntroOpen) return
+    set({ isIntroOpen: true })
+  },
   dismissIntro: () => set({ isIntroOpen: false }),
   // Ask Amy opens the Intercom messenger. The dialog must fully unmount first —
   // opening Intercom on top of Radix's exit transition leaves the page's
@@ -129,6 +135,7 @@ export const useGuideStore = create<GuideState>()((set, get) => ({
   },
   completeGuide: () => {
     const fromIntro = get().guideStartedFromIntro
+    const wasTourActive = get().isGuideActive
     set({
       isGuideActive: false,
       currentStep: 0,
@@ -136,6 +143,9 @@ export const useGuideStore = create<GuideState>()((set, get) => ({
       adTradeType: null,
       marketTradeType: null,
     })
-    if (fromIntro) get().reopenIntro()
+    // Only reopen after a tour that actually ran. An auto-complete that
+    // fires before the first step (missing targets) would otherwise
+    // remount the intro a few seconds after verification already opened it.
+    if (fromIntro && wasTourActive) get().reopenIntro()
   },
 }))
