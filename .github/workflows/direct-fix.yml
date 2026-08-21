@@ -292,7 +292,7 @@ jobs:
             minutes remain. Write exactly one of /tmp/announcement.txt or /tmp/handback.txt and verify \
             it with check_output_contract.sh before exiting." \
             --dangerously-skip-permissions \
-            --model claude-opus-4-6 \
+            --model claude-opus-5 \
             --max-turns 300 \
             --verbose \
             --output-format stream-json | tee /tmp/run.jsonl
