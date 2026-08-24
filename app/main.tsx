@@ -13,6 +13,7 @@ import { useChatVisibilityStore } from "@/stores/chat-visibility-store"
 import { useOnboardingStatus } from "@/hooks/use-api-queries"
 import { cn, getLoginUrl } from "@/lib/utils"
 import { P2PAccessRemoved } from "@/components/p2p-access-removed"
+import { P2PRegionNotSupported } from "@/components/p2p-region-not-supported"
 import { LoadingIndicator } from "@/components/loading-indicator"
 import { IntercomProvider } from "@/components/intercom-provider"
 import { P2PAnnouncementController } from "@/components/p2p-announcement"
@@ -21,6 +22,8 @@ import { P2PMaintenanceController } from "@/components/p2p-maintenance-controlle
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import { shouldShowP2PMaintenanceBanner } from "@/lib/p2p-maintenance-constants"
 import { shouldShowMobileFooterNav } from "@/lib/mobile-footer-nav"
+import { isCountryP2PDisabled } from "@/lib/is-country-p2p-enabled"
+import { useUserCountryInvalidStore } from "@/stores/user-country-invalid-store"
 import { useWalletViewStore } from "@/stores/wallet-view-store"
 import { useGuideStore } from "@/stores/guide-store"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
@@ -61,6 +64,7 @@ export default function Main({
   // that lingers for one render after router.replace before the hook updates.
   const [stripPending, setStripPending] = useState(false)
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
+  const isUserCountryInvalid = useUserCountryInvalidStore((state) => state.isUserCountryInvalid)
   const { isChatVisible } = useChatVisibilityStore()
   const { isTransactionListVisible } = useWalletViewStore()
   const openIntro = useGuideStore((state) => state.openIntro)
@@ -75,9 +79,11 @@ export default function Main({
   const startGuide = useGuideStore((state) => state.startGuide)
   const { hideAlert, isOpen: isAlertOpen } = useAlertDialog()
   const showMobileFooterNav = shouldShowMobileFooterNav(pathname, isChatVisible, isTransactionListVisible)
-  const { data: onboardingStatus, isLoading: isOnboardingLoading } = useOnboardingStatus(
-    isAuthenticated && !isMaintenanceActive,
-  )
+  const {
+    data: onboardingStatus,
+    isLoading: isOnboardingLoading,
+    isError: isOnboardingError,
+  } = useOnboardingStatus(isAuthenticated && !isMaintenanceActive)
 
   const isDisabled = userData?.status === "disabled"
 
@@ -168,6 +174,10 @@ export default function Main({
       setOnboardingProcessed(true)
       return
     }
+    if (isOnboardingError) {
+      setOnboardingProcessed(true)
+      return
+    }
     if (!isAuthenticated || isOnboardingLoading || !onboardingStatus) {
       return
     }
@@ -182,6 +192,13 @@ export default function Main({
         const isKycVerified =
           onboardingStatus.kyc.poi_status === "approved" && onboardingStatus.kyc.poa_status === "approved"
         const isP2PAllowed = onboardingStatus.p2p?.allowed
+
+        // Geo-block is a dedicated criterion — p2p.allowed is also false for
+        // phone/KYC gaps, which must not open the region page.
+        if (isCountryP2PDisabled(onboardingStatus)) {
+          useUserCountryInvalidStore.getState().setUserCountryInvalid(true)
+          return
+        }
 
         setVerificationStatus({
           phone_verified: isPhoneVerified,
@@ -252,7 +269,7 @@ export default function Main({
       isMounted = false
       abortController.abort()
     }
-  }, [isAuthenticated, isMaintenanceActive, onboardingStatus, isOnboardingLoading, setVerificationStatus, setOnboardingStatus, openIntro, searchParams, router])
+  }, [isAuthenticated, isMaintenanceActive, onboardingStatus, isOnboardingLoading, isOnboardingError, setVerificationStatus, setOnboardingStatus, openIntro, searchParams, router])
 
   // Once router.replace has committed and useSearchParams no longer reports
   // show_kyc_popup, the gate has released (it short-circuits on the param) and
@@ -339,6 +356,10 @@ export default function Main({
     return <div className="container mx-auto overflow-hidden max-w-7xl">{children}</div>
   }
 
+  if (isUserCountryInvalid) {
+    return <P2PRegionNotSupported />
+  }
+
   if (isDisabled) {
     return (
       <>
@@ -369,17 +390,22 @@ export default function Main({
     )
   }
 
-  // Hold the app surface (and therefore the page-level ?show_kyc_popup auto-popup
-  // effect) until Main has resolved the onboarding decision. This is what
-  // prevents the KYC onboarding popup from flashing for a brand-new or fully
-  // verified P2P user: once onboarding resolves, the strip branches delete the
-  // param and open the intro before children ever mount. stripPending keeps the
-  // gate held for the extra render it takes useSearchParams to reflect the
-  // router.replace — without it, setOnboardingProcessed(true) would release the
-  // gate one render early (while searchParams still carries show_kyc_popup) and
-  // the page-level KYC auto-popup would fire on the stale value. For users who
-  // genuinely need KYC, no strip happens and the gate releases so that popup can
-  // show.
+  // Hold children until onboarding-status is processed so a geo-blocked user
+  // never paints the advert list while waiting for UserCountryInvalid from
+  // GET /adverts. The region page is decided in processOnboardingData from
+  // the country_p2p_enabled criterion.
+  //
+  // The KYC gate additionally waits for stripPending: once onboarding resolves,
+  // the strip branches delete ?show_kyc_popup and open the intro before children
+  // mount. stripPending keeps the gate held for the extra render it takes
+  // useSearchParams to reflect the router.replace — without it,
+  // setOnboardingProcessed(true) would release the gate one render early
+  // (while searchParams still carries show_kyc_popup) and the page-level KYC
+  // auto-popup would fire on the stale value. For users who genuinely need KYC,
+  // no strip happens and the gate releases so that popup can show.
+  const holdsForOnboarding =
+    isAuthenticated && !isMaintenanceActive && !onboardingProcessed
+
   const holdsForKycGate =
     searchParams.get("show_kyc_popup") === "true" &&
     isAuthenticated &&
@@ -393,7 +419,7 @@ export default function Main({
   // intro. Keeping one instance means the gate flip never remounts it.
   return (
     <>
-      {holdsForKycGate ? (
+      {holdsForOnboarding || holdsForKycGate ? (
         <div className="h-screen flex items-center justify-center">
           <LoadingIndicator />
         </div>

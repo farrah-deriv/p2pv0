@@ -878,6 +878,12 @@
     "illustrationAlt": "P2P ufikiaji umeondolewa",
     "title": "P2P ufikiaji umeondolewa"
   },
+  "p2pRegion": {
+    "title": "Deriv P2P haipatikani katika eneo lako",
+    "description": "Bado unaweza kufanya biashara kwenye Deriv MT5, Deriv cTrader, na majukwaa yetu mengine.",
+    "backToHome": "Rudi Nyumbani",
+    "illustrationAlt": "Eneo lisiloungwa mkono"
+  },
   "p2pAnnouncement": {
     "whatsComing": {
       "bullet0": "Uzoefu mpya wa P2P uko njiani.",

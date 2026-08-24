@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast"
 import { getOryUrl } from "@/lib/get-ory-url"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useP2PMaintenanceStore } from "@/stores/p2p-maintenance-store"
+import { useUserCountryInvalidStore } from "@/stores/user-country-invalid-store"
 import { useUserDataStore } from "@/stores/user-data-store"
 
 /**
@@ -100,6 +101,7 @@ export default function DevLogoutButton() {
 
     useUserDataStore.getState().clearUserData()
     useP2PMaintenanceStore.getState().clearMaintenance()
+    useUserCountryInvalidStore.getState().clearUserCountryInvalid()
     localStorage.removeItem("auth_token")
     localStorage.removeItem("socket_token")
 

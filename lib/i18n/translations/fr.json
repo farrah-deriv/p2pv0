@@ -886,6 +886,12 @@
     "illustrationAlt": "Accès P2P supprimé",
     "title": "Accès P2P supprimé"
   },
+  "p2pRegion": {
+    "title": "Deriv P2P n’est pas disponible dans votre région",
+    "description": "Vous pouvez toujours trader sur Deriv MT5, Deriv cTrader et nos autres plateformes.",
+    "backToHome": "Retour à l’accueil",
+    "illustrationAlt": "Région non prise en charge"
+  },
   "p2pAnnouncement": {
     "whatsComing": {
       "bullet0": "Une expérience P2P repensée arrive bientôt.",

@@ -870,6 +870,12 @@
     "illustrationAlt": "P2P அணுகல் அகற்றப்பட்டது",
     "title": "P2P அணுகல் அகற்றப்பட்டது"
   },
+  "p2pRegion": {
+    "title": "Deriv P2P உங்கள் பகுதியில் கிடைக்கவில்லை",
+    "description": "நீங்கள் Deriv MT5, Deriv cTrader மற்றும் எங்கள் பிற தளங்களில் தொடர்ந்து வர்த்தகம் செய்யலாம்.",
+    "backToHome": "முகப்புக்குத் திரும்பு",
+    "illustrationAlt": "ஆதரிக்கப்படாத பகுதி"
+  },
   "p2pAnnouncement": {
     "whatsComing": {
       "bullet0": "புதுப்பித்த P2P அனுபவம் கிடைக்கும்.",

@@ -1,4 +1,5 @@
 import { useP2PMaintenanceStore } from "@/stores/p2p-maintenance-store"
+import { useUserCountryInvalidStore } from "@/stores/user-country-invalid-store"
 
 /** Extracts the first P2P API error code from a response body, if present. */
 export function extractP2PErrorCode(body: unknown): string | null {
@@ -12,12 +13,14 @@ export function extractP2PErrorCode(body: unknown): string | null {
 }
 
 /**
- * Latches system-maintenance mode when any P2P API returns `P2PDisabled`.
- * Intentionally session-scoped with no timeout — mirrors mobile. Cleared on
- * logout (`clearMaintenance`) or full page reload.
+ * Latches session-scoped P2P status flags from API error codes.
+ * Cleared on logout or full page reload.
  */
 export function handleP2PApiStatusCode(code: string | null | undefined): void {
   if (code === "P2PDisabled") {
     useP2PMaintenanceStore.getState().setApiMaintenanceActive(true)
+  }
+  if (code === "UserCountryInvalid") {
+    useUserCountryInvalidStore.getState().setUserCountryInvalid(true)
   }
 }

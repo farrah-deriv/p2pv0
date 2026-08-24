@@ -1,5 +1,6 @@
 import { useUserDataStore } from "@/stores/user-data-store"
 import { useP2PMaintenanceStore } from "@/stores/p2p-maintenance-store"
+import { useUserCountryInvalidStore } from "@/stores/user-country-invalid-store"
 import { p2pFetch } from "./p2p-fetch"
 import { useMarketFilterStore } from "@/stores/market-filter-store"
 import { getQueryClient } from "@/lib/react-query-client"
@@ -299,6 +300,7 @@ export async function logout(): Promise<void> {
 
     useUserDataStore.getState().clearUserData()
     useP2PMaintenanceStore.getState().clearMaintenance()
+    useUserCountryInvalidStore.getState().clearUserCountryInvalid()
     localStorage.removeItem("auth_token")
     localStorage.removeItem("socket_token")
     window.location.href = "/"

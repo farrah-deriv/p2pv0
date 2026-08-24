@@ -870,6 +870,12 @@
     "illustrationAlt": "P2P 访问权限已删除",
     "title": "P2P 访问权限已删除"
   },
+  "p2pRegion": {
+    "title": "Deriv P2P 在您所在地区不可用",
+    "description": "您仍可在 Deriv MT5、Deriv cTrader 及其他平台上进行交易。",
+    "backToHome": "返回首页",
+    "illustrationAlt": "不支持的地区"
+  },
   "p2pAnnouncement": {
     "whatsComing": {
       "bullet0": "焕然一新的 P2P 体验即将到来。",

@@ -1,9 +1,11 @@
 import { extractP2PErrorCode, handleP2PApiStatusCode } from "@/lib/api/p2p-api-status-handler"
 import { useP2PMaintenanceStore } from "@/stores/p2p-maintenance-store"
+import { useUserCountryInvalidStore } from "@/stores/user-country-invalid-store"
 
 describe("p2p-api-status-handler", () => {
   beforeEach(() => {
     useP2PMaintenanceStore.getState().clearMaintenance()
+    useUserCountryInvalidStore.getState().clearUserCountryInvalid()
   })
 
   describe("extractP2PErrorCode", () => {
@@ -25,9 +27,15 @@ describe("p2p-api-status-handler", () => {
       expect(useP2PMaintenanceStore.getState().isApiMaintenanceActive).toBe(true)
     })
 
+    it("latches region-not-supported when code is UserCountryInvalid", () => {
+      handleP2PApiStatusCode("UserCountryInvalid")
+      expect(useUserCountryInvalidStore.getState().isUserCountryInvalid).toBe(true)
+    })
+
     it("ignores unknown codes", () => {
       handleP2PApiStatusCode("UserTempBan")
       expect(useP2PMaintenanceStore.getState().isApiMaintenanceActive).toBe(false)
+      expect(useUserCountryInvalidStore.getState().isUserCountryInvalid).toBe(false)
     })
   })
 })

@@ -870,6 +870,12 @@
     "illustrationAlt": "تمت إزالة الوصول إلى P2P",
     "title": "تمت إزالة الوصول إلى P2P"
   },
+  "p2pRegion": {
+    "title": "Deriv P2P غير متاح في منطقتك",
+    "description": "لا يزال بإمكانك التداول على Deriv MT5 وDeriv cTrader ومنصاتنا الأخرى.",
+    "backToHome": "العودة إلى الصفحة الرئيسية",
+    "illustrationAlt": "منطقة غير مدعومة"
+  },
   "p2pAnnouncement": {
     "whatsComing": {
       "bullet0": "تجربة P2P محدّثة في الطريق.",

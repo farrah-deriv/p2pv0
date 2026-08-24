@@ -880,6 +880,12 @@
     "illustrationAlt": "P2P অ্যাক্সেস সরানো হয়েছে",
     "title": "P2P অ্যাক্সেস সরানো হয়েছে"
   },
+  "p2pRegion": {
+    "title": "Deriv P2P আপনার অঞ্চলে উপলব্ধ নয়",
+    "description": "আপনি এখনও Deriv MT5, Deriv cTrader এবং আমাদের অন্যান্য প্ল্যাটফর্মে ট্রেড করতে পারেন।",
+    "backToHome": "হোমে ফিরে যান",
+    "illustrationAlt": "অসমর্থিত অঞ্চল"
+  },
   "p2pAnnouncement": {
     "whatsComing": {
       "bullet0": "একটি নতুন P2P অভিজ্ঞতা আসছে।",

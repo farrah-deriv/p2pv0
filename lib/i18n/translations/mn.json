@@ -870,6 +870,12 @@
     "illustrationAlt": "P2P хандалтыг устгасан",
     "title": "P2P хандалтыг устгасан"
   },
+  "p2pRegion": {
+    "title": "Deriv P2P таны бүс нутагт боломжгүй",
+    "description": "Та Deriv MT5, Deriv cTrader болон бусад платформууд дээр үргэлжлүүлэн арилжаа хийх боломжтой.",
+    "backToHome": "Нүүр хуудас руу буцах",
+    "illustrationAlt": "Дэмжигдээгүй бүс"
+  },
   "p2pAnnouncement": {
     "whatsComing": {
       "bullet0": "Шинэчлэгдсэн P2P туршлага замдаа байна.",

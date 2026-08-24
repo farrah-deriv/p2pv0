@@ -914,6 +914,12 @@
     "illustrationAlt": "P2P quyền truy cập đã bị xóa",
     "title": "P2P quyền truy cập đã bị xóa"
   },
+  "p2pRegion": {
+    "title": "Deriv P2P không khả dụng tại khu vực của bạn",
+    "description": "Bạn vẫn có thể giao dịch trên Deriv MT5, Deriv cTrader và các nền tảng khác của chúng tôi.",
+    "backToHome": "Về trang chủ",
+    "illustrationAlt": "Khu vực không được hỗ trợ"
+  },
   "p2pAnnouncement": {
     "whatsComing": {
       "bullet0": "Một trải nghiệm P2P mới mẻ đang sắp ra mắt.",

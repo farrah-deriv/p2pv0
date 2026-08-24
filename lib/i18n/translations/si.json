@@ -870,6 +870,12 @@
     "illustrationAlt": "P2P ප්‍රවේශය ඉවත් කරන ලදී",
     "title": "P2P ප්‍රවේශය ඉවත් කරන ලදී"
   },
+  "p2pRegion": {
+    "title": "Deriv P2P ඔබේ කලාපයේ ලබා ගත නොහැක",
+    "description": "ඔබට Deriv MT5, Deriv cTrader සහ අපගේ අනෙකුත් වේදිකා මත තවමත් වෙළඳාම් කළ හැකිය.",
+    "backToHome": "මුල් පිටුවට ආපසු",
+    "illustrationAlt": "සහාය නොදක්වන කලාපය"
+  },
   "p2pAnnouncement": {
     "whatsComing": {
       "bullet0": "නැවුම් P2P අත්දැකීමක් පැමිණෙමින් තිබේ.",

@@ -4,6 +4,8 @@ import { useCallback } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { queryKeys } from "@/hooks/use-api-queries"
 import * as AuthAPI from "@/services/api/api-auth"
+import { isCountryP2PDisabled } from "@/lib/is-country-p2p-enabled"
+import { useUserCountryInvalidStore } from "@/stores/user-country-invalid-store"
 import { useUserDataStore } from "@/stores/user-data-store"
 
 // Onboarding status is cached for 5 minutes. After the user uploads KYC and
@@ -20,6 +22,10 @@ export function useRefreshOnboardingStatus() {
       queryFn: () => AuthAPI.getOnboardingStatus(),
       staleTime: 0,
     })
+
+    if (isCountryP2PDisabled(status)) {
+      useUserCountryInvalidStore.getState().setUserCountryInvalid(true)
+    }
 
     const store = useUserDataStore.getState()
     store.setOnboardingStatus(status)

@@ -900,6 +900,12 @@
     "illustrationAlt": "Доступ к P2P удален",
     "title": "Доступ к P2P удален"
   },
+  "p2pRegion": {
+    "title": "Deriv P2P недоступен в вашем регионе",
+    "description": "Вы по-прежнему можете торговать на Deriv MT5, Deriv cTrader и других наших платформах.",
+    "backToHome": "На главную",
+    "illustrationAlt": "Регион не поддерживается"
+  },
   "p2pAnnouncement": {
     "whatsComing": {
       "bullet0": "Обновленный опыт P2P уже в пути.",

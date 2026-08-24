@@ -919,6 +919,12 @@
     "illustrationAlt": "P2P 액세스가 제거되었습니다.",
     "title": "P2P 액세스가 제거되었습니다."
   },
+  "p2pRegion": {
+    "title": "Deriv P2P는 회원님의 지역에서 이용할 수 없습니다",
+    "description": "Deriv MT5, Deriv cTrader 및 기타 플랫폼에서 계속 거래할 수 있습니다.",
+    "backToHome": "홈으로 돌아가기",
+    "illustrationAlt": "지원되지 않는 지역"
+  },
   "p2pAnnouncement": {
     "whatsComing": {
       "bullet0": "새로워진 P2P 경험이 곧 제공됩니다.",
