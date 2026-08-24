@@ -117,7 +117,7 @@
     "orderLimits": "Order limits",
     "loadingAds": "Loading ads...",
     "noAdsTitle": "No ads available for {currency}",
-    "noAdsDescription": "Create an {currency} ad to get started, or switch to another currency.",
+    "noAdsDescription": "Create {article} {currency} ad to get started, or switch to another currency.",
     "following": "Following",
     "verified": "Verified",
     "browseMarket": "Browse market",

@@ -35,6 +35,7 @@ import { ExchangeRateDisplay } from "@/components/exchange-rate-display"
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import { getTotalBalance } from "@/services/api/api-auth"
 import { useTranslations } from "@/lib/i18n/use-translations"
+import { indefiniteArticleFor } from "@/lib/i18n/indefinite-article"
 import { usePaymentMethods, useAdvertisements } from "@/hooks/use-api-queries"
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 import { VerifiedBadge } from "@/components/verified-badge"
@@ -705,7 +706,10 @@ export default function BuySellPage() {
               <div className="flex-1 min-h-0 flex items-center md:items-start justify-center md:pt-16" data-testid="markets-empty-state">
                 <EmptyState
                   title={t("market.noAdsTitle", { currency: currency })}
-                  description={t("market.noAdsDescription", { currency: currency })}
+                  description={t("market.noAdsDescription", {
+                    article: indefiniteArticleFor(currency),
+                    currency: currency,
+                  })}
                   redirectToAds={true}
                   adType={activeTab}
                   route="markets"
