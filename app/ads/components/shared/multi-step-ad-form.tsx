@@ -7,13 +7,14 @@ import AdDetailsForm from "../ad-details-form"
 import PaymentDetailsForm from "../payment-details-form"
 import ShareAdPage from "../share-ad-page"
 import AdSuccessScreen from "../ad-success-screen"
-import { AdsAPI, ProfileAPI } from "@/services/api"
+import { AdsAPI } from "@/services/api"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { ProgressSteps } from "./progress-steps"
 import Navigation from "@/components/navigation"
 import { useAdvertAlertDialog } from "@/app/ads/hooks/use-advert-alert-dialog"
+import { AdDetailsFormSkeleton } from "../ui/ad-details-form-skeleton"
 import OrderTimeLimitSelector from "./order-time-limit-selector"
 import AdConditionChipSelector from "./ad-condition-chip-selector"
 import MinimumTierSelector, { type MinimumTradeBand } from "./minimum-tier-selector"
@@ -25,7 +26,6 @@ import { PaymentSelectionProvider, usePaymentSelection } from "../payment-select
 import { useToast } from "@/hooks/use-toast"
 import { type Country } from "@/services/api/api-auth"
 import { useTranslations } from "@/lib/i18n/use-translations"
-import { useWebSocketContext } from "@/contexts/websocket-context"
 import { useUserDataStore } from "@/stores/user-data-store"
 import {
   flattenUserPaymentMethodsPages,
@@ -62,6 +62,17 @@ import {
   parseMyAdsTab,
 } from "@/lib/ads/my-ads-tab"
 import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
+import { useWizardExchangeRate } from "@/app/ads/hooks/use-wizard-exchange-rate"
+import { useAccountCurrencies } from "@/hooks/use-account-currencies"
+import { getDecimalConstraints } from "@/lib/currency-decimal"
+import {
+  advanceStaleEpisode,
+  buildRecoveredRateFormData,
+  getAdvertRatePrefill,
+  INITIAL_STALE_EPISODE_STATE,
+  isFloatingRateRecoveryError,
+  type StaleEpisodeState,
+} from "@/lib/ads/exchange-rate-recovery"
 
 interface MultiStepAdFormProps {
   mode: "create" | "edit"
@@ -69,11 +80,53 @@ interface MultiStepAdFormProps {
   initialType?: "buy" | "sell"
 }
 
+interface ApiErrorDetail {
+  code?: string
+  message?: string
+}
+
+interface ApiErrorShape {
+  errors?: ApiErrorDetail[]
+  response?: {
+    data?: {
+      errors?: ApiErrorDetail[]
+    }
+  }
+}
+
+function extractApiErrors(error: unknown): ApiErrorDetail[] {
+  if (typeof error !== "object" || error === null) return []
+  const apiError = error as ApiErrorShape
+  if (Array.isArray(apiError.errors)) return apiError.errors
+  const responseErrors = apiError.response?.data?.errors
+  return Array.isArray(responseErrors) ? responseErrors : []
+}
+
+function isSameFormValue(current: unknown, incoming: unknown): boolean {
+  if (Array.isArray(current) && Array.isArray(incoming)) {
+    return current.length === incoming.length &&
+      current.every((value, index) => Object.is(value, incoming[index]))
+  }
+  // Rate fields often alternate number (from validation events) vs string
+  // (from inputs / recovery). Treat numerically-equal values as unchanged.
+  if (
+    (typeof current === "number" || typeof current === "string") &&
+    (typeof incoming === "number" || typeof incoming === "string")
+  ) {
+    const currentNumber = typeof current === "number" ? current : Number.parseFloat(current)
+    const incomingNumber = typeof incoming === "number" ? incoming : Number.parseFloat(incoming)
+    if (Number.isFinite(currentNumber) && Number.isFinite(incomingNumber)) {
+      return currentNumber === incomingNumber
+    }
+  }
+  return Object.is(current, incoming)
+}
+
 interface UserPaymentMethod {
   id: string
   type: string
   display_name: string
-  fields: Record<string, any>
+  fields: Record<string, unknown>
   is_enabled: number
   method: string
 }
@@ -104,6 +157,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
 
   const { toast } = useToast()
   const [currentStep, setCurrentStep] = useState(0)
+  const [adDetailsRemountKey, setAdDetailsRemountKey] = useState(0)
   const [formData, setFormData] = useState<Partial<AdFormData>>(
     initialType ? { type: initialType } : {},
   )
@@ -124,13 +178,12 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
   const [minimumJoinedDays, setMinimumJoinedDays] = useState<number | null>(null)
   const [minimumCompletionRate30Day, setMinimumCompletionRate30Day] = useState<number | null>(null)
   const [minimumTradeBand, setMinimumTradeBand] = useState<MinimumTradeBand>(null)
-  const { leaveExchangeRatesChannel } = useWebSocketContext()
   const { userData } = useUserDataStore()
   const [showSuccessScreen, setShowSuccessScreen] = useState(false)
   const [successAd, setSuccessAd] = useState<Ad | null>(null)
   const [showSharePage, setShowSharePage] = useState(false)
   const [originalEditSnapshot, setOriginalEditSnapshot] = useState<AdvertEditSnapshot | null>(null)
-  const [marketPrice, setMarketPrice] = useState<number | null>(null)
+  const staleEpisodeRef = useRef<StaleEpisodeState>(INITIAL_STALE_EPISODE_STATE)
 
   const guideStep = useGuideStore((s) => s.currentStep)
   const guideType = useGuideStore((s) => s.guideType)
@@ -173,12 +226,22 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
 
   const createAdMutation = useCreateAd()
   const updateAdMutation = useUpdateAd()
+  const { accountCurrencies } = useAccountCurrencies()
   const { data: settingsData, isLoading: isLoadingSettings } = useSettings()
   const { data: userPaymentMethodsData, refetch: refetchUserPaymentMethods } = useUserPaymentMethods()
   const { data: paymentMethodsData } = usePaymentMethods()
 
-  const formDataRef = useRef<Partial<AdFormData>>({})
+  const formDataRef = useRef<Partial<AdFormData>>(
+    initialType ? { type: initialType } : {},
+  )
   const previousTypeRef = useRef<"buy" | "sell" | undefined>(initialType)
+  const exchangeRate = useWizardExchangeRate(
+    formData.buyCurrency || "USD",
+    formData.forCurrency,
+    !isLoadingInitialData,
+  )
+  const cachedMarketRateRef = useRef<number | null>(exchangeRate.cachedRate)
+  cachedMarketRateRef.current = exchangeRate.cachedRate
 
   const isLoadingCountries = isLoadingSettings
 
@@ -208,20 +271,20 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     if (!settingsData) return
 
     try {
-      const countriesData = settingsData.countries || []
+      const countriesData: Country[] = settingsData.countries || []
       setCountries(countriesData)
 
       const uniqueCurrencies = countriesData
-        .filter((c: Country) => c.currency)
         .reduce((acc, country) => {
-          if (!acc.some(c => c.code === country.currency)) {
-            acc.push({ code: country.currency, name: country.currency_name });
+          const code = country.currency
+          if (code && !acc.some(c => c.code === code)) {
+            acc.push({ code, name: country.currency_name ?? code })
           }
-          return acc;
+          return acc
         }, [] as { code: string; name: string }[])
-        .sort((a, b) => a.code.localeCompare(b.code));
+        .sort((a, b) => a.code.localeCompare(b.code))
       setCurrencies(uniqueCurrencies)
-    } catch (error) {
+    } catch {
       setCountries([])
       setCurrencies([])
     }
@@ -229,15 +292,23 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
 
   useEffect(() => {
     if (mode !== "create") return
-    if (!localCurrency) return
     if (formData?.forCurrency) return
     if (currencies.length === 0) return
-    if (!currencies.some((c: { code: string }) => c.code === localCurrency)) return
+    const defaultCurrency = localCurrency && currencies.some(
+      (currency: { code: string }) => currency.code === localCurrency,
+    )
+      ? localCurrency
+      : currencies[0].code
 
-    setFormData((prev: any) => {
-      const next = { ...prev, forCurrency: localCurrency }
-      formDataRef.current = { ...formDataRef.current, forCurrency: localCurrency }
-      return next
+    if (!formDataRef.current.forCurrency) {
+      formDataRef.current = {
+        ...formDataRef.current,
+        forCurrency: defaultCurrency,
+      }
+    }
+    setFormData((prev: Partial<AdFormData>) => {
+      if (prev.forCurrency) return prev
+      return { ...prev, forCurrency: defaultCurrency }
     })
   }, [mode, localCurrency, currencies, formData?.forCurrency])
 
@@ -278,13 +349,14 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
             setSelectedPaymentMethodIds(paymentMethodIds.map(String))
           }
 
+          const ratePrefill = getAdvertRatePrefill(data.exchange_rate, data.exchange_rate_type)
           const formattedData = {
             ...data,
             totalAmount:
               Number.parseFloat(data.available_amount) +
               Number.parseFloat(data.completed_order_amount) +
               Number.parseFloat(data.open_order_amount),
-            fixedRate: Number.parseFloat(data.exchange_rate),
+            fixedRate: ratePrefill.fixedRate,
             minAmount: data.minimum_order_amount,
             maxAmount: data.maximum_order_amount,
             paymentMethods: paymentMethodNames,
@@ -293,11 +365,14 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
             forCurrency: data.payment_currency,
             buyCurrency: data.account_currency,
             priceType: data.exchange_rate_type,
-            floatingRate: Number.parseFloat(data.exchange_rate) || "",
+            floatingRate: ratePrefill.floatingRate,
           }
 
           setFormData(formattedData)
           formDataRef.current = formattedData
+          // AdDetailsForm treats its draft as mount-time state. Remount after
+          // async edit data arrives rather than syncing parent data into it.
+          setAdDetailsRemountKey((key) => key + 1)
 
           if (data.order_expiry_period) {
             setOrderTimeLimit(data.order_expiry_period)
@@ -350,7 +425,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
             }),
           )
         }
-      } catch (error) {
+      } catch {
         if (cancelled) return
         toast({
           description: t("adForm.failedToLoadAd"),
@@ -379,6 +454,11 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
   }, [formData.type, mode, setSelectedPaymentMethodIds])
 
   const hasSelectedPaymentMethods = selectedPaymentMethodIds.length > 0
+  const isDiamond = userData?.trade_band === "diamond"
+  const initialIsPrivate = originalEditSnapshot?.isPrivate ?? false
+  const isDowngradedPrivate = mode === "edit" && initialIsPrivate && !isDiamond
+  const showVisibility = IS_CLOSED_GROUP_ENABLED && (isDiamond || isDowngradedPrivate)
+  const mustSwitchEveryone = isDowngradedPrivate && adVisibility === "closed-group"
 
   const hasEditChanges = useMemo(() => {
     if (mode !== "edit" || !originalEditSnapshot) {
@@ -433,39 +513,80 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     selectedPaymentMethodIds,
   ])
 
+  const syncFormData = useCallback((incoming: Partial<AdFormData>) => {
+    const current = formDataRef.current
+    const hasChanges = Object.entries(incoming).some(
+      ([key, value]) => !isSameFormValue(current[key as keyof AdFormData], value),
+    )
+    if (!hasChanges) return
+
+    const updatedData = { ...current, ...incoming }
+    formDataRef.current = updatedData
+    setFormData(updatedData)
+  }, [])
+
+  const handleAdFormDataChange = useCallback(
+    (data: Partial<AdFormData>, isValid: boolean) => {
+      syncFormData(data)
+      setAdFormValid((current) => current === isValid ? current : isValid)
+    },
+    [syncFormData],
+  )
+
+  const handlePaymentFormDataChange = useCallback(
+    (data: Partial<AdFormData>, isValid: boolean) => {
+      syncFormData(data)
+      setPaymentFormValid((current) => current === isValid ? current : isValid)
+    },
+    [syncFormData],
+  )
+
+  const showStaleRateRecovery = useCallback(() => {
+    const current = formDataRef.current
+    const paymentCurrency = current.forCurrency || ""
+    const constraints = getDecimalConstraints(paymentCurrency, accountCurrencies)
+    const decimals = constraints?.maximum ?? 6
+
+    showAlert({
+      title: t("adForm.exchangeRateOutdatedTitle"),
+      description: t("adForm.exchangeRateOutdatedDescription"),
+      confirmText: t("adForm.editRate"),
+      type: "warning",
+      testId: "stale-exchange-rate-dialog",
+      confirmTestId: "stale-exchange-rate-edit-rate",
+      hideCloseButton: true,
+      preventOutsideClose: true,
+      onConfirm: () => {
+        const updatedData = buildRecoveredRateFormData(
+          formDataRef.current as Record<string, unknown>,
+          cachedMarketRateRef.current,
+          decimals,
+        )
+        formDataRef.current = updatedData as Partial<AdFormData>
+        // Step first so AdDetailsForm remounts with recovered fixed rate, then
+        // bump key so retained local float UI cannot fight the new form data.
+        setCurrentStep(0)
+        setAdDetailsRemountKey((key) => key + 1)
+        setFormData(updatedData as Partial<AdFormData>)
+        setAdFormValid(false)
+      },
+    })
+  }, [accountCurrencies, showAlert, t])
+
   useEffect(() => {
-    const handleAdFormValidation = (e: any) => {
-      setAdFormValid(e.detail.isValid)
-      if (typeof e.detail.marketPrice === "number") {
-        setMarketPrice(e.detail.marketPrice)
-      }
-      if (e.detail.isValid) {
-        const updatedData = { ...formData, ...e.detail.formData }
-        setFormData(updatedData)
-        formDataRef.current = updatedData
-      }
-    }
-
-    const handlePaymentFormValidation = (e: any) => {
-      setPaymentFormValid(e.detail.isValid)
-      if (e.detail.isValid) {
-        const updatedData = { ...formData, ...e.detail.formData }
-        setFormData(updatedData)
-        formDataRef.current = updatedData
-      }
-    }
-
-    document.addEventListener("adFormValidationChange", handleAdFormValidation)
-    document.addEventListener("paymentFormValidationChange", handlePaymentFormValidation)
-
-    return () => {
-      document.removeEventListener("adFormValidationChange", handleAdFormValidation)
-      document.removeEventListener("paymentFormValidationChange", handlePaymentFormValidation)
-    }
-  }, [formData])
+    if (!exchangeRate.pairKey) return
+    const result = advanceStaleEpisode(
+      staleEpisodeRef.current,
+      exchangeRate.pairKey,
+      exchangeRate.status,
+      formDataRef.current.priceType === "float",
+    )
+    staleEpisodeRef.current = result.state
+    if (result.notify) showStaleRateRecovery()
+  }, [exchangeRate.pairKey, exchangeRate.status, showStaleRateRecovery])
 
   const handleAdDetailsNext = (data: Partial<AdFormData>, errors?: Record<string, string>) => {
-    const updatedData = { ...formData, ...data }
+    const updatedData = { ...formDataRef.current, ...data }
     setFormData(updatedData)
     formDataRef.current = updatedData
 
@@ -474,7 +595,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     }
   }
 
-  const formatErrorMessage = (errors: any[]): string => {
+  const formatErrorMessage = (errors: ApiErrorDetail[]): string => {
     if (!errors || errors.length === 0) {
       return t("adForm.genericProcessingErrorMessage")
     }
@@ -510,6 +631,11 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
   const handleFinalSubmit = () => {
     const finalData = { ...formDataRef.current }
 
+    if (finalData.priceType === "float" && exchangeRate.isExplicitlyUnavailable) {
+      showStaleRateRecovery()
+      return
+    }
+
     const selectedPaymentMethodIdsForSubmit = finalData.type === "sell" ? selectedPaymentMethodIds : []
     const isPrivate = adVisibility === "closed-group"
 
@@ -530,14 +656,14 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
   }
 
   const proceedWithSubmit = (
-    finalData: any,
+    finalData: Partial<AdFormData>,
     selectedPaymentMethodIdsForSubmit: string[],
     isPrivate: boolean
   ) => {
     setIsSubmitting(true)
 
     if (mode === "create") {
-      const exchangeRate =
+      const exchangeRateValue =
         finalData.priceType === "float" ? Number(finalData.floatingRate) : Number(finalData.fixedRate)
 
       const payload = {
@@ -547,7 +673,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
         minimum_order_amount: finalData.minAmount || 0,
         maximum_order_amount: finalData.maxAmount || 0,
         available_amount: finalData.totalAmount || 0,
-        exchange_rate: exchangeRate || 0,
+        exchange_rate: exchangeRateValue || 0,
         exchange_rate_type: (finalData.priceType || "fixed") as "fixed" | "float",
         description: finalData.instructions || "",
         is_active: 1,
@@ -589,9 +715,9 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
           setSuccessAd(successAdData)
           setShowSuccessScreen(true)
         },
-        onError: (error: any) => {
+        onError: (error: unknown) => {
           setIsSubmitting(false)
-          handleAdError(error, "create")
+          handleAdError(error, "create", finalData.priceType)
         },
       })
     } else {
@@ -645,8 +771,14 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
         return
       }
 
+      const editId = finalData.id ?? adId
+      if (!editId) {
+        setIsSubmitting(false)
+        return
+      }
+
       updateAdMutation.mutate(
-        { id: finalData.id, adData: patch },
+        { id: editId, adData: patch },
         {
           onSuccess: () => {
             track("ek_ad_updated_create_ad_step_3")
@@ -663,9 +795,9 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
             })
             router.push(myAdsReturnPath)
           },
-          onError: (error: any) => {
+          onError: (error: unknown) => {
             setIsSubmitting(false)
-            handleAdError(error, "update")
+            handleAdError(error, "update", finalData.priceType)
           },
         }
       )
@@ -685,20 +817,25 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     return confirmTextMap[errorName] || t("adForm.updateAd")
   }
 
-  const handleAdError = (error: any, mode: "create" | "update") => {
+  const handleAdError = (
+    error: unknown,
+    mode: "create" | "update",
+    submittedPriceType?: "fixed" | "float",
+  ) => {
     let errorMessage = t("adForm.genericProcessingErrorMessage")
     let errorName = "GenericError"
+    const errors = extractApiErrors(error)
 
-    if (error?.errors && Array.isArray(error.errors)) {
-      errorMessage = formatErrorMessage(error.errors)
-      if (error.errors[0]?.code) {
-        errorName = error.errors[0].code
-      }
-    } else if (error?.response?.data?.errors) {
-      errorMessage = formatErrorMessage(error.response.data.errors)
-      if (error.response.data.errors[0]?.code) {
-        errorName = error.response.data.errors[0].code
-      }
+    if (errors.length > 0) {
+      errorMessage = formatErrorMessage(errors)
+      errorName = errors[0].code ?? errorName
+    }
+
+    if (
+      isFloatingRateRecoveryError(errorName, submittedPriceType)
+    ) {
+      showStaleRateRecovery()
+      return
     }
 
     const errorInfoMap: Record<string, { title: string; type: "error" | "warning"; onConfirm?: () => void }> = {
@@ -870,27 +1007,13 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
         },
         onCancel: () => {
           track("ek_confirm_cancel_ad_cancel_ad_sheet")
-          const finalData = { ...formDataRef.current }
-          const currency = finalData?.buyCurrency || "USD"
-          const paymentCurrency = finalData?.forCurrency || ""
-          leaveExchangeRatesChannel(currency, paymentCurrency)
           router.push(myAdsPath())
         },
       })
     } else {
-      const finalData = { ...formDataRef.current }
-      const currency = finalData?.buyCurrency || "USD"
-      const paymentCurrency = finalData?.forCurrency || ""
-      leaveExchangeRatesChannel(currency, paymentCurrency)
       router.push(myAdsReturnPath)
     }
   }
-
-  const isDiamond = userData.trade_band === "diamond"
-  const initialIsPrivate = originalEditSnapshot?.isPrivate ?? false
-  const isDowngradedPrivate = mode === "edit" && initialIsPrivate && !isDiamond
-  const showVisibility = IS_CLOSED_GROUP_ENABLED && (isDiamond || isDowngradedPrivate)
-  const mustSwitchEveryone = isDowngradedPrivate && adVisibility === "closed-group"
 
   const isButtonDisabled =
     (currentStep === 0 && !adFormValid) ||
@@ -944,7 +1067,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
           )}
         </>
       ) : (
-        <form onSubmit={(e) => e.preventDefault()}>
+        <div>
           {/* Responsive: column shell — sticky header + scroll middle + sticky footer.
               Desktop (md+): page scroll with sticky header/footer as before. */}
           <div className="fixed inset-0 z-30 flex flex-col bg-white md:overflow-y-auto md:px-[24px]">
@@ -976,16 +1099,24 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain md:overflow-visible md:flex-none pb-4 md:pb-0">
                 <div className="relative mx-6 mt-4 md:mt-2 md:mb-0">
                   {currentStep === 0 ? (
-                    <AdDetailsForm
-                      onNext={handleAdDetailsNext}
-                      initialData={formData}
-                      isEditMode={mode === "edit"}
-                      currencies={currencies}
-                      isLoadingInitialData={isLoadingInitialData}
-                    />
+                    isLoadingInitialData || !formData.forCurrency ? (
+                      <AdDetailsFormSkeleton />
+                    ) : (
+                      <AdDetailsForm
+                        key={adDetailsRemountKey}
+                        onNext={handleAdDetailsNext}
+                        onFormDataChange={handleAdFormDataChange}
+                        initialData={formData}
+                        isEditMode={mode === "edit"}
+                        currencies={currencies}
+                        isLoadingInitialData={isLoadingInitialData}
+                        exchangeRate={exchangeRate}
+                      />
+                    )
                   ) : currentStep === 1 ? (
                     <PaymentDetailsForm
                       initialData={formData}
+                      onFormDataChange={handlePaymentFormDataChange}
                       onBottomSheetOpenChange={handleBottomSheetOpenChange}
                       userPaymentMethods={userPaymentMethods}
                       availablePaymentMethods={availablePaymentMethods}
@@ -1275,7 +1406,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
               )}
             </div>
           </div>
-        </form>
+        </div>
       )}
     </>
   )

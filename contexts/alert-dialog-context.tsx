@@ -37,15 +37,18 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
   }, [])
 
   const handleConfirm = useCallback(async () => {
-    if (config.onConfirm) {
-      setIsSubmitting(true)
-      try {
-        await config.onConfirm()
-      } finally {
-        setIsSubmitting(false)
-      }
+    if (!config.onConfirm) {
+      hideAlert()
+      return
     }
-    hideAlert()
+
+    setIsSubmitting(true)
+    try {
+      await config.onConfirm()
+    } finally {
+      setIsSubmitting(false)
+      hideAlert()
+    }
   }, [config.onConfirm, hideAlert])
 
   const handleCancel = useCallback(() => {
@@ -321,8 +324,11 @@ export function AlertDialogProvider({ children }: AlertDialogProviderProps) {
             onInteractOutside={config.preventOutsideClose ? (e) => e.preventDefault() : undefined}
           >
             <AlertDialogTitle className="sr-only">{config.title ?? ""}</AlertDialogTitle>
-            <AlertDialogDescription className="m-0 flex min-h-0 min-w-0 w-full max-w-full flex-1 flex-col overflow-hidden p-0 text-base">
-              {renderDesktopContent()}
+            {/* asChild + div: Description defaults to <p>; content often nests another <p>. */}
+            <AlertDialogDescription asChild>
+              <div className="m-0 flex min-h-0 min-w-0 w-full max-w-full flex-1 flex-col overflow-hidden p-0 text-base">
+                {renderDesktopContent()}
+              </div>
             </AlertDialogDescription>
           </AlertDialogContent>
         </AlertDialog>

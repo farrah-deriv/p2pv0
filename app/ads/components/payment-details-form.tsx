@@ -22,7 +22,6 @@ import { isRtlLocale } from "@/lib/i18n/config"
 import { Drawer, DrawerContent } from "@/components/ui/drawer"
 import { getDecimalConstraints, getDecimalPlaces } from "@/lib/currency-decimal"
 import { formatPaymentMethodName } from "@/lib/utils"
-import { ProfileAPI } from "@/services/api"
 import AddPaymentMethodPanel from "@/app/profile/components/add-payment-method-panel"
 import { useAdvertAlertDialog } from "@/app/ads/hooks/use-advert-alert-dialog"
 import { useToast } from "@/hooks/use-toast"
@@ -41,7 +40,6 @@ import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/res
 import { getPaymentMethodFieldValidationIssue } from "@/lib/payment-method-validation"
 import {
   appendSelectedPaymentMethodId,
-  filterPaymentMethodsForAdvert,
   getCreatedPaymentMethodId,
   getPaymentMethodSelectionLines,
   isPaymentMethodIdSelected,
@@ -83,6 +81,7 @@ interface AmountValidationErrors {
 
 interface PaymentDetailsFormProps {
   initialData: Partial<AdFormData>
+  onFormDataChange: (data: Partial<AdFormData>, isValid: boolean) => void
   onBottomSheetOpenChange?: (isOpen: boolean) => void
   userPaymentMethods: UserPaymentMethod[]
   availablePaymentMethods: AvailablePaymentMethod[]
@@ -589,6 +588,7 @@ const PaymentSelectionContent = ({
 
 export default function PaymentDetailsForm({
   initialData,
+  onFormDataChange,
   onBottomSheetOpenChange,
   userPaymentMethods,
   availablePaymentMethods,
@@ -913,21 +913,17 @@ export default function PaymentDetailsForm({
         .filter(Boolean)
     }
 
-    const event = new CustomEvent("paymentFormValidationChange", {
-      detail: {
-        isValid: isFormValid(),
-        formData: {
-          totalAmount: Number.parseFloat(totalAmount) || 0,
-          minAmount: Number.parseFloat(minAmount) || 0,
-          maxAmount: Number.parseFloat(maxAmount) || 0,
-          payment_method_ids: toNumericPaymentMethodIds(selectedPaymentMethodIds),
-          paymentMethods: paymentMethodNames,
-          instructions,
-        },
+    onFormDataChange(
+      {
+        totalAmount: Number.parseFloat(totalAmount) || 0,
+        minAmount: Number.parseFloat(minAmount) || 0,
+        maxAmount: Number.parseFloat(maxAmount) || 0,
+        payment_method_ids: toNumericPaymentMethodIds(selectedPaymentMethodIds),
+        paymentMethods: paymentMethodNames,
+        instructions,
       },
-      bubbles: true,
-    })
-    document.dispatchEvent(event)
+      isFormValid(),
+    )
   }, [
     selectedPaymentMethodIds,
     instructions,
@@ -937,6 +933,7 @@ export default function PaymentDetailsForm({
     minAmount,
     maxAmount,
     amountErrors,
+    onFormDataChange,
   ])
 
   return (

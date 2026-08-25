@@ -3,7 +3,7 @@ export interface AdFormData {
   type?: "buy" | "sell"
   priceType?: "fixed" | "float"
   totalAmount?: number
-  fixedRate?: number
+  fixedRate?: number | string
   floatingRate?: number | string
   minAmount?: number
   maxAmount?: number

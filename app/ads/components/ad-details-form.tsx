@@ -13,20 +13,21 @@ import Image from "next/image"
 import { getDecimalConstraints, getDecimalPlaces } from "@/lib/currency-decimal"
 import { currencyFlagMapper } from "@/lib/utils"
 import { useTranslations } from "@/lib/i18n/use-translations"
-import type { WebSocketMessage } from "@/lib/websocket-message"
-import { useWebSocketContext } from "@/contexts/websocket-context"
 import { AdDetailsFormSkeleton } from "./ui/ad-details-form-skeleton"
 import { RateSectionSkeleton } from "./ui/rate-section-skeleton"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
 import { CurrencyFilter } from "@/components/currency-filter/currency-filter"
+import type { WizardExchangeRateState } from "../hooks/use-wizard-exchange-rate"
 
 interface AdDetailsFormProps {
   onNext: (data: Partial<AdFormData>, errors?: ValidationErrors) => void
+  onFormDataChange: (data: Partial<AdFormData>, isValid: boolean) => void
   initialData?: Partial<AdFormData>
   isEditMode?: boolean
   isLoadingInitialData?: boolean
   currencies?: Array<{ code: string; name?: string }>
+  exchangeRate: WizardExchangeRateState
 }
 
 interface ValidationErrors {
@@ -39,72 +40,8 @@ interface PriceRange {
   highestPrice: number | null
 }
 
-interface CachedExchangeRate {
-  rate: number
-  status?: string
-}
-
 /** Flip to `true` when multi-currency account selection returns. */
 const SHOW_ACCOUNT_CURRENCY_SELECTOR = false
-
-/** Empty string → account channel `exchange_rates/{buy}` (all currencies), like mobile. */
-const ALL_EXCHANGE_RATES = ""
-
-function parseRateNumber(raw: unknown): number | null {
-  if (raw == null) return null
-  const parsed = typeof raw === "number" ? raw : Number.parseFloat(String(raw))
-  return Number.isNaN(parsed) ? null : parsed
-}
-
-/**
- * Extract a currency→rate map from WS exchange-rate payloads.
- *
- * Shapes seen in the wild:
- * - Account channel: `{ IDR: { rate, status }, ... }` or `{ data: { IDR: {...} } }`
- * - Pair channel: `{ rate, status }` or `{ data: { rate, status } }`
- */
-function extractExchangeRatesFromPayload(
-  payload: any,
-  channel: string | undefined,
-  fallbackCurrency: string,
-): Record<string, CachedExchangeRate> {
-  if (!payload || typeof payload !== "object") return {}
-
-  const out: Record<string, CachedExchangeRate> = {}
-  const nest = payload.data && typeof payload.data === "object" ? payload.data : null
-
-  const ingestEntry = (code: string, entry: any) => {
-    const rate = parseRateNumber(entry?.rate)
-    if (rate == null || !code) return
-    out[code] = { rate, status: typeof entry?.status === "string" ? entry.status : undefined }
-  }
-
-  const ingestMap = (map: Record<string, any>) => {
-    for (const [code, entry] of Object.entries(map)) {
-      if (!entry || typeof entry !== "object" || !("rate" in entry)) continue
-      ingestEntry(code, entry)
-    }
-  }
-
-  // Currency-keyed map (account / all-currencies channel).
-  ingestMap(payload)
-  if (nest) ingestMap(nest)
-
-  // Pair channel: single rate object. Currency from channel suffix or selection.
-  const pairRate =
-    parseRateNumber(payload.rate) ?? (nest ? parseRateNumber(nest.rate) : null)
-  if (pairRate != null && Object.keys(out).length === 0) {
-    const parts = channel?.split("/") ?? []
-    const fromChannel = parts.length >= 3 ? parts[2] : ""
-    const code = fromChannel || fallbackCurrency
-    ingestEntry(code, {
-      rate: pairRate,
-      status: payload.status ?? nest?.status,
-    })
-  }
-
-  return out
-}
 
 const FIXED_RATE_MAX_DECIMALS = 6
 
@@ -140,10 +77,12 @@ function RateInfoRow({
 
 export default function AdDetailsForm({
   onNext,
+  onFormDataChange,
   initialData,
   isLoadingInitialData,
   isEditMode,
   currencies: currenciesProp = [],
+  exchangeRate,
 }: AdDetailsFormProps) {
   const { t } = useTranslations()
   const [type, setType] = useState<"buy" | "sell">(initialData?.type || "buy")
@@ -158,33 +97,15 @@ export default function AdDetailsForm({
     fixedRate: false,
     floatingRate: false,
   })
-  const [marketPrice, setMarketPrice] = useState<number | null>(null)
-  // WS exchange-rate status for the selected currency ("active" | "stale" | ...).
-  // Floating ads require an active rate — stale rates force Fixed-only.
-  const [marketPriceStatus, setMarketPriceStatus] = useState<string | null>(null)
-  const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(true)
+  const marketPrice = exchangeRate.rate
+  const marketPriceStatus = exchangeRate.status
+  const isExchangeRateLoading = exchangeRate.isLoading
   const [priceRange, setPriceRange] = useState<PriceRange>({ lowestPrice: null, highestPrice: null })
-  const userEditedFixedRateRef = useRef(!!isEditMode && !!initialData?.fixedRate)
+  // Preserve any prefilled fixed rate (edit load OR stale-rate recovery) against autofill.
+  const userEditedFixedRateRef = useRef(!!initialData?.fixedRate)
   const lastAutoFillPairRef = useRef<string | null>(null)
   const prevPriceTypeRef = useRef<"fixed" | "float">(initialData?.priceType || "fixed")
-  const exchangeRatePairRef = useRef<string | null>(null)
-  const ratesByCurrencyRef = useRef<Record<string, CachedExchangeRate>>({})
-  // Tracks which forCurrency the current marketPrice belongs to.
-  // State (not ref) so it batches with setMarketPrice — the auto-fill effect
-  // always sees both values in the same commit, preventing stale-rate carry-over.
-  const [marketPriceCurrency, setMarketPriceCurrency] = useState<string | null>(null)
-  // Tracks whether the server has acknowledged the exchange_rates channel join.
-  // Prevents "must be in channel" errors from sending a request before the join ack.
-  const channelJoinedRef = useRef(false)
-
   const isMobile = useIsMobile()
-  const {
-    isConnected,
-    joinExchangeRatesChannel,
-    leaveExchangeRatesChannel,
-    subscribe,
-    requestExchangeRate,
-  } = useWebSocketContext()
   const { data: settings } = useSettings()
   const { data: advertStats } = useAdvertStats(buyCurrency, !!buyCurrency)
 
@@ -253,7 +174,10 @@ export default function AdDetailsForm({
 
   const buildFormData = (): Partial<AdFormData> => ({
     type,
-    fixedRate: priceType === "fixed" ? Number.parseFloat(fixedRate) || 0 : undefined,
+    fixedRate:
+      priceType === "fixed"
+        ? fixedRate === "" ? "" : Number.parseFloat(fixedRate)
+        : undefined,
     floatingRate: priceType === "float" ? Number.parseFloat(floatingRate) || 0 : undefined,
     priceType,
     forCurrency,
@@ -261,16 +185,13 @@ export default function AdDetailsForm({
   })
 
   useEffect(() => {
-    if (!isEditMode && currenciesProp.length > 0 && !initialData?.forCurrency) {
-      setForCurrency(currenciesProp[0].code)
-    }
-  }, [currenciesProp, isEditMode, initialData?.forCurrency])
-
-  useEffect(() => {
     const fetchPriceRange = () => {
       try {
         if (!Array.isArray(advertStats)) {
-          setPriceRange({ lowestPrice: null, highestPrice: null })
+          setPriceRange((prev) => {
+            if (prev.lowestPrice === null && prev.highestPrice === null) return prev
+            return { lowestPrice: null, highestPrice: null }
+          })
           return
         }
 
@@ -314,134 +235,29 @@ export default function AdDetailsForm({
             }
           }
 
-          setPriceRange({
-            lowestPrice,
-            highestPrice,
+          setPriceRange((prev) => {
+            if (prev.lowestPrice === lowestPrice && prev.highestPrice === highestPrice) {
+              return prev
+            }
+            return { lowestPrice, highestPrice }
           })
         } else {
-          setPriceRange({ lowestPrice: null, highestPrice: null })
+          setPriceRange((prev) => {
+            if (prev.lowestPrice === null && prev.highestPrice === null) return prev
+            return { lowestPrice: null, highestPrice: null }
+          })
         }
       } catch {
-        setPriceRange({ lowestPrice: null, highestPrice: null })
+        setPriceRange((prev) => {
+          if (prev.lowestPrice === null && prev.highestPrice === null) return prev
+          return { lowestPrice: null, highestPrice: null }
+        })
       }
     }
 
     if (!buyCurrency || !forCurrency) return
     fetchPriceRange()
   }, [buyCurrency, forCurrency, priceType, type, marketPrice, advertStats])
-
-  // Apply cached / live rate for the selected payment currency.
-  const applyRateForCurrency = (currency: string) => {
-    const cached = ratesByCurrencyRef.current[currency]
-    if (!cached) return false
-    setMarketPriceCurrency(currency)
-    setMarketPrice(cached.rate)
-    setMarketPriceStatus(cached.status ?? null)
-    setIsExchangeRateLoading(false)
-    return true
-  }
-
-  // Reset rate UI on currency change; reuse cache when the all-currencies
-  // channel already delivered this payment currency (mobile parity).
-  useEffect(() => {
-    if (!buyCurrency || !forCurrency) {
-      setIsExchangeRateLoading(false)
-      return
-    }
-    const pairKey = `${buyCurrency}:${forCurrency}`
-    if (exchangeRatePairRef.current === pairKey) return
-    exchangeRatePairRef.current = pairKey
-
-    if (applyRateForCurrency(forCurrency)) return
-
-    setMarketPriceCurrency(null)
-    setMarketPrice(null)
-    setMarketPriceStatus(null)
-    setIsExchangeRateLoading(true)
-  }, [buyCurrency, forCurrency])
-
-  // If the socket never connects, still leave the skeleton after a grace period.
-  useEffect(() => {
-    if (isConnected || !buyCurrency || !forCurrency) return
-    const settleTimer = setTimeout(() => {
-      setIsExchangeRateLoading(false)
-    }, 1500)
-    return () => clearTimeout(settleTimer)
-  }, [isConnected, buyCurrency, forCurrency])
-
-  // Join account-level channel (all currencies) — same as mobile.
-  // Pair channel join was mismatched with the old exact-channel listener.
-  useEffect(() => {
-    if (!isConnected || !buyCurrency) return
-
-    channelJoinedRef.current = false
-    ratesByCurrencyRef.current = {}
-    joinExchangeRatesChannel(buyCurrency, ALL_EXCHANGE_RATES)
-    return () => {
-      leaveExchangeRatesChannel(buyCurrency, ALL_EXCHANGE_RATES)
-    }
-  }, [isConnected, buyCurrency, joinExchangeRatesChannel, leaveExchangeRatesChannel])
-
-  useEffect(() => {
-    if (isLoadingInitialData || !isConnected || !buyCurrency || !forCurrency) return
-
-    const pairKey = `${buyCurrency}:${forCurrency}`
-    const accountChannel = `exchange_rates/${buyCurrency}`
-
-    // If already joined (only forCurrency changed), request immediately.
-    // If not yet joined (new connection / reconnect), defer to next macrotask so
-    // the join message is fully sent before the request — prevents the server
-    // from receiving both in the same tick and rejecting with "must be in channel".
-    let joinTimer: ReturnType<typeof setTimeout> | undefined
-    if (channelJoinedRef.current) {
-      requestExchangeRate(buyCurrency, ALL_EXCHANGE_RATES)
-    } else {
-      joinTimer = setTimeout(() => {
-        channelJoinedRef.current = true
-        requestExchangeRate(buyCurrency, ALL_EXCHANGE_RATES)
-      }, 400)
-    }
-
-    // Don't leave the rate section skeleton forever if WS is silent.
-    const settleTimer = setTimeout(() => {
-      if (exchangeRatePairRef.current === pairKey) {
-        setIsExchangeRateLoading(false)
-      }
-    }, 1500)
-
-    const unsubscribe = subscribe((data: WebSocketMessage) => {
-      const channel: string | undefined = data.options?.channel
-      // Accept account channel + legacy pair channel messages.
-      if (!channel?.startsWith(accountChannel)) return
-
-      const extracted = extractExchangeRatesFromPayload(data.payload, channel, forCurrency)
-      if (Object.keys(extracted).length === 0) {
-        // Join/empty acks must not force fixed-only — wait for a real rate map.
-        return
-      }
-
-      ratesByCurrencyRef.current = {
-        ...ratesByCurrencyRef.current,
-        ...extracted,
-      }
-
-      const selected = ratesByCurrencyRef.current[forCurrency]
-      if (selected) {
-        setMarketPriceCurrency(forCurrency)
-        setMarketPrice(selected.rate)
-        setMarketPriceStatus(selected.status ?? null)
-        setIsExchangeRateLoading(false)
-      }
-      // Partial all-currency maps may omit the selected currency; keep loading
-      // until a later tick / settle timeout (mirrors mobile accumulate behaviour).
-    })
-
-    return () => {
-      clearTimeout(joinTimer)
-      clearTimeout(settleTimer)
-      unsubscribe()
-    }
-  }, [isLoadingInitialData, isConnected, buyCurrency, forCurrency, subscribe, requestExchangeRate])
 
   // Auto-fill fixed rate from WS exchange rate (create / switch to fixed / currency change).
   useEffect(() => {
@@ -453,7 +269,7 @@ export default function AdDetailsForm({
     // Guard: marketPrice belongs to a different currency (stale from previous selection).
     // This prevents the old rate from bleeding into the newly selected currency's field
     // before the rate-loading effect has had a chance to clear marketPrice.
-    if (marketPriceCurrency !== forCurrency) {
+    if (exchangeRate.pairKey !== `${buyCurrency}:${forCurrency}`) {
       return
     }
 
@@ -461,8 +277,9 @@ export default function AdDetailsForm({
     const switchedToFixed = prevPriceTypeRef.current !== "fixed"
     prevPriceTypeRef.current = priceType
 
-    if (isEditMode && !switchedToFixed && lastAutoFillPairRef.current === null && fixedRate) {
-      // Preserve loaded edit rate on mount.
+    if (!switchedToFixed && fixedRate) {
+      // Preserve an existing fixed rate. This covers edit prefill and the
+      // recovered rate supplied when stale floating rate is downgraded.
       lastAutoFillPairRef.current = pairKey
       return
     }
@@ -483,21 +300,7 @@ export default function AdDetailsForm({
     if (switchedToFixed) {
       userEditedFixedRateRef.current = false
     }
-  }, [marketPrice, marketPriceCurrency, priceType, buyCurrency, forCurrency, isEditMode, fixedRate, fixedRateDecimals])
-
-  useEffect(() => {
-    if (initialData) {
-      if (initialData.type) setType(initialData.type as "buy" | "sell")
-      if (initialData.priceType !== undefined) setPriceType(initialData.priceType)
-      if (initialData.fixedRate !== undefined) {
-        setFixedRate(initialData.fixedRate.toString())
-        userEditedFixedRateRef.current = true
-      }
-      if (initialData.floatingRate !== undefined) setFloatingRate(initialData.floatingRate.toString())
-      if (initialData.forCurrency !== undefined) setForCurrency(initialData.forCurrency.toString())
-      if (initialData.buyCurrency !== undefined) setBuyCurrency(initialData.buyCurrency.toString())
-    }
-  }, [initialData])
+  }, [marketPrice, exchangeRate.pairKey, priceType, buyCurrency, forCurrency, isEditMode, fixedRate, fixedRateDecimals])
 
   useEffect(() => {
     const errors: ValidationErrors = {}
@@ -525,7 +328,17 @@ export default function AdDetailsForm({
       }
     }
 
-    setFormErrors(errors)
+    setFormErrors((prev) => {
+      const prevKeys = Object.keys(prev)
+      const nextKeys = Object.keys(errors)
+      if (
+        prevKeys.length === nextKeys.length &&
+        nextKeys.every((key) => prev[key as keyof ValidationErrors] === errors[key as keyof ValidationErrors])
+      ) {
+        return prev
+      }
+      return errors
+    })
   }, [fixedRate, floatingRate, touched, priceType, marketPrice, t])
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -547,24 +360,22 @@ export default function AdDetailsForm({
   }
 
   useEffect(() => {
-    const isValid = !isExchangeRateLoading && isFormValid()
-    const event = new CustomEvent("adFormValidationChange", {
-      bubbles: true,
-      detail: {
-        isValid,
-        formData: buildFormData(),
-        marketPrice,
-      },
-    })
-    document.dispatchEvent(event)
-  }, [type, fixedRate, floatingRate, formErrors, priceType, forCurrency, buyCurrency, isExchangeRateLoading, marketPrice])
-
-
-  useEffect(() => {
-    if (!isFloatingRateEnabled && priceType === "float") {
-      setPriceType("fixed")
-    }
-  }, [isFloatingRateEnabled, priceType])
+    onFormDataChange(
+      buildFormData(),
+      !isExchangeRateLoading && isFormValid(),
+    )
+  }, [
+    type,
+    fixedRate,
+    floatingRate,
+    formErrors,
+    priceType,
+    forCurrency,
+    buyCurrency,
+    isExchangeRateLoading,
+    marketPrice,
+    onFormDataChange,
+  ])
 
   const handlePriceTypeChange = (next: "fixed" | "float") => {
     if (next === "fixed") {
@@ -578,15 +389,6 @@ export default function AdDetailsForm({
     // market rate once it arrives — clear stale value + autofill guards now.
     userEditedFixedRateRef.current = false
     lastAutoFillPairRef.current = null
-    // Reset to fixed on currency switch. The new currency may not support
-    // floating (stale/no active rate), and the "keep floating when stale"
-    // guard — intended only for same-currency rate staleness — would otherwise
-    // leave priceType as "float", showing FloatingRateInput for a currency
-    // that can't use it. The rate-type selector re-evaluates availability for
-    // the new currency; the user can re-select Floating if it's supported.
-    if (priceType === "float") {
-      setPriceType("fixed")
-    }
     setFixedRate("")
     setForCurrency(code)
   }
