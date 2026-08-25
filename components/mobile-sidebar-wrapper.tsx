@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { useTranslations } from "@/lib/i18n/use-translations"
+import { canGoBackWithinApp } from "@/lib/navigation/back-navigation"
 import { StandaloneArrowLeftFillIcon } from "@deriv/quill-icons/Standalone"
 import ProfileIconWhite from "@/public/icons/profile-icon-white.svg"
 
@@ -14,7 +15,9 @@ export function MobileSidebarTrigger({ "data-testid": testId }: { "data-testid"?
   const isProfilePage = pathname === "/profile" || pathname.startsWith("/profile/")
 
   const handleBack = () => {
-    if (window.history.length > 1) {
+    // Not `window.history.length > 1`: a tab opened directly on /profile reports extra
+    // entries that belong to the browser, so going back left the SPA entirely.
+    if (canGoBackWithinApp()) {
       router.back()
     } else {
       router.push("/")

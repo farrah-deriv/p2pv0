@@ -27,6 +27,7 @@ import { VerifiedBadge } from "@/components/verified-badge"
 import { TradeBandBadge } from "@/components/trade-band-badge"
 import { ClosedGroupBadge } from "@/components/closed-group-badge"
 import { useTranslations } from "@/lib/i18n/use-translations"
+import { canGoBackWithinApp } from "@/lib/navigation/back-navigation"
 import FollowDropdown from "@/app/advertiser/components/follow-dropdown"
 import { AdvertiserSkeleton } from "@/app/advertiser/components/advertiser-skeleton"
 import { useAdvertiserAds, queryKeys } from "@/hooks/use-api-queries"
@@ -449,7 +450,9 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
   const handleBack = () => {
     if (returnTo === "profile" && tabParam) {
       router.replace(`/profile?tab=${tabParam}`)
-    } else if (isMobile) {
+    } else if (isMobile && canGoBackWithinApp()) {
+      // Shared advert links land here as the first entry in the tab, where going back
+      // would leave the SPA. Fall through to the market instead, as desktop already does.
       router.back()
     } else {
       router.push("/")
