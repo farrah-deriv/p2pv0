@@ -203,11 +203,11 @@ await expect(
 |---|---|---|---|
 | Follow button | `page.getByTestId('advertiser-btn-follow')` | `data-testid="advertiser-btn-follow"` in `app/advertiser/[id]/page.tsx` | ✅ |
 | Follow toast | `getByText('Successfully followed')` | i18n: `t('advertiser.successfullyFollowed')` | ✅ |
-| Following button (trigger) | `page.getByTestId('advertiser-btn-unfollow-trigger')` | `data-testid="advertiser-btn-unfollow-trigger"` in `app/advertiser/[id]/page.tsx` | ✅ |
+| Following / Unfollow button | `page.getByTestId('advertiser-btn-unfollow')` | `data-testid="advertiser-btn-unfollow"` in `app/advertiser/[id]/page.tsx` | ✅ |
 
 ---
 
-### Flow 4 — Unfollow an advertiser via the Following dropdown
+### Flow 4 — Unfollow an advertiser via the Following button
 
 **Account setup:** Env var credentials; logged-in user IS currently following `TEST_ADVERTISER_ID`.
 
@@ -217,21 +217,8 @@ await expect(
 await loginPage.login();
 await advertiserPage.gotoAdvertiserPage(TEST_ADVERTISER_ID);
 
-// Open the Following dropdown/drawer
-await page.getByTestId("advertiser-btn-unfollow-trigger").click();
-
-// Desktop: DropdownMenu; Mobile: Drawer (DrawerTitle = advertiser's nickname)
-if (isMobileViewport) {
-  // Drawer opens — wait for it, then click Unfollow button
-  await expect(page.getByRole("dialog"), "Unfollow drawer should open").toBeVisible();
-} else {
-  // DropdownMenu opens
-  await expect(page.getByRole("menu"), "Unfollow dropdown should open").toBeVisible();
-}
-
-await page.getByTestId("advertiser-btn-unfollow")
-  .or(page.getByRole("menuitem", { name: "Unfollow" }))
-  .click();
+// Click the Following/Unfollow button directly
+await page.getByTestId("advertiser-btn-unfollow").click();
 
 await expect(
   page.getByText("Successfully unfollowed"),
@@ -247,9 +234,7 @@ await expect(
 
 | Locator name | Strategy | Value | Status |
 |---|---|---|---|
-| Following trigger button | `page.getByTestId('advertiser-btn-unfollow-trigger')` | `data-testid="advertiser-btn-unfollow-trigger"` in `app/advertiser/[id]/page.tsx` | ✅ |
-| Unfollow button (in dropdown/drawer) | `page.getByTestId('advertiser-btn-unfollow')` | `data-testid="advertiser-btn-unfollow"` in `follow-dropdown.tsx` | ✅ |
-| Unfollow item (desktop menu) | `getByRole('menuitem', { name: 'Unfollow' })` | i18n: `t('advertiser.unfollow')` | 🔍 Verify on staging |
+| Following / Unfollow button | `page.getByTestId('advertiser-btn-unfollow')` | `data-testid="advertiser-btn-unfollow"` in `app/advertiser/[id]/page.tsx` | ✅ |
 | Unfollow toast | `getByText('Successfully unfollowed')` | i18n: `t('advertiser.successfullyUnfollowed')` | ✅ |
 | Follow button (after) | `page.getByTestId('advertiser-btn-follow')` | `data-testid="advertiser-btn-follow"` in `app/advertiser/[id]/page.tsx` | ✅ |
 
@@ -539,7 +524,9 @@ await expect(
 | `advertiser-name` | `advertiser-text-nickname` |
 | `advertiser-btn-block` | `advertiser-btn-block` ✅ (matches) |
 | N/A | `advertiser-btn-follow` |
-| N/A | `advertiser-btn-unfollow-trigger` |
+| N/A | `advertiser-btn-unfollow` |
+| N/A | `advertiser-btn-add-closed-group` |
+| N/A | `advertiser-btn-remove-closed-group` |
 | N/A | `advertiser-btn-unblock` |
 | N/A | `advertiser-empty-ads` |
 | N/A | `advertiser-row-ad-${id}`, `advertiser-btn-trade-${id}` |
@@ -551,14 +538,6 @@ await expect(
 The action button area (`<div className="flex items-center">`) is wrapped in `{userId != profile?.id && (...)}`. When viewing your own profile, neither "Follow" nor "Block" is rendered at all.
 
 **Impact on generated code:** All follow/block/unblock tests must use a test account that is different from the advertiser. Use a dedicated advertiser account (`TEST_ADVERTISER_ID`) that is never the same as `TEST_EMAIL`.
-
-### Follow dropdown differs by viewport
-
-When `isFollowing === true`, the "Following" button opens:
-- **Desktop:** `DropdownMenu` — `getByRole('menuitem', ...)` for items
-- **Mobile:** `Drawer` bottom sheet — `DrawerTitle` shows the advertiser's nickname; items are `getByRole('button', ...)`
-
-**Impact on generated code:** Use `isMobileViewport` fixture to branch. On desktop, assert `getByRole('menu')` opens and use `menuitem` role for Unfollow/closed-group options. On mobile, assert a `dialog` role (Drawer) and use `button` role.
 
 ### Block dialog shows a parameterised title
 

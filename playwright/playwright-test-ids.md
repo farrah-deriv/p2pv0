@@ -396,10 +396,9 @@ Opened via `order-details-btn-complaint`.
 | Element | `data-testid` |
 |---------|---------------|
 | Follow button (when not following) | `advertiser-btn-follow` |
-| Unfollow dropdown trigger (when following) | `advertiser-btn-unfollow-trigger` |
-| Unfollow menu option | `advertiser-btn-unfollow` |
-| Add to closed group menu option | `advertiser-btn-add-closed-group` |
-| Remove from closed group menu option | `advertiser-btn-remove-closed-group` |
+| Unfollow / Following button (when following) | `advertiser-btn-unfollow` |
+| Add to closed group button (Diamond only) | `advertiser-btn-add-closed-group` |
+| Remove from closed group button (Diamond only) | `advertiser-btn-remove-closed-group` |
 | Block button | `advertiser-btn-block` |
 | Unblock button | `advertiser-btn-unblock` |
 
