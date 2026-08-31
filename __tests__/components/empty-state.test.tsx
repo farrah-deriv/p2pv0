@@ -66,3 +66,39 @@ describe("EmptyState create ad", () => {
     expect(mockPush).not.toHaveBeenCalled()
   })
 })
+
+describe("EmptyState generic action (shared list error state)", () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockUseKycOverlay.mockReturnValue({
+      runGatedAction: mockRunGatedAction,
+      openKycIfUnverified: jest.fn(),
+    })
+  })
+
+  it("renders the generic CTA and calls onAction without gating it behind KYC", () => {
+    const onAction = jest.fn()
+    render(
+      <EmptyState
+        title="errors.loadAdsFailedTitle"
+        description="errors.loadFailedDescription"
+        actionLabel="errors.retry"
+        onAction={onAction}
+      />,
+    )
+
+    fireEvent.click(screen.getByTestId("empty-state-btn-action"))
+
+    expect(onAction).toHaveBeenCalledTimes(1)
+    expect(mockRunGatedAction).not.toHaveBeenCalled()
+    expect(mockPush).not.toHaveBeenCalled()
+  })
+
+  it("renders no generic CTA when only one half of the pair is supplied", () => {
+    const { rerender } = render(<EmptyState title="No ads" actionLabel="errors.retry" />)
+    expect(screen.queryByTestId("empty-state-btn-action")).toBeNull()
+
+    rerender(<EmptyState title="No ads" onAction={jest.fn()} />)
+    expect(screen.queryByTestId("empty-state-btn-action")).toBeNull()
+  })
+})

@@ -332,20 +332,15 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
     )
   }
 
-  const errorMessage = error instanceof Error ? error.message : t("paymentMethod.failedToLoadPaymentMethods")
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-8">
-        <p className="text-error mb-4">{errorMessage}</p>
-        <Button
-          data-testid="profile-btn-retry-payment"
-          onClick={() => refetch()}
-          variant="primary"
-          className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded"
-        >
-          {t("profile.tryAgain")}
-        </Button>
-      </div>
+      <EmptyState
+        className="h-full md:h-auto"
+        title={t("errors.loadPaymentMethodsFailedTitle")}
+        description={t("errors.loadFailedDescription")}
+        actionLabel={t("errors.retry")}
+        onAction={() => refetch()}
+      />
     )
   }
 

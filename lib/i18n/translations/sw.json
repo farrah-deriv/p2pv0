@@ -389,7 +389,21 @@
     "generic": "Kitu kimetokea. Tafadhali jaribu tena.",
     "networkError": "Hitilafu ya mtandao. Tafadhali angalia muunganisho wako.",
     "notFound": "Rasilimali inayoombwa haipatikani.",
-    "unauthorized": "Hauna idhini ya kufanya kitendo hiki."
+    "unauthorized": "Hauna idhini ya kufanya kitendo hiki.",
+    "loadFailedDescription": "Hakuna majibu kutoka kwa seva. Angalia muunganisho wako kisha ujaribu tena.",
+    "retry": "Jaribu tena",
+    "loadAdsFailedTitle": "Imeshindwa kupakia matangazo",
+    "loadOrdersFailedTitle": "Imeshindwa kupakia maagizo",
+    "loadOrderDetailsFailedTitle": "Imeshindwa kupakia maelezo ya agizo",
+    "loadMyAdsFailedTitle": "Imeshindwa kupakia matangazo yako",
+    "loadAdvertiserFailedTitle": "Imeshindwa kupakia mtangazaji",
+    "loadPaymentMethodsFailedTitle": "Imeshindwa kupakia njia za malipo",
+    "loadCounterpartiesFailedTitle": "Imeshindwa kupakia washirika wa biashara",
+    "loadBlockedAdvertisersFailedTitle": "Imeshindwa kupakia watangazaji waliozuiwa",
+    "loadFollowersFailedTitle": "Imeshindwa kupakia wanaokufuata",
+    "loadFollowingFailedTitle": "Imeshindwa kupakia unaowafuata",
+    "loadTransactionsFailedTitle": "Imeshindwa kupakia miamala",
+    "loadWalletsFailedTitle": "Imeshindwa kupakia pochi"
   },
   "filter": {
     "adTypes": "Aina za tangazo",

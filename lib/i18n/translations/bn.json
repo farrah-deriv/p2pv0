@@ -398,7 +398,21 @@
     "generic": "কিছু ভুল হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।",
     "networkError": "নেটওয়ার্ক ত্রুটি। অনুগ্রহ করে আপনার সংযোগ পরীক্ষা করুন।",
     "notFound": "অনুরোধকৃত রিসোর্স পাওয়া যায়নি।",
-    "unauthorized": "এই ক্রিয়া সম্পাদন করার জন্য আপনি অনুমোদিত নন।"
+    "unauthorized": "এই ক্রিয়া সম্পাদন করার জন্য আপনি অনুমোদিত নন।",
+    "loadFailedDescription": "সার্ভার থেকে কোনো সাড়া পাওয়া যায়নি। আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।",
+    "retry": "আবার চেষ্টা করুন",
+    "loadAdsFailedTitle": "বিজ্ঞাপন লোড করা যায়নি",
+    "loadOrdersFailedTitle": "অর্ডার লোড করা যায়নি",
+    "loadOrderDetailsFailedTitle": "অর্ডারের বিবরণ লোড করা যায়নি",
+    "loadMyAdsFailedTitle": "আপনার বিজ্ঞাপন লোড করা যায়নি",
+    "loadAdvertiserFailedTitle": "বিজ্ঞাপনদাতা লোড করা যায়নি",
+    "loadPaymentMethodsFailedTitle": "পেমেন্ট পদ্ধতি লোড করা যায়নি",
+    "loadCounterpartiesFailedTitle": "ব্যবসায় অংশীদার লোড করা যায়নি",
+    "loadBlockedAdvertisersFailedTitle": "ব্লক করা বিজ্ঞাপনদাতা লোড করা যায়নি",
+    "loadFollowersFailedTitle": "অনুসরণকারী লোড করা যায়নি",
+    "loadFollowingFailedTitle": "অনুসরণ তালিকা লোড করা যায়নি",
+    "loadTransactionsFailedTitle": "লেনদেন লোড করা যায়নি",
+    "loadWalletsFailedTitle": "ওয়ালেট লোড করা যায়নি"
   },
   "filter": {
     "adTypes": "বিজ্ঞাপনের ধরন",

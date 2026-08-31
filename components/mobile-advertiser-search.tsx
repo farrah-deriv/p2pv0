@@ -55,6 +55,8 @@ export default function MobileAdvertiserSearch({ isOpen, onClose }: MobileAdvert
     const {
         data,
         isFetching: isSearching,
+        isError: isSearchError,
+        refetch: refetchSearch,
         isFetchingNextPage,
         hasNextPage,
         fetchNextPage,
@@ -234,6 +236,15 @@ export default function MobileAdvertiserSearch({ isOpen, onClose }: MobileAdvert
                 <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto">
                     {!debouncedSearchInput ? null : isSearching && searchResults.length === 0 ? (
                         <AdvertiserSearchSkeleton count={5} />
+                    ) : isSearchError ? (
+                        <div className="flex items-center justify-center h-full" data-testid="mobile-search-error-state">
+                            <EmptyState
+                                title={t("errors.loadAdsFailedTitle")}
+                                description={t("errors.loadFailedDescription")}
+                                actionLabel={t("errors.retry")}
+                                onAction={() => refetchSearch()}
+                            />
+                        </div>
                     ) : searchResults.length > 0 ? (
                         <>
                             <ul>

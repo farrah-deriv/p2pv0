@@ -389,7 +389,21 @@
     "generic": "出了點問題。請再試一次。",
     "networkError": "網路錯誤。請檢查您的連線。",
     "notFound": "未找到請求的資源。",
-    "unauthorized": "您無權執行此操作。"
+    "unauthorized": "您無權執行此操作。",
+    "loadFailedDescription": "伺服器無回應。請檢查您的網路連線後重試。",
+    "retry": "重試",
+    "loadAdsFailedTitle": "無法載入廣告",
+    "loadOrdersFailedTitle": "無法載入訂單",
+    "loadOrderDetailsFailedTitle": "無法載入訂單詳情",
+    "loadMyAdsFailedTitle": "無法載入你的廣告",
+    "loadAdvertiserFailedTitle": "無法載入廣告商",
+    "loadPaymentMethodsFailedTitle": "無法載入付款方式",
+    "loadCounterpartiesFailedTitle": "無法載入交易對手",
+    "loadBlockedAdvertisersFailedTitle": "無法載入已封鎖的廣告商",
+    "loadFollowersFailedTitle": "無法載入追蹤者",
+    "loadFollowingFailedTitle": "無法載入關注列表",
+    "loadTransactionsFailedTitle": "無法載入交易",
+    "loadWalletsFailedTitle": "無法載入錢包"
   },
   "filter": {
     "adTypes": "廣告類型",

@@ -3,7 +3,9 @@
 import BalanceItem from "./balance-item"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import BuyCurrencies from "./buy-currencies"
+import EmptyState from "@/components/empty-state"
 import { Skeleton } from "@/components/ui/skeleton"
+import { resolveListViewState } from "@/lib/errors/resolve-list-view-state"
 
 interface Balance {
   amount: string
@@ -15,12 +17,21 @@ interface WalletBalancesProps {
   onBalanceClick?: (currency: string, amount: string) => void
   balances?: Balance[]
   isLoading?: boolean
+  isError?: boolean
+  onRetry?: () => void
 }
 
-export default function WalletBalances({ onBalanceClick, balances = [], isLoading = true }: WalletBalancesProps) {
+export default function WalletBalances({
+  onBalanceClick,
+  balances = [],
+  isLoading = true,
+  isError = false,
+  onRetry,
+}: WalletBalancesProps) {
   const { t } = useTranslations()
+  const viewState = resolveListViewState({ isLoading, isError, itemCount: balances.length })
 
-  if (isLoading) {
+  if (viewState === "loading") {
     return (
       <div data-testid="wallet-skeleton" className="w-full">
         <div className="mb-2 px-6">
@@ -44,7 +55,20 @@ export default function WalletBalances({ onBalanceClick, balances = [], isLoadin
     )
   }
 
-  if (balances.length === 0) {
+  if (viewState === "error") {
+    return (
+      <div className="px-6" data-testid="wallet-error-balances">
+        <EmptyState
+          title={t("errors.loadWalletsFailedTitle")}
+          description={t("errors.loadFailedDescription")}
+          actionLabel={t("errors.retry")}
+          onAction={onRetry}
+        />
+      </div>
+    )
+  }
+
+  if (viewState === "empty") {
     return <div data-testid="wallet-empty-state" className="px-6"><BuyCurrencies /></div>
   }
 

@@ -6,17 +6,26 @@ import { useCallback, useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { StandaloneSearchRegularIcon } from "@deriv/quill-icons/Standalone"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
+import { createGenericMutationErrorAlertConfig, getApiErrorCode } from "@/lib/errors/create-generic-mutation-alert-config"
 import { toggleBlockAdvertiser } from "@/services/api/api-buy-sell"
 import { useBlockedUsers } from "@/hooks/use-api-queries"
 import { useQueryClient } from "@tanstack/react-query"
 import { queryKeys } from "@/hooks/use-api-queries"
 import Image from "next/image"
 import EmptyState from "@/components/empty-state"
+import { resolveListViewState } from "@/lib/errors/resolve-list-view-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/hooks/use-toast"
 import { isRtlLocale } from "@/lib/i18n/config"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { PROFILE_TOOLBAR_ROW } from "@/lib/rtl"
+import { useDebouncedValue } from "@/hooks/use-debounced-value"
+import {
+  normalizeNicknameFilter,
+  resolvePendingSearchFlags,
+  shouldShowProfileListSearch,
+  PROFILE_SEARCH_DEBOUNCE_MS,
+} from "@/lib/profile-list-search"
 import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 interface BlockedUser {
@@ -30,12 +39,22 @@ export default function BlockedTab() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState("")
+  // The nickname goes to the server, so it has to settle before it becomes a query key.
+  const activeNickname = normalizeNicknameFilter(useDebouncedValue(searchQuery, PROFILE_SEARCH_DEBOUNCE_MS))
   const {
     data,
     isLoading,
-  } = useBlockedUsers()
+    isError,
+    refetch,
+  } = useBlockedUsers(true, activeNickname)
 
-  const { showAlert } = useAlertDialog()
+  // Mobile `blocked_page.dart` keeps a second, unfiltered `baseAsync` watch purely to answer
+  // "does this user have any blocked users at all" — a question the filtered list cannot answer,
+  // since it also reads 0 when a search simply matched nothing. With no nickname this resolves to
+  // the same query key as the one above, so an unsearched screen still issues one request.
+  const { data: allBlockedData } = useBlockedUsers()
+
+  const { showAlert, hideAlert } = useAlertDialog()
   const { toast } = useToast()
 
   // Flatten pages into single array
@@ -43,16 +62,41 @@ export default function BlockedTab() {
     return data?.pages.flatMap(page => page) ?? []
   }, [data])
 
-  const filteredBlockedUsers = useMemo(() => {
-    if (!searchQuery.trim()) return blockedUsers
+  const allBlockedUsers = useMemo(() => {
+    return allBlockedData?.pages.flatMap(page => page) ?? []
+  }, [allBlockedData])
 
-    return blockedUsers.filter((user) => user.nickname.toLowerCase().includes(searchQuery.toLowerCase()))
-  }, [blockedUsers, searchQuery])
+  const searchFlags = resolvePendingSearchFlags({
+    isLoading,
+    isError,
+    searchInput: searchQuery,
+    activeNickname,
+  })
+
+  const showSearch = shouldShowProfileListSearch({
+    baseItemCount: allBlockedUsers.length,
+    searchInput: searchQuery,
+    activeNickname,
+  })
+
+  const viewState = resolveListViewState({
+    isLoading: searchFlags.isLoading,
+    isError: searchFlags.isError,
+    itemCount: blockedUsers.length,
+    hasSearchQuery: activeNickname !== undefined,
+  })
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setSearchQuery(value)
   }, [])
+
+  // Re-opening from inside onConfirm has to wait for the confirming dialog to close.
+  const showMutationError = (error?: unknown) => {
+    setTimeout(() => {
+      showAlert(createGenericMutationErrorAlertConfig(t, { errorCode: getApiErrorCode(error), onConfirm: hideAlert }))
+    }, 500)
+  }
 
   const handleUnblock = (user: BlockedUser) => {
     showAlert({
@@ -78,9 +122,12 @@ export default function BlockedTab() {
             })
             queryClient.invalidateQueries({ queryKey: queryKeys.auth.blockedUsers() })
             queryClient.invalidateQueries({ queryKey: queryKeys.auth.tradePartners() })
+          } else {
+            showMutationError()
           }
         } catch (error) {
           console.error("Error unblocking user:", error)
+          showMutationError(error)
         }
       },
     })
@@ -118,8 +165,8 @@ export default function BlockedTab() {
 
   return (
     <div className="flex flex-col h-full" dir={dir}>
-      {(filteredBlockedUsers.length > 0 || searchQuery) && (
-        <div className={PROFILE_TOOLBAR_ROW}>
+      {showSearch && (
+        <div className={PROFILE_TOOLBAR_ROW} data-testid="blocked-search">
           <div className="w-full md:w-[360px]">
             <div className="flex items-center gap-2 rounded-lg bg-black/[0.04] px-3 h-10">
               <StandaloneSearchRegularIcon iconSize="xs" className="shrink-0 text-neutral-400" aria-hidden />
@@ -148,7 +195,7 @@ export default function BlockedTab() {
       )}
 
       <div className="flex-1 overflow-y-auto">
-        {isLoading ? (
+        {viewState === "loading" ? (
           <div className="space-y-0">
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-[72px] flex items-center justify-between gap-3">
@@ -160,17 +207,29 @@ export default function BlockedTab() {
               </div>
             ))}
           </div>
-        ) : filteredBlockedUsers.length > 0 ? (
+        ) : viewState === "error" ? (
+          <div data-testid="blocked-error-state">
+            <EmptyState
+              title={t("errors.loadBlockedAdvertisersFailedTitle")}
+              description={t("errors.loadFailedDescription")}
+              actionLabel={t("errors.retry")}
+              onAction={() => refetch()}
+              redirectToAds={false}
+            />
+          </div>
+        ) : viewState === "list" ? (
           <>
-            {filteredBlockedUsers.map((user) => (
+            {blockedUsers.map((user) => (
               <UserCard key={user.user_id} user={user} />
             ))}
           </>
         ) : (
           <EmptyState
-            title={searchQuery ? t("profile.noMatchingName") : t("profile.noBlockedUsers")}
+            title={viewState === "search-empty" ? t("profile.noMatchingName") : t("profile.noBlockedUsers")}
             description={
-              searchQuery ? t("profile.noResultFor", { query: searchQuery }) : t("profile.blockedUsersAppear")
+              viewState === "search-empty"
+                ? t("profile.noResultFor", { query: activeNickname ?? "" })
+                : t("profile.blockedUsersAppear")
             }
             redirectToAds={false}
           />

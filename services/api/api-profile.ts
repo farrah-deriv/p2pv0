@@ -1,5 +1,6 @@
 import { API, AUTH, USER } from "@/lib/local-variables"
 import { p2pFetch } from "./p2p-fetch"
+import { appendNicknameParam } from "@/lib/profile-list-search"
 
 export interface UserProfile {
   id: number
@@ -471,7 +472,7 @@ export async function deletePaymentMethod(
   }
 }
 
-export async function getFavouriteUsers(page?: number, perPage?: number): Promise<[]> {
+export async function getFavouriteUsers(page?: number, perPage?: number, nickname?: string): Promise<[]> {
   try {
     const headers = {
       ...AUTH.getAuthHeader(),
@@ -480,6 +481,7 @@ export async function getFavouriteUsers(page?: number, perPage?: number): Promis
     const queryParams = new URLSearchParams()
     if (page !== undefined) queryParams.append("page", page.toString())
     if (perPage !== undefined) queryParams.append("per_page", perPage.toString())
+    appendNicknameParam(queryParams, nickname)
     
     const url = queryParams.toString() 
       ? `${API.baseUrl}/user-favourites?${queryParams.toString()}`
@@ -501,7 +503,7 @@ export async function getFavouriteUsers(page?: number, perPage?: number): Promis
   }
 }
 
-export async function getFollowers(page?: number, perPage?: number): Promise<[]> {
+export async function getFollowers(page?: number, perPage?: number, nickname?: string): Promise<[]> {
   try {
     const headers = {
       ...AUTH.getAuthHeader(),
@@ -510,6 +512,7 @@ export async function getFollowers(page?: number, perPage?: number): Promise<[]>
     const queryParams = new URLSearchParams()
     if (page !== undefined) queryParams.append("page", page.toString())
     if (perPage !== undefined) queryParams.append("per_page", perPage.toString())
+    appendNicknameParam(queryParams, nickname)
     
     const url = queryParams.toString() 
       ? `${API.baseUrl}/user-favourited-by?${queryParams.toString()}`
@@ -531,7 +534,7 @@ export async function getFollowers(page?: number, perPage?: number): Promise<[]>
   }
 }
 
-export async function getBlockedUsers(page?: number, perPage?: number): Promise<[]> {
+export async function getBlockedUsers(page?: number, perPage?: number, nickname?: string): Promise<[]> {
   try {
     const headers = {
       ...AUTH.getAuthHeader(),
@@ -540,6 +543,7 @@ export async function getBlockedUsers(page?: number, perPage?: number): Promise<
     const queryParams = new URLSearchParams()
     if (page !== undefined) queryParams.append("page", page.toString())
     if (perPage !== undefined) queryParams.append("per_page", perPage.toString())
+    appendNicknameParam(queryParams, nickname)
     
     const url = queryParams.toString() 
       ? `${API.baseUrl}/user-blocks?${queryParams.toString()}`
@@ -696,7 +700,7 @@ export async function removeAllFromClosedGroup(): Promise<{ success: boolean; er
   }
 }
 
-export async function getTradePartners(page?: number, perPage?: number): Promise<TradePartner[]> {
+export async function getTradePartners(page?: number, perPage?: number, nickname?: string): Promise<TradePartner[]> {
   try {
     const headers = {
       ...AUTH.getAuthHeader(),
@@ -705,6 +709,7 @@ export async function getTradePartners(page?: number, perPage?: number): Promise
     const queryParams = new URLSearchParams()
     if (page !== undefined) queryParams.append("page", page.toString())
     if (perPage !== undefined) queryParams.append("per_page", perPage.toString())
+    appendNicknameParam(queryParams, nickname)
     
     const url = queryParams.toString() 
       ? `${API.baseUrl}/trade-partners?${queryParams.toString()}`

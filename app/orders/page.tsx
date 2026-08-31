@@ -85,7 +85,7 @@ export default function OrdersPage() {
     }),
   }), [activeTab, dateFilter, customDateRange])
 
-  const { data: ordersData, isLoading, refetch, hasNextPage, fetchNextPage, isFetchingNextPage } = useOrders(filters)
+  const { data: ordersData, isLoading, isError, refetch, hasNextPage, fetchNextPage, isFetchingNextPage } = useOrders(filters)
   const orders = useMemo(() => {
     if (!ordersData?.pages || ordersData.pages.length === 0) return []
     return ordersData.pages.flatMap(page => {
@@ -338,6 +338,15 @@ export default function OrdersPage() {
             </div>
           ) : isLoading ? (
             <OrdersLoadingSkeleton />
+          ) : isError ? (
+            <div className="h-full flex items-center md:items-start justify-center md:pt-16" data-testid="orders-error-state">
+              <EmptyState
+                title={t("errors.loadOrdersFailedTitle")}
+                description={t("errors.loadFailedDescription")}
+                actionLabel={t("errors.retry")}
+                onAction={() => refetch()}
+              />
+            </div>
           ) : orders.length === 0 ? (
             <div className="h-full flex items-center md:items-start justify-center md:pt-16" data-testid="orders-empty-state">
               {activeTab === "active" ? (

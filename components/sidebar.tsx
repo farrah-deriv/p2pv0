@@ -68,6 +68,8 @@ export default function Sidebar({ className }: SidebarProps) {
   const {
     data: searchData,
     isFetching: isSearching,
+    isError: isSearchError,
+    refetch: refetchSearch,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -333,6 +335,14 @@ export default function Sidebar({ className }: SidebarProps) {
                 </div>
                 {isSearching && searchResults.length === 0 ? (
                   <AdvertiserSearchSkeleton count={3} />
+                ) : isSearchError && debouncedSearchInput.length > 0 ? (
+                  <EmptyState
+                    title={t("errors.loadAdsFailedTitle")}
+                    description={t("errors.loadFailedDescription")}
+                    actionLabel={t("errors.retry")}
+                    onAction={() => refetchSearch()}
+                    className="py-4 px-2"
+                  />
                 ) : searchResults.length > 0 ? (
                   <div ref={dropdownScrollContainerRef} className="max-h-[480px] overflow-y-auto">
                     {searchResults.map((ad) => (

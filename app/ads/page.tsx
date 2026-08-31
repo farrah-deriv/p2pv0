@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import MyAdsTable from "./components/my-ads-table"
+import EmptyState from "@/components/empty-state"
 import { queryKeys, useUserAdverts, useHideMyAds } from "@/hooks/use-api-queries"
 import { useQueryClient } from "@tanstack/react-query"
 import Image from "next/image"
@@ -43,18 +44,12 @@ export default function AdsPage() {
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
   const [hiddenAdverts, setHiddenAdverts] = useState(false)
   const [isHideAdsInfoOpen, setIsHideAdsInfoOpen] = useState(false)
-  const [errorModal, setErrorModal] = useState({
-    show: false,
-    title: "",
-    message: "",
-  })
   const advertDialog = useAdvertAlertDialog()
   const { showAlert } = advertDialog
   const { runGatedAction, openKycIfUnverified } = useKycOverlay({
     route: "ads",
     dialog: advertDialog,
   })
-  const errorAlertShownRef = useRef(false)
   const kycPopupHandledRef = useRef(false)
 
   const isMobile = useIsMobile()
@@ -119,16 +114,6 @@ export default function AdsPage() {
   }, [queryClient, refetch])
 
   useEffect(() => {
-    if (queryError) {
-      setErrorModal({
-        show: true,
-        title: t("myAds.errorLoadingAdsTitle"),
-        message: queryError instanceof Error ? queryError.message : t("myAds.errorLoadingAdsMessage"),
-      })
-    }
-  }, [queryError, t])
-
-  useEffect(() => {
     if (userData?.adverts_are_listed !== undefined) {
       setHiddenAdverts(!userData.adverts_are_listed)
     }
@@ -180,28 +165,6 @@ export default function AdsPage() {
   const handleCloseStatusModal = () => {
     setStatusData((prev) => (prev ? { ...prev, showStatusModal: false } : null))
   }
-
-  const handleCloseErrorModal = useCallback(() => {
-    setErrorModal((prev) => ({ ...prev, show: false }))
-  }, [])
-
-  useEffect(() => {
-    if (errorModal.show && !errorAlertShownRef.current) {
-      errorAlertShownRef.current = true
-      showAlert({
-        title: errorModal.title,
-        description: errorModal.message,
-        confirmText: t("common.ok"),
-        onConfirm: () => {
-          handleCloseErrorModal()
-          errorAlertShownRef.current = false
-        },
-        type: "warning",
-      })
-    } else if (!errorModal.show) {
-      errorAlertShownRef.current = false
-    }
-  }, [errorModal.show, errorModal.title, errorModal.message, showAlert, t, handleCloseErrorModal])
 
   useEffect(() => {
     track("ek_open_my_ads")
@@ -337,7 +300,14 @@ export default function AdsPage() {
 
         <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-y-none scrollbar-hide container mx-auto p-0 md:p-0" data-testid="ads-table-container">
           {queryError ? (
-            <div className="text-center py-8 text-error">{t("myAds.errorLoadingAds")}</div>
+            <div className="h-full flex items-center md:items-start justify-center md:pt-16" data-testid="ads-error-state">
+              <EmptyState
+                title={t("errors.loadMyAdsFailedTitle")}
+                description={t("errors.loadFailedDescription")}
+                actionLabel={t("errors.retry")}
+                onAction={() => refetch()}
+              />
+            </div>
           ) : (
             <MyAdsTable
               ads={isMaintenanceActive ? [] : userAdverts}
@@ -357,7 +327,7 @@ export default function AdsPage() {
           <div ref={sentinelRef} className="h-1" data-testid="ads-sentinel-load-more" />
         </div>
 
-        {statusData && statusData.showStatusModal && !loading && !errorModal.show && isMobile && (
+        {statusData && statusData.showStatusModal && !loading && !queryError && isMobile && (
           <div data-testid="ads-modal-create-success">
           <StatusBottomSheet
             isOpen

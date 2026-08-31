@@ -13,6 +13,8 @@ import { OrdersAPI, AuthAPI } from "@/services/api"
 import type { Order } from "@/services/api/api-orders"
 import OrderChat from "@/components/order-chat"
 import OrderChatSkeleton from "@/components/order-chat-skeleton"
+import EmptyState from "@/components/empty-state"
+import { createGenericMutationErrorAlertConfig } from "@/lib/errors/create-generic-mutation-alert-config"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -50,13 +52,13 @@ export default function OrderDetailsPage() {
   const params = useParams()
   const orderId = params.id as string
   const isMobile = useIsMobile()
-  const { showAlert, showWarningDialog } = useAlertDialog()
+  const { showAlert, showWarningDialog, hideAlert } = useAlertDialog()
   const { toast } = useToast()
   const { setIsChatVisible } = useChatVisibilityStore()
   const userId = useUserDataStore((state) => state.userId)
 
   const [order, setOrder] = useState<Order | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [hasLoadError, setHasLoadError] = useState(false)
   const [timeLeft, setTimeLeft] = useState<string>("--:--")
   const [isPaymentLoading, setIsPaymentLoading] = useState(false)
   const [isConfirmLoading, setIsConfirmLoading] = useState(false)
@@ -154,13 +156,13 @@ export default function OrderDetailsPage() {
 
   const fetchOrderDetails = async () => {
     setIsLoading(true)
-    setError(null)
+    setHasLoadError(false)
     try {
       const order = await OrdersAPI.getOrderById(orderId)
       setOrder(order.data)
     } catch (err) {
       console.error("Error fetching order details:", err)
-      setError(t("orderDetails.failedToLoadOrderDetails"))
+      setHasLoadError(true)
     } finally {
       setIsLoading(false)
     }
@@ -195,6 +197,7 @@ export default function OrderDetailsPage() {
         })
       } else {
         console.error("Error marking payment as sent:", err)
+        showAlert(createGenericMutationErrorAlertConfig(t, { errorCode, onConfirm: hideAlert }))
       }
     } finally {
       setIsPaymentLoading(false)
@@ -374,6 +377,10 @@ export default function OrderDetailsPage() {
             })
           } else {
             console.error("Failed to cancel order:", error)
+            // Re-opening from inside onConfirm has to wait for the confirming dialog to close.
+            setTimeout(() => {
+              showAlert(createGenericMutationErrorAlertConfig(t, { errorCode, onConfirm: hideAlert }))
+            }, 500)
           }
         }
       },
@@ -423,6 +430,7 @@ export default function OrderDetailsPage() {
           })
         } else {
           console.error("Failed to complete order:", error)
+          showAlert(createGenericMutationErrorAlertConfig(t, { errorCode, onConfirm: hideAlert }))
         }
       } finally {
         setIsConfirmLoading(false)
@@ -430,15 +438,15 @@ export default function OrderDetailsPage() {
     }
   }
 
-  if (error) {
+  if (hasLoadError) {
     return (
-      <div className="px-4">
-        <div className="text-center py-12">
-          <p>{error || t("orderDetails.orderNotFound")}</p>
-          <Button onClick={fetchOrderDetails} className="mt-4 text-white">
-            {t("orderDetails.tryAgain")}
-          </Button>
-        </div>
+      <div className="px-4" data-testid="order-details-error-state">
+        <EmptyState
+          title={t("errors.loadOrderDetailsFailedTitle")}
+          description={t("errors.loadFailedDescription")}
+          actionLabel={t("errors.retry")}
+          onAction={fetchOrderDetails}
+        />
       </div>
     )
   }

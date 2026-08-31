@@ -389,7 +389,21 @@
     "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
     "networkError": "خطأ في الشبكة. يرجى التحقق من اتصالك.",
     "notFound": "المورد المطلوب غير موجود.",
-    "unauthorized": "غير مخوّل لك تنفيذ هذا الإجراء."
+    "unauthorized": "غير مخوّل لك تنفيذ هذا الإجراء.",
+    "loadFailedDescription": "لا توجد استجابة من الخادم. تحقق من اتصالك وحاول مرة أخرى.",
+    "retry": "إعادة المحاولة",
+    "loadAdsFailedTitle": "تعذّر تحميل الإعلانات",
+    "loadOrdersFailedTitle": "تعذّر تحميل الأوامر",
+    "loadOrderDetailsFailedTitle": "تعذّر تحميل تفاصيل الطلب",
+    "loadMyAdsFailedTitle": "تعذّر تحميل إعلاناتك",
+    "loadAdvertiserFailedTitle": "تعذّر تحميل المعلن",
+    "loadPaymentMethodsFailedTitle": "تعذّر تحميل طرق الدفع",
+    "loadCounterpartiesFailedTitle": "تعذّر تحميل الأطراف المقابلة",
+    "loadBlockedAdvertisersFailedTitle": "تعذّر تحميل المعلنين المحظورين",
+    "loadFollowersFailedTitle": "تعذّر تحميل المتابعين",
+    "loadFollowingFailedTitle": "تعذّر تحميل قائمة المتابَعين",
+    "loadTransactionsFailedTitle": "تعذّر تحميل المعاملات",
+    "loadWalletsFailedTitle": "تعذّر تحميل المحافظ"
   },
   "filter": {
     "adTypes": "أنواع الإعلانات",

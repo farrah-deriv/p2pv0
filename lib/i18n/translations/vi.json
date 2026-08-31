@@ -427,7 +427,21 @@
     "invalidOrderAmountMessage": "Giới hạn số tiền đơn hàng không hợp lệ.",
     "networkError": "Lỗi mạng. Vui lòng kiểm tra kết nối của bạn.",
     "notFound": "Không tìm thấy tài nguyên được yêu cầu.",
-    "unauthorized": "Bạn không được phép thực hiện hành động này."
+    "unauthorized": "Bạn không được phép thực hiện hành động này.",
+    "loadFailedDescription": "Không có phản hồi từ máy chủ. Vui lòng kiểm tra kết nối và thử lại.",
+    "retry": "Thử lại",
+    "loadAdsFailedTitle": "Không tải được quảng cáo",
+    "loadOrdersFailedTitle": "Không tải được đơn hàng",
+    "loadOrderDetailsFailedTitle": "Không tải được chi tiết đơn hàng",
+    "loadMyAdsFailedTitle": "Không tải được quảng cáo của bạn",
+    "loadAdvertiserFailedTitle": "Không tải được nhà quảng cáo",
+    "loadPaymentMethodsFailedTitle": "Không tải được phương thức thanh toán",
+    "loadCounterpartiesFailedTitle": "Không tải được đối tác giao dịch",
+    "loadBlockedAdvertisersFailedTitle": "Không tải được nhà quảng cáo bị chặn",
+    "loadFollowersFailedTitle": "Không tải được người theo dõi",
+    "loadFollowingFailedTitle": "Không tải được danh sách đang theo dõi",
+    "loadTransactionsFailedTitle": "Không tải được giao dịch",
+    "loadWalletsFailedTitle": "Không tải được ví"
   },
   "filter": {
     "adTypes": "Loại quảng cáo",

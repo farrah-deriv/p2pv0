@@ -396,7 +396,21 @@
     "invalidOrderAmountMessage": "Os limites de valor do pedido são inválidos.",
     "networkError": "Erro de rede. Por favor, verifique sua conexão.",
     "notFound": "O recurso solicitado não foi encontrado.",
-    "unauthorized": "Você não está autorizado a realizar esta ação."
+    "unauthorized": "Você não está autorizado a realizar esta ação.",
+    "loadFailedDescription": "Sem resposta do servidor. Verifique sua conexão e tente novamente.",
+    "retry": "Tentar novamente",
+    "loadAdsFailedTitle": "Não foi possível carregar os anúncios",
+    "loadOrdersFailedTitle": "Não foi possível carregar os pedidos",
+    "loadOrderDetailsFailedTitle": "Não foi possível carregar os detalhes do pedido",
+    "loadMyAdsFailedTitle": "Não foi possível carregar seus anúncios",
+    "loadAdvertiserFailedTitle": "Não foi possível carregar o anunciante",
+    "loadPaymentMethodsFailedTitle": "Não foi possível carregar os métodos de pagamento",
+    "loadCounterpartiesFailedTitle": "Não foi possível carregar as contrapartes",
+    "loadBlockedAdvertisersFailedTitle": "Não foi possível carregar os anunciantes bloqueados",
+    "loadFollowersFailedTitle": "Não foi possível carregar os seguidores",
+    "loadFollowingFailedTitle": "Não foi possível carregar quem você segue",
+    "loadTransactionsFailedTitle": "Não foi possível carregar as transações",
+    "loadWalletsFailedTitle": "Não foi possível carregar as carteiras"
   },
   "filter": {
     "adTypes": "Tipos de anúncios",

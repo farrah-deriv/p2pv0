@@ -389,7 +389,21 @@
     "generic": "ஏதோ தவறாகிவிட்டது. மீண்டும் முயற்சிக்கவும்.",
     "networkError": "நெட்வொர்க் பிழை. உங்கள் இணைப்பைச் சரிபார்க்கவும்.",
     "notFound": "கோரப்பட்ட ஆதாரம் கிடைக்கவில்லை.",
-    "unauthorized": "இந்தச் செயலைச் செய்ய உங்களுக்கு அங்கீகாரம் இல்லை."
+    "unauthorized": "இந்தச் செயலைச் செய்ய உங்களுக்கு அங்கீகாரம் இல்லை.",
+    "loadFailedDescription": "சேவையகத்திலிருந்து பதில் இல்லை. உங்கள் இணைப்பைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.",
+    "retry": "மீண்டும் முயற்சிக்கவும்",
+    "loadAdsFailedTitle": "விளம்பரங்களை ஏற்ற முடியவில்லை",
+    "loadOrdersFailedTitle": "ஆர்டர்களை ஏற்ற முடியவில்லை",
+    "loadOrderDetailsFailedTitle": "ஆர்டர் விவரங்களை ஏற்ற முடியவில்லை",
+    "loadMyAdsFailedTitle": "உங்கள் விளம்பரங்களை ஏற்ற முடியவில்லை",
+    "loadAdvertiserFailedTitle": "விளம்பரதாரரை ஏற்ற முடியவில்லை",
+    "loadPaymentMethodsFailedTitle": "கட்டண முறைகளை ஏற்ற முடியவில்லை",
+    "loadCounterpartiesFailedTitle": "எதிர் கட்சிகளை ஏற்ற முடியவில்லை",
+    "loadBlockedAdvertisersFailedTitle": "தடுக்கப்பட்ட விளம்பரதாரர்களை ஏற்ற முடியவில்லை",
+    "loadFollowersFailedTitle": "பின்தொடர்பவர்களை ஏற்ற முடியவில்லை",
+    "loadFollowingFailedTitle": "பின்தொடரும் பட்டியலை ஏற்ற முடியவில்லை",
+    "loadTransactionsFailedTitle": "பரிவர்த்தனைகளை ஏற்ற முடியவில்லை",
+    "loadWalletsFailedTitle": "பணப்பைகளை ஏற்ற முடியவில்லை"
   },
   "filter": {
     "adTypes": "விளம்பர வகைகள்",

@@ -393,7 +393,21 @@
     "generic": "Coś poszło nie tak. Spróbuj ponownie.",
     "networkError": "Błąd sieci. Sprawdź swoją połączenie.",
     "notFound": "Żądany zasób nie został znaleziony.",
-    "unauthorized": "Nie jesteś autoryzowany do wykonania tej czynności."
+    "unauthorized": "Nie jesteś autoryzowany do wykonania tej czynności.",
+    "loadFailedDescription": "Brak odpowiedzi z serwera. Sprawdź połączenie i spróbuj ponownie.",
+    "retry": "Spróbuj ponownie",
+    "loadAdsFailedTitle": "Nie udało się wczytać ogłoszeń",
+    "loadOrdersFailedTitle": "Nie udało się wczytać zamówień",
+    "loadOrderDetailsFailedTitle": "Nie udało się wczytać szczegółów zamówienia",
+    "loadMyAdsFailedTitle": "Nie udało się wczytać Twoich ogłoszeń",
+    "loadAdvertiserFailedTitle": "Nie udało się wczytać ogłoszeniodawcy",
+    "loadPaymentMethodsFailedTitle": "Nie udało się wczytać metod płatności",
+    "loadCounterpartiesFailedTitle": "Nie udało się wczytać partnerów handlowych",
+    "loadBlockedAdvertisersFailedTitle": "Nie udało się wczytać zablokowanych ogłoszeniodawców",
+    "loadFollowersFailedTitle": "Nie udało się wczytać obserwujących",
+    "loadFollowingFailedTitle": "Nie udało się wczytać obserwowanych",
+    "loadTransactionsFailedTitle": "Nie udało się wczytać transakcji",
+    "loadWalletsFailedTitle": "Nie udało się wczytać portfeli"
   },
   "filter": {
     "adTypes": "Typy ogłoszeń",

@@ -763,7 +763,21 @@
     "unauthorized": "You are not authorized to perform this action.",
     "notFound": "The requested resource was not found.",
     "failedToLoadCurrencies": "Failed to load currencies",
-    "failedToProcessCurrencies": "Failed to process currencies"
+    "failedToProcessCurrencies": "Failed to process currencies",
+    "loadFailedDescription": "No response from the server. Check your connection and try again.",
+    "retry": "Retry",
+    "loadAdsFailedTitle": "Couldn't load ads",
+    "loadOrdersFailedTitle": "Couldn't load orders",
+    "loadOrderDetailsFailedTitle": "Couldn't load order details",
+    "loadMyAdsFailedTitle": "Couldn't load your ads",
+    "loadAdvertiserFailedTitle": "Couldn't load advertiser",
+    "loadPaymentMethodsFailedTitle": "Couldn't load payment methods",
+    "loadCounterpartiesFailedTitle": "Couldn't load counterparties",
+    "loadBlockedAdvertisersFailedTitle": "Couldn't load blocked advertisers",
+    "loadFollowersFailedTitle": "Couldn't load followers",
+    "loadFollowingFailedTitle": "Couldn't load following",
+    "loadTransactionsFailedTitle": "Couldn't load transactions",
+    "loadWalletsFailedTitle": "Couldn't load wallets"
   },
   "validation": {
     "required": "This field is required",

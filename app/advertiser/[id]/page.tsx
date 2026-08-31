@@ -113,7 +113,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
   const [isGroupMember, setIsGroupMember] = useState(false)
   const [isBlocked, setIsBlocked] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [hasProfileError, setHasProfileError] = useState(false)
   const [isFollowLoading, setIsFollowLoading] = useState(false)
   const [isBlockLoading, setIsBlockLoading] = useState(false)
   const [isClosedGroupLoading, setIsClosedGroupLoading] = useState(false)
@@ -138,6 +138,8 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
 
   const {
     data: advertsData,
+    isError: isAdvertsError,
+    refetch: refetchAdverts,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -154,7 +156,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
     abortControllerRef.current = abortController
 
     setIsLoading(true)
-    setError(null)
+    setHasProfileError(false)
 
     try {
       const advertiserData = await BuySellAPI.getAdvertiserById(id)
@@ -169,7 +171,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
       setIsGroupMember(advertiserData.data.is_group_member || false)
     } catch (err) {
       if (!abortController.signal.aborted) {
-        setError(t("advertiser.failedToLoad"))
+        setHasProfileError(true)
         setProfile(null)
       }
     } finally {
@@ -538,15 +540,15 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
     return <AdvertiserSkeleton />
   }
 
-  if (error && !profile) {
+  if (hasProfileError && !profile) {
     return (
       <div data-testid="advertiser-error-load" className="container mx-auto px-4 py-8 pt-20">
-        <div className="text-center py-8">
-          <p>{error}</p>
-          <Button onClick={handleBack} className="mt-4 text-white">
-            {t("advertiser.goBack")}
-          </Button>
-        </div>
+        <EmptyState
+          title={t("errors.loadAdvertiserFailedTitle")}
+          description={t("errors.loadFailedDescription")}
+          actionLabel={t("errors.retry")}
+          onAction={fetchAdvertiserData}
+        />
       </div>
     )
   }
@@ -771,7 +773,16 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                 <AdvertiserStats profile={profile} />
                 <div className="container mx-auto pb-4 text-lg font-bold">{t("advertiser.onlineAds")}</div>
                 <div className="container mx-auto pb-8">
-                  {adverts.length > 0 ? (
+                  {isAdvertsError ? (
+                    <div data-testid="advertiser-error-ads">
+                      <EmptyState
+                        title={t("errors.loadAdsFailedTitle")}
+                        description={t("errors.loadFailedDescription")}
+                        actionLabel={t("errors.retry")}
+                        onAction={() => refetchAdverts()}
+                      />
+                    </div>
+                  ) : adverts.length > 0 ? (
                     <>
                       <div ref={scrollContainerRef} className="overflow-auto scrollbar-custom max-h-[calc(100vh-360px)]">
                         <Table>

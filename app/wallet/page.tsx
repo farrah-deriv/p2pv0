@@ -33,7 +33,12 @@ export default function WalletPage() {
   const { openKycIfUnverified } = useKycOverlay({ route: "wallets" })
   const kycPopupHandledRef = useRef(false)
   const { data: currenciesResponse, isLoading: isCurrenciesLoading } = useCurrencies()
-  const { data: balanceData, isLoading: isBalanceLoading } = useTotalBalance()
+  const {
+    data: balanceData,
+    isLoading: isBalanceLoading,
+    isError: isBalanceError,
+    refetch: refetchBalance,
+  } = useTotalBalance()
   const { isConnected, subscribeToUserUpdates, unsubscribeFromUserUpdates, subscribe } = useWebSocketContext()
   const [displayBalances, setDisplayBalances] = useState(true)
   const [selectedCurrency, setSelectedCurrency] = useState<string | null>("USD")
@@ -226,7 +231,13 @@ export default function WalletPage() {
           {isMaintenanceActive ? (
             <div data-testid="wallet-empty-transactions"><EmptyState title={t("wallet.noTransactions")} /></div>
           ) : displayBalances ? (
-            <WalletBalances onBalanceClick={handleBalanceClick} balances={p2pBalances} isLoading={isBalanceLoading} />
+            <WalletBalances
+              onBalanceClick={handleBalanceClick}
+              balances={p2pBalances}
+              isLoading={isBalanceLoading}
+              isError={isBalanceError}
+              onRetry={() => refetchBalance()}
+            />
           ) : (
             <TransactionsTab
               selectedCurrency={selectedCurrency}

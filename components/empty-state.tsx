@@ -15,6 +15,9 @@ interface EmptyStateProps {
   redirectToAds?: boolean
   redirectToMarket?: boolean
   onAddPaymentMethod?: () => void
+  /** Generic CTA label. Pair with onAction — used by the shared list error state. */
+  actionLabel?: string
+  onAction?: () => void
   route?: string | null
 }
 
@@ -26,6 +29,8 @@ export default function EmptyState({
   redirectToAds = false,
   redirectToMarket = false,
   onAddPaymentMethod,
+  actionLabel,
+  onAction,
   route,
 }: EmptyStateProps) {
   const router = useRouter()
@@ -67,6 +72,11 @@ export default function EmptyState({
       {onAddPaymentMethod && (
         <Button data-testid="profile-btn-empty-add-payment" onClick={onAddPaymentMethod} className="mt-4 w-full max-w-xs">
           {t("profile.addPaymentMethod")}
+        </Button>
+      )}
+      {actionLabel && onAction && (
+        <Button data-testid="empty-state-btn-action" onClick={onAction} className="mt-4 w-full max-w-xs">
+          {actionLabel}
         </Button>
       )}
     </div>

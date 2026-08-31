@@ -389,7 +389,21 @@
     "generic": "出了点问题。请再试一次。",
     "networkError": "网络错误。请检查您的连接。",
     "notFound": "未找到请求的资源。",
-    "unauthorized": "您无权执行此操作。"
+    "unauthorized": "您无权执行此操作。",
+    "loadFailedDescription": "服务器无响应。请检查您的网络连接后重试。",
+    "retry": "重试",
+    "loadAdsFailedTitle": "无法加载广告",
+    "loadOrdersFailedTitle": "无法加载订单",
+    "loadOrderDetailsFailedTitle": "无法加载订单详情",
+    "loadMyAdsFailedTitle": "无法加载你的广告",
+    "loadAdvertiserFailedTitle": "无法加载广告商",
+    "loadPaymentMethodsFailedTitle": "无法加载付款方式",
+    "loadCounterpartiesFailedTitle": "无法加载交易对手",
+    "loadBlockedAdvertisersFailedTitle": "无法加载已屏蔽的广告商",
+    "loadFollowersFailedTitle": "无法加载关注者",
+    "loadFollowingFailedTitle": "无法加载关注列表",
+    "loadTransactionsFailedTitle": "无法加载交易",
+    "loadWalletsFailedTitle": "无法加载钱包"
   },
   "filter": {
     "adTypes": "广告类型",

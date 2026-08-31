@@ -12,7 +12,10 @@ import { cn } from "@/lib/utils"
 import { removeAllFromClosedGroup, addToClosedGroup, removeFromClosedGroup } from "@/services/api/api-profile"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
-import { useFavouriteUsers } from "@/hooks/use-api-queries"
+import { useFavouriteUsers, queryKeys } from "@/hooks/use-api-queries"
+import { useQueryClient } from "@tanstack/react-query"
+import { useDebouncedValue } from "@/hooks/use-debounced-value"
+import { normalizeNicknameFilter, shouldShowProfileListSearch, PROFILE_SEARCH_DEBOUNCE_MS } from "@/lib/profile-list-search"
 import { useToast } from "@/hooks/use-toast"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
@@ -32,23 +35,34 @@ export default function ClosedGroupTab({ isInAlert = false }: ClosedGroupTabProp
   const { toast } = useToast()
   const { userData } = useUserDataStore()
   const isDiamond = userData?.trade_band === "diamond"
-  const { data, isLoading, refetch } = useFavouriteUsers(isDiamond)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isRemoving, setIsRemoving] = useState(false)
+  // The nickname goes to the server, so it has to settle before it becomes a query key.
+  const activeNickname = normalizeNicknameFilter(useDebouncedValue(searchQuery, PROFILE_SEARCH_DEBOUNCE_MS))
+
+  const queryClient = useQueryClient()
+  const { data, isLoading } = useFavouriteUsers(isDiamond, activeNickname)
+  // "Remove all" and the section header describe the whole group, not the search hits, so
+  // they read an unfiltered watch. With no nickname it is the same key as the query above.
+  const { data: allData } = useFavouriteUsers(isDiamond)
   // Force empty list for non-diamond users even if React Query returns stale cached
   // data (e.g. user downgraded mid-session). The enabled:false flag prevents new
   // network requests; this override ensures the UI never renders cached results.
   const closedGroups: ClosedGroup[] = isDiamond ? (data?.pages.flat() ?? []) : []
-  const [searchQuery, setSearchQuery] = useState("")
-  const [isRemoving, setIsRemoving] = useState(false)
-
-  const filteredClosedGroups = useMemo(() => {
-    if (!searchQuery.trim()) return closedGroups
-
-    return closedGroups.filter((group) => group.nickname.toLowerCase().includes(searchQuery.toLowerCase()))
-  }, [closedGroups, searchQuery])
+  const allClosedGroups: ClosedGroup[] = useMemo(
+    () => (isDiamond ? ((allData?.pages.flat() as ClosedGroup[]) ?? []) : []),
+    [isDiamond, allData],
+  )
 
   const hasGroupMembers = useMemo(() => {
-    return closedGroups.some((group) => group.is_group_member)
-  }, [closedGroups])
+    return allClosedGroups.some((group) => group.is_group_member)
+  }, [allClosedGroups])
+
+  // Every nickname variant has to refresh, not just the one on screen — prefix match.
+  const refreshFollowing = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: queryKeys.buySell.favouriteUsers() }),
+    [queryClient],
+  )
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -99,7 +113,7 @@ export default function ClosedGroupTab({ isInAlert = false }: ClosedGroupTabProp
       setIsRemoving(true)
       const result = await removeAllFromClosedGroup()
       if (result.success) {
-        await refetch()
+        await refreshFollowing()
         showToast(t("advertiser.removedFromClosedGroup"))
       } else {
         handleClosedGroupError(result.errors, false)
@@ -109,7 +123,7 @@ export default function ClosedGroupTab({ isInAlert = false }: ClosedGroupTabProp
     } finally {
       setIsRemoving(false)
     }
-  }, [refetch, t, showToast, handleClosedGroupError])
+  }, [refreshFollowing, t, showToast, handleClosedGroupError])
 
   const handleToggleMembership = useCallback(async (group: ClosedGroup) => {
     try {
@@ -123,7 +137,7 @@ export default function ClosedGroupTab({ isInAlert = false }: ClosedGroupTabProp
         : await removeFromClosedGroup(group.user_id)
 
       if (result.success) {
-        await refetch()
+        await refreshFollowing()
         showToast(isAdd
           ? t("advertiser.addedToClosedGroup")
           : t("advertiser.removedFromClosedGroup")
@@ -134,7 +148,7 @@ export default function ClosedGroupTab({ isInAlert = false }: ClosedGroupTabProp
     } catch (err) {
       console.error("Failed to update closed group membership:", err)
     }
-  }, [refetch, t, showToast, handleClosedGroupError])
+  }, [refreshFollowing, t, showToast, handleClosedGroupError])
 
   const GroupCard = ({ group }: { group: ClosedGroup }) => (
     <div className="min-h-[72px] flex items-center justify-between gap-3 min-w-0">
@@ -164,7 +178,15 @@ export default function ClosedGroupTab({ isInAlert = false }: ClosedGroupTabProp
           <AlertDescription>{t("profile.closedGroupDiamondOnlyWarning")}</AlertDescription>
         </Alert>
       )}
-      {(isDiamond ? (filteredClosedGroups.length > 0 || searchQuery) : true) && (
+      {(isDiamond
+        ? shouldShowProfileListSearch({
+            // The unfiltered watch already lives here for "Remove all"; reuse it so a search that
+            // matches nothing does not retract the field, same rule as the other profile lists.
+            baseItemCount: allClosedGroups.length,
+            searchInput: searchQuery,
+            activeNickname,
+          })
+        : true) && (
         <div className="flex items-center justify-between gap-4">
           <div className={isInAlert ? "w-full" : "w-full md:w-[360px]"}>
             <div className={cn("flex items-center gap-2 rounded-lg bg-black/[0.04] px-3 h-10", !isDiamond && "opacity-50")}>
@@ -194,7 +216,7 @@ export default function ClosedGroupTab({ isInAlert = false }: ClosedGroupTabProp
         </div>
       )}
 
-      {closedGroups.length > 0 && !searchQuery && (<div className="flex items-center justify-between">
+      {allClosedGroups.length > 0 && !searchQuery && (<div className="flex items-center justify-between">
         <h2 className="text-grayscale-text-muted text-base">{t("profile.addFromYourFollowing")}</h2>
         <Button
           onClick={handleRemoveAll}
@@ -220,14 +242,14 @@ export default function ClosedGroupTab({ isInAlert = false }: ClosedGroupTabProp
               </div>
             ))}
           </div>
-        ) : isDiamond && filteredClosedGroups.length > 0 ? (
-          filteredClosedGroups.map((group) => <GroupCard key={group.user_id} group={group} />)
+        ) : isDiamond && closedGroups.length > 0 ? (
+          closedGroups.map((group) => <GroupCard key={group.user_id} group={group} />)
         ) : (
           <EmptyState
-            title={searchQuery ? t("profile.noMatchingName") : t("profile.closedGroupEmptyTitle")}
+            title={activeNickname ? t("profile.noMatchingName") : t("profile.closedGroupEmptyTitle")}
             description={
-              searchQuery
-                ? t("profile.noResultFor", { query: searchQuery })
+              activeNickname
+                ? t("profile.noResultFor", { query: activeNickname })
                 : t("profile.closedGroupEmptyDescription")
             }
             redirectToAds={false}

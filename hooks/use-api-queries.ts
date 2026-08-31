@@ -8,6 +8,7 @@ import * as AdsAPI from '@/services/api/api-my-ads'
 import * as ProfileAPI from '@/services/api/api-profile'
 import * as WalletsAPI from '@/services/api/api-wallets'
 import { flattenWalletTransactionPages } from '@/lib/wallet-transactions-pagination'
+import { withNicknameKey } from '@/lib/profile-list-search'
 import { useUserDataStore } from '@/stores/user-data-store'
 import { useP2PQueriesBlocked } from '@/hooks/use-p2p-system-maintenance'
 import { isP2PWebSocketEligibleFromState } from '@/lib/p2p-websocket-eligibility'
@@ -62,9 +63,13 @@ export const queryKeys = {
     advertStats: (currency: string) => [...AUTH_KEYS, 'advert-stats', currency] as const,
     currencies: () => [...AUTH_KEYS, 'currencies'] as const,
     userPaymentMethods: () => [...AUTH_KEYS, 'user-payment-methods'] as const,
-    blockedUsers: () => [...AUTH_KEYS, 'blocked-users'] as const,
-    tradePartners: () => [...AUTH_KEYS, 'trade-partners'] as const,
-    followers: () => [...AUTH_KEYS, 'followers'] as const,
+    // The nickname-searched lists. Called with no argument these return the unfiltered key,
+    // which is also the prefix of every nickname variant — so the existing
+    // `invalidateQueries({ queryKey: queryKeys.auth.blockedUsers() })` call sites refresh
+    // every search in the cache, not just the unfiltered one.
+    blockedUsers: (nickname?: string) => withNicknameKey([...AUTH_KEYS, 'blocked-users'] as const, nickname),
+    tradePartners: (nickname?: string) => withNicknameKey([...AUTH_KEYS, 'trade-partners'] as const, nickname),
+    followers: (nickname?: string) => withNicknameKey([...AUTH_KEYS, 'followers'] as const, nickname),
   },
 
   // Buy/Sell queries
@@ -85,7 +90,7 @@ export const queryKeys = {
     paymentMethods: () => [...BUY_SELL_KEYS, 'payment-methods'] as const,
     advertiser: (id: string | number) => [...BUY_SELL_KEYS, 'advertiser', id] as const,
     advertiserAds: (id: string | number) => [...BUY_SELL_KEYS, 'advertiser-ads', id] as const,
-    favouriteUsers: () => [...BUY_SELL_KEYS, 'favourite-users'] as const,
+    favouriteUsers: (nickname?: string) => withNicknameKey([...BUY_SELL_KEYS, 'favourite-users'] as const, nickname),
   },
 
   // Orders queries
@@ -281,11 +286,11 @@ export function useUserPaymentMethods(enabled = true) {
   })
 }
 
-export function useBlockedUsers(enabled = true) {
+export function useBlockedUsers(enabled = true, nickname?: string) {
   const maintenanceBlocked = useP2PQueriesBlocked()
   return useInfiniteQuery({
-    queryKey: queryKeys.auth.blockedUsers(),
-    queryFn: ({ pageParam = 1 }) => ProfileAPI.getBlockedUsers(pageParam as number, PAGE_SIZE),
+    queryKey: queryKeys.auth.blockedUsers(nickname),
+    queryFn: ({ pageParam = 1 }) => ProfileAPI.getBlockedUsers(pageParam as number, PAGE_SIZE, nickname),
     getNextPageParam: (lastPage: any[], allPages) =>
       lastPage.length < PAGE_SIZE ? undefined : allPages.length + 1,
     initialPageParam: 1,
@@ -294,11 +299,11 @@ export function useBlockedUsers(enabled = true) {
   })
 }
 
-export function useTradePartners(enabled = true) {
+export function useTradePartners(enabled = true, nickname?: string) {
   const maintenanceBlocked = useP2PQueriesBlocked()
   return useInfiniteQuery({
-    queryKey: queryKeys.auth.tradePartners(),
-    queryFn: ({ pageParam = 1 }) => ProfileAPI.getTradePartners(pageParam as number, PAGE_SIZE),
+    queryKey: queryKeys.auth.tradePartners(nickname),
+    queryFn: ({ pageParam = 1 }) => ProfileAPI.getTradePartners(pageParam as number, PAGE_SIZE, nickname),
     getNextPageParam: (lastPage: any[], allPages) =>
       lastPage.length < PAGE_SIZE ? undefined : allPages.length + 1,
     initialPageParam: 1,
@@ -307,11 +312,11 @@ export function useTradePartners(enabled = true) {
   })
 }
 
-export function useFollowers(enabled = true) {
+export function useFollowers(enabled = true, nickname?: string) {
   const maintenanceBlocked = useP2PQueriesBlocked()
   return useInfiniteQuery({
-    queryKey: queryKeys.auth.followers(),
-    queryFn: ({ pageParam = 1 }) => ProfileAPI.getFollowers(pageParam as number, PAGE_SIZE),
+    queryKey: queryKeys.auth.followers(nickname),
+    queryFn: ({ pageParam = 1 }) => ProfileAPI.getFollowers(pageParam as number, PAGE_SIZE, nickname),
     getNextPageParam: (lastPage: any[], allPages) =>
       lastPage.length < PAGE_SIZE ? undefined : allPages.length + 1,
     initialPageParam: 1,
@@ -570,11 +575,11 @@ export function useAdvertiserAds(id: string | number) {
   })
 }
 
-export function useFavouriteUsers(enabled = true) {
+export function useFavouriteUsers(enabled = true, nickname?: string) {
   const maintenanceBlocked = useP2PQueriesBlocked()
   return useInfiniteQuery({
-    queryKey: queryKeys.buySell.favouriteUsers(),
-    queryFn: ({ pageParam = 1 }) => ProfileAPI.getFavouriteUsers(pageParam as number, PAGE_SIZE),
+    queryKey: queryKeys.buySell.favouriteUsers(nickname),
+    queryFn: ({ pageParam = 1 }) => ProfileAPI.getFavouriteUsers(pageParam as number, PAGE_SIZE, nickname),
     getNextPageParam: (lastPage: any[], allPages) =>
       lastPage.length < PAGE_SIZE ? undefined : allPages.length + 1,
     initialPageParam: 1,

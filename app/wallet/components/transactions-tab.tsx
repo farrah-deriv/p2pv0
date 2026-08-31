@@ -10,6 +10,7 @@ import { formatAmountWithDecimals } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { Skeleton } from "@/components/ui/skeleton"
+import EmptyState from "@/components/empty-state"
 import { Badge } from "@/components/ui/badge"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import type { Transaction } from "../types"
@@ -33,6 +34,8 @@ export default function TransactionsTab({
   const {
     data,
     isLoading: loading,
+    isError,
+    refetch,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -208,6 +211,19 @@ export default function TransactionsTab({
             <Skeleton className="h-16 w-full" />
           </div>
         </div>
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="p-4" data-testid="wallet-error-transactions">
+        <EmptyState
+          title={t("errors.loadTransactionsFailedTitle")}
+          description={t("errors.loadFailedDescription")}
+          actionLabel={t("errors.retry")}
+          onAction={() => refetch()}
+        />
       </div>
     )
   }

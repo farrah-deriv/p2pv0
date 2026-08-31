@@ -414,7 +414,21 @@
     "generic": "Что-то пошло не так. Пожалуйста, попробуйте снова.",
     "networkError": "Ошибка сети. Пожалуйста, проверьте ваше соединение.",
     "notFound": "Запрашиваемый ресурс не найден.",
-    "unauthorized": "Вы не авторизованы для выполнения этого действия."
+    "unauthorized": "Вы не авторизованы для выполнения этого действия.",
+    "loadFailedDescription": "Нет ответа от сервера. Проверьте подключение и попробуйте снова.",
+    "retry": "Повторить",
+    "loadAdsFailedTitle": "Не удалось загрузить объявления",
+    "loadOrdersFailedTitle": "Не удалось загрузить заказы",
+    "loadOrderDetailsFailedTitle": "Не удалось загрузить детали заказа",
+    "loadMyAdsFailedTitle": "Не удалось загрузить ваши объявления",
+    "loadAdvertiserFailedTitle": "Не удалось загрузить рекламодателя",
+    "loadPaymentMethodsFailedTitle": "Не удалось загрузить способы оплаты",
+    "loadCounterpartiesFailedTitle": "Не удалось загрузить торговых партнеров",
+    "loadBlockedAdvertisersFailedTitle": "Не удалось загрузить заблокированных рекламодателей",
+    "loadFollowersFailedTitle": "Не удалось загрузить подписчиков",
+    "loadFollowingFailedTitle": "Не удалось загрузить подписки",
+    "loadTransactionsFailedTitle": "Не удалось загрузить транзакции",
+    "loadWalletsFailedTitle": "Не удалось загрузить кошельки"
   },
   "filter": {
     "adTypes": "Типы объявлений",

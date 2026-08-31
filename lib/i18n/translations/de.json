@@ -416,7 +416,21 @@
     "invalidOrderAmountMessage": "Die Bestellbetragsgrenzen sind ungültig.",
     "networkError": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung.",
     "notFound": "Die angeforderte Ressource wurde nicht gefunden.",
-    "unauthorized": "Sie sind nicht berechtigt, diese Aktion auszuführen."
+    "unauthorized": "Sie sind nicht berechtigt, diese Aktion auszuführen.",
+    "loadFailedDescription": "Keine Antwort vom Server. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "retry": "Erneut versuchen",
+    "loadAdsFailedTitle": "Anzeigen konnten nicht geladen werden",
+    "loadOrdersFailedTitle": "Bestellungen konnten nicht geladen werden",
+    "loadOrderDetailsFailedTitle": "Bestelldetails konnten nicht geladen werden",
+    "loadMyAdsFailedTitle": "Ihre Anzeigen konnten nicht geladen werden",
+    "loadAdvertiserFailedTitle": "Inserent konnte nicht geladen werden",
+    "loadPaymentMethodsFailedTitle": "Zahlungsmethoden konnten nicht geladen werden",
+    "loadCounterpartiesFailedTitle": "Handelspartner konnten nicht geladen werden",
+    "loadBlockedAdvertisersFailedTitle": "Blockierte Inserenten konnten nicht geladen werden",
+    "loadFollowersFailedTitle": "Follower konnten nicht geladen werden",
+    "loadFollowingFailedTitle": "Gefolgte Nutzer konnten nicht geladen werden",
+    "loadTransactionsFailedTitle": "Transaktionen konnten nicht geladen werden",
+    "loadWalletsFailedTitle": "Wallets konnten nicht geladen werden"
   },
   "filter": {
     "adTypes": "Anzeigentypen",

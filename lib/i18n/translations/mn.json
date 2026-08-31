@@ -389,7 +389,21 @@
     "generic": "Ямар нэг алдаа гарлаа. Дахин оролдоно уу.",
     "networkError": "Сүлжээний алдаа. Холболтоо шалгана уу.",
     "notFound": "Хүссэн эх сурвалж олдсонгүй.",
-    "unauthorized": "Та энэ үйлдлийг гүйцэтгэх эрхгүй."
+    "unauthorized": "Та энэ үйлдлийг гүйцэтгэх эрхгүй.",
+    "loadFailedDescription": "Серверээс хариу ирсэнгүй. Холболтоо шалгаад дахин оролдоно уу.",
+    "retry": "Дахин оролдох",
+    "loadAdsFailedTitle": "Зар ачаалж чадсангүй",
+    "loadOrdersFailedTitle": "Захиалга ачаалж чадсангүй",
+    "loadOrderDetailsFailedTitle": "Захиалгын дэлгэрэнгүйг ачаалж чадсангүй",
+    "loadMyAdsFailedTitle": "Таны зарыг ачаалж чадсангүй",
+    "loadAdvertiserFailedTitle": "Зар нийтлэгчийг ачаалж чадсангүй",
+    "loadPaymentMethodsFailedTitle": "Төлбөрийн аргыг ачаалж чадсангүй",
+    "loadCounterpartiesFailedTitle": "Эсрэг талуудыг ачаалж чадсангүй",
+    "loadBlockedAdvertisersFailedTitle": "Хориглосон зар нийтлэгчдийг ачаалж чадсангүй",
+    "loadFollowersFailedTitle": "Дагагчдыг ачаалж чадсангүй",
+    "loadFollowingFailedTitle": "Дагаж буй хүмүүсийг ачаалж чадсангүй",
+    "loadTransactionsFailedTitle": "Гүйлгээг ачаалж чадсангүй",
+    "loadWalletsFailedTitle": "Түрийвчийг ачаалж чадсангүй"
   },
   "filter": {
     "adTypes": "Зар сурталчилгааны төрлүүд",

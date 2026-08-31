@@ -392,7 +392,21 @@
     "invalidOrderAmountMessage": "Les limites de montant de commande ne sont pas valides.",
     "networkError": "Erreur réseau. Veuillez vérifier votre connexion.",
     "notFound": "La ressource demandée n'a pas été trouvée.",
-    "unauthorized": "Vous n'êtes pas autorisé à effectuer cette action."
+    "unauthorized": "Vous n'êtes pas autorisé à effectuer cette action.",
+    "loadFailedDescription": "Aucune réponse du serveur. Vérifiez votre connexion et réessayez.",
+    "retry": "Réessayer",
+    "loadAdsFailedTitle": "Impossible de charger les annonces",
+    "loadOrdersFailedTitle": "Impossible de charger les commandes",
+    "loadOrderDetailsFailedTitle": "Impossible de charger les détails de la commande",
+    "loadMyAdsFailedTitle": "Impossible de charger vos annonces",
+    "loadAdvertiserFailedTitle": "Impossible de charger l'annonceur",
+    "loadPaymentMethodsFailedTitle": "Impossible de charger les méthodes de paiement",
+    "loadCounterpartiesFailedTitle": "Impossible de charger les contreparties",
+    "loadBlockedAdvertisersFailedTitle": "Impossible de charger les annonceurs bloqués",
+    "loadFollowersFailedTitle": "Impossible de charger les abonnés",
+    "loadFollowingFailedTitle": "Impossible de charger les abonnements",
+    "loadTransactionsFailedTitle": "Impossible de charger les transactions",
+    "loadWalletsFailedTitle": "Impossible de charger les portefeuilles"
   },
   "filter": {
     "adTypes": "Types d'annonces",

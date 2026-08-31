@@ -389,7 +389,21 @@
     "generic": "යමක් වැරදී ඇත. කරුණාකර නැවත උත්සාහ කරන්න.",
     "networkError": "ජාල දෝෂයකි. කරුණාකර ඔබගේ සම්බන්ධතාවය පරීක්ෂා කරන්න.",
     "notFound": "ඉල්ලන ලද සම්පත සොයාගත නොහැකි විය.",
-    "unauthorized": "මෙම ක්‍රියාව සිදු කිරීමට ඔබට අවසර නැත."
+    "unauthorized": "මෙම ක්‍රියාව සිදු කිරීමට ඔබට අවසර නැත.",
+    "loadFailedDescription": "සේවාදායකයෙන් ප්‍රතිචාරයක් නොලැබුණි. ඔබගේ සම්බන්ධතාවය පරීක්ෂා කර නැවත උත්සාහ කරන්න.",
+    "retry": "නැවත උත්සාහ කරන්න",
+    "loadAdsFailedTitle": "දැන්වීම් පූරණය කළ නොහැකි විය",
+    "loadOrdersFailedTitle": "ඇණවුම් පූරණය කළ නොහැකි විය",
+    "loadOrderDetailsFailedTitle": "ඇණවුම් විස්තර පූරණය කළ නොහැකි විය",
+    "loadMyAdsFailedTitle": "ඔබගේ දැන්වීම් පූරණය කළ නොහැකි විය",
+    "loadAdvertiserFailedTitle": "දැන්වීම්කරු පූරණය කළ නොහැකි විය",
+    "loadPaymentMethodsFailedTitle": "ගෙවීම් ක්‍රම පූරණය කළ නොහැකි විය",
+    "loadCounterpartiesFailedTitle": "සගයන් පූරණය කළ නොහැකි විය",
+    "loadBlockedAdvertisersFailedTitle": "අවහිර කළ දැන්වීම්කරුවන් පූරණය කළ නොහැකි විය",
+    "loadFollowersFailedTitle": "අනුගාමිකයින් පූරණය කළ නොහැකි විය",
+    "loadFollowingFailedTitle": "අනුගමනය කරන අය පූරණය කළ නොහැකි විය",
+    "loadTransactionsFailedTitle": "ගනුදෙනු පූරණය කළ නොහැකි විය",
+    "loadWalletsFailedTitle": "පසුම්බි පූරණය කළ නොහැකි විය"
   },
   "filter": {
     "adTypes": "දැන්වීම් වර්ග",

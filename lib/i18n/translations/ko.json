@@ -389,7 +389,21 @@
     "generic": "문제가 발생했습니다. 다시 시도하세요.",
     "networkError": "네트워크 오류입니다. 연결을 확인하세요.",
     "notFound": "요청한 리소스를 찾을 수 없습니다.",
-    "unauthorized": "이 작업을 수행할 권한이 없습니다."
+    "unauthorized": "이 작업을 수행할 권한이 없습니다.",
+    "loadFailedDescription": "서버에서 응답이 없습니다. 연결을 확인한 후 다시 시도하세요.",
+    "retry": "다시 시도",
+    "loadAdsFailedTitle": "광고를 불러오지 못했습니다",
+    "loadOrdersFailedTitle": "주문을 불러오지 못했습니다",
+    "loadOrderDetailsFailedTitle": "주문 상세 정보를 불러오지 못했습니다",
+    "loadMyAdsFailedTitle": "내 광고를 불러오지 못했습니다",
+    "loadAdvertiserFailedTitle": "광고주를 불러오지 못했습니다",
+    "loadPaymentMethodsFailedTitle": "결제 방법을 불러오지 못했습니다",
+    "loadCounterpartiesFailedTitle": "거래 파트너를 불러오지 못했습니다",
+    "loadBlockedAdvertisersFailedTitle": "차단된 광고주를 불러오지 못했습니다",
+    "loadFollowersFailedTitle": "팔로워를 불러오지 못했습니다",
+    "loadFollowingFailedTitle": "팔로잉을 불러오지 못했습니다",
+    "loadTransactionsFailedTitle": "거래 내역을 불러오지 못했습니다",
+    "loadWalletsFailedTitle": "지갑을 불러오지 못했습니다"
   },
   "filter": {
     "adTypes": "광고 유형",

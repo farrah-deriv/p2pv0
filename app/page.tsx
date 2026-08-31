@@ -137,7 +137,7 @@ export default function BuySellPage() {
   const { isConnected, joinAdvertsChannel, leaveAdvertsChannel, subscribe, subscribeToUserUpdates, unsubscribeFromUserUpdates, joinUsersOnlineChannel, leaveUsersOnlineChannel } = useWebSocketContext()
 
 
-  const { data: advertsData, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage, queryKey: advertsQueryKey } = useAdvertisements(
+  const { data: advertsData, isLoading, error, refetch: refetchAdverts, fetchNextPage, hasNextPage, isFetchingNextPage, queryKey: advertsQueryKey } = useAdvertisements(
     {
       type: activeTab,
       account_currency: selectedAccountCurrency,
@@ -699,8 +699,13 @@ export default function BuySellPage() {
                 </Table>
               </div>
             ) : error ? (
-              <div className="text-center py-8 text-error">
-                {error.message || t("market.failedToLoadAdvertisements")}
+              <div className="flex-1 min-h-0 flex items-center md:items-start justify-center md:pt-16" data-testid="markets-error-state">
+                <EmptyState
+                  title={t("errors.loadAdsFailedTitle")}
+                  description={t("errors.loadFailedDescription")}
+                  actionLabel={t("errors.retry")}
+                  onAction={() => refetchAdverts()}
+                />
               </div>
             ) : adverts.length === 0 ? (
               <div className="flex-1 min-h-0 flex items-center md:items-start justify-center md:pt-16" data-testid="markets-empty-state">

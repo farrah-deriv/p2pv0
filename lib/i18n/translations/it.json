@@ -394,7 +394,21 @@
     "invalidOrderAmountMessage": "I limiti dell'importo dell'ordine non sono validi.",
     "networkError": "Errore di rete. Controlla la tua connessione.",
     "notFound": "La risorsa richiesta non è stata trovata.",
-    "unauthorized": "Non sei autorizzato a eseguire questa azione."
+    "unauthorized": "Non sei autorizzato a eseguire questa azione.",
+    "loadFailedDescription": "Nessuna risposta dal server. Controlla la tua connessione e riprova.",
+    "retry": "Riprova",
+    "loadAdsFailedTitle": "Impossibile caricare gli annunci",
+    "loadOrdersFailedTitle": "Impossibile caricare gli ordini",
+    "loadOrderDetailsFailedTitle": "Impossibile caricare i dettagli dell'ordine",
+    "loadMyAdsFailedTitle": "Impossibile caricare i tuoi annunci",
+    "loadAdvertiserFailedTitle": "Impossibile caricare l'inserzionista",
+    "loadPaymentMethodsFailedTitle": "Impossibile caricare i metodi di pagamento",
+    "loadCounterpartiesFailedTitle": "Impossibile caricare i contraenti",
+    "loadBlockedAdvertisersFailedTitle": "Impossibile caricare gli inserzionisti bloccati",
+    "loadFollowersFailedTitle": "Impossibile caricare i follower",
+    "loadFollowingFailedTitle": "Impossibile caricare gli utenti seguiti",
+    "loadTransactionsFailedTitle": "Impossibile caricare le transazioni",
+    "loadWalletsFailedTitle": "Impossibile caricare i portafogli"
   },
   "filter": {
     "adTypes": "Tipi di annunci",
