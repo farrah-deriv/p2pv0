@@ -43,17 +43,19 @@ for i in 1 2 3 4 5; do
 done
 if [ -z "$RUN_ID" ]; then
   echo "Warning: Could not find build-and-deploy-prod.yml run — monitor manually at https://github.com/deriv-com/p2p-v0/actions/workflows/build-and-deploy-prod.yml"
+  echo "Verify deploy completed successfully before closing tracking issue #${TRACKING_ISSUE_NUM}."
+elif gh run watch "$RUN_ID" --repo deriv-com/p2p-v0; then
+  # Close the tracking issue on successful deploy
+  if [ "$(gh issue view "$TRACKING_ISSUE_NUM" --repo deriv-com/p2p-v0 --json state -q '.state')" = "OPEN" ]; then
+    gh issue close "$TRACKING_ISSUE_NUM" \
+      --repo deriv-com/p2p-v0 \
+      --comment "Regression passed. Tag \`${NEW_TAG}\` pushed and production deploy completed successfully."
+  else
+    echo "Tracking issue #$TRACKING_ISSUE_NUM already closed."
+  fi
 else
-  gh run watch "$RUN_ID" --repo deriv-com/p2p-v0
-fi
-
-# Close the tracking issue
-if [ "$(gh issue view "$TRACKING_ISSUE_NUM" --repo deriv-com/p2p-v0 --json state -q '.state')" = "OPEN" ]; then
-  gh issue close "$TRACKING_ISSUE_NUM" \
-    --repo deriv-com/p2p-v0 \
-    --comment "Regression passed. Tag \`${NEW_TAG}\` pushed and production deploy completed successfully."
-else
-  echo "Tracking issue #$TRACKING_ISSUE_NUM already closed."
+  echo "ERROR: Deploy workflow failed — tracking issue #${TRACKING_ISSUE_NUM} left open. Investigate before closing."
+  exit 1
 fi
 ```
 
