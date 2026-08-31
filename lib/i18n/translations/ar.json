@@ -1255,7 +1255,7 @@
     "loadMore": "تحميل المزيد",
     "estTotalAssetsTooltip": "هذا هو رصيدك التقديري المجمع عبر جميع محافظ P2P، معروضًا بالدولار الأمريكي.",
     "estTotalValue": "رصيد محفظة P2P",
-    "exceedsBalance": "لا يمكن أن يتجاوز المبلغ الرصيد المتاح {amount} {currency}.",
+    "exceedsBalance": "المبلغ يتجاوز الرصيد المتاح.",
     "external": "خارجي",
     "failed": "فشل",
     "cancelled": "ملغى",

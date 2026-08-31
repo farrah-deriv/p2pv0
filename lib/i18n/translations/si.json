@@ -1255,7 +1255,7 @@
     "loadMore": "වැඩිපුර පටවන්න",
     "estTotalAssetsTooltip": "මෙය සියලු P2P පසුම්බි වලින් ඔබේ ඇස්තමේන්තුගත සංයුක්ත ශේෂය වන අතර USD වලින් පෙන්වයි.",
     "estTotalValue": "P2P පසුම්බි ශේෂය",
-    "exceedsBalance": "මුදල පවතින ශේෂය {amount} {currency} ඉක්මවිය නොහැක.",
+    "exceedsBalance": "මුදල පවතින ශේෂය ඉක්මවයි.",
     "external": "බාහිර",
     "failed": "අසාර්ථකයි",
     "cancelled": "අවලංගු කරන ලදී",

@@ -894,6 +894,32 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     return !isNaN(numAmount) && numAmount > 0 && numAmount <= sourceBalance
   }
 
+  const isExceedsBalanceError = (): boolean => {
+    if (!transferAmount) return false
+
+    const numAmount = Number.parseFloat(transferAmount)
+    const effectiveMinAmount = selectedAmountCurrency === "source" ? sourceMinAmount : destinationMinAmount
+
+    if (numAmount < effectiveMinAmount && effectiveMinAmount > 0) return false
+
+    return numAmount > getSourceWalletBalance()
+  }
+
+  // Link visibility is a different question from which error message wins: funding the
+  // source wallet is also the only way forward when its balance sits below the minimum
+  // transfer amount, where isExceedsBalanceError() is false and the minimum-amount
+  // message shows. Driven off the same numeric conditions, never off translated text.
+  const canFundSourceWallet = (): boolean => {
+    if (!transferAmount) return false
+    if (sourceWalletData?.type?.toLowerCase() !== "p2p") return false
+    if (!getSourceWalletCurrency()) return false
+
+    if (isExceedsBalanceError()) return true
+
+    const effectiveMinAmount = selectedAmountCurrency === "source" ? sourceMinAmount : destinationMinAmount
+    return effectiveMinAmount > 0 && getSourceWalletBalance() < effectiveMinAmount
+  }
+
   const getAmountErrorMessage = (): string => {
     if (!transferAmount) return ""
 
@@ -912,10 +938,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     }
 
     if (numAmount > sourceBalance) {
-      return t("wallet.exceedsBalance", {
-        amount: formatAmountWithDecimals(sourceBalance.toString()),
-        currency: selectedCurrency || "USD",
-      })
+      return t("wallet.exceedsBalance")
     }
 
     return ""
@@ -1557,6 +1580,11 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     return wallet?.currency || ""
   }
 
+  const navigateToBuyCurrency = () => {
+    onClose()
+    router.push("/?operation=buy")
+  }
+
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setValidateError(null)
@@ -1642,7 +1670,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                 <Button
                   variant="link"
                   type="button"
-                  onClick={() => { onClose(); router.push("/?operation=buy") }}
+                  onClick={navigateToBuyCurrency}
                   className="!font-bold !text-sm !text-orange-100"
                 >
                   <span className="underline">
@@ -1654,7 +1682,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
                 variant="icon-muted"
                 size="sm"
                 type="button"
-                onClick={() => { onClose(); router.push("/?operation=buy") }}
+                onClick={navigateToBuyCurrency}
                 aria-label={t("wallet.buyCurrency", { currency: selectedCurrency ?? "USD" })}
                 className="shrink-0 !bg-orange-100 !text-white hover:!opacity-90 hover:!bg-orange-100"
               >
@@ -1872,7 +1900,25 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
               )}
             </div>
             {transferAmount && !isAmountValid(transferAmount) && (
-              <p data-testid="transfer-error-amount" className="text-error text-sm mt-1">{getAmountErrorMessage()}</p>
+              <p data-testid="transfer-error-amount" className="text-error text-sm mt-1" role="alert">
+                {getAmountErrorMessage()}
+                {canFundSourceWallet() && (
+                  <>
+                    {" "}
+                    <Button
+                      variant="link"
+                      type="button"
+                      data-testid="transfer-link-buy-currency"
+                      onClick={navigateToBuyCurrency}
+                      className="!font-bold !text-sm !text-error"
+                    >
+                      <span className="underline">
+                        {t("wallet.buyCurrency", { currency: getSourceWalletCurrency() })}
+                      </span>
+                    </Button>
+                  </>
+                )}
+              </p>
             )}
             <div className="grid grid-cols-4 gap-2 mt-6">
               {([25, 50, 75, 100] as const).map((pct) => (

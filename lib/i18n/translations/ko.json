@@ -1304,7 +1304,7 @@
     "loadMore": "더 로드하기",
     "estTotalAssetsTooltip": "모든 P2P 지갑에 걸친 예상 합산 잔액이며 USD로 표시됩니다.",
     "estTotalValue": "P2P 지갑 잔액",
-    "exceedsBalance": "금액은 사용 가능한 잔액 {amount} {currency}을 초과할 수 없습니다.",
+    "exceedsBalance": "금액이 사용 가능한 잔액을 초과합니다.",
     "external": "외부",
     "failed": "실패",
     "cancelled": "취소됨",

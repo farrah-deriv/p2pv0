@@ -1267,7 +1267,7 @@
     "loadMore": "Załaduj więcej",
     "estTotalAssetsTooltip": "To jest szacowane łączne saldo we wszystkich portfelach P2P, wyświetlane w USD.",
     "estTotalValue": "Saldo portfela P2P",
-    "exceedsBalance": "Kwota nie może przekraczać dostępnego salda {amount} {currency}.",
+    "exceedsBalance": "Kwota przekracza dostępne saldo.",
     "external": "Zewnętrzny",
     "failed": "Nieudane",
     "cancelled": "Anulowano",

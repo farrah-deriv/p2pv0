@@ -1263,7 +1263,7 @@
     "loadMore": "Pakia zaidi",
     "estTotalAssetsTooltip": "Hii ni salio lako la makadirio lililounganishwa katika pochi zote za P2P, linaonyeshwa kwa USD.",
     "estTotalValue": "Salio la Mkoba wa P2P",
-    "exceedsBalance": "Kiasi hakiwezi kuzidi salio linalopatikana {amount} {currency}.",
+    "exceedsBalance": "Kiasi kinazidi salio linalopatikana.",
     "external": "Nje",
     "failed": "Imeshindwa",
     "cancelled": "Imeghairiwa",

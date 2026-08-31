@@ -1282,7 +1282,7 @@
     "loadMore": "Mehr laden",
     "estTotalAssetsTooltip": "Dies ist Ihr geschätztes Gesamtguthaben über alle P2P-Wallets, angezeigt in USD.",
     "estTotalValue": "P2P-Wallet-Guthaben",
-    "exceedsBalance": "Der Betrag darf das verfügbare Guthaben von {amount} {currency} nicht überschreiten.",
+    "exceedsBalance": "Der Betrag überschreitet das verfügbare Guthaben.",
     "external": "Extern",
     "failed": "Fehlgeschlagen",
     "cancelled": "Storniert",

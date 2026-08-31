@@ -1287,7 +1287,7 @@
     "loadMore": "Загрузить больше",
     "estTotalAssetsTooltip": "Это ваша ориентировочная совокупная сумма по всем P2P-кошелькам, отображаемая в USD.",
     "estTotalValue": "Баланс кошелька P2P",
-    "exceedsBalance": "Сумма не может превышать доступный баланс {amount} {currency}.",
+    "exceedsBalance": "Сумма превышает доступный баланс.",
     "external": "Внешний",
     "failed": "Неудачно",
     "cancelled": "Отменено",

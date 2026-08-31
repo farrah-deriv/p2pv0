@@ -1273,7 +1273,7 @@
     "loadMore": "Cargar más",
     "estTotalAssetsTooltip": "Este es su saldo combinado estimado en todas las billeteras P2P, mostrado en USD.",
     "estTotalValue": "Saldo de billetera P2P",
-    "exceedsBalance": "El monto no puede exceder el saldo disponible {amount} {currency}.",
+    "exceedsBalance": "El monto excede el saldo disponible.",
     "external": "Externo",
     "failed": "Fallido",
     "cancelled": "Cancelado",

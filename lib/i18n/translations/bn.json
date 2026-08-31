@@ -1265,7 +1265,7 @@
     "loadMore": "আরো লোড",
     "estTotalAssetsTooltip": "এটি সমস্ত P2P ওয়ালেট জুড়ে আপনার আনুমানিক সম্মিলিত ব্যালেন্স, USD-তে দেখানো হয়েছে।",
     "estTotalValue": "P2P ওয়ালেট ব্যালেন্স",
-    "exceedsBalance": "পরিমাণ উপলব্ধ ব্যালেন্স {amount} {currency} অতিক্রম করতে পারবে না।",
+    "exceedsBalance": "পরিমাণ উপলব্ধ ব্যালেন্স অতিক্রম করে।",
     "external": "বাহ্যিক",
     "failed": "ব্যর্থ",
     "cancelled": "বাতিল",

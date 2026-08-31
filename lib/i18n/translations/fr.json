@@ -1271,7 +1271,7 @@
     "loadMore": "Charger plus",
     "estTotalAssetsTooltip": "Il s'agit de votre solde combiné estimé sur tous les portefeuilles P2P, affiché en USD.",
     "estTotalValue": "Solde du portefeuille P2P",
-    "exceedsBalance": "Le montant ne peut pas dépasser le solde disponible {amount} {currency}.",
+    "exceedsBalance": "Le montant dépasse le solde disponible.",
     "external": "Externe",
     "failed": "Échoué",
     "cancelled": "Annulé",

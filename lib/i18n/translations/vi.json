@@ -1299,7 +1299,7 @@
     "loadMore": "Tải thêm",
     "estTotalAssetsTooltip": "Đây là số dư ước tính tổng hợp trên tất cả ví P2P của bạn, hiển thị bằng USD.",
     "estTotalValue": "Số dư ví P2P",
-    "exceedsBalance": "Số tiền không được vượt quá số dư khả dụng {amount} {currency}.",
+    "exceedsBalance": "Số tiền vượt quá số dư khả dụng.",
     "external": "Bên ngoài",
     "failed": "Thất bại",
     "cancelled": "Đã hủy",

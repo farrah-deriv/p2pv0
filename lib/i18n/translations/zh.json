@@ -1255,7 +1255,7 @@
     "loadMore": "加载更多",
     "estTotalAssetsTooltip": "这是您所有 P2P 钱包的预估合并余额，以美元显示。",
     "estTotalValue": "P2P钱包余额",
-    "exceedsBalance": "金额不能超过可用余额 {amount} {currency}。",
+    "exceedsBalance": "金额超过可用余额。",
     "external": "外部",
     "failed": "失败",
     "cancelled": "已取消",

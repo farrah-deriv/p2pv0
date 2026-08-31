@@ -1277,7 +1277,7 @@
     "loadMore": "Carregar mais",
     "estTotalAssetsTooltip": "Este é o seu saldo combinado estimado em todas as carteiras P2P, exibido em USD.",
     "estTotalValue": "Saldo da carteira P2P",
-    "exceedsBalance": "O valor não pode exceder o saldo disponível {amount} {currency}.",
+    "exceedsBalance": "O valor excede o saldo disponível.",
     "external": "Externo",
     "failed": "Falhou",
     "cancelled": "Cancelado",
