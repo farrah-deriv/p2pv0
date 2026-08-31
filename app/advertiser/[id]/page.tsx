@@ -13,7 +13,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
+import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from "@/components/ui/drawer"
 import { Spinner } from "@/components/ui/spinner"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { BuySellAPI } from "@/services/api"
@@ -642,7 +642,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                     <div className="flex items-center md:mt-0 justify-self-end gap-2">
                       {!isBlocked && (
                         <>
-                          {isFollowing && isClosedGroupEnabled ? (
+                          {isFollowing && !isClosedGroupEnabled ? (
                             isMobile ? (
                               <Drawer>
                                 <DrawerTrigger asChild>
@@ -660,22 +660,36 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                                 </DrawerTrigger>
                                 <DrawerContent className="h-fit">
                                   <div className="p-4 space-y-1">
-                                    <button
-                                      data-testid="advertiser-btn-unfollow"
-                                      onClick={toggleFollow}
-                                      className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm hover:bg-gray-50 active:bg-gray-100"
-                                    >
-                                      <Image src="/icons/unfollow.svg" alt="" width={20} height={20} />
-                                      {t("advertiser.unfollow")}
-                                    </button>
-                                    <button
-                                      data-testid={isGroupMember ? "advertiser-btn-remove-closed-group" : "advertiser-btn-add-closed-group"}
-                                      onClick={isGroupMember ? handleRemoveFromClosedGroup : handleAddToClosedGroup}
-                                      className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm hover:bg-gray-50 active:bg-gray-100"
-                                    >
-                                      <Image src="/icons/star.svg" alt="" width={20} height={20} />
-                                      {isGroupMember ? t("advertiser.removeFromClosedGroup") : t("advertiser.addToClosedGroup")}
-                                    </button>
+                                    <DrawerClose asChild>
+                                      <Button
+                                        data-testid="advertiser-btn-unfollow"
+                                        onClick={toggleFollow}
+                                        variant="ghost"
+                                        size="sm"
+                                        className="!w-full !justify-start !font-normal"
+                                        disabled={isFollowLoading || isBlockLoading || isClosedGroupLoading}
+                                      >
+                                        <span className="flex items-center gap-3">
+                                          <Image src="/icons/unfollow.svg" alt="" width={20} height={20} />
+                                          {t("advertiser.unfollow")}
+                                        </span>
+                                      </Button>
+                                    </DrawerClose>
+                                    <DrawerClose asChild>
+                                      <Button
+                                        data-testid={isGroupMember ? "advertiser-btn-remove-closed-group" : "advertiser-btn-add-closed-group"}
+                                        onClick={isGroupMember ? handleRemoveFromClosedGroup : handleAddToClosedGroup}
+                                        variant="ghost"
+                                        size="sm"
+                                        className="!w-full !justify-start !font-normal"
+                                        disabled={isClosedGroupLoading || isFollowLoading || isBlockLoading}
+                                      >
+                                        <span className="flex items-center gap-3">
+                                          <Image src="/icons/star.svg" alt="" width={20} height={20} />
+                                          {isGroupMember ? t("advertiser.removeFromClosedGroup") : t("advertiser.addToClosedGroup")}
+                                        </span>
+                                      </Button>
+                                    </DrawerClose>
                                   </div>
                                 </DrawerContent>
                               </Drawer>

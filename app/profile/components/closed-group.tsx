@@ -242,7 +242,7 @@ export default function ClosedGroupTab({ isInAlert = false }: ClosedGroupTabProp
             variant="primary"
             className="w-full"
           >
-            Done
+            {t("common.done")}
           </Button>
         </div>
       )}
