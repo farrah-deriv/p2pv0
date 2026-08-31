@@ -428,6 +428,8 @@
     "justNow": "just now",
     "enterMessage": "Enter message",
     "messageSent": "Message sent",
+    "messageStatusRead": "Read",
+    "messageStatusSent": "Sent",
     "messageNotSent": "Message not sent: {error}",
     "disclaimerImportant": "Important:",
     "disclaimerText": "Deriv will never contact you via WhatsApp to ask for your personal information. Always ignore any messages from numbers claiming to be from Deriv.",

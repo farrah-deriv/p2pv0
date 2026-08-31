@@ -283,6 +283,8 @@
     "justNow": "vừa xong",
     "messageNotSent": "Tin nhắn chưa được gửi: {error}",
     "messageSent": "Tin nhắn đã gửi",
+    "messageStatusRead": "Đã đọc",
+    "messageStatusSent": "Đã gửi",
     "offline": "Ngoại tuyến",
     "online": "Trực tuyến",
     "seenDaysAgo": "{days} ngày{plural} trước",

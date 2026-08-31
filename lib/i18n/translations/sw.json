@@ -247,6 +247,8 @@
     "justNow": "tu sasa",
     "messageNotSent": "Ujumbe haujatumwa: {error}",
     "messageSent": "Ujumbe umetumwa",
+    "messageStatusRead": "Imesomwa",
+    "messageStatusSent": "Imetumwa",
     "offline": "Nje ya mtandao",
     "online": "Mkondoni",
     "seenDaysAgo": "{days} siku{plural} iliyopita",

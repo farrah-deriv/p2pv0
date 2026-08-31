@@ -247,6 +247,8 @@
     "justNow": "දැන්",
     "messageNotSent": "පණිවිඩය යවා නැත: {error}",
     "messageSent": "පණිවිඩය යවා ඇත",
+    "messageStatusRead": "කියවා ඇත",
+    "messageStatusSent": "යවා ඇත",
     "offline": "නොබැඳි",
     "online": "ඔන්ලයින්",
     "seenDaysAgo": "{days} day{plural} පෙර",

@@ -247,6 +247,8 @@
     "justNow": "இப்போது தான்",
     "messageNotSent": "செய்தி அனுப்பப்படவில்லை: {error}",
     "messageSent": "செய்தி அனுப்பப்பட்டது",
+    "messageStatusRead": "படிக்கப்பட்டது",
+    "messageStatusSent": "அனுப்பப்பட்டது",
     "offline": "ஆஃப்லைன்",
     "online": "ஆன்லைன்",
     "seenDaysAgo": "{days} நாள்{plural} முன்பு",

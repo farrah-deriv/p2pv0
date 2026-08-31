@@ -1,9 +1,9 @@
 "use client"
 
 import type React from "react"
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import Image from "next/image"
-import { StandaloneArrowLeftFillIcon } from "@deriv/quill-icons/Standalone"
+import { StandaloneArrowLeftFillIcon, StandaloneCheckRegularIcon } from "@deriv/quill-icons/Standalone"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { Input } from "@/components/ui/input"
@@ -30,6 +30,8 @@ type Message = {
   id: string
   message: string
   sender_is_self: boolean
+  isCounterparty: boolean
+  is_read: boolean
   time: number
   rejected: boolean
   tags: string[]
@@ -58,12 +60,16 @@ function buildMessageId(raw: Record<string, unknown>): string {
 function normalizeChatMessage(raw: Record<string, unknown>): Message {
   const tags = Array.isArray(raw.tags) ? raw.tags.map(String) : []
   const rawTime = raw.time ?? raw.created_at
+  const senderIsSelf = raw.sender_is_self === true
 
   return {
     id: buildMessageId(raw),
     attachment: (raw.attachment as Message["attachment"]) ?? null,
     message: String(raw.message ?? ""),
-    sender_is_self: Boolean(raw.sender_is_self),
+    sender_is_self: senderIsSelf,
+    // Match mobile: missing sender_is_self defaults to counterparty (not self).
+    isCounterparty: !senderIsSelf,
+    is_read: Boolean(raw.is_read),
     time: Number(rawTime ?? Date.now()),
     rejected: Boolean(raw.rejected) || tags.length > 0,
     tags,
@@ -104,6 +110,13 @@ function stripMatchingLocalRejected(prev: Message[], incoming: Message): Message
 function isDuplicateMessage(prev: Message[], incoming: Message): boolean {
   const key = messageDedupeKey(incoming)
   return prev.some((msg) => messageDedupeKey(msg) === key)
+}
+
+function findLatestUnreadCounterpartyMessage(messages: Message[]): Message | undefined {
+  return messages.reduce<Message | undefined>(
+    (latest, message) => (message.isCounterparty && !message.is_read ? message : latest),
+    undefined,
+  )
 }
 
 function getChatSendErrorInfo(error: unknown): { code: string; tags: string[] } | null {
@@ -187,6 +200,7 @@ export default function OrderChat({
   const [isLoading, setIsLoading] = useState(true)
   const [attachmentsRemaining, setAttachmentsRemaining] = useState<number | null>(null)
   const [attachTooltipOpen, setAttachTooltipOpen] = useState(false)
+  const messagesRef = useRef<Message[]>([])
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const messageInputRef = useRef<HTMLInputElement>(null)
@@ -194,7 +208,35 @@ export default function OrderChat({
   const maxFileSizeBytes = 5 * 1024 * 1024 // 5 MB
   const isChatModerationEnabled = isP2POrderChatModerationEnabled()
 
-  const { isConnected, getChatHistory, subscribe } = useWebSocketContext()
+  const { isConnected, getChatHistory, markChatMessagesRead, subscribe } = useWebSocketContext()
+  const latestUnreadMessageId = findLatestUnreadCounterpartyMessage(messages)?.id
+
+  useEffect(() => {
+    messagesRef.current = messages
+  }, [messages])
+
+  const markUnreadMessagesRead = useCallback(() => {
+    if (!isConnected) return
+
+    const latestUnreadMessage = findLatestUnreadCounterpartyMessage(messagesRef.current)
+    if (!latestUnreadMessage) return
+
+    const updatedMessages = messagesRef.current.map((message) =>
+      message.isCounterparty && !message.is_read ? { ...message, is_read: true } : message,
+    )
+    messagesRef.current = updatedMessages
+    setMessages(updatedMessages)
+
+    markChatMessagesRead("orders", orderId, latestUnreadMessage.id)
+  }, [isConnected, markChatMessagesRead, orderId])
+
+  useEffect(() => {
+    if (latestUnreadMessageId) markUnreadMessagesRead()
+  }, [latestUnreadMessageId, markUnreadMessagesRead])
+
+  useEffect(() => {
+    if (isConnected) markUnreadMessagesRead()
+  }, [isConnected, markUnreadMessagesRead])
 
   useEffect(() => {
     if (!isAttachmentBlocked) {
@@ -216,9 +258,20 @@ export default function OrderChat({
           setAttachmentsRemaining(payload.chat_attachments_limit)
         }
 
+        let shouldAckRead = false
+
         setMessages((prev) => {
+          if (payload.chat_messages_read === true && String(payload.order_id) === String(orderId)) {
+            return prev.map((message) =>
+              message.sender_is_self ? { ...message, is_read: true } : message,
+            )
+          }
+
           if (payload.chat_history && Array.isArray(payload.chat_history)) {
             const history = normalizeChatMessages(payload.chat_history)
+            if (history.some((message) => message.isCounterparty && !message.is_read)) {
+              shouldAckRead = true
+            }
             const historySelfTexts = new Set(
               history.filter((msg) => msg.sender_is_self && msg.message).map((msg) => msg.message),
             )
@@ -239,12 +292,20 @@ export default function OrderChat({
                 return withoutStaleLocal
               }
 
+              if (incoming.isCounterparty && !incoming.is_read) {
+                shouldAckRead = true
+              }
+
               return [...withoutStaleLocal, incoming]
             }
           }
 
           return prev
         })
+
+        if (shouldAckRead) {
+          queueMicrotask(() => markUnreadMessagesRead())
+        }
 
         setIsLoading(false)
       } else {
@@ -253,7 +314,7 @@ export default function OrderChat({
     })
 
     return unsubscribe
-  }, [subscribe, orderId, isChatModerationEnabled])
+  }, [subscribe, orderId, isChatModerationEnabled, markUnreadMessagesRead])
 
   useEffect(() => {
     if (!isConnected) return
@@ -261,6 +322,15 @@ export default function OrderChat({
     const timerId = setTimeout(() => getChatHistory("orders", orderId), 100)
     return () => clearTimeout(timerId)
   }, [isConnected, getChatHistory, orderId])
+
+  useEffect(() => {
+    const markReadOnFocus = () => {
+      markUnreadMessagesRead()
+    }
+
+    window.addEventListener("focus", markReadOnFocus)
+    return () => window.removeEventListener("focus", markReadOnFocus)
+  }, [markUnreadMessagesRead])
 
   useEffect(() => {
     const c = messagesContainerRef.current
@@ -399,6 +469,8 @@ export default function OrderChat({
               attachment: { name: file.name, url: "" },
               message: "",
               sender_is_self: true,
+              isCounterparty: false,
+              is_read: false,
               time: Date.now(),
               rejected: true,
               tags: rejectionTags(chatError?.tags ?? [], "attachment_rejected"),
@@ -412,6 +484,8 @@ export default function OrderChat({
               attachment: { name: file.name, url: "" },
               message: "",
               sender_is_self: true,
+              isCounterparty: false,
+              is_read: false,
               time: Date.now(),
               rejected: true,
               tags: rejectionTags(chatError?.tags ?? [], "attachment_limit_reached"),
@@ -580,11 +654,40 @@ export default function OrderChat({
                         ) : (
                           <div
                             className={cn(
-                              "text-xs mt-1 text-grayscale-text-muted justify-self-start",
-                              msg.sender_is_self && "justify-self-end",
+                              "flex items-center gap-1 text-xs mt-1 text-grayscale-text-muted justify-start",
+                              msg.sender_is_self && "justify-end",
                             )}
                           >
                             {msg.time && formatTime(msg.time)}
+                            {msg.sender_is_self && (
+                              <span
+                                className={cn(
+                                  "relative block h-5 w-[28px] shrink-0",
+                                  msg.is_read ? "text-blue-800" : "text-grayscale-text-muted",
+                                )}
+                                aria-label={msg.is_read ? t("chat.messageStatusRead") : t("chat.messageStatusSent")}
+                                data-testid={`order-chat-receipt-${msg.id}`}
+                              >
+                                <StandaloneCheckRegularIcon
+                                  iconSize="xs"
+                                  width={20}
+                                  height={20}
+                                  fill="currentColor"
+                                  aria-hidden="true"
+                                  className="absolute left-0 top-0"
+                                />
+                                {msg.is_read && (
+                                  <StandaloneCheckRegularIcon
+                                    iconSize="xs"
+                                    width={20}
+                                    height={20}
+                                    fill="currentColor"
+                                    aria-hidden="true"
+                                    className="absolute left-[9px] top-0"
+                                  />
+                                )}
+                              </span>
+                            )}
                           </div>
                         )}
                       </div>

@@ -247,6 +247,8 @@
     "justNow": "방금 전",
     "messageNotSent": "메시지 전송 실패: {error}",
     "messageSent": "메시지 전송됨",
+    "messageStatusRead": "읽음",
+    "messageStatusSent": "전송됨",
     "offline": "오프라인",
     "online": "온라인",
     "seenDaysAgo": "{days}일{plural} 전",

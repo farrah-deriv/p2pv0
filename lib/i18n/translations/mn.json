@@ -247,6 +247,8 @@
     "justNow": "яг одоо",
     "messageNotSent": "Зурвас илгээгээгүй: {error}",
     "messageSent": "Мессеж илгээсэн",
+    "messageStatusRead": "Уншсан",
+    "messageStatusSent": "Илгээсэн",
     "offline": "Офлайн",
     "online": "Онлайн",
     "seenDaysAgo": "{days} өдөр{plural} өмнө",

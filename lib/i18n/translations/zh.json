@@ -247,6 +247,8 @@
     "justNow": "刚才",
     "messageNotSent": "消息未发送：{error}",
     "messageSent": "消息已发送",
+    "messageStatusRead": "已读",
+    "messageStatusSent": "已发送",
     "offline": "离线",
     "online": "在线",
     "seenDaysAgo": "{days} 天{plural} 前",

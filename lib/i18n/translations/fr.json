@@ -248,6 +248,8 @@
     "justNow": "à l'instant",
     "messageNotSent": "Message non envoyé : {error}",
     "messageSent": "Message envoyé",
+    "messageStatusRead": "Lu",
+    "messageStatusSent": "Envoyé",
     "offline": "Hors ligne",
     "online": "En ligne",
     "seenDaysAgo": "il y a {days} jour{plural}",

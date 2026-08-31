@@ -256,6 +256,8 @@
     "justNow": "এইমাত্র",
     "messageNotSent": "বার্তা পাঠানো হয়নি: {error}",
     "messageSent": "বার্তা পাঠানো হয়েছে",
+    "messageStatusRead": "পঠিত",
+    "messageStatusSent": "পাঠানো হয়েছে",
     "offline": "অফলাইন",
     "online": "অনলাইন",
     "seenDaysAgo": "{days} দিন{plural} আগে",

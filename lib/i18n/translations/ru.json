@@ -272,6 +272,8 @@
     "justNow": "только что",
     "messageNotSent": "Сообщение не отправлено: {error}",
     "messageSent": "Сообщение отправлено",
+    "messageStatusRead": "Прочитано",
+    "messageStatusSent": "Отправлено",
     "offline": "Оффлайн",
     "online": "Онлайн",
     "seenDaysAgo": "{days} дн{plural} назад",

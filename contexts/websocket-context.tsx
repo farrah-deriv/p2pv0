@@ -205,6 +205,14 @@ export class WebSocketClient {
     this.send(getChatHistoryMessage)
   }
 
+  public markChatMessagesRead(channel: string, orderId: string): boolean {
+    return this.send({
+      action: "message",
+      options: { channel },
+      payload: { order_id: orderId, chat_messages_read: true },
+    })
+  }
+
   public disconnect(): void {
     if (this.socket) {
       if (this.socket.readyState === WebSocket.CONNECTING || this.socket.readyState === WebSocket.OPEN) {
@@ -279,6 +287,7 @@ interface WebSocketContextType {
   joinChannel: (channel: string, id: number) => boolean
   leaveChannel: (channel: string) => void
   getChatHistory: (channel: string, orderId: string) => void
+  markChatMessagesRead: (channel: string, orderId: string, messageId: string) => boolean
   subscribe: (callback: (data: InboundWebSocketMessage) => void) => () => void
   reconnect: () => void
   subscribeToUserUpdates: () => void
@@ -297,6 +306,7 @@ const NOOP_WS_CONTEXT: WebSocketContextType = {
   joinChannel: () => false,
   leaveChannel: () => {},
   getChatHistory: () => {},
+  markChatMessagesRead: () => false,
   subscribe: () => () => {},
   reconnect: () => {},
   subscribeToUserUpdates: () => {},
@@ -323,6 +333,7 @@ interface WebSocketProviderProps {
 export function WebSocketProvider({ children }: WebSocketProviderProps) {
   const wsClientRef = useRef<WebSocketClient | null>(null)
   const subscribersRef = useRef<Set<(data: InboundWebSocketMessage) => void>>(new Set())
+  const sentChatReadReceiptsRef = useRef(new Set<string>())
   const [isConnected, setIsConnected] = useState(false)
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const shouldReconnectRef = useRef(true)
@@ -347,6 +358,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     const wsClient = getWebSocketClient({
       onOpen: () => {
         retryCountRef.current = 0
+        sentChatReadReceiptsRef.current.clear()
         setIsConnected(true)
         const userData = useUserDataStore.getState().userData
         if (userData?.signup === "v1") {
@@ -437,6 +449,20 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     wsClientRef.current?.getChatHistory(channel, orderId)
   }, [isMaintenanceActive, isWebSocketEligible])
 
+  const markChatMessagesRead = useCallback((channel: string, orderId: string, messageId: string): boolean => {
+    if (isMaintenanceActive || !isWebSocketEligible) return false
+
+    // OrderChat is mounted for both responsive layouts. Keep the receipt at
+    // the shared socket boundary so the same unread message is acknowledged once.
+    const receiptKey = `${channel}:${orderId}:${messageId}`
+    if (sentChatReadReceiptsRef.current.has(receiptKey)) return false
+
+    const wasSent = wsClientRef.current?.markChatMessagesRead(channel, orderId) ?? false
+    if (wasSent) sentChatReadReceiptsRef.current.add(receiptKey)
+
+    return wasSent
+  }, [isMaintenanceActive, isWebSocketEligible])
+
   const subscribe = useCallback((callback: (data: InboundWebSocketMessage) => void) => {
     subscribersRef.current.add(callback)
     return () => {
@@ -500,6 +526,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     joinChannel,
     leaveChannel,
     getChatHistory,
+    markChatMessagesRead,
     subscribe,
     reconnect,
     subscribeToUserUpdates,

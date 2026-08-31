@@ -247,6 +247,8 @@
     "justNow": "剛才",
     "messageNotSent": "訊息未發送：{error}",
     "messageSent": "訊息已發送",
+    "messageStatusRead": "已讀",
+    "messageStatusSent": "已傳送",
     "offline": "離線",
     "online": "網路",
     "seenDaysAgo": "{days} 天{plural} 前",

@@ -247,6 +247,8 @@
     "justNow": "الآن",
     "messageNotSent": "لم يتم إرسال الرسالة: {error}",
     "messageSent": "تم إرسال الرسالة",
+    "messageStatusRead": "تمت القراءة",
+    "messageStatusSent": "تم الإرسال",
     "offline": "غير متصل",
     "online": "على الانترنت",
     "seenDaysAgo": "منذ {days} يوم{plural}",
