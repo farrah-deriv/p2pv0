@@ -178,6 +178,8 @@
     "blockedSuccessfully": "Użytkownik zablokowany pomyślnie.",
     "buyCompletionRate30d": "Stawka ukończenia zakupu (30d)",
     "chooseAnotherTrader": "Wybierz innego tradera",
+    "notInFavouritesTitle": "Brak w ulubionych",
+    "notInFavouritesMessage": "Ten trader nie znajduje się w Twoich ulubionych.",
     "close": "Zamknij",
     "closedGroupBlockedByAddMessage": "Ten trader zablokował Cię, więc nie możesz dodać go do tej grupy. Wybierz innego tradera.",
     "closedGroupBlockedByRemoveMessage": "Ten trader zablokował Cię, więc nie możesz usunąć go z tej grupy. Wybierz innego tradera.",

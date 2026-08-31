@@ -177,6 +177,8 @@
     "blockUser": "块 {nickname}？",
     "buyCompletionRate30d": "购买完成率（30天）",
     "chooseAnotherTrader": "选择其他交易者",
+    "notInFavouritesTitle": "不在收藏中",
+    "notInFavouritesMessage": "该交易者不在您的收藏中。",
     "close": "关闭",
     "closedGroupBlockedByAddMessage": "该交易者已将您拉黑，因此无法将其添加到此群组。请选择其他交易者。",
     "closedGroupBlockedByRemoveMessage": "该交易者已将您拉黑，因此无法将其从此群组移除。请选择其他交易者。",

@@ -158,7 +158,7 @@ export default function ClosedGroupTab({ isInAlert = false }: ClosedGroupTabProp
   )
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 flex flex-col h-full min-h-0">
       {!isDiamond && (
         <Alert variant="warning">
           <AlertDescription>{t("profile.closedGroupDiamondOnlyWarning")}</AlertDescription>
@@ -207,7 +207,7 @@ export default function ClosedGroupTab({ isInAlert = false }: ClosedGroupTabProp
         </Button>
       </div>)}
 
-      <div className="space-y-0 h-[20rem] overflow-y-auto">
+      <div className="space-y-0 flex-1 min-h-0 md:flex-none md:h-[20rem] overflow-y-auto">
         {isLoading && isDiamond ? (
           <div className="space-y-0">
             {[1, 2, 3].map((i) => (
@@ -242,7 +242,7 @@ export default function ClosedGroupTab({ isInAlert = false }: ClosedGroupTabProp
             variant="primary"
             className="w-full"
           >
-            Done
+            {t("common.done")}
           </Button>
         </div>
       )}

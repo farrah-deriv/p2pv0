@@ -177,6 +177,8 @@
     "blockUser": "{nickname}을 차단하시겠습니까?",
     "buyCompletionRate30d": "구매 완료율(30일)",
     "chooseAnotherTrader": "다른 트레이더 선택",
+    "notInFavouritesTitle": "즐겨찾기에 없음",
+    "notInFavouritesMessage": "이 트레이더는 회원님의 즐겨찾기에 없습니다.",
     "close": "닫기",
     "closedGroupBlockedByAddMessage": "이 트레이더가 회원님을 차단했으므로 그룹에 추가할 수 없습니다. 다른 트레이더를 선택하세요.",
     "closedGroupBlockedByRemoveMessage": "이 트레이더가 회원님을 차단했으므로 그룹에서 제거할 수 없습니다. 다른 트레이더를 선택하세요.",

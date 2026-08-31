@@ -194,6 +194,8 @@
     "blockUser": "{nickname} blockieren?",
     "buyCompletionRate30d": "Kaufabschlussrate (30T)",
     "chooseAnotherTrader": "Anderen Händler wählen",
+    "notInFavouritesTitle": "Nicht in Favoriten",
+    "notInFavouritesMessage": "Dieser Händler ist nicht in Ihren Favoriten.",
     "close": "Schließen",
     "closedGroupBlockedByAddMessage": "Dieser Händler hat Sie blockiert, daher können Sie ihn nicht zu dieser Gruppe hinzufügen. Wählen Sie stattdessen einen anderen Händler.",
     "closedGroupBlockedByRemoveMessage": "Dieser Händler hat Sie blockiert, daher können Sie ihn nicht aus dieser Gruppe entfernen. Wählen Sie stattdessen einen anderen Händler.",

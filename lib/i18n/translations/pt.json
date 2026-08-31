@@ -181,6 +181,8 @@
     "blockUser": "Bloquear {nickname}?",
     "buyCompletionRate30d": "Taxa de conclusão de compras (30d)",
     "chooseAnotherTrader": "Escolher outro trader",
+    "notInFavouritesTitle": "Não está nos favoritos",
+    "notInFavouritesMessage": "Este trader não está nos seus favoritos.",
     "close": "Fechar",
     "closedGroupBlockedByAddMessage": "Este trader bloqueou você, portanto não é possível adicioná-lo a este grupo. Escolha outro trader.",
     "closedGroupBlockedByRemoveMessage": "Este trader bloqueou você, portanto não é possível removê-lo deste grupo. Escolha outro trader.",

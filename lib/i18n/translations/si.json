@@ -177,6 +177,8 @@
     "blockUser": "{nickname} අවහිර කරන්නද?",
     "buyCompletionRate30d": "මිලදී ගැනීම සම්පූර්ණ කිරීමේ අනුපාතය (30d)",
     "chooseAnotherTrader": "වෙනත් වෙළඳකරුවෙකු තෝරන්න",
+    "notInFavouritesTitle": "ප්‍රියතමයන් තුළ නැත",
+    "notInFavouritesMessage": "මෙම වෙළඳකරු ඔබගේ ප්‍රියතමයන් තුළ නැත.",
     "close": "වසන්න",
     "closedGroupBlockedByAddMessage": "මෙම වෙළඳකරු ඔබව අවහිර කර ඇති නිසා ඔබට ඔවුන්ව මෙම කණ්ඩායමට එක් කළ නොහැක. වෙනත් වෙළඳකරුවෙකු තෝරන්න.",
     "closedGroupBlockedByRemoveMessage": "මෙම වෙළඳකරු ඔබව අවහිර කර ඇති නිසා ඔබට ඔවුන්ව මෙම කණ්ඩායමෙන් ඉවත් කළ නොහැක. වෙනත් වෙළඳකරුවෙකු තෝරන්න.",

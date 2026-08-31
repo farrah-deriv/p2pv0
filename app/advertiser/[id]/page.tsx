@@ -5,8 +5,15 @@ export const runtime = "edge"
 import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
-import { StandaloneArrowLeftFillIcon } from "@deriv/quill-icons/Standalone"
+import { StandaloneArrowLeftFillIcon, StandaloneChevronDownRegularIcon } from "@deriv/quill-icons/Standalone"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
+import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from "@/components/ui/drawer"
 import { Spinner } from "@/components/ui/spinner"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { BuySellAPI } from "@/services/api"
@@ -28,7 +35,6 @@ import { TradeBandBadge } from "@/components/trade-band-badge"
 import { ClosedGroupBadge } from "@/components/closed-group-badge"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { canGoBackWithinApp } from "@/lib/navigation/back-navigation"
-import FollowDropdown from "@/app/advertiser/components/follow-dropdown"
 import { AdvertiserSkeleton } from "@/app/advertiser/components/advertiser-skeleton"
 import { useAdvertiserAds, queryKeys } from "@/hooks/use-api-queries"
 import { useQueryClient } from "@tanstack/react-query"
@@ -44,6 +50,12 @@ interface UsersOnlineUpdate {
   last_online_at?: number | null
 }
 
+interface AdvertiserStatisticsLifetime {
+  recommend_count: number
+  rating_count: number
+  rating_average: number
+}
+
 interface AdvertiserProfile {
   id: string | number
   nickname: string
@@ -55,6 +67,7 @@ interface AdvertiserProfile {
   favourited_by_user_count: number
   is_blocked: boolean
   is_favourite: boolean
+  is_group_member?: boolean
   is_online?: boolean
   last_online_at?: number | null
   temp_ban_until: number | null
@@ -73,6 +86,7 @@ interface AdvertiserProfile {
   release_time_average_30day: number
   rating_average_30day: number
   completion_average_30day: number
+  statistics_lifetime?: AdvertiserStatisticsLifetime
 }
 
 interface AdvertiserProfilePageProps {
@@ -91,6 +105,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
   const { showAlert } = useAlertDialog()
   const userId = useUserDataStore((state) => state.userId)
   const { userData } = useUserDataStore()
+  const isClosedGroupEnabled = IS_CLOSED_GROUP_ENABLED && userData?.trade_band === "diamond"
   const tempBanUntil = userData?.temp_ban_until
   const p2pBalance = Number.parseFloat(userData?.balances?.amount ?? "0")
   const [profile, setProfile] = useState<AdvertiserProfile | null>(null)
@@ -101,6 +116,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
   const [error, setError] = useState<string | null>(null)
   const [isFollowLoading, setIsFollowLoading] = useState(false)
   const [isBlockLoading, setIsBlockLoading] = useState(false)
+  const [isClosedGroupLoading, setIsClosedGroupLoading] = useState(false)
   const [isOrderSidebarOpen, setIsOrderSidebarOpen] = useState(false)
   const [selectedAd, setSelectedAd] = useState<Advertisement | null>(null)
   const [orderType, setOrderType] = useState<"buy" | "sell">("buy")
@@ -253,9 +269,13 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
       const result = await toggleFavouriteAdvertiser(profile.id, !isFollowing)
 
       if (result.success) {
+        if (isFollowing) {
+          setIsGroupMember(false)
+        }
         setIsFollowing(!isFollowing)
         queryClient.invalidateQueries({ queryKey: queryKeys.auth.followers() })
         queryClient.invalidateQueries({ queryKey: queryKeys.buySell.favouriteUsers() })
+        queryClient.invalidateQueries({ queryKey: queryKeys.auth.tradePartners() })
         toast({
           description: (
             <div className="flex items-center gap-2">
@@ -270,6 +290,19 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
           className: TOAST_SUCCESS_CLASS,
           duration: 2500,
         })
+      } else if (result.code === "UserFavouriteNotFound") {
+        // The favourite no longer exists server-side (e.g. it was removed when the
+        // advertiser was blocked), so reconcile the UI and let the user know.
+        setIsFollowing(false)
+        setIsGroupMember(false)
+        queryClient.invalidateQueries({ queryKey: queryKeys.auth.followers() })
+        queryClient.invalidateQueries({ queryKey: queryKeys.buySell.favouriteUsers() })
+        showAlert({
+          title: t("advertiser.notInFavouritesTitle"),
+          description: t("advertiser.notInFavouritesMessage"),
+          confirmText: t("common.gotIt"),
+          type: "warning",
+        })
       } else {
         console.error("Failed to toggle follow status:", result.message)
       }
@@ -277,6 +310,94 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
       console.error("Error toggling follow status:", error)
     } finally {
       setIsFollowLoading(false)
+    }
+  }
+
+  const handleAddToClosedGroup = async () => {
+    if (!profile) return
+
+    setIsClosedGroupLoading(true)
+    try {
+      const result = await addToClosedGroup(profile.id)
+
+      if (result.success) {
+        setIsGroupMember(true)
+        queryClient.invalidateQueries({ queryKey: queryKeys.auth.tradePartners() })
+        queryClient.invalidateQueries({ queryKey: queryKeys.buySell.favouriteUsers(true) })
+        toast({
+          description: (
+            <div className="flex items-center gap-2">
+              <Image src="/icons/tick.svg" alt={t("common.success")} width={24} height={24} className="text-white" />
+              <span>{t("advertiser.addedToClosedGroup")}</span>
+            </div>
+          ),
+          className: TOAST_SUCCESS_CLASS,
+          duration: 2500,
+        })
+      } else {
+        const code = result.errors?.[0]?.code
+        if (code === "UserGroupMemberBlockedBy") {
+          showAlert({
+            title: t("advertiser.memberUnavailableTitle"),
+            description: t("advertiser.closedGroupBlockedByAddMessage"),
+            confirmText: t("advertiser.chooseAnotherTrader"),
+            cancelText: t("common.close"),
+            type: "warning",
+            onConfirm: () => {},
+            onCancel: () => {},
+          })
+        } else {
+          console.error("Failed to add to closed group:", result.errors)
+        }
+      }
+    } catch (error) {
+      console.error("Failed to add to closed group:", error)
+    } finally {
+      setIsClosedGroupLoading(false)
+    }
+  }
+
+  const handleRemoveFromClosedGroup = async () => {
+    if (!profile) return
+
+    setIsClosedGroupLoading(true)
+    try {
+      const result = await removeFromClosedGroup(profile.id)
+
+      if (result.success) {
+        setIsGroupMember(false)
+        queryClient.invalidateQueries({ queryKey: queryKeys.auth.tradePartners() })
+        queryClient.invalidateQueries({ queryKey: queryKeys.buySell.favouriteUsers(true) })
+        toast({
+          description: (
+            <div className="flex items-center gap-2">
+              <Image src="/icons/tick.svg" alt={t("common.success")} width={24} height={24} className="text-white" />
+              <span>{t("advertiser.removedFromClosedGroup")}</span>
+            </div>
+          ),
+          className: TOAST_SUCCESS_CLASS,
+          duration: 2500,
+        })
+      } else {
+        const code = result.errors?.[0]?.code
+        if (code === "UserGroupMemberBlockedBy") {
+          showAlert({
+            title: t("advertiser.memberUnavailableTitle"),
+            description: t("advertiser.closedGroupBlockedByRemoveMessage"),
+            confirmText: t("advertiser.chooseAnotherTrader"),
+            cancelText: t("common.close"),
+            type: "warning",
+            onConfirm: () => {},
+            onCancel: () => {},
+          })
+        } else {
+          console.error("Failed to remove from closed group:", result.errors)
+        }
+      }
+    } catch (error) {
+      console.error("Failed to remove from closed group:", error)
+    } finally {
+      setIsClosedGroupLoading(false)
     }
   }
 
@@ -293,22 +414,25 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
 
           setIsBlockLoading(true)
           try {
-            const result = await toggleBlockAdvertiser(profile.id, !isBlocked)
+            const result = await toggleBlockAdvertiser(profile.id, true)
 
             if (result.success) {
-              setIsBlocked(!isBlocked)
+              setIsBlocked(true)
+              // Blocking a followed advertiser unfollows them server-side, so mirror
+              // that here to avoid a stale "Following" state that would later trigger
+              // an UserFavouriteNotFound error when trying to unfollow.
+              setIsFollowing(false)
+              setIsGroupMember(false)
               queryClient.invalidateQueries({ queryKey: queryKeys.auth.tradePartners() })
               queryClient.invalidateQueries({ queryKey: queryKeys.auth.blockedUsers() })
+              queryClient.invalidateQueries({ queryKey: queryKeys.auth.followers() })
+              queryClient.invalidateQueries({ queryKey: queryKeys.buySell.favouriteUsers() })
 
               toast({
                 description: (
                   <div className="flex items-center gap-2">
                     <Image src="/icons/tick.svg" alt={t("common.success")} width={24} height={24} className="text-white" />
-                    <span>
-                      {isBlocked
-                        ? t("advertiser.userUnblocked", { nickname: profile?.nickname })
-                        : t("advertiser.userBlocked", { nickname: profile?.nickname })}
-                    </span>
+                    <span>{t("advertiser.userBlocked", { nickname: profile?.nickname })}</span>
                   </div>
                 ),
                 className: TOAST_SUCCESS_CLASS,
@@ -360,55 +484,6 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
       setIsBlockLoading(false)
     }
   }
-
-  const handleAddToClosedGroup = async () => {
-    try {
-      const result = await addToClosedGroup(profile.id)
-
-      if (result.success) {
-        setIsGroupMember(true)
-        toast({
-          description: (
-            <div className="flex items-center gap-2">
-              <Image src="/icons/tick.svg" alt={t("common.success")} width={24} height={24} className="text-white" />
-              <span>{t("advertiser.addedToClosedGroup")}</span>
-            </div>
-          ),
-          className: TOAST_SUCCESS_CLASS,
-          duration: 2500,
-        })
-      } else {
-        console.error("Failed to add to closed group")
-      }
-    } catch (error) {
-      console.error("Failed to add to closed group:", error)
-    }
-  }
-
-  const handleRemoveFromClosedGroup = async () => {
-    try {
-      const result = await removeFromClosedGroup(profile.id)
-
-      if (result.success) {
-        setIsGroupMember(false)
-        toast({
-          description: (
-            <div className="flex items-center gap-2">
-              <Image src="/icons/tick.svg" alt={t("common.success")} width={24} height={24} className="text-white" />
-              <span>{t("advertiser.removedFromClosedGroup")}</span>
-            </div>
-          ),
-          className: TOAST_SUCCESS_CLASS,
-          duration: 2500,
-        })
-      } else {
-        console.error("Failed to remove from closed group")
-      }
-    } catch (error) {
-      console.error("Failed to remove from closed group:", error)
-    }
-  }
-
 
   const handleOrderClick = (ad: Advertisement, type: "buy" | "sell") => {
     const risk = evaluateRisk(ad)
@@ -478,13 +553,22 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="p-6 md:px-2 md:py-0">
+      <div className="sticky top-0 z-20 bg-slate-75 px-6 py-4 md:hidden">
+        <div className="container mx-auto">
+          <Button data-testid="advertiser-btn-back" variant="icon-muted" onClick={handleBack} className="!bg-black/[0.04] hover:!bg-black/[0.08]" aria-label={t("common.back")}>
+            <StandaloneArrowLeftFillIcon width={24} height={24} className="rtl:rotate-180" aria-hidden />
+          </Button>
+        </div>
+      </div>
+      <div className="p-6 pt-0 md:px-2 md:py-0">
         <div className="flex flex-col md:flex-row justify-between">
           <div className="container mx-auto pb-6">
             <div className="bg-slate-75 p-6 rounded-none md:rounded-3xl flex flex-col md:items-start gap-4 mx-[-24px] mt-[-24px] md:mx-0 md:mt-0">
-              <Button data-testid="advertiser-btn-back" variant="icon-muted" onClick={handleBack} className="!bg-black/[0.04] hover:!bg-black/[0.08]" aria-label={t("common.back")}>
-                <StandaloneArrowLeftFillIcon width={24} height={24} className="rtl:rotate-180" aria-hidden />
-              </Button>
+              <span className="hidden md:block">
+                <Button data-testid="advertiser-btn-back-desktop" variant="icon-muted" onClick={handleBack} className="!bg-black/[0.04] hover:!bg-black/[0.08]" aria-label={t("common.back")}>
+                  <StandaloneArrowLeftFillIcon width={24} height={24} className="rtl:rotate-180" aria-hidden />
+                </Button>
+              </span>
               <div className="flex-1 w-full">
                 <div className="flex flex-col md:flex-row gap-2 md:gap-0">
                   <div className="relative me-[16px]">
@@ -501,7 +585,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                     <div className="flex gap-2 items-center">
                       <h2 data-testid="advertiser-text-nickname" className="text-lg font-bold">{profile?.nickname}</h2>
                       <span data-testid="advertiser-badge-verified"><VerifiedBadge size={20} /></span>
-                      {profile.trade_band && (
+                      {profile?.trade_band && (
                         <span data-testid="advertiser-badge-trade-band">
                           <TradeBandBadge
                             tradeBand={profile.trade_band}
@@ -535,9 +619,9 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                       <div className="flex items-center">
                         <Image src="/icons/thumbs-up.png" alt={t("common.recommended")} width={24} height={24} className="me-1" />
                         <span data-testid="advertiser-text-recommendation" className="me-[8px]">
-                          {profile?.statistics_lifetime?.recommend_count > 0
+                          {(profile?.statistics_lifetime?.recommend_count ?? 0) > 0
                             ? t("advertiser.recommendedBy", {
-                              count: profile?.statistics_lifetime?.recommend_count,
+                              count: profile?.statistics_lifetime?.recommend_count ?? 0,
                               plural: profile?.statistics_lifetime?.recommend_count === 1 ? "" : "s",
                             })
                             : t("profile.notRecommendedYet")}
@@ -547,7 +631,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                       <div className="flex items-center">
                         <Image src="/icons/star-rating.png" alt={t("common.star")} width={24} height={24} className="me-1" />
                         <span data-testid="advertiser-text-rating">
-                          {profile?.statistics_lifetime?.rating_count > 0
+                          {(profile?.statistics_lifetime?.rating_count ?? 0) > 0
                             ? profile?.statistics_lifetime?.rating_average
                             : t("profile.notRatedYet")}
                         </span>
@@ -558,21 +642,105 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                     <div className="flex items-center md:mt-0 justify-self-end gap-2">
                       {!isBlocked && (
                         <>
-                          {isFollowing ? (
-                            <span data-testid="advertiser-btn-unfollow-trigger">
-                              <FollowDropdown
-                                isFollowing={isFollowing}
-                                isGroupMember={isGroupMember}
-                                isLoading={isFollowLoading}
-                                onUnfollow={toggleFollow}
-                                onAddToClosedGroup={handleAddToClosedGroup}
-                                onRemoveFromClosedGroup={handleRemoveFromClosedGroup}
-                                nickname={profile?.nickname}
-                              />
-                            </span>
+                          {isFollowing && isClosedGroupEnabled ? (
+                            isMobile ? (
+                              <Drawer>
+                                <DrawerTrigger asChild>
+                                  <Button
+                                    data-testid="advertiser-btn-following-menu"
+                                    variant="secondary-outline"
+                                    size="sm"
+                                    disabled={isFollowLoading || isBlockLoading || isClosedGroupLoading}
+                                  >
+                                    <span className="flex items-center gap-1.5">
+                                      {t("advertiser.following")}
+                                      <StandaloneChevronDownRegularIcon iconSize="xs" fill="currentColor" className="shrink-0" />
+                                    </span>
+                                  </Button>
+                                </DrawerTrigger>
+                                <DrawerContent className="h-fit">
+                                  <div className="p-4 space-y-1">
+                                    <DrawerClose asChild>
+                                      <Button
+                                        data-testid="advertiser-btn-unfollow"
+                                        onClick={toggleFollow}
+                                        variant="ghost"
+                                        size="sm"
+                                        className="!w-full !justify-start !font-normal"
+                                        disabled={isFollowLoading || isBlockLoading || isClosedGroupLoading}
+                                      >
+                                        <span className="flex items-center gap-3">
+                                          <Image src="/icons/unfollow.svg" alt="" width={20} height={20} />
+                                          {t("advertiser.unfollow")}
+                                        </span>
+                                      </Button>
+                                    </DrawerClose>
+                                    <DrawerClose asChild>
+                                      <Button
+                                        data-testid={isGroupMember ? "advertiser-btn-remove-closed-group" : "advertiser-btn-add-closed-group"}
+                                        onClick={isGroupMember ? handleRemoveFromClosedGroup : handleAddToClosedGroup}
+                                        variant="ghost"
+                                        size="sm"
+                                        className="!w-full !justify-start !font-normal"
+                                        disabled={isClosedGroupLoading || isFollowLoading || isBlockLoading}
+                                      >
+                                        <span className="flex items-center gap-3">
+                                          <Image src="/icons/star.svg" alt="" width={20} height={20} />
+                                          {isGroupMember ? t("advertiser.removeFromClosedGroup") : t("advertiser.addToClosedGroup")}
+                                        </span>
+                                      </Button>
+                                    </DrawerClose>
+                                  </div>
+                                </DrawerContent>
+                              </Drawer>
+                            ) : (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    data-testid="advertiser-btn-following-menu"
+                                    variant="secondary-outline"
+                                    size="sm"
+                                    disabled={isFollowLoading || isBlockLoading || isClosedGroupLoading}
+                                  >
+                                    <span className="flex items-center gap-1.5">
+                                      {t("advertiser.following")}
+                                      <StandaloneChevronDownRegularIcon iconSize="xs" fill="currentColor" className="shrink-0" />
+                                    </span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56">
+                                  <DropdownMenuItem
+                                    data-testid="advertiser-btn-unfollow"
+                                    onSelect={toggleFollow}
+                                    className="cursor-pointer"
+                                  >
+                                    <span className="flex items-center gap-1.5">
+                                      <Image src="/icons/unfollow.svg" alt="" width={16} height={16} />
+                                      {t("advertiser.unfollow")}
+                                    </span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    data-testid={isGroupMember ? "advertiser-btn-remove-closed-group" : "advertiser-btn-add-closed-group"}
+                                    onSelect={isGroupMember ? handleRemoveFromClosedGroup : handleAddToClosedGroup}
+                                    className="cursor-pointer"
+                                  >
+                                    <span className="flex items-center gap-1.5">
+                                      <Image src="/icons/star.svg" alt="" width={16} height={16} />
+                                      {isGroupMember ? t("advertiser.removeFromClosedGroup") : t("advertiser.addToClosedGroup")}
+                                    </span>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )
                           ) : (
-                            <Button data-testid="advertiser-btn-follow" onClick={toggleFollow} variant="secondary-outline" size="sm" disabled={isFollowLoading}>
-                              {t("advertiser.follow")}
+                            <Button
+                              data-testid={isFollowing ? "advertiser-btn-unfollow" : "advertiser-btn-follow"}
+                              onClick={toggleFollow}
+                              variant="secondary-outline"
+                              size="sm"
+                              disabled={isFollowLoading || isBlockLoading || isClosedGroupLoading}
+                            >
+                              {isFollowing ? t("advertiser.following") : t("advertiser.follow")}
                             </Button>
                           )}
                         </>
@@ -582,11 +750,8 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                         variant="secondary-outline"
                         size="sm"
                         onClick={handleBlockClick}
-                        disabled={isBlockLoading}
+                        disabled={isBlockLoading || isFollowLoading || isClosedGroupLoading}
                       >
-                        {isBlockLoading ? (
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent me-2"></div>
-                        ) : null}
                         {isBlocked ? t("advertiser.unblock") : t("advertiser.block")}
                       </Button>
                     </div>

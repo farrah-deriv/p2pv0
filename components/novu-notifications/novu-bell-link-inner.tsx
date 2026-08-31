@@ -111,7 +111,7 @@ function NovuBellLinkInner({ disabled = false, onClick, className }: NovuBellLin
       colorScheme="light"
       appearance={{ variables: APPEARANCE_VARIABLES, elements: APPEARANCE_ELEMENTS }}
     >
-      <span className="relative inline-flex h-8 w-8 shrink-0 items-center justify-center">
+      <span className="relative inline-flex h-8 w-8 shrink-0 justify-center">
         <Bell renderBell={renderBell} />
       </span>
       <Sheet open={open} onOpenChange={setOpen}>

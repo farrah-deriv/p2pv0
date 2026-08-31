@@ -177,6 +177,8 @@
     "blockUser": "Zuia {nickname}?",
     "buyCompletionRate30d": "Kiwango cha kukamilika kwa ununuzi (30d)",
     "chooseAnotherTrader": "Chagua mfanyabiashara mwingine",
+    "notInFavouritesTitle": "Hayupo kwenye vipendwa",
+    "notInFavouritesMessage": "Mfanyabiashara huyu hayupo kwenye vipendwa vyako.",
     "close": "Funga",
     "closedGroupBlockedByAddMessage": "Mfanyabiashara huyu amekuzuia, kwa hivyo huwezi kuwaongeza kwenye kikundi hiki. Chagua mfanyabiashara mwingine.",
     "closedGroupBlockedByRemoveMessage": "Mfanyabiashara huyu amekuzuia, kwa hivyo huwezi kuwaondoa kwenye kikundi hiki. Chagua mfanyabiashara mwingine.",

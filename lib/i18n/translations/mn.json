@@ -177,6 +177,8 @@
     "blockUser": "{nickname}-г блоклох уу?",
     "buyCompletionRate30d": "Худалдан авалтын гүйцэтгэлийн хувь (30 өдөр)",
     "chooseAnotherTrader": "Өөр арилжаач сонгоно уу",
+    "notInFavouritesTitle": "Дуртай жагсаалтад алга",
+    "notInFavouritesMessage": "Энэ арилжаач таны дуртай жагсаалтад байхгүй байна.",
     "close": "Хаах",
     "closedGroupBlockedByAddMessage": "Энэ арилжаач таныг блоклосон тул та тэднийг энэ бүлэгт нэмж чадахгүй. Өөр арилжаач сонгоно уу.",
     "closedGroupBlockedByRemoveMessage": "Энэ арилжаач таныг блоклосон тул та тэднийг энэ бүлгээс хасаж чадахгүй. Өөр арилжаач сонгоно уу.",

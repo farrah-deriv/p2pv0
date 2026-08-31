@@ -227,8 +227,8 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                     <BackArrowIcon alt={t("common.close")} width={24} height={24} />
                   </Button>
                 </div>
-                <div className="m-4">
-                  <h2 className="text-2xl font-bold mb-4 px-2 md:px-2">{t("profile.stats")}</h2>
+                <h2 className="text-2xl font-bold mx-4 mb-4 px-2 md:px-2">{t("profile.stats")}</h2>
+                <div className="mx-4 mb-4 flex-1 min-h-0 overflow-auto">
                   <StatsGrid stats={stats} />
                 </div>
               </div>
@@ -264,10 +264,10 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                     <BackArrowIcon alt={t("common.close")} width={24} height={24} />
                   </Button>
                 </div>
-                <div className="m-4 flex-1 overflow-auto">
-                  {paymentMethodsCount > 0 && (
-                    <h2 className="text-2xl font-bold mb-4">{t("profile.paymentMethods")}</h2>
-                  )}
+                {paymentMethodsCount > 0 && (
+                  <h2 className="text-2xl font-bold mx-4 mb-4">{t("profile.paymentMethods")}</h2>
+                )}
+                <div className="mx-4 mb-4 flex-1 min-h-0 overflow-auto">
                   <PaymentMethodsTab
                     onAddPaymentMethod={handleShowAddPaymentMethod}
                     onPaymentMethodsCountChange={setPaymentMethodsCount}
@@ -322,8 +322,8 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                     <BackArrowIcon alt={t("common.close")} width={24} height={24} />
                   </Button>
                 </div>
-                <div className="m-4 flex-1 overflow-auto">
-                  <h2 className="text-2xl font-bold mb-4">{t("profile.follows")}</h2>
+                <h2 className="text-2xl font-bold mx-4 mb-4">{t("profile.follows")}</h2>
+                <div className="mx-4 mb-4 flex-1 min-h-0 overflow-auto">
                   <FollowsTab />
                 </div>
               </div>
@@ -363,8 +363,8 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                     <BackArrowIcon alt={t("common.close")} width={24} height={24} />
                   </Button>
                 </div>
-                <div className="m-4 flex-1 overflow-auto">
-                  <h2 className="text-2xl font-bold mb-4">{t("profile.closedGroup")}</h2>
+                <h2 className="text-2xl font-bold mx-4 mb-4">{t("profile.closedGroup")}</h2>
+                <div className="mx-4 mb-4 flex-1 min-h-0 overflow-auto">
                   <ClosedGroupTab />
                 </div>
               </div>
@@ -400,8 +400,8 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                     <BackArrowIcon alt={t("common.close")} width={24} height={24} />
                   </Button>
                 </div>
-                <div className="m-4 flex-1 overflow-auto">
-                  <h2 className="text-2xl font-bold mb-4">{t("profile.blocked")}</h2>
+                <h2 className="text-2xl font-bold mx-4 mb-4">{t("profile.blocked")}</h2>
+                <div className="mx-4 mb-4 flex-1 min-h-0 overflow-auto">
                   <BlockedTab />
                 </div>
               </div>
@@ -438,8 +438,8 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                     <BackArrowIcon alt={t("common.close")} width={24} height={24} />
                   </Button>
                 </div>
-                <div className="m-4 flex-1 overflow-auto">
-                  <h2 className="text-2xl font-bold mb-4">{t("profile.counterparties")}</h2>
+                <h2 className="text-2xl font-bold mx-4 mb-4">{t("profile.counterparties")}</h2>
+                <div className="mx-4 mb-4 flex-1 min-h-0 overflow-auto">
                   <CounterpartiesTab />
                 </div>
               </div>
