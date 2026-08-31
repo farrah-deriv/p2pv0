@@ -1468,4 +1468,5 @@
     "startTour": "Go to P2P marketplace",
     "visitHelpCentre": "Learn More"
   }
+  ,"sessionElevation": {"title":"Xác minh danh tính của bạn","description":"Nhập mã gồm 6 chữ số để tiếp tục.","resendPrompt":"Bạn chưa nhận được mã?","invalidCode":"Nhập mã hợp lệ và thử lại.","tooManyAttempts":"Quá nhiều lần thử. Hãy yêu cầu mã mới.","sendFailed":"Không thể gửi mã xác minh. Vui lòng thử lại.","totpRequired":"Dùng ứng dụng xác thực để xác minh thao tác này. Hỗ trợ trên web sẽ sớm có."}
 }

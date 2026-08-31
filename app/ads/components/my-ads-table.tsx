@@ -147,9 +147,9 @@ export default function MyAdsTable({
 
   const getStatusBadge = (isActive: boolean) => {
     if (isActive) {
-      return <Badge variant="success-light">{t("myAds.active")}</Badge>
+      return <Badge variant="active">{t("myAds.active")}</Badge>
     }
-    return <Badge variant="error-light">{t("myAds.inactive")}</Badge>
+    return <Badge variant="error">{t("myAds.inactive")}</Badge>
   }
 
   const handleShare = (ad: Ad) => {

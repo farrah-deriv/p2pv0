@@ -1436,4 +1436,5 @@
     "startTour": "Go to P2P marketplace",
     "visitHelpCentre": "Learn More"
   }
+  ,"sessionElevation": {"title":"Potwierdź swoją tożsamość","description":"Aby kontynuować, wpisz 6-cyfrowy kod.","resendPrompt":"Nie otrzymałeś kodu?","invalidCode":"Wpisz prawidłowy kod i spróbuj ponownie.","tooManyAttempts":"Zbyt wiele prób. Poproś o nowy kod.","sendFailed":"Nie udało się wysłać kodu weryfikacyjnego. Spróbuj ponownie.","totpRequired":"Użyj aplikacji uwierzytelniającej, aby potwierdzić tę czynność. Obsługa w wersji internetowej pojawi się wkrótce."}
 }

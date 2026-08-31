@@ -1442,4 +1442,13 @@
     "startTour": "Go to P2P marketplace",
     "visitHelpCentre": "Learn More"
   }
+  ,"sessionElevation": {
+    "title": "Verifica tu identidad",
+    "description": "Introduce el código de 6 dígitos para continuar.",
+    "resendPrompt": "¿No recibiste el código?",
+    "invalidCode": "Introduce un código válido e inténtalo de nuevo.",
+    "tooManyAttempts": "Demasiados intentos. Solicita un código nuevo para continuar.",
+    "sendFailed": "No pudimos enviar un código de verificación. Inténtalo de nuevo.",
+    "totpRequired": "Usa tu aplicación de autenticación para verificar esta acción. La compatibilidad web estará disponible próximamente."
+  }
 }

@@ -62,6 +62,16 @@ export interface PaymentMethod {
   isDefault?: boolean
 }
 
+/** V2 user payment-method response shape. */
+export interface UserPaymentMethod {
+  id: string | number
+  method: string
+  type: string
+  display_name: string
+  fields: Record<string, { value?: string; display_name?: string; required?: boolean }>
+  is_enabled?: number
+}
+
 // API Functions
 /**
  * Get current user profile
@@ -260,7 +270,7 @@ export const fetchUserStats = async (): Promise<UserStatsResponse> => {
 export async function getUserPaymentMethods(
   page = 1,
   perPage = 50,
-): Promise<{ data: PaymentMethod[] }> {
+): Promise<{ data: UserPaymentMethod[] }> {
   try {
     const headers = AUTH.getAuthHeader()
     const queryParams = new URLSearchParams({
@@ -309,7 +319,7 @@ export async function addPaymentMethod(
     }
 
     const headers = AUTH.getAuthHeader()
-    const response = await p2pFetch(`${API.baseUrl}/user-payment-methods`, {
+    const response = await p2pFetch(`${API.p2pV2BaseUrl}/user-payment-methods`, {
       method: "POST",
       headers,
       credentials: "include",
@@ -333,7 +343,7 @@ export async function addPaymentMethod(
 
       const formattedErrors = errors.map((err: any) => ({
         code: err.code || "unknown_error",
-        message: getErrorMessageFromCode(err.code),
+        message: err.code === "ActionSessionUnauthorized" ? err.message : getErrorMessageFromCode(err.code),
       }))
 
       return {
@@ -369,7 +379,7 @@ export async function updatePaymentMethod(
     }
 
     const headers = AUTH.getAuthHeader()
-    const response = await p2pFetch(`${API.baseUrl}/user-payment-methods/${id}`, {
+    const response = await p2pFetch(`${API.p2pV2BaseUrl}/user-payment-methods/${id}`, {
       method: "PATCH",
       credentials: "include",
       headers,
@@ -436,7 +446,7 @@ export async function deletePaymentMethod(
 ): Promise<{ success: boolean; data?: PaymentMethod; errors?: Array<{ code: string; message: string }> }> {
   try {
     const headers = AUTH.getAuthHeader()
-    const response = await p2pFetch(`${API.baseUrl}/user-payment-methods/${id}`, {
+    const response = await p2pFetch(`${API.p2pV2BaseUrl}/user-payment-methods/${id}`, {
       method: "DELETE",
       headers,
       credentials: "include",

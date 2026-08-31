@@ -27,6 +27,7 @@ import {
   useUserPaymentMethods,
   useUpdatePaymentMethod,
   useDeletePaymentMethod,
+  isPaymentMethodElevationCancelled,
   type PaymentMethodError,
 } from "@/hooks/use-api-queries"
 import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
@@ -86,7 +87,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
     const methods = flattenUserPaymentMethodsPages(methodsResponse)
     if (methods.length === 0) return []
 
-    return methods.map((method: any) => {
+    return methods.map((method) => {
       const methodType = method.method || ""
 
       let category: "bank_transfer" | "e_wallet" | "other" = "other"
@@ -150,6 +151,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
   const handleSavePaymentMethod = async (id: string, fields: Record<string, string>) => {
     try {
       const paymentMethod = paymentMethods.find((m) => m.id === id)
+      if (!paymentMethod) return
 
       const payload = {
         method: paymentMethod.type,
@@ -175,6 +177,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
       })
     } catch (err) {
       const error = err as PaymentMethodError
+      if (isPaymentMethodElevationCancelled(error)) return
       const errorMessages: Record<string, { title: string; description: string }> = {
         PaymentMethodInvalid: { title: t("paymentMethod.invalidMethod"), description: t("paymentMethod.invalidMethodDescription") },
         PaymentMethodInvalidField: { title: t("paymentMethod.invalidField"), description: t("paymentMethod.invalidFieldDescription") },
@@ -253,7 +256,9 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
         className: TOAST_SUCCESS_CLASS,
         duration: 2500,
       })
-    } catch (error: any) {
+    } catch (caught) {
+      const error = caught as PaymentMethodError
+      if (isPaymentMethodElevationCancelled(error)) return
       let errorMessage = t("profile.unableToDeletePaymentMethod")
 
       if (error.errors && error.errors.length > 0) {

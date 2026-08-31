@@ -12,10 +12,12 @@ import { cn } from "@/lib/utils"
 interface PanelWrapperProps {
   onBack?: () => void
   onClose: () => void
+  /** Allows global overlays to sit above feature panels without changing their default layer. */
+  layerClassName?: string
   children: React.ReactNode
 }
 
-export function PanelWrapper({ onBack, onClose, children }: PanelWrapperProps) {
+export function PanelWrapper({ onBack, onClose, layerClassName = "z-50", children }: PanelWrapperProps) {
   const isMobile = useIsMobile()
   const { t, locale } = useTranslations()
   const dir = isRtlLocale(locale) ? "rtl" : "ltr"
@@ -24,7 +26,7 @@ export function PanelWrapper({ onBack, onClose, children }: PanelWrapperProps) {
     <>
       <div className="fixed inset-0 z-40 bg-black/80" onClick={onClose} />
       <div
-        className={`fixed inset-y-0 end-0 z-50 bg-white shadow-xl flex flex-col ${isMobile ? "inset-0 w-full" : "w-full"
+        className={`fixed inset-y-0 end-0 ${layerClassName} bg-white shadow-xl flex flex-col ${isMobile ? "inset-0 w-full" : "w-full"
           }`}
       >
         <div dir={dir} className="max-w-xl mx-auto flex flex-col w-full h-full text-start">

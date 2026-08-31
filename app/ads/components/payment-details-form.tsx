@@ -30,10 +30,10 @@ import { useTranslations } from "@/lib/i18n/use-translations"
 import {
   flattenUserPaymentMethodsPages,
   useAddPaymentMethod,
+  isPaymentMethodElevationCancelled,
   useUserPaymentMethods,
   type PaymentMethodError,
 } from "@/hooks/use-api-queries"
-import { useRouter } from "next/navigation"
 import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
 import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
 import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
@@ -596,7 +596,6 @@ export default function PaymentDetailsForm({
   isEditMode = false,
 }: PaymentDetailsFormProps) {
   const { t } = useTranslations()
-  const router = useRouter()
   const { accountCurrencies } = useAccountCurrencies()
   const { mutateAsync: addPaymentMethod, isPending: isAddingPaymentMethod } = useAddPaymentMethod()
   const buyCurrency = initialData.buyCurrency || "USD"
@@ -794,11 +793,12 @@ export default function PaymentDetailsForm({
   const handleAddPaymentMethod = async (method: string, fields: Record<string, string>) => {
     try {
       const result = await addPaymentMethod({ method, fields })
-      await onRefetchPaymentMethods()
 
       if (initialData.type === "sell") {
         const created = result.data as UserPaymentMethod | undefined
         const createdId = getCreatedPaymentMethodId(created)
+        // Reopen selection from the create response so the user sees it
+        // immediately; refresh the canonical list in the background.
         const nextUserPaymentMethods = mergeCreatedPaymentMethodIntoList(
           userPaymentMethods,
           created,
@@ -820,6 +820,7 @@ export default function PaymentDetailsForm({
         // neither overlay is mounted and the wizard's own Back/Close become
         // reachable underneath.
         openSellPaymentSelection(nextSelection, nextUserPaymentMethods, createdId)
+        void onRefetchPaymentMethods()
 
         const createdMethodName = created?.display_name || formatPaymentMethodName(method, t)
 
@@ -838,6 +839,7 @@ export default function PaymentDetailsForm({
       setShowAddPaymentPanel(false)
     } catch (err) {
       const error = err as PaymentMethodError
+      if (isPaymentMethodElevationCancelled(error)) return
       const errorCode = error?.errors?.[0]?.code
 
       if (errorCode === "PaymentMethodDuplicate") {
@@ -846,8 +848,7 @@ export default function PaymentDetailsForm({
             onManage: () => {
               hideAlert()
               setShowAddPaymentPanel(false)
-              onBottomSheetOpenChange?.(false)
-              router.push("/profile?tab=payment")
+              requestAnimationFrame(() => setShowAddPaymentPanel(true))
             },
           }),
         )

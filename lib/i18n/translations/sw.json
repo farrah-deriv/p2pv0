@@ -1432,4 +1432,5 @@
     "startTour": "Go to P2P marketplace",
     "visitHelpCentre": "Learn More"
   }
+  ,"sessionElevation": {"title":"Thibitisha utambulisho wako","description":"Weka msimbo wa tarakimu 6 ili kuendelea.","resendPrompt":"Hukupokea msimbo?","invalidCode":"Weka msimbo halali kisha ujaribu tena.","tooManyAttempts":"Majaribio mengi sana. Omba msimbo mpya.","sendFailed":"Hatukuweza kutuma msimbo wa uthibitishaji. Jaribu tena.","totpRequired":"Tumia programu yako ya uthibitishaji kuthibitisha kitendo hiki. Usaidizi wa wavuti unakuja hivi karibuni."}
 }

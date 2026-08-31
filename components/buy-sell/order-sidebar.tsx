@@ -26,12 +26,12 @@ import { useWebSocketContext } from "@/contexts/websocket-context"
 import {
   flattenUserPaymentMethodsPages,
   useAddPaymentMethod,
+  isPaymentMethodElevationCancelled,
   useUserPaymentMethods,
   queryKeys,
   type PaymentMethodError,
-  type UserPaymentMethodsPage,
 } from "@/hooks/use-api-queries"
-import { useQueryClient, type InfiniteData } from "@tanstack/react-query"
+import { useQueryClient } from "@tanstack/react-query"
 import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
 import { useStablePaymentMethodOrder } from "@/hooks/use-stable-payment-method-order"
 import { SelectedPaymentMethodsSection } from "@/components/payment-methods/selected-payment-methods-section"
@@ -755,23 +755,13 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
 
       setShowAddPaymentPanel(false)
 
-      await queryClient.refetchQueries({ queryKey: queryKeys.auth.userPaymentMethods() })
-
       const created = result.data as PaymentMethod | undefined
       const createdId = getCreatedPaymentMethodId(created)
       const acceptedMethods = localAd?.payment_methods
-
-      const refetchedMethods = flattenUserPaymentMethodsPages(
-        queryClient.getQueryData<InfiniteData<UserPaymentMethodsPage>>(
-          queryKeys.auth.userPaymentMethods(),
-        ),
-      ) as PaymentMethod[]
-
-      const refetchedCompatible = filterPaymentMethodsForAdvert(refetchedMethods, acceptedMethods)
-      const baseList = refetchedCompatible.length > 0 ? refetchedCompatible : userPaymentMethods
-
+      // Reopen selection immediately from the create response. The refetch
+      // below reconciles the list in the background without a blank gap.
       const nextUserPaymentMethods = mergeCreatedPaymentMethodIntoList(
-        baseList,
+        userPaymentMethods,
         created,
         acceptedMethods,
       )
@@ -792,6 +782,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
       }
 
       openPaymentSelection(nextSelection, nextUserPaymentMethods, createdId)
+      void queryClient.refetchQueries({ queryKey: queryKeys.auth.userPaymentMethods() })
 
       const createdMethodName = created?.display_name || formatPaymentMethodName(method, t)
 
@@ -807,6 +798,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
       })
     } catch (err) {
       const error = err as PaymentMethodError
+      if (isPaymentMethodElevationCancelled(error)) return
       const errorCode = error?.errors?.[0]?.code
 
       if (errorCode === "PaymentMethodDuplicate") {
@@ -815,7 +807,8 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
             onManage: () => {
               hideAlert()
               setShowAddPaymentPanel(false)
-              router.push("/profile?tab=payment")
+              setSelectedPaymentMethodType(undefined)
+              requestAnimationFrame(() => setShowAddPaymentPanel(true))
             },
           }),
         )

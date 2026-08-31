@@ -1473,4 +1473,5 @@
     "startTour": "Go to P2P marketplace",
     "visitHelpCentre": "Learn More"
   }
+  ,"sessionElevation": {"title":"본인 확인","description":"계속하려면 6자리 코드를 입력하세요.","resendPrompt":"코드를 받지 못했나요?","invalidCode":"유효한 코드를 입력하고 다시 시도하세요.","tooManyAttempts":"시도 횟수가 너무 많습니다. 새 코드를 요청하세요.","sendFailed":"인증 코드를 보낼 수 없습니다. 다시 시도하세요.","totpRequired":"인증 앱으로 이 작업을 확인하세요. 웹 지원이 곧 제공됩니다."}
 }

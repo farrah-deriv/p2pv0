@@ -1451,4 +1451,13 @@
     "startTour": "Go to P2P marketplace",
     "visitHelpCentre": "Learn More"
   }
+  ,"sessionElevation": {
+    "title": "Identität bestätigen",
+    "description": "Gib den 6-stelligen Code ein, um fortzufahren.",
+    "resendPrompt": "Keinen Code erhalten?",
+    "invalidCode": "Gib einen gültigen Code ein und versuche es erneut.",
+    "tooManyAttempts": "Zu viele Versuche. Fordere einen neuen Code an.",
+    "sendFailed": "Der Bestätigungscode konnte nicht gesendet werden. Bitte versuche es erneut.",
+    "totpRequired": "Bestätige diese Aktion mit deiner Authenticator-App. Unterstützung im Web folgt bald."
+  }
 }

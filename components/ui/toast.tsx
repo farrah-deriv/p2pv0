@@ -29,16 +29,33 @@ export const Toast = React.forwardRef<HTMLDivElement, ToastProps & { children?: 
     const handleClose = React.useCallback(() => onOpenChange?.(false), [onOpenChange])
     const snackbarRef = React.useRef<HTMLDivElement>(null)
 
-    // Quill's mobile media query forces full-width left-aligned via !important.
-    // Inline !important (setProperty) is the only way to reliably override it.
     React.useLayoutEffect(() => {
       const el = snackbarRef.current
-      if (!el || typeof window === "undefined" || window.innerWidth > 640) return
-      el.style.setProperty("min-width", "auto", "important")
-      el.style.setProperty("max-width", "min(24rem, calc(100vw - 2rem))", "important")
-      el.style.setProperty("left", "50%", "important")
-      el.style.setProperty("right", "auto", "important")
-      el.style.setProperty("transform", "translateX(-50%)", "important")
+      if (!el || typeof window === "undefined") return
+
+      const applySize = () => {
+        const responsive = window.innerWidth <= 768
+        const responsiveWidth = "calc(100vw - 2rem)"
+        el.style.setProperty("box-sizing", "border-box", "important")
+        el.style.setProperty("min-width", "auto", "important")
+        el.style.setProperty(
+          "width",
+          responsive ? responsiveWidth : "fit-content",
+          "important",
+        )
+        el.style.setProperty(
+          "max-width",
+          responsive ? responsiveWidth : "32rem",
+          "important",
+        )
+        el.style.setProperty("left", "50%", "important")
+        el.style.setProperty("right", "auto", "important")
+        el.style.setProperty("transform", "translateX(-50%)", "important")
+      }
+
+      applySize()
+      window.addEventListener("resize", applySize)
+      return () => window.removeEventListener("resize", applySize)
     }, [open])
 
     return (
@@ -106,7 +123,11 @@ ToastTitle.displayName = "ToastTitle"
 
 export const ToastDescription = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("text-sm opacity-90", className)} {...props} />
+    <div
+      ref={ref}
+      className={cn("min-w-0 text-sm opacity-90 [&_span]:break-words", className)}
+      {...props}
+    />
   ),
 )
 ToastDescription.displayName = "ToastDescription"

@@ -23,6 +23,7 @@ import { LoadingIndicator } from "@/components/loading-indicator"
 import Script from "next/script"
 import { ReactQueryProvider } from "@/components/providers/react-query-provider"
 import { DevFastRefreshFilter } from "@/components/dev-fast-refresh-filter"
+import { SessionElevationSidebar } from "@/components/session-elevation/session-elevation-sidebar"
 
 export const runtime = "edge"
 
@@ -80,6 +81,7 @@ export default async function RootLayout({
           <ReactQueryProvider>
             <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
               <AlertDialogProvider>
+                <SessionElevationSidebar />
                 <Toaster />
                 <Suspense fallback={<div className="flex items-center justify-center h-screen"><LoadingIndicator/></div>}>
                   <Main>{children}</Main>

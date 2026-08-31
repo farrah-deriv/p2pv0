@@ -1446,4 +1446,5 @@
     "startTour": "Go to P2P marketplace",
     "visitHelpCentre": "Learn More"
   }
+  ,"sessionElevation": {"title":"Verifique a sua identidade","description":"Introduza o código de 6 dígitos para continuar.","resendPrompt":"Não recebeu o código?","invalidCode":"Introduza um código válido e tente novamente.","tooManyAttempts":"Demasiadas tentativas. Peça um novo código para continuar.","sendFailed":"Não foi possível enviar um código de verificação. Tente novamente.","totpRequired":"Use a aplicação de autenticação para verificar esta ação. O suporte web estará disponível em breve."}
 }

@@ -1,26 +1,15 @@
 import type { NextResponse } from "next/server"
 
 import { getSetCookieLines, getUpstreamBaseUrl, stripCookieDomain } from "@/lib/dev-proxy"
+import { extractCsrfToken, type KratosFlow } from "@/lib/ory-flow-parsing"
+
+export { extractCsrfToken, extractFlowErrorText, type KratosFlow, type KratosFlowNode } from "@/lib/ory-flow-parsing"
 
 /**
  * Server-side helpers for the local-dev Ory Kratos login routes under
  * `app/api/ory/`. Local dev is single-environment, so the Ory base URL comes
  * straight from `NEXT_PUBLIC_ORY_URL` with no `.me` / `.be` branching.
  */
-
-export interface KratosFlowNode {
-  attributes: { name: string; value?: string }
-  messages: Array<{ type: string; text: string }>
-}
-
-export interface KratosFlow {
-  id: string
-  state?: string
-  ui?: {
-    nodes?: KratosFlowNode[]
-    messages?: Array<{ type: string; text: string }>
-  }
-}
 
 export function getOryBaseUrl(): string {
   return getUpstreamBaseUrl("NEXT_PUBLIC_ORY_URL")
@@ -38,9 +27,6 @@ export async function readJsonBody<T>(request: Request): Promise<T | null> {
   }
 }
 
-export function extractCsrfToken(flow: KratosFlow): string {
-  return flow.ui?.nodes?.find((node) => node.attributes.name === "csrf_token")?.attributes?.value ?? ""
-}
 
 /**
  * Collapse an upstream response's cookies into a single `Cookie` request header,
@@ -109,17 +95,4 @@ export async function startLoginFlow(
     cookie: getSetCookieNameValueHeader(flowRes),
     response: flowRes,
   }
-}
-
-/** Collect the error messages Kratos attaches to a flow's UI nodes and body. */
-export function extractFlowErrorText(flow: {
-  ui?: {
-    nodes?: Array<{ messages: Array<{ type: string; text: string }> }>
-    messages?: Array<{ type: string; text: string }>
-  }
-}): string {
-  const nodeErrors = (flow?.ui?.nodes ?? []).flatMap((node) => node.messages).filter((message) => message.type === "error")
-  const uiErrors = (flow?.ui?.messages ?? []).filter((message) => message.type === "error")
-
-  return nodeErrors[0]?.text ?? uiErrors[0]?.text ?? ""
 }

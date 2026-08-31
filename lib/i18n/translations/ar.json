@@ -1424,4 +1424,13 @@
     "startTour": "Go to P2P marketplace",
     "visitHelpCentre": "Learn More"
   }
+  ,"sessionElevation": {
+    "title": "تحقق من هويتك",
+    "description": "أدخل الرمز المكوّن من 6 أرقام للمتابعة.",
+    "resendPrompt": "لم تستلم الرمز؟",
+    "invalidCode": "أدخل رمزاً صحيحاً وحاول مرة أخرى.",
+    "tooManyAttempts": "محاولات كثيرة جداً. اطلب رمزاً جديداً للمتابعة.",
+    "sendFailed": "تعذر إرسال رمز التحقق. يرجى المحاولة مرة أخرى.",
+    "totpRequired": "استخدم تطبيق المصادقة للتحقق من هذا الإجراء. دعم الويب قريباً."
+  }
 }

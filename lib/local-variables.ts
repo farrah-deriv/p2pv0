@@ -39,6 +39,7 @@ export const USER = {
 
 export const API = {
   baseUrl: `${CORE_URL}/p2p/v1`,
+  p2pV2BaseUrl: `${CORE_URL}/p2p/v2`,
   coreUrl: `${CORE_URL}/v1`,
   socketUrl: `${SOCKET_URL}/p2p/v1/events`,
   notificationUrl: `${CORE_URL}/notifications/v1`,

@@ -15,12 +15,12 @@ import { usePaymentSelection } from "./payment-selection-context"
 import {
   flattenUserPaymentMethodsPages,
   useAddPaymentMethod,
+  isPaymentMethodElevationCancelled,
   useUserPaymentMethods,
   type PaymentMethodError,
 } from "@/hooks/use-api-queries"
 import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
 import { useTranslations } from "@/lib/i18n/use-translations"
-import { useRouter } from "next/navigation"
 import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
 import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
 import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
@@ -44,7 +44,6 @@ const AdPaymentMethods = () => {
   const { selectedPaymentMethodIds, togglePaymentMethod } = usePaymentSelection()
   const { hideAlert, showAlert } = useAdvertAlertDialog()
   const { t } = useTranslations()
-  const router = useRouter()
   const [showAddPaymentPanel, setShowAddPaymentPanel] = useState(false)
 
   // Use React Query hooks
@@ -94,7 +93,19 @@ const AdPaymentMethods = () => {
 
   const handleAddPaymentMethod = async (method: string, fields: Record<string, string>) => {
     try {
-      await addPaymentMethod.mutateAsync({ method, fields })
+      const result = await addPaymentMethod.mutateAsync({ method, fields })
+      const created = result.data as PaymentMethod | undefined
+      if (
+        created &&
+        !isPaymentMethodIdSelected(selectedPaymentMethodIds, created.id) &&
+        !isUserPaymentMethodSelectionDisabled(
+          [...paymentMethods, created],
+          selectedPaymentMethodIds,
+          created.id,
+        )
+      ) {
+        togglePaymentMethod(normalizePaymentMethodId(created.id))
+      }
       setShowAddPaymentPanel(false)
       // Newly added methods sort to the selected/top group after refetch; reset scroll.
       requestAnimationFrame(() => {
@@ -102,6 +113,7 @@ const AdPaymentMethods = () => {
       })
     } catch (err) {
       const error = err as PaymentMethodError
+      if (isPaymentMethodElevationCancelled(error)) return
       const errorCode = error?.errors?.[0]?.code
 
       if (errorCode === "PaymentMethodDuplicate") {
@@ -110,7 +122,7 @@ const AdPaymentMethods = () => {
             onManage: () => {
               hideAlert()
               setShowAddPaymentPanel(false)
-              router.push("/profile?tab=payment")
+              requestAnimationFrame(() => setShowAddPaymentPanel(true))
             },
           }),
         )

@@ -14,9 +14,26 @@ import { isP2PWebSocketEligibleFromState } from '@/lib/p2p-websocket-eligibility
 import type { Advertisement, SearchParams as BuySellSearchParams, PaymentMethod } from '@/services/api/api-buy-sell'
 import type { Order, OrderFilters } from '@/services/api/api-orders'
 import type { MyAd } from '@/services/api/api-my-ads'
+import {
+  PAYMENT_METHOD_ELEVATION_CANCELLED,
+  useSessionElevationStore,
+  type PaymentMethodElevationAction,
+} from '@/stores/session-elevation-store'
 
 export interface PaymentMethodError extends Error {
   errors?: Array<{ code?: string; message?: string }>
+}
+
+export const isPaymentMethodElevationCancelled = (error: PaymentMethodError) =>
+  error.errors?.[0]?.code === PAYMENT_METHOD_ELEVATION_CANCELLED
+
+const elevatePaymentMethodAction = async <T>(action: PaymentMethodElevationAction, onVerified: () => Promise<T>) => {
+  const result = await useSessionElevationStore.getState().requestElevation(action, onVerified)
+  if (result !== false) return result
+  const error: PaymentMethodError = Object.assign(new Error("Payment method verification was cancelled"), {
+    errors: [{ code: PAYMENT_METHOD_ELEVATION_CANCELLED }],
+  })
+  throw error
 }
 
 // Query Keys
@@ -236,12 +253,15 @@ export function flattenWalletTransactionsPages(
 
 export const USER_PAYMENT_METHODS_PAGE_SIZE = 50
 
-export type UserPaymentMethodsPage = { data: any[] }
+/** Minimal v2 user payment-method shape shared by paginated consumers. */
+export type UserPaymentMethod = ProfileAPI.UserPaymentMethod
+
+export type UserPaymentMethodsPage = { data: UserPaymentMethod[] }
 
 /** Flatten infinite-query pages into a single payment-method list. */
 export function flattenUserPaymentMethodsPages(
   data: { pages: UserPaymentMethodsPage[] } | undefined,
-): any[] {
+): UserPaymentMethod[] {
   return data?.pages.flatMap((page) => page.data ?? []) ?? []
 }
 
@@ -304,15 +324,17 @@ export function useAddPaymentMethod() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ method, fields }: { method: string; fields: Record<string, string> }) => {
-      const result = await ProfileAPI.addPaymentMethod(method, fields)
-      if (!result.success) {
-        const error: PaymentMethodError = Object.assign(
-          new Error(result.errors?.[0]?.message || 'Failed to add payment method'),
-          { errors: result.errors },
-        )
-        throw error
-      }
-      return result
+      return elevatePaymentMethodAction("p2p_payment_method_create", async () => {
+        const result = await ProfileAPI.addPaymentMethod(method, fields)
+        if (!result.success) {
+          const error: PaymentMethodError = Object.assign(
+            new Error(result.errors?.[0]?.message || 'Failed to add payment method'),
+            { errors: result.errors },
+          )
+          throw error
+        }
+        return result
+      })
     },
     retry: 0,
     onSuccess: () => {
@@ -325,13 +347,17 @@ export function useUpdatePaymentMethod() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, method, fields }: { id: string; method: string; fields: Record<string, string> }) => {
-      const result = await ProfileAPI.updatePaymentMethod(id, { method, fields })
-      if (!result.success) {
-        const error: any = new Error(result.errors?.[0]?.message || 'Failed to update payment method')
-        error.errors = result.errors
-        throw error
-      }
-      return result
+      return elevatePaymentMethodAction("p2p_payment_method_update", async () => {
+        const result = await ProfileAPI.updatePaymentMethod(id, { method, fields })
+        if (!result.success) {
+          const error: PaymentMethodError = Object.assign(
+            new Error(result.errors?.[0]?.message || 'Failed to update payment method'),
+            { errors: result.errors },
+          )
+          throw error
+        }
+        return result
+      })
     },
     retry: 0,
     onSuccess: () => {
@@ -344,13 +370,17 @@ export function useDeletePaymentMethod() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
-      const result = await ProfileAPI.deletePaymentMethod(id)
-      if (!result.success && result.errors && result.errors.length > 0) {
-        const error: any = new Error(result.errors[0].message || 'Failed to delete payment method')
-        error.errors = result.errors
-        throw error
-      }
-      return result
+      return elevatePaymentMethodAction("p2p_payment_method_delete", async () => {
+        const result = await ProfileAPI.deletePaymentMethod(id)
+        if (!result.success && result.errors && result.errors.length > 0) {
+          const error: PaymentMethodError = Object.assign(
+            new Error(result.errors[0].message || 'Failed to delete payment method'),
+            { errors: result.errors },
+          )
+          throw error
+        }
+        return result
+      })
     },
     retry: 0,
     onSuccess: () => {

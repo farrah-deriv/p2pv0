@@ -22,7 +22,7 @@ import { useUserDataStore } from "@/stores/user-data-store"
 import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useAddPaymentMethod, type PaymentMethodError } from "@/hooks/use-api-queries"
+import { isPaymentMethodElevationCancelled, useAddPaymentMethod, type PaymentMethodError } from "@/hooks/use-api-queries"
 import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
 import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
 import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
@@ -137,6 +137,7 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
       setShowAddPaymentPanel(false)
     } catch (err) {
       const error = err as PaymentMethodError
+      if (isPaymentMethodElevationCancelled(error)) return
       const errorCode = error?.errors?.[0]?.code
 
       if (errorCode === "PaymentMethodDuplicate") {

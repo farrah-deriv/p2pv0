@@ -1423,4 +1423,13 @@
     "startTour": "Go to P2P marketplace",
     "visitHelpCentre": "Learn More"
   }
+  ,"sessionElevation": {
+    "title": "Verify your identity",
+    "description": "Enter the 6-digit code we sent to continue.",
+    "resendPrompt": "Didn't receive the code?",
+    "invalidCode": "Enter a valid code and try again.",
+    "tooManyAttempts": "Too many attempts. Request a new code to continue.",
+    "sendFailed": "We couldn't send a verification code. Please try again.",
+    "totpRequired": "Use your authenticator app to verify this action. Web support is coming soon."
+  }
 }

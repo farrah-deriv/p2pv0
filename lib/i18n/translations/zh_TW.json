@@ -1424,4 +1424,5 @@
     "startTour": "Go to P2P marketplace",
     "visitHelpCentre": "Learn More"
   }
+  ,"sessionElevation": {"title":"驗證您的身分","description":"請輸入 6 位數代碼以繼續。","resendPrompt":"沒有收到代碼？","invalidCode":"請輸入有效代碼後再試一次。","tooManyAttempts":"嘗試次數過多。請索取新代碼。","sendFailed":"無法傳送驗證代碼。請再試一次。","totpRequired":"請使用驗證器應用程式驗證此操作。網頁版支援即將推出。"}
 }
