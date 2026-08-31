@@ -82,6 +82,8 @@
     "paymentMethodRemoveOpenOrderTitle": "無法刪除付款方式",
     "priceType": "價格類型",
     "rangeOverlapMessage": "請更改此廣告的最小和/或最大訂單限制。這些限制之間的範圍不得與您為此貨幣對和訂單類型創建的其他有效廣告重疊。",
+    "rangeOverlapMessageWithAd": "您的廣告 {adId} 已涵蓋此貨幣對和訂單類型的 {min}–{max} {currency}。請設定該範圍以外的訂單限額，或編輯該廣告。",
+    "viewConflictingAd": "查看該廣告",
     "rangeOverlapTitle": "您已有此範圍的廣告",
     "rateFixedTitle": "費率（固定）",
     "rateFloatingTitle": "費率（浮動）",

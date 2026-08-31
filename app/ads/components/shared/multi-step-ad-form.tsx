@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect, useMemo, useCallback } from "react"
-import { IS_CLOSED_GROUP_ENABLED, IS_AD_CONDITIONS_ENABLED } from "@/lib/utils"
+import { IS_CLOSED_GROUP_ENABLED, IS_AD_CONDITIONS_ENABLED, formatAmountWithDecimals } from "@/lib/utils"
 import { useRouter, useSearchParams } from "next/navigation"
 import AdDetailsForm from "../ad-details-form"
 import PaymentDetailsForm from "../payment-details-form"
@@ -58,9 +58,16 @@ import {
 import { toNumericPaymentMethodIds } from "@/lib/payment-methods/payment-method-selection-utils"
 import {
   MY_ADS_FROM_TAB_QUERY,
+  editAdPath,
   myAdsPath,
   parseMyAdsTab,
 } from "@/lib/ads/my-ads-tab"
+import {
+  RANGE_OVERLAP_ERROR_CODE,
+  readConflictingAdvertRange,
+  readExistingAdvertId,
+  type ConflictingAdvertRange,
+} from "@/lib/ads/range-overlap-error"
 import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 import { useWizardExchangeRate } from "@/app/ads/hooks/use-wizard-exchange-rate"
 import { useAccountCurrencies } from "@/hooks/use-account-currencies"
@@ -73,6 +80,9 @@ import {
   isFloatingRateRecoveryError,
   type StaleEpisodeState,
 } from "@/lib/ads/exchange-rate-recovery"
+
+/** Step 2/3 "Set amount and payment" — where the min/max order limit inputs live. */
+const ORDER_LIMITS_STEP_INDEX = 1
 
 interface MultiStepAdFormProps {
   mode: "create" | "edit"
@@ -717,7 +727,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
         },
         onError: (error: unknown) => {
           setIsSubmitting(false)
-          handleAdError(error, "create", finalData.priceType)
+          void handleAdError(error, "create", finalData.priceType)
         },
       })
     } else {
@@ -797,7 +807,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
           },
           onError: (error: unknown) => {
             setIsSubmitting(false)
-            handleAdError(error, "update", finalData.priceType)
+            void handleAdError(error, "update", finalData.priceType)
           },
         }
       )
@@ -817,7 +827,29 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     return confirmTextMap[errorName] || t("adForm.updateAd")
   }
 
-  const handleAdError = (
+  /**
+   * Resolve the ad the backend named as the blocker. Returns null when the payload carries no
+   * `existing_advert_id` or the ad can't be described, so the caller keeps the generic dialog
+   * instead of offering a link that goes nowhere.
+   */
+  const resolveConflictingAdvert = async (error: unknown): Promise<ConflictingAdvertRange | null> => {
+    const existingAdvertId = readExistingAdvertId(error)
+    if (!existingAdvertId) return null
+    // Never offer to open the ad the user is already editing.
+    if (mode === "edit" && existingAdvertId === adId) return null
+
+    try {
+      // getAdvert is declared Promise<MyAd> but resolves to the raw `{ data: APIAdvert }`
+      // envelope — the edit-mode prefill above relies on the same thing. The reader takes
+      // `unknown` and digs out `.data` itself rather than trusting that declared type.
+      const advert = await AdsAPI.getAdvert(existingAdvertId)
+      return readConflictingAdvertRange(existingAdvertId, advert)
+    } catch {
+      return null
+    }
+  }
+
+  const handleAdError = async (
     error: unknown,
     mode: "create" | "update",
     submittedPriceType?: "fixed" | "float",
@@ -846,6 +878,10 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
       AdvertOrderRangeOverlap: {
         title: t("adForm.rangeOverlapTitle"),
         type: "warning",
+        // "Edit limits" must land on the step that holds the limit inputs, not step 1.
+        onConfirm: () => {
+          setCurrentStep(ORDER_LIMITS_STEP_INDEX)
+        },
       },
       AdvertLimitReached: {
         title: t("adForm.adLimitReachedTitle"),
@@ -915,6 +951,33 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     }
 
     track("ek_ad_submission_failed_create_ad_step_3", { error_code: errorName, error_message: errorMessage })
+
+    if (errorName === RANGE_OVERLAP_ERROR_CODE) {
+      const conflictingAdvert = await resolveConflictingAdvert(error)
+
+      if (conflictingAdvert) {
+        showAlert({
+          title: errorInfo.title,
+          description: t("adForm.rangeOverlapMessageWithAd", {
+            adId: conflictingAdvert.id,
+            min: formatAmountWithDecimals(conflictingAdvert.minimumOrderAmount),
+            max: formatAmountWithDecimals(conflictingAdvert.maximumOrderAmount),
+            currency: conflictingAdvert.currency,
+          }),
+          confirmText: getErrorConfirmText(errorName),
+          cancelText: t("adForm.viewConflictingAd"),
+          type: errorInfo.type,
+          onConfirm: () => {
+            setCurrentStep(ORDER_LIMITS_STEP_INDEX)
+          },
+          onCancel: () => {
+            router.push(editAdPath(conflictingAdvert.id))
+          },
+        })
+        return
+      }
+    }
+
     showAlert({
       title: errorInfo.title,
       description: errorMessage,

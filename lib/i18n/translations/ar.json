@@ -82,6 +82,8 @@
     "paymentMethodRemoveOpenOrderTitle": "لا يمكن إزالة طريقة الدفع",
     "priceType": "نوع السعر",
     "rangeOverlapMessage": "يرجى تغيير الحد الأدنى و/أو الأقصى لهذا الإعلان. يجب ألا يتداخل النطاق بين هذين الحدين مع إعلان نشط آخر أنشأته لنفس زوج العملات ونوع الطلب.",
+    "rangeOverlapMessageWithAd": "إعلانك {adId} يغطي بالفعل {min}–{max} {currency} لزوج العملات ونوع الطلب هذا. حدد حدود طلب خارج هذا النطاق، أو عدّل ذلك الإعلان.",
+    "viewConflictingAd": "عرض ذلك الإعلان",
     "rangeOverlapTitle": "لديك بالفعل إعلان بهذا النطاق",
     "rateFixedTitle": "السعر (ثابت)",
     "rateFloatingTitle": "السعر (عائم)",

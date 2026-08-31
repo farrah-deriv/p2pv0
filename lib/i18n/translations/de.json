@@ -93,6 +93,8 @@
     "postAd": "Anzeige veröffentlichen",
     "priceType": "Preistyp",
     "rangeOverlapMessage": "Ändern Sie das minimale und/oder maximale Bestelllimit für diese Anzeige. Der Bereich zwischen diesen Limits darf sich nicht mit einer anderen aktiven Anzeige überschneiden, die Sie für dieses Währungspaar und diese Bestellart erstellt haben.",
+    "rangeOverlapMessageWithAd": "Ihre Anzeige {adId} deckt für dieses Währungspaar und diese Auftragsart bereits {min}–{max} {currency} ab. Legen Sie Auftragslimits außerhalb dieses Bereichs fest oder bearbeiten Sie diese Anzeige.",
+    "viewConflictingAd": "Diese Anzeige ansehen",
     "rangeOverlapTitle": "Sie haben bereits eine Anzeige mit diesem Bereich",
     "rateFixedTitle": "Tarif (fest)",
     "rateFloatingTitle": "Rate (variabel)",

@@ -85,6 +85,8 @@
     "paymentMethodRemoveOpenOrderTitle": "Não é possível remover a forma de pagamento",
     "priceType": "Tipo de preço",
     "rangeOverlapMessage": "Altere o limite mínimo e/ou máximo de pedidos deste anúncio. O intervalo entre esses limites não deve se sobrepor a outro anúncio ativo criado para esse par de moedas e tipo de pedido.",
+    "rangeOverlapMessageWithAd": "O seu anúncio {adId} já abrange {min}–{max} {currency} para este par de moedas e tipo de ordem. Defina limites de ordem fora desse intervalo ou edite esse anúncio.",
+    "viewConflictingAd": "Ver esse anúncio",
     "rangeOverlapTitle": "Você já tem um anúncio com esta faixa",
     "rateFixedTitle": "Taxa (fixa)",
     "rateFloatingTitle": "Taxa (flutuante)",

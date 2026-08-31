@@ -67,6 +67,29 @@ export interface AdFilters {
   adId?: string
 }
 
+/**
+ * One entry of an advert API `errors[]` payload. Extra fields are carried through
+ * untouched so callers can act on them — see {@link AdvertApiError.detail}.
+ *
+ * The wire shape is `{ status, code, detail: { ... } }`: error specifics live under
+ * `detail`, not flat on the entry.
+ */
+export interface AdvertApiError {
+  code?: string
+  message?: string
+  /** Per-entry HTTP status, repeated from the response. */
+  status?: number
+  /** Where the API puts error specifics, e.g. `existing_advert_id` on an overlap rejection. */
+  detail?: {
+    /** The advert whose order range blocks this one. */
+    existing_advert_id?: number | string
+    [key: string]: unknown
+  }
+  /** Legacy/fallback: the same id sent flat. Prefer {@link AdvertApiError.detail}. */
+  existing_advert_id?: number | string
+  [key: string]: unknown
+}
+
 export interface CreateAdPayload {
   type: "buy" | "sell"
   account_currency: string
@@ -302,7 +325,10 @@ export async function getUserAdverts(isActive?: boolean, page = 1, per_page = 20
   }
 }
 
-export async function updateAd(id: string, adData: any): Promise<{ success: boolean; errors?: any[] }> {
+export async function updateAd(
+  id: string,
+  adData: any,
+): Promise<{ success: boolean; errors?: AdvertApiError[] }> {
   try {
     const url = `${API.baseUrl}${API.endpoints.ads}/${id}`
     const headers = AUTH.getAuthHeader()
@@ -329,7 +355,7 @@ export async function updateAd(id: string, adData: any): Promise<{ success: bool
     }
 
     if (!response.ok) {
-      let errors = []
+      let errors: AdvertApiError[] = []
       if (responseData && responseData.errors) {
         errors = responseData.errors
       } else {
@@ -456,9 +482,12 @@ export async function deleteAd(id: string): Promise<{ success: boolean; errors?:
   }
 }
 
+/** Carries the untouched API error entry across `createAd`'s internal throw/catch. */
+type CreateAdError = Error & { apiError?: AdvertApiError }
+
 export async function createAd(
   payload: CreateAdPayload,
-): Promise<{ success: boolean; data: CreateAdResponse; errors?: any[] }> {
+): Promise<{ success: boolean; data: CreateAdResponse; errors?: AdvertApiError[] }> {
   try {
     const url = `${API.baseUrl}${API.endpoints.ads}`
     const headers = AUTH.getAuthHeader()
@@ -491,8 +520,10 @@ export async function createAd(
     if (!response.ok) {
       let errorMessage = responseData.error || `Error creating advertisement: ${response.statusText}`
       let errorCode = null
+      let apiError: AdvertApiError | undefined
 
       if (responseData.errors && Array.isArray(responseData.errors) && responseData.errors.length > 0) {
+        apiError = responseData.errors[0]
         if (responseData.errors[0].code) {
           errorCode = responseData.errors[0].code
 
@@ -537,10 +568,13 @@ export async function createAd(
         }
       }
 
-      const error = new Error(errorMessage)
+      const error: CreateAdError = new Error(errorMessage)
       if (errorCode) {
         error.name = errorCode
       }
+      // Keep the raw entry so fields beyond `code`/`message` (e.g. existing_advert_id)
+      // survive the catch below instead of being reduced away.
+      error.apiError = apiError
       throw error
     }
 
@@ -560,6 +594,7 @@ export async function createAd(
       },
       errors: [
         {
+          ...((error as CreateAdError)?.apiError ?? {}),
           message: error instanceof Error ? error.message : "An unexpected error occurred",
           code: error instanceof Error ? error.name : "UnknownError",
         },

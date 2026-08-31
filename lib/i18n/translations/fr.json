@@ -82,6 +82,8 @@
     "paymentMethodRemoveOpenOrderTitle": "Impossible de supprimer la méthode de paiement",
     "priceType": "Type de prix",
     "rangeOverlapMessage": "Modifiez la limite de commande minimum et/ou maximum pour cette annonce. La plage entre ces limites ne doit pas chevaucher une autre annonce active que vous avez créée pour cette paire de devises et ce type de commande.",
+    "rangeOverlapMessageWithAd": "Votre annonce {adId} couvre déjà {min}–{max} {currency} pour cette paire de devises et ce type d'ordre. Définissez des limites de commande en dehors de cette plage ou modifiez cette annonce.",
+    "viewConflictingAd": "Voir cette annonce",
     "rangeOverlapTitle": "Vous avez déjà une annonce avec cette plage",
     "rateFixedTitle": "Tarif (fixe)",
     "rateFloatingTitle": "Taux (flottant)",

@@ -82,6 +82,8 @@
     "paymentMethodRemoveOpenOrderTitle": "결제 수단을 삭제할 수 없습니다.",
     "priceType": "가격 유형",
     "rangeOverlapMessage": "이 광고의 최소 및/또는 최대 주문 한도를 변경하십시오. 이러한 한도 사이의 범위는 해당 통화 쌍 및 주문 유형에 대해 생성한 다른 활성 광고와 겹쳐서는 안 됩니다.",
+    "rangeOverlapMessageWithAd": "회원님의 광고 {adId}이(가) 이 통화쌍 및 주문 유형에 대해 이미 {min}–{max} {currency}을(를) 포함하고 있습니다. 해당 범위를 벗어나는 주문 한도를 설정하거나 해당 광고를 수정하세요.",
+    "viewConflictingAd": "해당 광고 보기",
     "rangeOverlapTitle": "이 범위의 광고가 이미 있습니다.",
     "rateFixedTitle": "요금(고정)",
     "rateFloatingTitle": "요율(변동)",

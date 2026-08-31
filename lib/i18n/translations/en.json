@@ -1076,6 +1076,8 @@
     "duplicateRateMessage": "You have another active ad with the same rate for this currency pair and order type. Set a different rate.",
     "rangeOverlapTitle": "You already have an ad with this range",
     "rangeOverlapMessage": "Please change the minimum and/or maximum order limit for this ad. The range between these limits must not overlap with another active ad you created for this currency pair and order type.",
+    "rangeOverlapMessageWithAd": "Your ad {adId} already covers {min}–{max} {currency} for this currency pair and order type. Set order limits outside that range, or edit that ad.",
+    "viewConflictingAd": "View that ad",
     "adLimitReachedTitle": "Ad limit reached",
     "adLimitReachedMessage": "You can only have 3 active ads for this currency pair and order type. Delete an ad to create a new one.",
     "advertFixedRateMinimumTitle": "Check your fixed rate",
