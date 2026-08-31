@@ -642,7 +642,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                     <div className="flex items-center md:mt-0 justify-self-end gap-2">
                       {!isBlocked && (
                         <>
-                          {isFollowing && !isClosedGroupEnabled ? (
+                          {isFollowing && isClosedGroupEnabled ? (
                             isMobile ? (
                               <Drawer>
                                 <DrawerTrigger asChild>
