@@ -5,8 +5,15 @@ export const runtime = "edge"
 import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
-import { StandaloneArrowLeftFillIcon } from "@deriv/quill-icons/Standalone"
+import { StandaloneArrowLeftFillIcon, StandaloneChevronDownRegularIcon } from "@deriv/quill-icons/Standalone"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
 import { Spinner } from "@/components/ui/spinner"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { BuySellAPI } from "@/services/api"
@@ -635,27 +642,91 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                     <div className="flex items-center md:mt-0 justify-self-end gap-2">
                       {!isBlocked && (
                         <>
-                          <Button
-                            data-testid={isFollowing ? "advertiser-btn-unfollow" : "advertiser-btn-follow"}
-                            onClick={toggleFollow}
-                            variant="secondary-outline"
-                            size="sm"
-                            disabled={isFollowLoading || isBlockLoading || isClosedGroupLoading}
-                          >
-                            {isFollowing ? t("advertiser.following") : t("advertiser.follow")}
-                          </Button>
-                          {isClosedGroupEnabled && isFollowing && (
+                          {isFollowing && !isClosedGroupEnabled ? (
+                            isMobile ? (
+                              <Drawer>
+                                <DrawerTrigger asChild>
+                                  <Button
+                                    data-testid="advertiser-btn-following-menu"
+                                    variant="secondary-outline"
+                                    size="sm"
+                                    disabled={isFollowLoading || isBlockLoading || isClosedGroupLoading}
+                                  >
+                                    <span className="flex items-center gap-1.5">
+                                      {t("advertiser.following")}
+                                      <StandaloneChevronDownRegularIcon iconSize="xs" fill="currentColor" className="shrink-0" />
+                                    </span>
+                                  </Button>
+                                </DrawerTrigger>
+                                <DrawerContent className="h-fit">
+                                  <div className="p-4 space-y-1">
+                                    <button
+                                      data-testid="advertiser-btn-unfollow"
+                                      onClick={toggleFollow}
+                                      className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm hover:bg-gray-50 active:bg-gray-100"
+                                    >
+                                      <Image src="/icons/unfollow.svg" alt="" width={20} height={20} />
+                                      {t("advertiser.unfollow")}
+                                    </button>
+                                    <button
+                                      data-testid={isGroupMember ? "advertiser-btn-remove-closed-group" : "advertiser-btn-add-closed-group"}
+                                      onClick={isGroupMember ? handleRemoveFromClosedGroup : handleAddToClosedGroup}
+                                      className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm hover:bg-gray-50 active:bg-gray-100"
+                                    >
+                                      <Image src="/icons/star.svg" alt="" width={20} height={20} />
+                                      {isGroupMember ? t("advertiser.removeFromClosedGroup") : t("advertiser.addToClosedGroup")}
+                                    </button>
+                                  </div>
+                                </DrawerContent>
+                              </Drawer>
+                            ) : (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    data-testid="advertiser-btn-following-menu"
+                                    variant="secondary-outline"
+                                    size="sm"
+                                    disabled={isFollowLoading || isBlockLoading || isClosedGroupLoading}
+                                  >
+                                    <span className="flex items-center gap-1.5">
+                                      {t("advertiser.following")}
+                                      <StandaloneChevronDownRegularIcon iconSize="xs" fill="currentColor" className="shrink-0" />
+                                    </span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56">
+                                  <DropdownMenuItem
+                                    data-testid="advertiser-btn-unfollow"
+                                    onSelect={toggleFollow}
+                                    className="cursor-pointer"
+                                  >
+                                    <span className="flex items-center gap-1.5">
+                                      <Image src="/icons/unfollow.svg" alt="" width={16} height={16} />
+                                      {t("advertiser.unfollow")}
+                                    </span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    data-testid={isGroupMember ? "advertiser-btn-remove-closed-group" : "advertiser-btn-add-closed-group"}
+                                    onSelect={isGroupMember ? handleRemoveFromClosedGroup : handleAddToClosedGroup}
+                                    className="cursor-pointer"
+                                  >
+                                    <span className="flex items-center gap-1.5">
+                                      <Image src="/icons/star.svg" alt="" width={16} height={16} />
+                                      {isGroupMember ? t("advertiser.removeFromClosedGroup") : t("advertiser.addToClosedGroup")}
+                                    </span>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )
+                          ) : (
                             <Button
-                              data-testid={isGroupMember ? "advertiser-btn-remove-closed-group" : "advertiser-btn-add-closed-group"}
-                              onClick={isGroupMember ? handleRemoveFromClosedGroup : handleAddToClosedGroup}
+                              data-testid={isFollowing ? "advertiser-btn-unfollow" : "advertiser-btn-follow"}
+                              onClick={toggleFollow}
                               variant="secondary-outline"
                               size="sm"
-                              disabled={isClosedGroupLoading || isFollowLoading || isBlockLoading}
+                              disabled={isFollowLoading || isBlockLoading || isClosedGroupLoading}
                             >
-                              <span className="flex items-center gap-1.5">
-                                <Image src="/icons/star.svg" alt="" width={16} height={16} />
-                                {isGroupMember ? t("advertiser.removeFromClosedGroup") : t("advertiser.addToClosedGroup")}
-                              </span>
+                              {isFollowing ? t("advertiser.following") : t("advertiser.follow")}
                             </Button>
                           )}
                         </>
