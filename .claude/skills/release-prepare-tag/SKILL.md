@@ -30,6 +30,12 @@ git fetch --tags upstream || git fetch --tags
 ```bash
 git tag -l "production_v*" | sort -V | tail -5
 LAST_TAG=$(git tag -l "production_v*" --sort=creatordate | tail -1)
+
+if [ -z "$LAST_TAG" ]; then
+  echo "Error: No production_v* tag found. Run 'git fetch --tags upstream' (or 'git fetch --tags') and retry."
+  exit 1
+fi
+
 echo "Currently live tag: $LAST_TAG"
 ```
 
@@ -129,6 +135,10 @@ This issue cross-links every PR and fixed issue. GitHub automatically creates ba
 ```bash
 # ── Variables ─────────────────────────────────────────────────────────────
 LAST_TAG=$(git tag -l "production_v*" --sort=creatordate | tail -1)
+if [ -z "$LAST_TAG" ]; then
+  echo "Error: No production_v* tag found. Run 'git fetch --tags upstream' and retry."
+  exit 1
+fi
 TODAY=$(date +%Y%m%d)
 LAST_N=$(git tag -l "production_v${TODAY}_*" | sed "s/production_v${TODAY}_//" | grep -E '^[0-9]+$' | sort -n | tail -1)
 NEXT_N=$(( ${LAST_N:-"-1"} + 1 ))

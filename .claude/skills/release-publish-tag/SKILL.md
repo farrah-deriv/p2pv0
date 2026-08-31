@@ -21,6 +21,12 @@ TRACKING_ISSUE_NUM=NNNN            # ← paste the issue number from release-pre
 ## Step 2 — Push the tag and publish the release
 
 ```bash
+# ── Guard: Ensure variables were properly set in Step 1 ───────────────────
+if [[ "$NEW_TAG" == *"<"* ]] || [ -z "$NEW_TAG" ] || ! [[ "$TRACKING_ISSUE_NUM" =~ ^[0-9]+$ ]]; then
+  echo "Error: Set NEW_TAG and TRACKING_ISSUE_NUM in Step 1 before running Step 2."
+  exit 1
+fi
+
 # Push the tag to remote — triggers build-and-deploy-prod.yml and deploys to Cloudflare Pages Production
 if git tag -l "$NEW_TAG" | grep -q .; then
   echo "Note: tag $NEW_TAG already exists locally — skipping tag creation, pushing existing."
