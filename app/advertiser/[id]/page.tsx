@@ -43,6 +43,12 @@ interface UsersOnlineUpdate {
   last_online_at?: number | null
 }
 
+interface AdvertiserStatisticsLifetime {
+  recommend_count: number
+  rating_count: number
+  rating_average: number
+}
+
 interface AdvertiserProfile {
   id: string | number
   nickname: string
@@ -54,6 +60,7 @@ interface AdvertiserProfile {
   favourited_by_user_count: number
   is_blocked: boolean
   is_favourite: boolean
+  is_group_member?: boolean
   is_online?: boolean
   last_online_at?: number | null
   temp_ban_until: number | null
@@ -72,6 +79,7 @@ interface AdvertiserProfile {
   release_time_average_30day: number
   rating_average_30day: number
   completion_average_30day: number
+  statistics_lifetime?: AdvertiserStatisticsLifetime
 }
 
 interface AdvertiserProfilePageProps {
@@ -275,6 +283,19 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
           className: TOAST_SUCCESS_CLASS,
           duration: 2500,
         })
+      } else if (result.code === "UserFavouriteNotFound") {
+        // The favourite no longer exists server-side (e.g. it was removed when the
+        // advertiser was blocked), so reconcile the UI and let the user know.
+        setIsFollowing(false)
+        setIsGroupMember(false)
+        queryClient.invalidateQueries({ queryKey: queryKeys.auth.followers() })
+        queryClient.invalidateQueries({ queryKey: queryKeys.buySell.favouriteUsers() })
+        showAlert({
+          title: t("advertiser.notInFavouritesTitle"),
+          description: t("advertiser.notInFavouritesMessage"),
+          confirmText: t("common.gotIt"),
+          type: "warning",
+        })
       } else {
         console.error("Failed to toggle follow status:", result.message)
       }
@@ -390,8 +411,15 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
 
             if (result.success) {
               setIsBlocked(true)
+              // Blocking a followed advertiser unfollows them server-side, so mirror
+              // that here to avoid a stale "Following" state that would later trigger
+              // an UserFavouriteNotFound error when trying to unfollow.
+              setIsFollowing(false)
+              setIsGroupMember(false)
               queryClient.invalidateQueries({ queryKey: queryKeys.auth.tradePartners() })
               queryClient.invalidateQueries({ queryKey: queryKeys.auth.blockedUsers() })
+              queryClient.invalidateQueries({ queryKey: queryKeys.auth.followers() })
+              queryClient.invalidateQueries({ queryKey: queryKeys.buySell.favouriteUsers() })
 
               toast({
                 description: (
@@ -518,13 +546,22 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="p-6 md:px-2 md:py-0">
+      <div className="sticky top-0 z-20 bg-slate-75 px-6 py-4 md:hidden">
+        <div className="container mx-auto">
+          <Button data-testid="advertiser-btn-back" variant="icon-muted" onClick={handleBack} className="!bg-black/[0.04] hover:!bg-black/[0.08]" aria-label={t("common.back")}>
+            <StandaloneArrowLeftFillIcon width={24} height={24} className="rtl:rotate-180" aria-hidden />
+          </Button>
+        </div>
+      </div>
+      <div className="p-6 pt-0 md:px-2 md:py-0">
         <div className="flex flex-col md:flex-row justify-between">
           <div className="container mx-auto pb-6">
             <div className="bg-slate-75 p-6 rounded-none md:rounded-3xl flex flex-col md:items-start gap-4 mx-[-24px] mt-[-24px] md:mx-0 md:mt-0">
-              <Button data-testid="advertiser-btn-back" variant="icon-muted" onClick={handleBack} className="!bg-black/[0.04] hover:!bg-black/[0.08]" aria-label={t("common.back")}>
-                <StandaloneArrowLeftFillIcon width={24} height={24} className="rtl:rotate-180" aria-hidden />
-              </Button>
+              <span className="hidden md:block">
+                <Button data-testid="advertiser-btn-back-desktop" variant="icon-muted" onClick={handleBack} className="!bg-black/[0.04] hover:!bg-black/[0.08]" aria-label={t("common.back")}>
+                  <StandaloneArrowLeftFillIcon width={24} height={24} className="rtl:rotate-180" aria-hidden />
+                </Button>
+              </span>
               <div className="flex-1 w-full">
                 <div className="flex flex-col md:flex-row gap-2 md:gap-0">
                   <div className="relative me-[16px]">
@@ -541,7 +578,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                     <div className="flex gap-2 items-center">
                       <h2 data-testid="advertiser-text-nickname" className="text-lg font-bold">{profile?.nickname}</h2>
                       <span data-testid="advertiser-badge-verified"><VerifiedBadge size={20} /></span>
-                      {profile.trade_band && (
+                      {profile?.trade_band && (
                         <span data-testid="advertiser-badge-trade-band">
                           <TradeBandBadge
                             tradeBand={profile.trade_band}
@@ -575,9 +612,9 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                       <div className="flex items-center">
                         <Image src="/icons/thumbs-up.png" alt={t("common.recommended")} width={24} height={24} className="me-1" />
                         <span data-testid="advertiser-text-recommendation" className="me-[8px]">
-                          {profile?.statistics_lifetime?.recommend_count > 0
+                          {(profile?.statistics_lifetime?.recommend_count ?? 0) > 0
                             ? t("advertiser.recommendedBy", {
-                              count: profile?.statistics_lifetime?.recommend_count,
+                              count: profile?.statistics_lifetime?.recommend_count ?? 0,
                               plural: profile?.statistics_lifetime?.recommend_count === 1 ? "" : "s",
                             })
                             : t("profile.notRecommendedYet")}
@@ -587,7 +624,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                       <div className="flex items-center">
                         <Image src="/icons/star-rating.png" alt={t("common.star")} width={24} height={24} className="me-1" />
                         <span data-testid="advertiser-text-rating">
-                          {profile?.statistics_lifetime?.rating_count > 0
+                          {(profile?.statistics_lifetime?.rating_count ?? 0) > 0
                             ? profile?.statistics_lifetime?.rating_average
                             : t("profile.notRatedYet")}
                         </span>

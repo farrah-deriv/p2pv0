@@ -177,6 +177,8 @@
     "blockUser": "區塊 {nickname}？",
     "buyCompletionRate30d": "購買完成率（30天）",
     "chooseAnotherTrader": "選擇其他交易者",
+    "notInFavouritesTitle": "不在收藏中",
+    "notInFavouritesMessage": "此交易者不在您的收藏中。",
     "close": "關閉",
     "closedGroupBlockedByAddMessage": "該交易者已將您封鎖，因此無法將其新增至此群組。請選擇其他交易者。",
     "closedGroupBlockedByRemoveMessage": "該交易者已將您封鎖，因此無法將其從此群組移除。請選擇其他交易者。",

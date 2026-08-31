@@ -177,6 +177,8 @@
     "blockUser": "كتلة {nickname}؟",
     "buyCompletionRate30d": "معدل إتمام الشراء (30 يومًا)",
     "chooseAnotherTrader": "اختر متداولاً آخر",
+    "notInFavouritesTitle": "غير موجود في المفضلة",
+    "notInFavouritesMessage": "هذا المتداول غير موجود في قائمة المفضلة لديك.",
     "close": "إغلاق",
     "closedGroupBlockedByAddMessage": "هذا المتداول قام بحظرك، لذا لا يمكنك إضافته إلى هذه المجموعة. اختر متداولاً مختلفاً بدلاً من ذلك.",
     "closedGroupBlockedByRemoveMessage": "هذا المتداول قام بحظرك، لذا لا يمكنك إزالته من هذه المجموعة. اختر متداولاً مختلفاً بدلاً من ذلك.",

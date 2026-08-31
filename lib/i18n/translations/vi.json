@@ -194,6 +194,8 @@
     "blockUser": "Chặn {nickname}?",
     "buyCompletionRate30d": "Tỷ lệ hoàn thành mua (30 ngày)",
     "chooseAnotherTrader": "Chọn nhà giao dịch khác",
+    "notInFavouritesTitle": "Không có trong danh sách yêu thích",
+    "notInFavouritesMessage": "Nhà giao dịch này không có trong danh sách yêu thích của bạn.",
     "close": "Đóng",
     "closedGroupBlockedByAddMessage": "Nhà giao dịch này đã chặn bạn, vì vậy bạn không thể thêm họ vào nhóm này. Hãy chọn nhà giao dịch khác.",
     "closedGroupBlockedByRemoveMessage": "Nhà giao dịch này đã chặn bạn, vì vậy bạn không thể xóa họ khỏi nhóm này. Hãy chọn nhà giao dịch khác.",

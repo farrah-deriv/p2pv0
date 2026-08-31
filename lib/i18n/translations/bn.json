@@ -186,6 +186,8 @@
     "blockUser": "{nickname} ব্লক করবেন?",
     "buyCompletionRate30d": "ক্রয় সম্পূর্ণের হার (৩০দিন)",
     "chooseAnotherTrader": "অন্য একজন ট্রেডার বেছে নিন",
+    "notInFavouritesTitle": "প্রিয় তালিকায় নেই",
+    "notInFavouritesMessage": "এই ট্রেডার আপনার প্রিয় তালিকায় নেই।",
     "close": "বন্ধ করুন",
     "closedGroupBlockedByAddMessage": "এই ট্রেডার আপনাকে ব্লক করেছেন, তাই আপনি তাদের এই গ্রুপে যোগ করতে পারবেন না। পরিবর্তে অন্য একজন ট্রেডার বেছে নিন।",
     "closedGroupBlockedByRemoveMessage": "এই ট্রেডার আপনাকে ব্লক করেছেন, তাই আপনি তাদের এই গ্রুপ থেকে সরাতে পারবেন না। পরিবর্তে অন্য একজন ট্রেডার বেছে নিন।",

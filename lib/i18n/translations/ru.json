@@ -194,6 +194,8 @@
     "blockUser": "Заблокировать {nickname}?",
     "buyCompletionRate30d": "Процент завершения покупок (30д)",
     "chooseAnotherTrader": "Выбрать другого трейдера",
+    "notInFavouritesTitle": "Нет в избранном",
+    "notInFavouritesMessage": "Этот трейдер отсутствует в вашем избранном.",
     "close": "Закрыть",
     "closedGroupBlockedByAddMessage": "Этот трейдер заблокировал вас, поэтому вы не можете добавить его в эту группу. Выберите другого трейдера.",
     "closedGroupBlockedByRemoveMessage": "Этот трейдер заблокировал вас, поэтому вы не можете удалить его из этой группы. Выберите другого трейдера.",

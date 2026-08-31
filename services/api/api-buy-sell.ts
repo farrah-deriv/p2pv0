@@ -306,7 +306,7 @@ export async function getAdvertiserAds(advertiserId: string | number, page?: num
 export async function toggleFavouriteAdvertiser(
   advertiserId: number,
   isFavourite: boolean,
-): Promise<{ success: boolean; message: string }> {
+): Promise<{ success: boolean; message: string; code?: string }> {
   try {
     const url = isFavourite
       ? `${API.baseUrl}${API.endpoints.userFavourites}`
@@ -332,9 +332,19 @@ export async function toggleFavouriteAdvertiser(
     })
 
     if (!response.ok) {
+      const errorText = await response.text()
+      let errorData: any
+      try {
+        errorData = errorText ? JSON.parse(errorText) : {}
+      } catch (e) {
+        errorData = {}
+      }
+      const code = errorData?.errors?.[0]?.code
+
       return {
         success: false,
         message: `Failed to ${isFavourite ? "follow" : "unfollow"} advertiser: ${response.statusText}`,
+        code,
       }
     }
 

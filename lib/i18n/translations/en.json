@@ -1182,7 +1182,9 @@
     "memberUnavailableTitle": "Member unavailable",
     "closedGroupBlockedByAddMessage": "This trader has blocked you, so you can't add them to this group. Choose a different trader instead.",
     "closedGroupBlockedByRemoveMessage": "This trader has blocked you, so you can't remove them from this group. Choose a different trader instead.",
-    "chooseAnotherTrader": "Choose another trader"
+    "chooseAnotherTrader": "Choose another trader",
+    "notInFavouritesTitle": "Not in favourites",
+    "notInFavouritesMessage": "This trader is not in your favourites."
   },
   "kyc": {
     "accessP2PMessage": "To continue, complete the remaining steps:",
