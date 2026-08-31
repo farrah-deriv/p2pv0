@@ -82,7 +82,6 @@
     "paymentMethodRemoveOpenOrderTitle": "Impossibile rimuovere il metodo di pagamento",
     "priceType": "Tipo di prezzo",
     "rangeOverlapMessage": "Modifica il limite di ordine minimo e/o massimo per questo annuncio. L'intervallo tra questi limiti non deve sovrapporsi con un altro annuncio attivo che hai creato per questa coppia di valute e tipo di ordine.",
-    "rangeOverlapMessageWithAd": "Il tuo annuncio {adId} copre già {min}–{max} {currency} per questa coppia di valute e questo tipo di ordine. Imposta limiti d'ordine al di fuori di tale intervallo oppure modifica quell'annuncio.",
     "viewConflictingAd": "Visualizza quell'annuncio",
     "rangeOverlapTitle": "Hai già un annuncio con questo intervallo",
     "rateFixedTitle": "Tasso (fisso)",

@@ -82,7 +82,6 @@
     "paymentMethodRemoveOpenOrderTitle": "No se puede eliminar el método de pago",
     "priceType": "Tipo de precio",
     "rangeOverlapMessage": "Cambia el límite de pedido mínimo y/o máximo para este anuncio. El rango entre estos límites no debe superponerse con otro anuncio activo que hayas creado para este par de monedas y tipo de pedido.",
-    "rangeOverlapMessageWithAd": "Tu anuncio {adId} ya cubre {min}–{max} {currency} para este par de divisas y tipo de orden. Establece límites de orden fuera de ese rango o edita ese anuncio.",
     "viewConflictingAd": "Ver ese anuncio",
     "rangeOverlapTitle": "Ya tienes un anuncio con este rango",
     "rateFixedTitle": "Tarifa (fija)",

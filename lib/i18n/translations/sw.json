@@ -82,7 +82,6 @@
     "paymentMethodRemoveOpenOrderTitle": "Imeshindwa kuondoa njia ya kulipa",
     "priceType": "Aina ya bei",
     "rangeOverlapMessage": "Tafadhali badilisha kiwango cha chini zaidi na/au cha juu zaidi cha agizo la tangazo hili. Masafa kati ya vikomo hivi lazima yasiingiliane na tangazo lingine linalotumika ulilounda la jozi hii ya sarafu na aina ya agizo.",
-    "rangeOverlapMessageWithAd": "Tangazo lako {adId} tayari linashughulikia {min}–{max} {currency} kwa jozi hii ya sarafu na aina hii ya oda. Weka vikomo vya oda nje ya safu hiyo, au hariri tangazo hilo.",
     "viewConflictingAd": "Angalia tangazo hilo",
     "rangeOverlapTitle": "Tayari una tangazo na safu hii",
     "rateFixedTitle": "Kiwango (cha kudumu)",

@@ -94,7 +94,6 @@
     "postAd": "Đăng quảng cáo",
     "priceType": "Loại giá",
     "rangeOverlapMessage": "Thay đổi giới hạn đơn hàng tối thiểu và/hoặc tối đa cho quảng cáo này. Phạm vi giữa các giới hạn này không được chồng chéo với quảng cáo đang hoạt động khác mà bạn đã tạo cho cặp tiền tệ và loại đơn hàng này.",
-    "rangeOverlapMessageWithAd": "Quảng cáo {adId} của bạn đã bao gồm {min}–{max} {currency} cho cặp tiền tệ và loại lệnh này. Hãy đặt giới hạn lệnh ngoài phạm vi đó, hoặc chỉnh sửa quảng cáo đó.",
     "viewConflictingAd": "Xem quảng cáo đó",
     "rangeOverlapTitle": "Bạn đã có quảng cáo với phạm vi này",
     "rateFixedTitle": "Tỷ lệ (cố định)",

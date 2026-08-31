@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect, useMemo, useCallback } from "react"
-import { IS_CLOSED_GROUP_ENABLED, IS_AD_CONDITIONS_ENABLED, formatAmountWithDecimals } from "@/lib/utils"
+import { IS_CLOSED_GROUP_ENABLED, IS_AD_CONDITIONS_ENABLED } from "@/lib/utils"
 import { useRouter, useSearchParams } from "next/navigation"
 import AdDetailsForm from "../ad-details-form"
 import PaymentDetailsForm from "../payment-details-form"
@@ -958,12 +958,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
       if (conflictingAdvert) {
         showAlert({
           title: errorInfo.title,
-          description: t("adForm.rangeOverlapMessageWithAd", {
-            adId: conflictingAdvert.id,
-            min: formatAmountWithDecimals(conflictingAdvert.minimumOrderAmount),
-            max: formatAmountWithDecimals(conflictingAdvert.maximumOrderAmount),
-            currency: conflictingAdvert.currency,
-          }),
+          description: t("adForm.rangeOverlapMessage"),
           confirmText: getErrorConfirmText(errorName),
           cancelText: t("adForm.viewConflictingAd"),
           type: errorInfo.type,

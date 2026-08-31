@@ -82,7 +82,6 @@
     "paymentMethodRemoveOpenOrderTitle": "Nie można usunąć formy płatności",
     "priceType": "Rodzaj ceny",
     "rangeOverlapMessage": "Zmień minimalny i/lub maksymalny limit zamówienia dla tego ogłoszenia. Zakres pomiędzy tymi limitami nie może pokrywać się z inną aktywną reklamą utworzoną dla tej pary walutowej i typu zamówienia.",
-    "rangeOverlapMessageWithAd": "Twoje ogłoszenie {adId} obejmuje już {min}–{max} {currency} dla tej pary walutowej i typu zlecenia. Ustaw limity zlecenia poza tym zakresem lub edytuj tamto ogłoszenie.",
     "viewConflictingAd": "Zobacz tamto ogłoszenie",
     "rangeOverlapTitle": "Masz już ogłoszenie z tym asortymentem",
     "rateFixedTitle": "Stawka (stała)",
