@@ -189,17 +189,17 @@ else
 - [ ] Markets / Buy & Sell
   - [ ] Verify Buy/Sell ad listings load correctly
   - [ ] Test filters (currency, payment method, sort)
-- [ ] Order Lifecycle
+- [ ] Order
   - [ ] Buy order flow (create -> pay -> complete)
   - [ ] Sell order flow (create -> confirm payment -> complete)
   - [ ] Cancel order flow
   - [ ] Dispute order flow & proof upload
 - [ ] My Ads
-  - [ ] Create ad wizard (all steps)
-  - [ ] Edit / activate / deactivate ad
-- [ ] Profile & Settings
+  - [ ] Create buy/sell ad (all steps)
+  - [ ] Edit / share / activate / deactivate ad
+- [ ] Profile
   - [ ] Payment methods (add, edit, delete)
-  - [ ] Business hours & advertiser settings
+  - [ ] Advertiser's profile
 - [ ] Wallets & Transfers
   - [ ] Transfer between wallets
   - [ ] Balance update after transaction"
