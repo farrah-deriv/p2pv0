@@ -23,7 +23,7 @@ export default function BalanceItem({ currency, amount, label, currencyLabel, on
       className="relative w-full cursor-pointer transition-colors"
     >
       {/* Content pad matches WalletSummary `p-6` (1.5rem); separator below is full-bleed. */}
-      <div className="flex h-[72px] w-full items-center justify-between px-6">
+      <div className="flex h-[72px] w-full items-center justify-between px-6 lg:px-0">
         <div className="flex min-w-0 items-center gap-4">
           <div className="relative h-7 w-7 flex-shrink-0">
             <Image src="/icons/p2p-black.png" alt="P2P" width={28} height={28} className="h-7 w-7 rounded-full" />
@@ -59,9 +59,6 @@ export default function BalanceItem({ currency, amount, label, currencyLabel, on
           {displayAmount} {currency}
         </div>
       </div>
-
-      {/* Full-bleed trailing edge; indent past icon cluster (pad 24 + icon ~28 + gap). */}
-      <div className="absolute bottom-0 start-16 end-0 h-px bg-grayscale-200" />
     </div>
   )
 }

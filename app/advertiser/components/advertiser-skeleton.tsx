@@ -8,7 +8,7 @@ export function AdvertiserSkeleton() {
       <div className="p-6 md:px-2 md:py-0">
         <div className="flex flex-col md:flex-row justify-between">
           <div className="container mx-auto pb-6">
-            <div className="bg-slate-75 p-6 rounded-none md:rounded-3xl flex flex-col md:items-start gap-4 mx-[-24px] mt-[-24px] md:mx-0 md:mt-0">
+            <div className="bg-slate-75 p-6 rounded-b-3xl md:rounded-3xl flex flex-col md:items-start gap-4 mx-[-24px] mt-[-24px] md:mx-0 md:mt-0">
               <Skeleton className="bg-grayscale-500 h-10 w-10 rounded" />
               
               <div className="flex-1 w-full">

@@ -262,7 +262,7 @@ export function VisibilityStatusDialog({
     <div className="space-y-4">
       {isMultiple ? (
         <>
-          <p className="text-base text-grayscale-600 mt-2">{t("myAds.visibilityStatusMultipleReasons")}</p>
+          <p className="text-base text-grayscale-600">{t("myAds.visibilityStatusMultipleReasons")}</p>
           <div className="space-y-3">
             {reasons.map((reason, index) => (
               <p key={`${reason}-${index}`} className="text-base text-grayscale-600">
@@ -320,7 +320,6 @@ export function VisibilityStatusDialog({
           title={t("myAds.visibilityStatus")}
           onClose={() => onOpenChange(false)}
           closeAriaLabel={t("common.close")}
-          className="mb-4"
           titleClassName="text-2xl font-extrabold"
         />
         <div className="text-start">{content}</div>

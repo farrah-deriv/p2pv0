@@ -102,6 +102,15 @@ export default function OrdersPage() {
     track("ek_open_orders")
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Chat opened from the list sets isChatVisible(true) to hide the mobile
+  // header/footer. Reset it when leaving the orders page so the header isn't
+  // left hidden after navigating away (e.g. via the footer nav).
+  useEffect(() => {
+    return () => {
+      setIsChatVisible(false)
+    }
+  }, [setIsChatVisible])
+
   useEffect(() => {
     const shouldShowKyc = searchParams.get("show_kyc_popup") === "true"
     if (!shouldShowKyc || kycPopupHandledRef.current) return

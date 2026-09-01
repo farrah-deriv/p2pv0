@@ -34,13 +34,13 @@ export default function WalletBalances({
   if (viewState === "loading") {
     return (
       <div data-testid="wallet-skeleton" className="w-full">
-        <div className="mb-2 px-6">
+        <div className="mb-2 px-6 lg:px-0">
           <Skeleton className="h-6 w-32 bg-grayscale-500" />
         </div>
         <div className="flex w-full flex-col">
           {[1, 2].map((i) => (
             <div key={i} className="relative w-full">
-              <div className="flex h-[72px] w-full items-center justify-between px-6">
+              <div className="flex h-[72px] w-full items-center justify-between px-6 lg:px-0">
                 <div className="flex min-w-0 items-center gap-4">
                   <Skeleton className="h-7 w-7 flex-shrink-0 rounded-full bg-grayscale-500" />
                   <Skeleton className="h-5 w-24 bg-grayscale-500" />
@@ -74,8 +74,8 @@ export default function WalletBalances({
 
   return (
     <div className="w-full">
-      <h2 className="mb-2 px-6 text-base font-extrabold text-slate-1200">{t("wallet.p2pWallets")}</h2>
-      <div className="flex w-full flex-col">
+      <h2 className="mb-2 px-6 lg:px-0 text-base font-extrabold text-slate-1200">{t("wallet.p2pWallets")}</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8">
         {balances
           .filter((wallet) => wallet.currency === "USD")
           .map((wallet) => (

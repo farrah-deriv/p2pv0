@@ -2,7 +2,6 @@
 
 import type React from "react"
 import { useState } from "react"
-import { StandaloneTriangleExclamationRegularIcon } from "@deriv/quill-icons/Standalone"
 import { cn } from "@/lib/utils"
 
 interface RateInputProps {
@@ -74,15 +73,9 @@ export function RateInput({
           >
             {label}
           </label>
-
-          {error && (
-            <div className="absolute end-2 top-1/2 transform -translate-y-1/2">
-              <StandaloneTriangleExclamationRegularIcon iconSize="sm" className="text-error" />
-            </div>
-          )}
         </div>
 
-        <div className="flex items-center justify-center bg-gray-50 px-4 text-gray-500 min-w-[80px] text-center">
+        <div className="flex items-center justify-center px-4 text-neutral-600 min-w-[80px] text-center">
         {currency}
         </div>
       </div>

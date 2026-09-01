@@ -79,6 +79,18 @@ interface AmountValidationErrors {
   maxAmount?: string
 }
 
+/**
+ * Converts an initial amount (total / min / max order) into the string shown in
+ * its CurrencyInput. A missing or zero amount renders as an empty field so the
+ * "0.00" placeholder is displayed instead of a literal "0".
+ */
+function amountToInputValue(amount: number | string | undefined): string {
+  if (amount === undefined || amount === null || amount === "") return ""
+  const numeric = Number(amount)
+  if (!Number.isFinite(numeric) || numeric === 0) return ""
+  return amount.toString()
+}
+
 interface PaymentDetailsFormProps {
   initialData: Partial<AdFormData>
   onFormDataChange: (data: Partial<AdFormData>, isValid: boolean) => void
@@ -249,7 +261,7 @@ const FullPagePaymentSelection = ({
                         checked={isSelected}
                         disabled={isDisabled}
                         onCheckedChange={() => !isDisabled && handleToggle(methodId)}
-                        className="w-[14px] h-[14px] rounded-[2px]"
+                        className="rounded-[2px]"
                         data-testid={`ad-form-checkbox-payment-${methodId}`}
                       />
                     </div>
@@ -526,7 +538,7 @@ const PaymentSelectionContent = ({
                         checked={isSelected}
                         onCheckedChange={() => !isDisabled && handlePaymentMethodToggle(methodId)}
                         disabled={isDisabled}
-                        className="pointer-events-none h-[20px] w-[20px] shrink-0 rounded-sm border-[2px] border-neutral-7 disabled:cursor-not-allowed disabled:opacity-30 data-[state=checked]:border-black data-[state=checked]:bg-black"
+                        className="pointer-events-none shrink-0 rounded-sm border-[2px] border-neutral-7 disabled:cursor-not-allowed disabled:opacity-30 data-[state=checked]:border-black data-[state=checked]:bg-black"
                         data-testid={`ad-form-checkbox-payment-${methodId}`}
                       />
                     </div>
@@ -600,9 +612,9 @@ export default function PaymentDetailsForm({
   const { mutateAsync: addPaymentMethod, isPending: isAddingPaymentMethod } = useAddPaymentMethod()
   const buyCurrency = initialData.buyCurrency || "USD"
 
-  const [totalAmount, setTotalAmount] = useState(initialData.totalAmount?.toString() || "")
-  const [minAmount, setMinAmount] = useState(initialData.minAmount?.toString() || "")
-  const [maxAmount, setMaxAmount] = useState(initialData.maxAmount?.toString() || "")
+  const [totalAmount, setTotalAmount] = useState(amountToInputValue(initialData.totalAmount))
+  const [minAmount, setMinAmount] = useState(amountToInputValue(initialData.minAmount))
+  const [maxAmount, setMaxAmount] = useState(amountToInputValue(initialData.maxAmount))
   const [amountErrors, setAmountErrors] = useState<AmountValidationErrors>({})
   const [amountTouched, setAmountTouched] = useState({
     totalAmount: false,
@@ -645,9 +657,9 @@ export default function PaymentDetailsForm({
   }
 
   useEffect(() => {
-    if (initialData.totalAmount !== undefined) setTotalAmount(initialData.totalAmount.toString())
-    if (initialData.minAmount !== undefined) setMinAmount(initialData.minAmount.toString())
-    if (initialData.maxAmount !== undefined) setMaxAmount(initialData.maxAmount.toString())
+    if (initialData.totalAmount !== undefined) setTotalAmount(amountToInputValue(initialData.totalAmount))
+    if (initialData.minAmount !== undefined) setMinAmount(amountToInputValue(initialData.minAmount))
+    if (initialData.maxAmount !== undefined) setMaxAmount(amountToInputValue(initialData.maxAmount))
     if (initialData.instructions !== undefined) setInstructions(initialData.instructions || "")
   }, [initialData.totalAmount, initialData.minAmount, initialData.maxAmount, initialData.instructions])
 

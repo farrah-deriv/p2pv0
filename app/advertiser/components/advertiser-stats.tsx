@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
+import { ModalHeaderRow } from "@/components/ui/modal-header-row"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import Image from "next/image"
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -110,20 +111,20 @@ export default function AdvertiserStats({ profile }: AdvertiserStatsProps) {
             </DrawerHeader>
             <div className="p-4 overflow-y-auto">
               <StatsContent profile={profile} isMobile={true} />
-              <Button className="my-4 min-w-full w-full" onClick={() => setIsStatsModalOpen(false)}>
-                {t("advertiser.close")}
-              </Button>
             </div>
           </DrawerContent>
         </Drawer>
       ) : (
         <Dialog open={isStatsModalOpen} onOpenChange={setIsStatsModalOpen}>
           <DialogContent className="sm:max-w-md sm:rounded-[32px]">
-            <DialogHeader>
-              <DialogTitle className="tracking-normal font-bold text-2xl">{t("advertiser.advertiserInfo")}</DialogTitle>
-            </DialogHeader>
+            <ModalHeaderRow
+              asDialog
+              title={t("advertiser.advertiserInfo")}
+              onClose={() => setIsStatsModalOpen(false)}
+              closeAriaLabel={t("advertiser.close")}
+              titleClassName="tracking-normal font-bold text-2xl"
+            />
             <StatsContent profile={profile} isMobile={false} />
-            <Button onClick={() => setIsStatsModalOpen(false)}>{t("advertiser.close")}</Button>
           </DialogContent>
         </Dialog>
       )}

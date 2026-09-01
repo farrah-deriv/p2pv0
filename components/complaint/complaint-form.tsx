@@ -142,7 +142,7 @@ export function ComplaintForm({ isOpen, onClose, onSubmit, orderId, type }: Comp
                 id="complaint-confirm"
                 checked={confirmed}
                 onCheckedChange={(v) => setConfirmed(v === true)}
-                className="shrink-0 mt-0.5 w-[20px] h-[20px] rounded-sm border border-grayscale-600 data-[state=checked]:bg-transparent data-[state=checked]:text-grayscale-600"
+                className="shrink-0 mt-0.5 rounded-sm border border-grayscale-600 data-[state=checked]:bg-transparent data-[state=checked]:text-grayscale-600"
                 data-testid="complaint-checkbox-confirm"
               />
               <Label htmlFor="complaint-confirm" className="font-normal text-grayscale-600 text-sm cursor-pointer leading-snug">
