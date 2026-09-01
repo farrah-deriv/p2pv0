@@ -9,7 +9,8 @@ import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
 import { useStablePaymentMethodOrder } from "@/hooks/use-stable-payment-method-order"
 import { SelectedPaymentMethodsSection } from "@/components/payment-methods/selected-payment-methods-section"
 import Image from "next/image"
-import { StandaloneChevronDownRegularIcon, StandaloneSearchRegularIcon } from "@deriv/quill-icons/Standalone"
+import { StandaloneChevronDownRegularIcon } from "@deriv/quill-icons/Standalone"
+import { SearchField } from "@/components/ui/search-field"
 import type { AdFormData } from "../types"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import { Textarea } from "@/components/ui/textarea"
@@ -77,6 +78,18 @@ interface AmountValidationErrors {
   totalAmount?: string
   minAmount?: string
   maxAmount?: string
+}
+
+/**
+ * Converts an initial amount (total / min / max order) into the string shown in
+ * its CurrencyInput. A missing or zero amount renders as an empty field so the
+ * "0.00" placeholder is displayed instead of a literal "0".
+ */
+function amountToInputValue(amount: number | string | undefined): string {
+  if (amount === undefined || amount === null || amount === "") return ""
+  const numeric = Number(amount)
+  if (!Number.isFinite(numeric) || numeric === 0) return ""
+  return amount.toString()
 }
 
 interface PaymentDetailsFormProps {
@@ -171,28 +184,13 @@ const FullPagePaymentSelection = ({
         </p>
       </div>
       <div className={`shrink-0 pb-2 ${isMobile ? "px-4" : ""}`}>
-        <div className="flex items-center gap-2 rounded-lg bg-black/[0.04] px-3 h-10">
-          <StandaloneSearchRegularIcon iconSize="xs" className="shrink-0 text-neutral-400" aria-hidden />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t("common.search")}
-            className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-neutral-400"
-            data-testid="ad-form-input-payment-search"
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSearchQuery("")}
-              className="hover:!bg-transparent !p-0 !h-auto !w-auto !min-w-0"
-              aria-label={t("common.clearSearch")}
-            >
-              <Image src="/icons/clear-search-icon.png" alt="" aria-hidden width={20} height={20} />
-            </Button>
-          )}
-        </div>
+        <SearchField
+          value={searchQuery}
+          onChange={setSearchQuery}
+          onClear={() => setSearchQuery("")}
+          placeholder={t("common.search")}
+          data-testid="ad-form-input-payment-search"
+        />
       </div>
       <div className={listBodyClass}>
         <SelectedPaymentMethodsSection
@@ -249,7 +247,7 @@ const FullPagePaymentSelection = ({
                         checked={isSelected}
                         disabled={isDisabled}
                         onCheckedChange={() => !isDisabled && handleToggle(methodId)}
-                        className="w-[14px] h-[14px] rounded-[2px]"
+                        className="rounded-[2px]"
                         data-testid={`ad-form-checkbox-payment-${methodId}`}
                       />
                     </div>
@@ -526,7 +524,7 @@ const PaymentSelectionContent = ({
                         checked={isSelected}
                         onCheckedChange={() => !isDisabled && handlePaymentMethodToggle(methodId)}
                         disabled={isDisabled}
-                        className="pointer-events-none h-[20px] w-[20px] shrink-0 rounded-sm border-[2px] border-neutral-7 disabled:cursor-not-allowed disabled:opacity-30 data-[state=checked]:border-black data-[state=checked]:bg-black"
+                        className="pointer-events-none shrink-0 rounded-sm border-[2px] border-neutral-7 disabled:cursor-not-allowed disabled:opacity-30 data-[state=checked]:border-black data-[state=checked]:bg-black"
                         data-testid={`ad-form-checkbox-payment-${methodId}`}
                       />
                     </div>
@@ -600,9 +598,9 @@ export default function PaymentDetailsForm({
   const { mutateAsync: addPaymentMethod, isPending: isAddingPaymentMethod } = useAddPaymentMethod()
   const buyCurrency = initialData.buyCurrency || "USD"
 
-  const [totalAmount, setTotalAmount] = useState(initialData.totalAmount?.toString() || "")
-  const [minAmount, setMinAmount] = useState(initialData.minAmount?.toString() || "")
-  const [maxAmount, setMaxAmount] = useState(initialData.maxAmount?.toString() || "")
+  const [totalAmount, setTotalAmount] = useState(amountToInputValue(initialData.totalAmount))
+  const [minAmount, setMinAmount] = useState(amountToInputValue(initialData.minAmount))
+  const [maxAmount, setMaxAmount] = useState(amountToInputValue(initialData.maxAmount))
   const [amountErrors, setAmountErrors] = useState<AmountValidationErrors>({})
   const [amountTouched, setAmountTouched] = useState({
     totalAmount: false,
@@ -645,9 +643,9 @@ export default function PaymentDetailsForm({
   }
 
   useEffect(() => {
-    if (initialData.totalAmount !== undefined) setTotalAmount(initialData.totalAmount.toString())
-    if (initialData.minAmount !== undefined) setMinAmount(initialData.minAmount.toString())
-    if (initialData.maxAmount !== undefined) setMaxAmount(initialData.maxAmount.toString())
+    if (initialData.totalAmount !== undefined) setTotalAmount(amountToInputValue(initialData.totalAmount))
+    if (initialData.minAmount !== undefined) setMinAmount(amountToInputValue(initialData.minAmount))
+    if (initialData.maxAmount !== undefined) setMaxAmount(amountToInputValue(initialData.maxAmount))
     if (initialData.instructions !== undefined) setInstructions(initialData.instructions || "")
   }, [initialData.totalAmount, initialData.minAmount, initialData.maxAmount, initialData.instructions])
 

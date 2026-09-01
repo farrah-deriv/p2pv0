@@ -256,7 +256,7 @@ export default function TransactionsTab({
             >
               {Object.entries(groupedTransactions).map(([dateKey, dateTransactions]) => (
                 <div key={dateKey} className="space-y-0">
-                  <h3 className="px-6 text-xs font-medium text-grayscale-text-muted">{dateKey}</h3>
+                  <h3 className="px-6 lg:px-0 text-xs font-medium text-grayscale-text-muted">{dateKey}</h3>
 
                   <div className="space-y-0">
                     {dateTransactions.map((transaction, index) => {
@@ -268,7 +268,7 @@ export default function TransactionsTab({
                         <div key={transaction.transaction_id} data-testid={`wallet-row-tx-${transaction.transaction_id}`} className="relative">
                           {/* px-6 matches WalletSummary `p-6` so trailing amounts align with header. */}
                           <div
-                            className="flex items-center justify-between min-h-[72px] py-3 px-6 cursor-pointer transition-colors hover:bg-gray-50"
+                            className="flex items-center justify-between min-h-[72px] py-3 px-6 lg:px-0 cursor-pointer transition-colors hover:bg-gray-50"
                             onClick={() => handleTransactionClick(transaction)}
                           >
                             <div className="flex items-center gap-4 min-w-0">

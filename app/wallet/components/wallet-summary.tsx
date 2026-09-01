@@ -309,7 +309,7 @@ export default function WalletSummary({
           // Balances + details: rounded bottom for separation from content below.
           isBalancesView || isShowingTransactionDetails
             ? "rounded-b-3xl md:rounded-3xl"
-            : "rounded-b-none md:rounded-t-3xl md:rounded-b-none",
+            : "rounded-b-3xl md:rounded-t-3xl md:rounded-b-3xl",
         )}
       >
         {!isBalancesView && (

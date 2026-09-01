@@ -74,7 +74,7 @@ export default function OrdersPage() {
 
   // Build filters for useOrders hook
   const filters = useMemo(() => ({
-    is_open: activeTab === "active" ? true : false,
+    is_open: activeTab === "active",
     ...(activeTab === "past" &&
       dateFilter !== "all" &&
       customDateRange.from && {
@@ -101,6 +101,15 @@ export default function OrdersPage() {
   useEffect(() => {
     track("ek_open_orders")
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Chat opened from the list sets isChatVisible(true) to hide the mobile
+  // header/footer. Reset it when leaving the orders page so the header isn't
+  // left hidden after navigating away (e.g. via the footer nav).
+  useEffect(() => {
+    return () => {
+      setIsChatVisible(false)
+    }
+  }, [setIsChatVisible])
 
   useEffect(() => {
     const shouldShowKyc = searchParams.get("show_kyc_popup") === "true"

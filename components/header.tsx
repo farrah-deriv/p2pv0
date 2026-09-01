@@ -56,12 +56,16 @@ export default function Header({ className }: { className?: string }) {
   // NovuBellLink in the same tree position on every render — React never remounts it, so its <Inbox>
   // session is never destroyed. A conditional return moves NovuBellLink to a different tree position,
   // causing unmount + remount and an extra /v1/inbox/session call on every navigation.
+  // Chat can be opened either from the order detail route (/orders/[id]) or
+  // from the order list (/orders) where it renders in place while the route
+  // stays /orders. In both cases isChatVisible is set, so on mobile we hide the
+  // header whenever chat is visible rather than keying off the detail route.
   const shouldHideHeader =
     pathname.startsWith("/advertiser") ||
     !!isOrderDetailPage ||
     isAdFormPage ||
     isTransactionListVisible ||
-!!(isMobile && isOrderDetailPage && isChatVisible)
+    !!(isMobile && isChatVisible)
 
   const handleAskAmy = () => {
     track("ek_ask_amy_markets")

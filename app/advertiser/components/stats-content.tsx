@@ -70,31 +70,31 @@ export default function StatsContent({ profile }: StatsContentProps) {
     <TooltipProvider>
       <div className="space-y-6">
         <div className="flex flex-col">
-        <div className="flex justify-between text-sm border-b py-6">
+        <div className="flex justify-between text-sm border-b py-3">
             <div className="text-sm text-slate-500">{t("advertiser.buyCompletionRate30d")}</div>
             <div className="font-bold mt-1">{profile?.statistics_30day?.completion_rate_buy ? `${profile?.statistics_30day?.completion_rate_buy}% (${profile?.statistics_30day?.completion_count_buy})` :  "-"}</div>
           </div>
-          <div className="flex justify-between text-sm border-b py-6">
+          <div className="flex justify-between text-sm border-b py-3">
             <div className="text-sm text-slate-500">{t("advertiser.sellCompletionRate30d")}</div>
             <div className="font-bold mt-1">{profile?.statistics_30day?.completion_rate_sell ? `${profile?.statistics_30day?.completion_rate_sell}% (${profile?.statistics_30day?.completion_count_sell})` :  "-"}</div>
           </div>
-          <div className="flex justify-between text-sm border-b py-6">
+          <div className="flex justify-between text-sm border-b py-3">
             <div className="text-sm text-slate-500">{t("advertiser.totalTrades30d")}</div>
             <div className="font-bold mt-1">{profile?.statistics_30day?.completion_count_all}</div>
           </div>
-          <div className="flex justify-between text-sm border-b py-6">
+          <div className="flex justify-between text-sm border-b py-3">
             <div className="text-sm text-slate-500">{t("advertiser.totalAllTimeTrades")}</div>
             <div className="font-bold mt-1">{profile?.statistics_lifetime?.completion_count_all}</div>
           </div>
-          <div className="flex justify-between text-sm border-b py-6">
+          <div className="flex justify-between text-sm border-b py-3">
             <div className="text-sm text-slate-500">{t("profile.avgPayTime")} (30d)</div>
             <div className="font-bold mt-1">{getDuration(profile?.statistics_30day?.buy_time_average)}</div>
           </div>
-          <div className="flex justify-between text-sm border-b py-6">
+          <div className="flex justify-between text-sm border-b py-3">
             <div className="text-sm text-slate-500">{t("profile.avgReleaseTime")} (30d)</div>
             <div className="font-bold mt-1">{getDuration(profile?.statistics_30day?.release_time_average)}</div>
           </div>
-          <div className="flex justify-between text-sm border-b py-6">
+          <div className="flex justify-between text-sm border-b py-3">
             <div className="flex items-center text-sm text-slate-500">
               {t("profile.tradePartners")}
               <Tooltip>
@@ -115,7 +115,7 @@ export default function StatsContent({ profile }: StatsContentProps) {
             </div>
             <div className="font-bold mt-1">{profile?.statistics_lifetime?.partner_count}</div>
           </div>
-          <div className="flex justify-between text-sm border-b py-6">
+          <div className="flex justify-between text-sm py-3">
             <div className="flex items-center text-sm text-slate-500">
               {t("profile.tradeVolume")} (30d)
               <Tooltip>

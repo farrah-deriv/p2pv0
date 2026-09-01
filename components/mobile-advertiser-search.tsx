@@ -2,9 +2,8 @@
 
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
 import { BackArrowIcon } from "@/components/ui/back-arrow-icon"
-import { Input } from "@/components/ui/input"
+import { SearchField } from "@/components/ui/search-field"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
@@ -30,19 +29,6 @@ interface MobileAdvertiserSearchProps {
 export default function MobileAdvertiserSearch({ isOpen, onClose }: MobileAdvertiserSearchProps) {
     const router = useRouter()
     const { setNickname } = useMarketFilterStore()
-
-    // Restore previous search when sheet reopens (e.g. returning from advertiser page or order sidebar)
-    useEffect(() => {
-        let mounted = true
-        if (isOpen) {
-            const storedNickname = useMarketFilterStore.getState().nickname
-            if (storedNickname && mounted) {
-                setSearchInput(storedNickname)
-                setDebouncedSearchInput(storedNickname)
-            }
-        }
-        return () => { mounted = false }
-    }, [isOpen])
     const { t } = useTranslations()
     const [searchInput, setSearchInput] = useState("")
     const [searchTab, setSearchTab] = useState<"buy" | "sell">("sell")
@@ -51,6 +37,17 @@ export default function MobileAdvertiserSearch({ isOpen, onClose }: MobileAdvert
     const sentinelRef = useRef<HTMLDivElement>(null)
     const scrollContainerRef = useRef<HTMLDivElement>(null)
     const isFetchingNextPageRef = useRef(false)
+
+    // Restore previous search when sheet reopens (e.g. returning from advertiser page or order sidebar)
+    useEffect(() => {
+        if (isOpen) {
+            const storedNickname = useMarketFilterStore.getState().nickname
+            if (storedNickname) {
+                setSearchInput(storedNickname)
+                setDebouncedSearchInput(storedNickname)
+            }
+        }
+    }, [isOpen, setSearchInput, setDebouncedSearchInput])
 
     const {
         data,
@@ -191,28 +188,15 @@ export default function MobileAdvertiserSearch({ isOpen, onClose }: MobileAdvert
                     >
                         <BackArrowIcon alt={t("common.back")} width={24} height={24} />
                     </Button>
-                    <div className="relative flex-1">
-                        <Input
-                            data-testid="mobile-search-input"
-                            variant="tertiary"
-                            placeholder={t("market.searchAdvertiserNickname")}
-                            value={searchInput}
-                            onChange={(e) => handleSearchChange(e.target.value)}
-                            autoFocus
-                            className={`w-full min-w-0 rounded-full ps-4 ${searchInput ? "pe-10" : "pe-4"}`}
-                        />
-                        {searchInput && (
-                            <Button
-                                data-testid="mobile-search-btn-clear"
-                                variant="ghost"
-                                size="icon"
-                                onClick={handleClear}
-                                className="absolute end-1 top-1/2 -translate-y-1/2 h-6 w-6 hover:bg-transparent p-0"
-                            >
-                                <Image src="/icons/clear-search-icon.png" alt={t("common.clear")} width={20} height={20} />
-                            </Button>
-                        )}
-                    </div>
+                    <SearchField
+                        data-testid="mobile-search-input"
+                        containerClassName="flex-1"
+                        placeholder={t("market.searchAdvertiserNickname")}
+                        value={searchInput}
+                        onChange={handleSearchChange}
+                        onClear={handleClear}
+                        autoFocus
+                    />
                 </div>
 
                 {/* Tabs */}

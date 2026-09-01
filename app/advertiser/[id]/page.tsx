@@ -565,7 +565,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
       <div className="p-6 pt-0 md:px-2 md:py-0">
         <div className="flex flex-col md:flex-row justify-between">
           <div className="container mx-auto pb-6">
-            <div className="bg-slate-75 p-6 rounded-none md:rounded-3xl flex flex-col md:items-start gap-4 mx-[-24px] mt-[-24px] md:mx-0 md:mt-0">
+            <div className="bg-slate-75 p-6 rounded-b-3xl md:rounded-3xl flex flex-col md:items-start gap-4 mx-[-24px] mt-[-24px] md:mx-0 md:mt-0">
               <span className="hidden md:block">
                 <Button data-testid="advertiser-btn-back-desktop" variant="icon-muted" onClick={handleBack} className="!bg-black/[0.04] hover:!bg-black/[0.08]" aria-label={t("common.back")}>
                   <StandaloneArrowLeftFillIcon width={24} height={24} className="rtl:rotate-180" aria-hidden />
