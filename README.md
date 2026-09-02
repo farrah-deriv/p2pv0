@@ -55,6 +55,7 @@ NEXT_PUBLIC_SOCKET_URL=wss://staging-api-core.deriv.com
 NEXT_PUBLIC_SOCKET_ME_URL=wss://staging-api-core.deriv.me
 NEXT_PUBLIC_SOCKET_BE_URL=wss://staging-api-core.deriv.be
 NEXT_PUBLIC_IS_ORY_ENABLED=1
+NEXT_PUBLIC_IS_PAYMENT_METHOD_SESSION_ELEVATION_ENABLED=0
 NEXT_PUBLIC_ORY_URL=https://staging-auth.deriv.com
 NEXT_PUBLIC_ORY_ME_URL=https://staging-auth.deriv.me
 NEXT_PUBLIC_ORY_BE_URL=https://staging-auth.deriv.be

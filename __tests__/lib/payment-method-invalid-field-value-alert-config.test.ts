@@ -16,10 +16,11 @@ describe("resolvePaymentMethodAccountFieldValue", () => {
 
 describe("createPaymentMethodInvalidFieldValueAlertConfig", () => {
   it("builds dual-CTA alert with field value interpolation", () => {
+    const onCancel = jest.fn()
     const config = createPaymentMethodInvalidFieldValueAlertConfig(t, {
       fieldValue: "12345",
       onEdit: () => {},
-      onCancel: () => {},
+      onCancel,
     })
 
     expect(config.title).toBe('paymentMethod.invalidFieldValueTitle::{"fieldValue":"12345"}')
@@ -27,5 +28,6 @@ describe("createPaymentMethodInvalidFieldValueAlertConfig", () => {
     expect(config.confirmText).toBe("paymentMethod.editDetails")
     expect(config.cancelText).toBe("common.cancel")
     expect(config.type).toBe("warning")
+    expect(config.onClose).toBe(onCancel)
   })
 })

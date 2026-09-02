@@ -1,4 +1,5 @@
 import { API, AUTH, USER } from "@/lib/local-variables"
+import { isPaymentMethodSessionElevationEnabled } from "@/lib/payment-method-session-elevation"
 import { p2pFetch } from "./p2p-fetch"
 import { appendNicknameParam } from "@/lib/profile-list-search"
 
@@ -72,6 +73,19 @@ export interface UserPaymentMethod {
   fields: Record<string, { value?: string; display_name?: string; required?: boolean }>
   is_enabled?: number
 }
+
+interface PaymentMethodApiError {
+  code?: string
+  message?: string
+}
+
+interface FormattedPaymentMethodError {
+  code: string
+  message: string
+}
+
+const paymentMethodMutationBaseUrl = () =>
+  isPaymentMethodSessionElevationEnabled() ? API.p2pV2BaseUrl : API.baseUrl
 
 // API Functions
 /**
@@ -320,7 +334,7 @@ export async function addPaymentMethod(
     }
 
     const headers = AUTH.getAuthHeader()
-    const response = await p2pFetch(`${API.p2pV2BaseUrl}/user-payment-methods`, {
+    const response = await p2pFetch(`${paymentMethodMutationBaseUrl()}/user-payment-methods`, {
       method: "POST",
       headers,
       credentials: "include",
@@ -332,7 +346,7 @@ export async function addPaymentMethod(
     let responseData: any
     try {
       responseData = responseText ? JSON.parse(responseText) : { success: response.ok }
-    } catch (e) {
+    } catch {
       return {
         success: false,
         errors: [{ code: "parse_error", message: "Failed to parse server response" }],
@@ -340,19 +354,14 @@ export async function addPaymentMethod(
     }
 
     if (!response.ok) {
-      const errors = responseData.errors || []
-
-      const formattedErrors = errors.map((err: any) => ({
-        code: err.code || "unknown_error",
-        message: err.code === "ActionSessionUnauthorized" ? err.message : getErrorMessageFromCode(err.code),
-      }))
+      const formattedErrors = formatPaymentMethodErrors(responseData.errors)
 
       return {
         success: false,
         errors:
           formattedErrors.length > 0
             ? formattedErrors
-            : [{ code: "api_error", message: `API Error: ${response.status} ${response.statusText}` }],
+            : [createPaymentMethodApiError("api_error")],
       }
     }
 
@@ -380,7 +389,7 @@ export async function updatePaymentMethod(
     }
 
     const headers = AUTH.getAuthHeader()
-    const response = await p2pFetch(`${API.p2pV2BaseUrl}/user-payment-methods/${id}`, {
+    const response = await p2pFetch(`${paymentMethodMutationBaseUrl()}/user-payment-methods/${id}`, {
       method: "PATCH",
       credentials: "include",
       headers,
@@ -392,7 +401,7 @@ export async function updatePaymentMethod(
     let responseData: any
     try {
       responseData = responseText ? JSON.parse(responseText) : { success: response.ok }
-    } catch (e) {
+    } catch {
       return {
         success: false,
         errors: [{ code: "parse_error", message: "Failed to parse server response" }],
@@ -400,19 +409,14 @@ export async function updatePaymentMethod(
     }
 
     if (!response.ok) {
-      const errors = responseData.errors || []
-
-      const formattedErrors = errors.map((err: any) => ({
-        code: err.code || "unknown_error",
-        message: err.message || getErrorMessageFromCode(err.code),
-      }))
+      const formattedErrors = formatPaymentMethodErrors(responseData.errors)
 
       return {
         success: false,
         errors:
           formattedErrors.length > 0
             ? formattedErrors
-            : [{ code: "api_error", message: `API Error: ${response.status} ${response.statusText}` }],
+            : [createPaymentMethodApiError("api_error")],
       }
     }
 
@@ -430,16 +434,48 @@ export async function updatePaymentMethod(
   }
 }
 
-function getErrorMessageFromCode(code: string): string {
+function getErrorMessageFromCode(code: string): string | undefined {
   const errorMessages: Record<string, string> = {
     DuplicatePaymentMethod: "You already have this payment method added to your account.",
+    PaymentMethodDuplicate: "You already have this payment method added to your account.",
     PaymentMethodUsedByOpenOrder:
       "This payment method is currently being used by an open order and cannot be modified.",
+    PaymentMethodInUseByOrder:
+      "This payment method is currently being used by an open order and cannot be modified.",
+    PaymentMethodInUseByAdvert:
+      "This payment method is linked to an advert and cannot be modified.",
     InvalidPaymentMethod: "The payment method information is invalid.",
+    PaymentMethodInvalid: "The payment method information is invalid.",
+    PaymentMethodInvalidField: "One or more payment method fields are invalid.",
+    PaymentMethodInvalidFieldValue: "One or more payment method field values are invalid.",
     PaymentMethodNotFound: "The payment method could not be found.",
+    PaymentMethodRequiredField: "A required payment method field is missing.",
   }
 
-  return errorMessages[code] || `Error: ${code}`
+  return errorMessages[code]
+}
+
+function createPaymentMethodApiError(code: string, message?: string): FormattedPaymentMethodError {
+  return {
+    code,
+    message: message || getErrorMessageFromCode(code) || "Something went wrong. Please try again.",
+  }
+}
+
+function formatPaymentMethodErrors(errors: unknown): FormattedPaymentMethodError[] {
+  if (!Array.isArray(errors)) return []
+
+  return errors.map((error) => {
+    const { code = "unknown_error", message } = error as PaymentMethodApiError
+
+    // The service returns a user-actionable message when the session has
+    // expired. Preserve that message consistently for every mutation.
+    if (code === "ActionSessionUnauthorized") {
+      return createPaymentMethodApiError(code, message)
+    }
+
+    return createPaymentMethodApiError(code)
+  })
 }
 
 export async function deletePaymentMethod(
@@ -447,7 +483,7 @@ export async function deletePaymentMethod(
 ): Promise<{ success: boolean; data?: PaymentMethod; errors?: Array<{ code: string; message: string }> }> {
   try {
     const headers = AUTH.getAuthHeader()
-    const response = await p2pFetch(`${API.p2pV2BaseUrl}/user-payment-methods/${id}`, {
+    const response = await p2pFetch(`${paymentMethodMutationBaseUrl()}/user-payment-methods/${id}`, {
       method: "DELETE",
       headers,
       credentials: "include",
@@ -457,9 +493,13 @@ export async function deletePaymentMethod(
       const errorText = await response.text()
       try {
         const errorData = JSON.parse(errorText)
-        return { success: false, errors: errorData.errors }
-      } catch (error) {
-        return { success: false, errors: [{ code: "api_error", message: response.statusText }] }
+        const formattedErrors = formatPaymentMethodErrors(errorData.errors)
+        return {
+          success: false,
+          errors: formattedErrors.length > 0 ? formattedErrors : [createPaymentMethodApiError("api_error")],
+        }
+      } catch {
+        return { success: false, errors: [createPaymentMethodApiError("api_error")] }
       }
     }
 

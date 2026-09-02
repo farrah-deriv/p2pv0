@@ -34,6 +34,7 @@ import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
 import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
 import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
 import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
+import { getPaymentMethodInUseRoute } from "@/lib/payment-methods/payment-method-error-routing"
 import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 interface PaymentMethod {
@@ -181,18 +182,40 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
       const errorMessages: Record<string, { title: string; description: string }> = {
         PaymentMethodInvalid: { title: t("paymentMethod.invalidMethod"), description: t("paymentMethod.invalidMethodDescription") },
         PaymentMethodInvalidField: { title: t("paymentMethod.invalidField"), description: t("paymentMethod.invalidFieldDescription") },
-        PaymentMethodNotFound: { title: t("paymentMethod.notFound"), description: t("paymentMethod.notFoundDescription") },
         PaymentMethodRequiredField: { title: t("paymentMethod.requiredField"), description: t("paymentMethod.requiredFieldDescription") },
-        PaymentMethodInUseByOrder: { title: t("profile.cannotUpdatePaymentMethod"), description: t("profile.paymentMethodInUseByOrder") },
       }
 
       const errorCode = error?.errors?.[0]?.code
+
+      const paymentMethodInUseRoute = getPaymentMethodInUseRoute(errorCode)
+      if (paymentMethodInUseRoute) {
+        const isAdvert = paymentMethodInUseRoute === "/ads"
+        showAlert({
+          title: t("profile.cannotUpdatePaymentMethod"),
+          description: isAdvert
+            ? t("profile.paymentMethodLinkedToAd")
+            : t("profile.paymentMethodInUseByOrder"),
+          confirmText: isAdvert ? t("myAds.manageAds") : t("orders.title"),
+          cancelText: t("common.cancel"),
+          type: "warning",
+          onConfirm: () => {
+            setEditPanel({ show: false, paymentMethod: null })
+            router.push(paymentMethodInUseRoute)
+          },
+          onCancel: () => setEditPanel({ show: false, paymentMethod: null }),
+          onClose: () => setEditPanel({ show: false, paymentMethod: null }),
+        })
+        return
+      }
 
       if (errorCode === "PaymentMethodDuplicate") {
         showAlert(
           createPaymentMethodDuplicateAlertConfig(t, {
             onManage: () => {
               hideAlert()
+              setEditPanel({ show: false, paymentMethod: null })
+            },
+            onCancel: () => {
               setEditPanel({ show: false, paymentMethod: null })
             },
           }),
@@ -214,6 +237,20 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
         return
       }
 
+      if (errorCode === "PaymentMethodNotFound") {
+        showAlert({
+          title: t("paymentMethod.notFound"),
+          description: t("paymentMethod.notFoundDescription"),
+          confirmText: t("paymentMethod.addPaymentMethod"),
+          cancelText: t("common.cancel"),
+          type: "warning",
+          onConfirm: () => setEditPanel({ show: false, paymentMethod: null }),
+          onCancel: () => setEditPanel({ show: false, paymentMethod: null }),
+          onClose: () => setEditPanel({ show: false, paymentMethod: null }),
+        })
+        return
+      }
+
       const { title, description } = (typeof errorCode === 'string' ? errorMessages[errorCode] : undefined) ?? {
         title: t("profile.cannotUpdatePaymentMethod"),
         description: t("profile.unableToUpdatePaymentMethod"),
@@ -228,7 +265,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
     }
   }
 
-  const handleDeletePaymentMethod = (id: string, name: string) => {
+  const handleDeletePaymentMethod = (id: string) => {
     showDeleteDialog({
       title: t("profile.deletePaymentMethodTitle"),
       description: t("profile.deletePaymentMethodDescription"),
@@ -273,11 +310,19 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
         }
       }
 
+      const primaryRoute = getPaymentMethodInUseRoute(error.errors?.[0]?.code)
+
       showAlert({
         title: t("profile.cannotDeletePaymentMethod"),
         description: errorMessage,
-        confirmText: t("orderDetails.gotIt"),
+        confirmText: primaryRoute === "/ads"
+          ? t("myAds.manageAds")
+          : primaryRoute === "/orders"
+            ? t("orders.title")
+            : t("orderDetails.gotIt"),
+        cancelText: primaryRoute ? t("common.cancel") : undefined,
         type: "error",
+        onConfirm: primaryRoute ? () => router.push(primaryRoute) : undefined,
       })
     }
   }
@@ -397,7 +442,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
                         <DropdownMenuItem
                           data-testid={`profile-btn-delete-payment-${method.id}`}
                           className="flex items-center gap-2 text-destructive focus-visible:text-destructive px-[16px] py-[8px]"
-                          onSelect={() => handleDeletePaymentMethod(method.id, method.name)}
+                          onSelect={() => handleDeletePaymentMethod(method.id)}
                         >
                           <Image src="/icons/delete-trash-icon.png" alt={t("common.delete")} width={24} height={24} />
                           {t("profile.delete")}
@@ -450,7 +495,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
                         <DropdownMenuItem
                           data-testid={`profile-btn-delete-payment-${method.id}`}
                           className="flex items-center gap-2 text-destructive focus-visible:text-destructive px-[16px] py-[8px]"
-                          onSelect={() => handleDeletePaymentMethod(method.id, method.name)}
+                          onSelect={() => handleDeletePaymentMethod(method.id)}
                         >
                           <Image src="/icons/delete-trash-icon.png" alt={t("common.delete")} width={24} height={24} />
                           {t("profile.delete")}

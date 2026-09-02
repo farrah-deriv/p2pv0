@@ -585,6 +585,15 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
     openPaymentSelection()
   }
 
+  const returnToPaymentSelection = () => {
+    setShowAddPaymentPanel(false)
+    setSelectedPaymentMethodType(undefined)
+    // AlertDialog finishes dismissing its current overlay after the callback.
+    // Opening the selector on the next frame prevents that cleanup from
+    // immediately closing the newly opened selector.
+    requestAnimationFrame(() => openPaymentSelection())
+  }
+
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAmount(e.target.value)
   }
@@ -809,12 +818,8 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
       if (errorCode === "PaymentMethodDuplicate") {
         showAlert(
           createPaymentMethodDuplicateAlertConfig(t, {
-            onManage: () => {
-              hideAlert()
-              setShowAddPaymentPanel(false)
-              setSelectedPaymentMethodType(undefined)
-              requestAnimationFrame(() => setShowAddPaymentPanel(true))
-            },
+            onManage: returnToPaymentSelection,
+            onCancel: returnToPaymentSelection,
           }),
         )
         return
@@ -825,12 +830,23 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
           createPaymentMethodInvalidFieldValueAlertConfig(t, {
             fieldValue: resolvePaymentMethodAccountFieldValue(fields, t),
             onEdit: () => hideAlert(),
-            onCancel: () => {
-              hideAlert()
-              setShowAddPaymentPanel(false)
-            },
+            onCancel: returnToPaymentSelection,
           }),
         )
+        return
+      }
+
+      if (errorCode === "PaymentMethodNotFound") {
+        showAlert({
+          title: t("paymentMethod.notFound"),
+          description: t("paymentMethod.notFoundDescription"),
+          confirmText: t("paymentMethod.addPaymentMethod"),
+          cancelText: t("common.cancel"),
+          type: "warning",
+          onConfirm: returnToPaymentSelection,
+          onCancel: returnToPaymentSelection,
+          onClose: returnToPaymentSelection,
+        })
         return
       }
 

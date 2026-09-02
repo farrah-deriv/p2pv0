@@ -120,9 +120,10 @@ const AdPaymentMethods = () => {
         showAlert(
           createPaymentMethodDuplicateAlertConfig(t, {
             onManage: () => {
-              hideAlert()
               setShowAddPaymentPanel(false)
-              requestAnimationFrame(() => setShowAddPaymentPanel(true))
+            },
+            onCancel: () => {
+              setShowAddPaymentPanel(false)
             },
           }),
         )
@@ -143,10 +144,23 @@ const AdPaymentMethods = () => {
         return
       }
 
+      if (errorCode === "PaymentMethodNotFound") {
+        showAlert({
+          title: t("paymentMethod.notFound"),
+          description: t("paymentMethod.notFoundDescription"),
+          confirmText: t("paymentMethod.addPaymentMethod"),
+          cancelText: t("common.cancel"),
+          type: "warning",
+          onConfirm: () => setShowAddPaymentPanel(false),
+          onCancel: () => setShowAddPaymentPanel(false),
+          onClose: () => setShowAddPaymentPanel(false),
+        })
+        return
+      }
+
       const errorMessages: Record<string, { title: string; description: string }> = {
         PaymentMethodInvalid: { title: t("paymentMethod.invalidMethod"), description: t("paymentMethod.invalidMethodDescription") },
         PaymentMethodInvalidField: { title: t("paymentMethod.invalidField"), description: t("paymentMethod.invalidFieldDescription") },
-        PaymentMethodNotFound: { title: t("paymentMethod.notFound"), description: t("paymentMethod.notFoundDescription") },
         PaymentMethodRequiredField: { title: t("paymentMethod.requiredField"), description: t("paymentMethod.requiredFieldDescription") },
       }
 

@@ -17,5 +17,6 @@ export function createPaymentMethodDuplicateAlertConfig(
     type: "warning",
     onConfirm: options.onManage,
     onCancel: options.onCancel,
+    onClose: options.onCancel,
   }
 }

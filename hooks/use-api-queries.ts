@@ -11,6 +11,7 @@ import { flattenWalletTransactionPages } from '@/lib/wallet-transactions-paginat
 import { withNicknameKey } from '@/lib/profile-list-search'
 import { useUserDataStore } from '@/stores/user-data-store'
 import { useP2PQueriesBlocked } from '@/hooks/use-p2p-system-maintenance'
+import { isPaymentMethodSessionElevationEnabled } from '@/lib/payment-method-session-elevation'
 import { isP2PWebSocketEligibleFromState } from '@/lib/p2p-websocket-eligibility'
 import type { Advertisement, SearchParams as BuySellSearchParams, PaymentMethod } from '@/services/api/api-buy-sell'
 import type { Order, OrderFilters } from '@/services/api/api-orders'
@@ -36,6 +37,9 @@ const elevatePaymentMethodAction = async <T>(action: PaymentMethodElevationActio
   })
   throw error
 }
+
+const runPaymentMethodMutation = <T>(action: PaymentMethodElevationAction, mutate: () => Promise<T>) =>
+  isPaymentMethodSessionElevationEnabled() ? elevatePaymentMethodAction(action, mutate) : mutate()
 
 // Query Keys
 const ALL_KEYS = ['api'] as const
@@ -327,7 +331,7 @@ export function useAddPaymentMethod() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ method, fields }: { method: string; fields: Record<string, string> }) => {
-      return elevatePaymentMethodAction("p2p_payment_method_create", async () => {
+      return runPaymentMethodMutation("p2p_payment_method_create", async () => {
         const result = await ProfileAPI.addPaymentMethod(method, fields)
         if (!result.success) {
           const error: PaymentMethodError = Object.assign(
@@ -350,7 +354,7 @@ export function useUpdatePaymentMethod() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, method, fields }: { id: string; method: string; fields: Record<string, string> }) => {
-      return elevatePaymentMethodAction("p2p_payment_method_update", async () => {
+      return runPaymentMethodMutation("p2p_payment_method_update", async () => {
         const result = await ProfileAPI.updatePaymentMethod(id, { method, fields })
         if (!result.success) {
           const error: PaymentMethodError = Object.assign(
@@ -373,7 +377,7 @@ export function useDeletePaymentMethod() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
-      return elevatePaymentMethodAction("p2p_payment_method_delete", async () => {
+      return runPaymentMethodMutation("p2p_payment_method_delete", async () => {
         const result = await ProfileAPI.deletePaymentMethod(id)
         if (!result.success && result.errors && result.errors.length > 0) {
           const error: PaymentMethodError = Object.assign(

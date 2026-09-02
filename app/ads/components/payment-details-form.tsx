@@ -788,6 +788,14 @@ export default function PaymentDetailsForm({
     }
   }
 
+  const returnToSellPaymentSelection = () => {
+    addPanelOpenedFromSelectionRef.current = false
+    setShowAddPaymentPanel(false)
+    // AlertDialog closes its active overlay after the action callback. Wait
+    // until that close has completed before opening the selector again.
+    requestAnimationFrame(() => openSellPaymentSelection())
+  }
+
   const handleAddPaymentMethod = async (method: string, fields: Record<string, string>) => {
     try {
       const result = await addPaymentMethod({ method, fields })
@@ -843,11 +851,8 @@ export default function PaymentDetailsForm({
       if (errorCode === "PaymentMethodDuplicate") {
         showAlert(
           createPaymentMethodDuplicateAlertConfig(t, {
-            onManage: () => {
-              hideAlert()
-              setShowAddPaymentPanel(false)
-              requestAnimationFrame(() => setShowAddPaymentPanel(true))
-            },
+            onManage: returnToSellPaymentSelection,
+            onCancel: returnToSellPaymentSelection,
           }),
         )
         return
@@ -858,20 +863,29 @@ export default function PaymentDetailsForm({
           createPaymentMethodInvalidFieldValueAlertConfig(t, {
             fieldValue: resolvePaymentMethodAccountFieldValue(fields, t),
             onEdit: () => hideAlert(),
-            onCancel: () => {
-              hideAlert()
-              setShowAddPaymentPanel(false)
-              onBottomSheetOpenChange?.(false)
-            },
+            onCancel: returnToSellPaymentSelection,
           }),
         )
+        return
+      }
+
+      if (errorCode === "PaymentMethodNotFound") {
+        showAlert({
+          title: t("paymentMethod.notFound"),
+          description: t("paymentMethod.notFoundDescription"),
+          confirmText: t("paymentMethod.addPaymentMethod"),
+          cancelText: t("common.cancel"),
+          type: "warning",
+          onConfirm: returnToSellPaymentSelection,
+          onCancel: returnToSellPaymentSelection,
+          onClose: returnToSellPaymentSelection,
+        })
         return
       }
 
       const errorMessages: Record<string, { title: string; description: string }> = {
         PaymentMethodInvalid: { title: t("paymentMethod.invalidMethod"), description: t("paymentMethod.invalidMethodDescription") },
         PaymentMethodInvalidField: { title: t("paymentMethod.invalidField"), description: t("paymentMethod.invalidFieldDescription") },
-        PaymentMethodNotFound: { title: t("paymentMethod.notFound"), description: t("paymentMethod.notFoundDescription") },
         PaymentMethodRequiredField: { title: t("paymentMethod.requiredField"), description: t("paymentMethod.requiredFieldDescription") },
       }
 

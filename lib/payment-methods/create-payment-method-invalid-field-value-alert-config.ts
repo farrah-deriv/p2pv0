@@ -18,5 +18,6 @@ export function createPaymentMethodInvalidFieldValueAlertConfig(
     type: "warning",
     onConfirm: options.onEdit,
     onCancel: options.onCancel,
+    onClose: options.onCancel,
   }
 }
