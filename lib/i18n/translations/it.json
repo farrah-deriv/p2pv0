@@ -496,6 +496,10 @@
     "liveChatLink": "chat dal vivo",
     "title": "Manutenzione del sistema in corso"
   },
+  "connection": {
+    "lostMessage": "La connessione potrebbe essere instabile.",
+    "refreshCta": "Aggiorna"
+  },
   "market": {
     "advertisers": "Inserzionisti",
     "browseMarket": "Sfoglia il mercato",

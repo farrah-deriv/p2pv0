@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react"
 import { useSearchParams } from "next/navigation"
 import { useLanguageStore } from "@/stores/language-store"
-import { getClientPreferences, getSession } from "@/services/api/api-auth"
+import { getClientPreferences, getSessionCached } from "@/services/api/api-auth"
 import {
   apiPreferredLanguageToLocale,
   defaultLocale,
@@ -91,7 +91,7 @@ export function LanguageSync() {
       if (cancelled || syncedFromServerRef.current) return
       syncedFromServerRef.current = true
 
-      const authed = await getSession()
+      const authed = await getSessionCached()
       if (cancelled || !authed) return
 
       try {

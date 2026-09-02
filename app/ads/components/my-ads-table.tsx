@@ -24,6 +24,7 @@ import { useLanguageStore } from "@/stores/language-store"
 import { VisibilityStatusDialog } from "./visibility-status-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useUserDataStore } from "@/stores/user-data-store"
+import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 import { useDeleteAd, useToggleAdActiveStatus } from "@/hooks/use-api-queries"
 import { useTrackers } from "@/analytics/useTrackers"
@@ -59,7 +60,14 @@ export default function MyAdsTable({
   const advertDialog = useAdvertAlertDialog()
   const { showDeleteDialog, showAlert } = advertDialog
   const isMobile = useIsMobile()
-  const { userId, verificationStatus } = useUserDataStore()
+  const { userId, userData, onboardingStatus, verificationStatus } = useUserDataStore()
+  const tempBanUntil = userData?.temp_ban_until
+  const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
+  const isPoiExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poi_status !== "approved"
+  const isPoaExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poa_status !== "approved"
+  // Hard-blocks Edit/Delete only (no sheet) for an existing ad when KYC is
+  // unverified, mirroring mobile — Toggle-status/Share stay clickable.
+  const isKycUnverified = Boolean(isPoiExpired || isPoaExpired)
   const { runGatedAction } = useKycOverlay({ route: "ads", dialog: advertDialog })
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null)
@@ -554,6 +562,7 @@ export default function MyAdsTable({
                           size="sm"
                           className="!size-8 !h-8 !w-8 !min-h-0 !min-w-0 !p-1 !rounded-full !bg-transparent hover:!bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           onClick={() => handleOpenDrawer(ad)}
+                          disabled={!!tempBanUntil || isMaintenanceActive}
                         >
                           <Image
                             src="/icons/vertical.svg"
@@ -571,6 +580,7 @@ export default function MyAdsTable({
                               size="sm"
                               className="!size-8 !h-8 !w-8 !min-h-0 !min-w-0 !p-1 !rounded-full !bg-transparent hover:!bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                               onClick={() => handleOpenDrawer(ad)}
+                              disabled={!!tempBanUntil || isMaintenanceActive}
                             >
                               <Image
                                 src="/icons/vertical.svg"
@@ -587,6 +597,7 @@ export default function MyAdsTable({
                                   variant="ghost"
                                   size="sm"
                                   className="!size-8 !h-8 !w-8 !min-h-0 !min-w-0 !p-1 !rounded-full !bg-transparent hover:!bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                  disabled={!!tempBanUntil || isMaintenanceActive}
                                 >
                                   <Image
                                     src="/icons/vertical.svg"
@@ -600,6 +611,7 @@ export default function MyAdsTable({
                               <DropdownMenuContent align={dropdownMenuAlign} className="w-48 flex flex-col p-1">
                                 <AdActionsMenu
                                   ad={ad}
+                                  isKycUnverified={isKycUnverified}
                                   onEdit={handleEdit}
                                   onToggleStatus={handleToggleStatus}
                                   onDelete={handleDelete}
@@ -629,6 +641,7 @@ export default function MyAdsTable({
               <AdActionsMenu
                 ad={selectedAd}
                 variant="drawer"
+                isKycUnverified={isKycUnverified}
                 onEdit={handleEdit}
                 onToggleStatus={handleToggleStatus}
                 onDelete={handleDelete}

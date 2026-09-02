@@ -1,5 +1,8 @@
+import { z } from "zod"
 import { API, AUTH } from "@/lib/local-variables"
 import { p2pFetch } from "./p2p-fetch"
+import { parseArrayWithItemIsolation, parseWithSchema, reportedNumber, reportedString } from "@/lib/api/schema-coercion"
+import { schemaReporter } from "@/lib/api/schema-reporter"
 
 export class OrderChatSendError extends Error {
   readonly code: string
@@ -102,6 +105,38 @@ export interface ChatMessage {
   isRead: boolean
 }
 
+const ORDERS_ENDPOINT = "p2p/v1/orders"
+
+// Validates only the order's money fields — same 3-field split mobile used
+// (amount, rate/exchange_rate, payment_amount). `.passthrough()` at every
+// level keeps status/user/advert/etc. untouched.
+// Confirmed against the real `/p2p/v1/orders` response (the declared `Order`/
+// `Value` TS interfaces claiming `amount`/`price`/`rate` are nested
+// `{value, currency}` objects are stale — nothing in the app actually reads
+// `.amount.value`/`.rate.value`/`.price.value`; real consumers read flat
+// `order.amount` (formatAmount, a string) and `order.exchange_rate` (a
+// number, order-details.tsx). All fields optional/nullable here since the
+// mismatch above means "required" assumptions can't be trusted without
+// further confirmation — this must never reject a whole order over a field
+// no one actually depends on.
+const orderMoneyFieldsSchema = z
+  .object({
+    amount: reportedString({ endpoint: ORDERS_ENDPOINT, field: "amount", reporter: schemaReporter })
+      .nullable()
+      .optional(),
+    exchange_rate: reportedNumber({ endpoint: ORDERS_ENDPOINT, field: "exchange_rate", reporter: schemaReporter })
+      .nullable()
+      .optional(),
+    payment_amount: reportedString({
+      endpoint: ORDERS_ENDPOINT,
+      field: "payment_amount",
+      reporter: schemaReporter,
+    })
+      .nullable()
+      .optional(),
+  })
+  .passthrough()
+
 export async function getOrders(filters?: OrderFilters, page?: number, perPage?: number): Promise<Order[]> {
   try {
     const queryParams = new URLSearchParams()
@@ -146,7 +181,23 @@ export async function getOrders(filters?: OrderFilters, page?: number, perPage?:
       data = []
     }
 
-    return data
+    // The real response is `{"errors": [], "meta": {...}, "data": [...]}` —
+    // NOT a bare array. Checking `Array.isArray(data)` directly (as this used
+    // to) is false for that shape, so it silently fell through to `[]`
+    // regardless of how many real orders existed — a regression introduced
+    // by this fix itself, confirmed against a real `/orders?is_open=true`
+    // response. Handle both shapes defensively, matching how
+    // `app/orders/page.tsx`'s flatMap already tolerates either.
+    const rawOrders: unknown[] = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.data)
+        ? data.data
+        : []
+    return parseArrayWithItemIsolation(orderMoneyFieldsSchema, rawOrders, {
+      endpoint: ORDERS_ENDPOINT,
+      field: "(root)",
+      reporter: schemaReporter,
+    }) as unknown as Order[]
   } catch (error) {
     throw error
   }
@@ -179,7 +230,20 @@ export async function getOrderById(id: string): Promise<Order> {
       throw new Error(errorCode)
     }
 
-    return data
+    // The caller (`app/orders/[id]/page.tsx`) does `order.data` — this
+    // function returns the `{errors, meta, data: {...order}}` wrapper as-is,
+    // it doesn't unwrap it. Validating `data` directly (as this used to)
+    // validated the wrapper's own top level, where amount/exchange_rate/
+    // payment_amount don't exist — harmless (passthrough kept `data.data`
+    // untouched) but meant the coercion telemetry never actually ran against
+    // real order fields. Validate the nested order object instead.
+    if (data?.data && typeof data.data === "object") {
+      data.data = parseWithSchema(orderMoneyFieldsSchema, data.data, {
+        endpoint: ORDERS_ENDPOINT,
+        reporter: schemaReporter,
+      })
+    }
+    return data as Order
   } catch (error) {
     throw error
   }

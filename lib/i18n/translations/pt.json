@@ -498,6 +498,10 @@
     "liveChatLink": "chat ao vivo",
     "title": "Manutenção do sistema em andamento"
   },
+  "connection": {
+    "lostMessage": "A conexão pode estar instável.",
+    "refreshCta": "Atualizar"
+  },
   "market": {
     "advertisers": "Anunciantes",
     "browseMarket": "Navegar no mercado",

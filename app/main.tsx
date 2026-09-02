@@ -28,6 +28,8 @@ import { useWalletViewStore } from "@/stores/wallet-view-store"
 import { useGuideStore } from "@/stores/guide-store"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { P2PGuide } from "@/components/p2p-guide/p2p-guide"
+import { ConnectionLostBanner } from "@/components/connection-lost-banner"
+import { ReconnectionRefetchController } from "@/components/reconnection-refetch-controller"
 import { P2PGuideIntro } from "@/components/p2p-guide/p2p-guide-intro"
 import "./globals.css"
 
@@ -127,13 +129,13 @@ export default function Main({
             window.history.replaceState({}, "", newUrl.toString())
           } catch (error) {
             if (!isPublic) {
-              window.location.href = getLoginUrl(true)
+              window.location.href = getLoginUrl()
             }
             return
           }
         }
 
-        const sessionAuth = await AuthAPI.getSession()
+        const sessionAuth = await AuthAPI.getSessionCached()
         setIsAuthenticated(sessionAuth)
 
         if (abortController.signal.aborted || !isMountedRef.current) {
@@ -142,7 +144,7 @@ export default function Main({
 
         if (!sessionAuth && !isPublic) {
           setIsHeaderVisible(false)
-          window.location.href = getLoginUrl(useUserDataStore.getState().userData?.signup === "v1")
+          window.location.href = getLoginUrl()
         } else if (sessionAuth && !useUserDataStore.getState().userData) {
           await AuthAPI.fetchUserIdAndStore()
         }
@@ -212,18 +214,23 @@ export default function Main({
 
         setOnboardingStatus(onboardingStatus)
 
+        // `userId` is tri-state: `null` until `/p2p/v1/users/me` resolves, `""`
+        // once it has resolved and the account has no P2P user, and a real id
+        // for an existing one. Only `""` means "create one" — treating `null`
+        // the same way raced the `fetchUserIdAndStore()` call in the session
+        // effect above (which runs after `setIsAuthenticated(true)` has already
+        // kicked off the onboarding-status query) and POSTed `/v1/p2p/client`
+        // for users who already existed. `userId` is in this effect's deps so
+        // it re-runs once that fetch resolves.
         const currentUserId = useUserDataStore.getState().userId
         const isFullyVerified = Boolean(isP2PAllowed && isPhoneVerified && isKycVerified)
 
         // The guide intro is shown only to a newly registered P2P user (one
         // who has no P2P userId yet). Existing users never re-trigger it.
-        // Open it *before* ensureP2PUser so the first paint after verification
-        // is the intro, not a few-seconds-later second copy after the
-        // create-user request returns. openIntro is once-per-session in the
-        // store, so this re-run after ensureP2PUser is a no-op.
-        if (!currentUserId && isP2PAllowed) {
+        if (currentUserId === "" && isP2PAllowed) {
+          // Open it before ensureP2PUser so the first post-verification paint
+          // is the intro. The guide store permits this only once per session.
           openIntro()
-
           await AuthAPI.ensureP2PUser()
 
           if (!isMounted || abortController.signal.aborted) {
@@ -269,7 +276,7 @@ export default function Main({
       isMounted = false
       abortController.abort()
     }
-  }, [isAuthenticated, isMaintenanceActive, onboardingStatus, isOnboardingLoading, isOnboardingError, setVerificationStatus, setOnboardingStatus, openIntro, searchParams, router])
+  }, [isAuthenticated, isMaintenanceActive, onboardingStatus, isOnboardingLoading, isOnboardingError, userId, setVerificationStatus, setOnboardingStatus, openIntro, searchParams, router])
 
   // Once router.replace has committed and useSearchParams no longer reports
   // show_kyc_popup, the gate has released (it short-circuits on the param) and
@@ -435,6 +442,8 @@ export default function Main({
           )}
           <P2PMaintenanceController />
           <P2PAnnouncementController />
+          <ConnectionLostBanner />
+          <ReconnectionRefetchController />
           <div className="hidden md:flex px-6 h-screen overflow-hidden m-auto relative max-w-[1232px]">
             {isHeaderVisible && <Sidebar className="hidden md:flex" />}
             <div className="flex flex-1 flex-col min-h-0 py-6 overflow-hidden">

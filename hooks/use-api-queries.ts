@@ -203,9 +203,7 @@ export function useClientProfile() {
 export function useSocketToken() {
   const maintenanceBlocked = useP2PQueriesBlocked()
   const userId = useUserDataStore((state) => state.userId)
-  const userData = useUserDataStore((state) => state.userData)
-  const onboardingStatus = useUserDataStore((state) => state.onboardingStatus)
-  const isWebSocketEligible = isP2PWebSocketEligibleFromState({ userId, userData, onboardingStatus })
+  const isWebSocketEligible = isP2PWebSocketEligibleFromState(userId)
 
   return useQuery({
     queryKey: queryKeys.auth.socketToken(),

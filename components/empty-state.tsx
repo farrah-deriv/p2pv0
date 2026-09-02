@@ -4,6 +4,8 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useTrackers } from "@/analytics/useTrackers"
+import { useUserDataStore } from "@/stores/user-data-store"
+import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 import type { KycOnboardingRoute } from "@/components/kyc-onboarding-sheet"
 
@@ -34,6 +36,8 @@ export default function EmptyState({
   route,
 }: EmptyStateProps) {
   const router = useRouter()
+  const tempBanUntil = useUserDataStore((state) => state.userData?.temp_ban_until)
+  const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
   const { t } = useTranslations()
   const { track } = useTrackers()
   const { runGatedAction } = useKycOverlay({
@@ -63,8 +67,8 @@ export default function EmptyState({
             {t("market.browseMarket")}
           </Button>
         )}
-        {redirectToAds && (
-          <Button onClick={createAd} className="flex-1 min-w-fit whitespace-nowrap">
+        {redirectToAds && !isMaintenanceActive && (
+          <Button onClick={createAd} disabled={!!tempBanUntil} className="flex-1 min-w-fit whitespace-nowrap">
             {t("myAds.createAd")}
           </Button>
         )}

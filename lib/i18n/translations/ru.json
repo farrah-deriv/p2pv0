@@ -510,6 +510,10 @@
     "liveChatLink": "чат",
     "title": "Выполняется техническое обслуживание системы"
   },
+  "connection": {
+    "lostMessage": "Соединение может быть нестабильным.",
+    "refreshCta": "Обновить"
+  },
   "market": {
     "advertisers": "Рекламодатели",
     "browseMarket": "Обзор рынка",

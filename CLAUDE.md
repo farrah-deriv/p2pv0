@@ -12,7 +12,7 @@ Cross-platform context (mobile counterpart, shared backend, feature parity rules
 | Runtime | React 19 |
 | Language | TypeScript (strict) |
 | Styling | Tailwind CSS + custom tokens in `tailwind.config.ts` |
-| UI primitives | Radix UI (shadcn-style wrappers in `components/ui/`) |
+| UI primitives | Quill Design System (`@deriv-com/quill-ui-v2`, `@deriv/quill-icons`) wrapped in `components/ui/` — migrating off Radix UI/lucide-react (see `## Design System (Quill)` below) |
 | Server state | `@tanstack/react-query` v5 |
 | Client state | Zustand stores in `stores/` |
 | Forms | react-hook-form + Zod |
@@ -38,7 +38,7 @@ p2p-v0/
 │   ├── api/                # Route handlers (proxy to Kratos etc.)
 │   └── layout.tsx
 ├── components/             # Feature & shared components
-│   ├── ui/                 # Radix primitives wrapped (Button, Alert, Dialog, ...)
+│   ├── ui/                 # Quill Design System wrapped (Button, Alert, Dialog, ...) — some still Radix, mid-migration
 │   ├── buy-sell/
 │   ├── order-details/
 │   ├── p2p-balance-warning/
@@ -97,15 +97,23 @@ All API calls go through `services/api/`. Each file maps to a backend domain (`a
 
 ### UI components
 
-- Use `components/ui/` Radix wrappers (Button, Alert, Dialog, Tabs, ...) — never use raw HTML buttons or custom modals when a primitive exists.
+- Use `components/ui/` wrappers (Button, Alert, Dialog, Tabs, ...) — never use raw HTML buttons or custom modals when a primitive exists.
 - Follow the `cva` variant pattern already in place for new primitives.
 - Tailwind-first. Use design tokens from `tailwind.config.ts` (`bg-error-light`, `bg-slate-1200`, `text-grayscale-100`, ...) instead of hex literals.
 
+### Design System (Quill)
+
+Web is mid-migration from Radix UI + lucide-react to Deriv's **Quill Design System** (`@deriv-com/quill-ui-v2`, `@deriv/quill-icons`) — see PR #1386 ("Design System / Migrate UI primitives to Quill Design System"). `components/ui/` wraps Quill components (e.g. `alert.tsx` wraps `SectionMessage`, `badge.tsx` wraps `Tag`, `button.tsx`, `select.tsx`, `toast.tsx`/Snackbar, `tabs.tsx`, `dropdown-menu.tsx`, `checkbox.tsx`, `tooltip.tsx`, `accordion.tsx`, `sheet.tsx`, `input-otp.tsx`, `link.tsx`, `panel-wrapper.tsx`, `modal-header-row.tsx`, `back-arrow-icon.tsx`); some primitives (`dialog.tsx`, `popover.tsx`, `switch.tsx`, `radio-group.tsx`, `label.tsx`, `alert-dialog.tsx`) are still plain Radix and not yet migrated — check the file before assuming either way.
+
+- **New/edited UI work must use Quill**, not raw Radix or ad-hoc markup, when a Quill-backed `components/ui/` primitive covers the case.
+- Status/variant-driven primitives (Alert, Badge, Toast, ...) are styled entirely by Quill's internal design tokens (`--quill-semantic-colour-...`) keyed off the `variant`/`status` prop. **Pass the correct variant** (`"destructive"`, `"warning"`, `"info"`, ...) instead of overriding colors with custom Tailwind classes — manual `bg-*`/`text-*` overrides get silently ignored or overridden by Quill's own CSS. (We hit this: `ConnectionLostBanner` never passed a `variant`, defaulted to the gray "default" status, and a `bg-red-withdraw` class that isn't even a real Tailwind token — the banner rendered nearly invisible.)
+- Before styling a Quill-wrapped primitive, check its Quill props/status map in `components/ui/` rather than fighting it with `className`.
+
 ### Icons
 
+- **Prefer `@deriv/quill-icons`** for new icons (migration target). `lucide-react` still exists for not-yet-migrated call sites — don't add new `lucide-react` imports.
 - SVG/PNG assets under `public/icons/`.
 - For decorative icons, add `alt=""` + `aria-hidden="true"`.
-- `lucide-react` is available for generic icons; project-branded icons live in `public/icons/`.
 
 ### WebSocket
 
@@ -140,7 +148,7 @@ All API calls go through `services/api/`. Each file maps to a backend domain (`a
 
 - **NEVER** hardcode user-facing strings — always use `t("namespace.key")`.
 - **NEVER** hardcode colors — use Tailwind tokens from `tailwind.config.ts`.
-- **ALWAYS** use `components/ui/` primitives when one exists.
+- **ALWAYS** use `components/ui/` primitives when one exists — follow Quill Design System conventions (see `### Design System (Quill)` above), not raw Radix/lucide-react, for anything already migrated.
 - **ALWAYS** add `aria-*` attributes on interactive controls; decorative icons get `alt=""` + `aria-hidden="true"`.
 - **PREFER** server state in React Query over duplicating state in Zustand.
 

@@ -485,6 +485,10 @@
     "liveChatLink": "gumzo la moja kwa moja",
     "title": "Matengenezo ya mfumo yanaendelea"
   },
+  "connection": {
+    "lostMessage": "Muunganisho unaweza kuwa hauna utulivu.",
+    "refreshCta": "Onyesha upya"
+  },
   "market": {
     "advertisers": "Waangazaji",
     "browseMarket": "Angalia soko",

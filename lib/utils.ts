@@ -634,7 +634,7 @@ const getCookieValue = (name: string): string | undefined => {
   return match ? match[2] : undefined
 }
 
-export const getHomeUrl = (isV1Signup = false, section = "", isWalletAccount = false, fromParam = "", isTncAccepted = false) => {
+export const getHomeUrl = (section = "", fromParam = "", isTncAccepted = false) => {
   const isProduction = process.env.NEXT_PUBLIC_NODE_ENV === "production"
   const currentDomain = typeof window !== "undefined" ? window.location.hostname : ""
 
@@ -645,85 +645,41 @@ export const getHomeUrl = (isV1Signup = false, section = "", isWalletAccount = f
     domain = "deriv.be"
   }
 
-  let baseUrl = "",
-    url = ""
-
-  if (isV1Signup) {
-    baseUrl = isProduction ? `app.${domain}` : `staging-app.${domain}`
-  } else {
-    baseUrl = isProduction ? `home.${domain}` : `staging-home.${domain}`
-  }
+  const baseUrl = isProduction ? `home.${domain}` : `staging-home.${domain}`
+  let url = ""
 
   const isWebApp = getCookieValue("web_app") !== "false"
 
   if (section === "poi") {
-    if (isV1Signup) {
-      if (isWalletAccount) {
-        url = isProduction ? `https://hub.${domain}/Accounts/ProofOfIdentityStatus` : `https://staging-hub.${domain}/Accounts/ProofOfIdentityStatus`
-      } else {
-        url = isProduction ? `https://app.${domain}/account/proof-of-identity` : `https://staging-app.${domain}/account/proof-of-identity`
-      }
+    if (isWebApp && isTncAccepted) {
+      url = `https://${baseUrl}/dashboard/profile/kyc/poi?is_from_p2p=true&${fromParam}`
     } else {
-      if (isWebApp && isTncAccepted) {
-        url = `https://${baseUrl}/dashboard/profile/kyc/poi?is_from_p2p=true&${fromParam}`
-      } else {
-        url = isTncAccepted ? `https://${baseUrl}/dashboard/kyc/confirm-detail?is_from_p2p=true&${fromParam}` : `https://${baseUrl}/dashboard/onboarding/kyc-poi?is_from_p2p=true&${fromParam}`
-      }
+      url = isTncAccepted ? `https://${baseUrl}/dashboard/kyc/confirm-detail?is_from_p2p=true&${fromParam}` : `https://${baseUrl}/dashboard/onboarding/kyc-poi?is_from_p2p=true&${fromParam}`
     }
   } else if (section === "poa") {
-    if (isV1Signup) {
-      if (isWalletAccount) {
-        url = isProduction ? `https://hub.${domain}/Accounts/ProofOfAddress` : `https://staging-hub.${domain}/Accounts/ProofOfAddress`
-      } else {
-        url = isProduction ? `https://app.${domain}/account/proof-of-address` : `https://staging-app.${domain}/account/proof-of-address`
-      }
+    if (isWebApp && isTncAccepted) {
+      url = `https://${baseUrl}/dashboard/profile/kyc/poa?is_from_p2p=true&${fromParam}`
     } else {
-      if (isWebApp && isTncAccepted) {
-        url = `https://${baseUrl}/dashboard/profile/kyc/poa?is_from_p2p=true&${fromParam}`
-      } else {
-        url = isTncAccepted ? `https://${baseUrl}/dashboard/kyc/address?is_from_p2p=true&${fromParam}` : `https://${baseUrl}/dashboard/onboarding/kyc-poa?is_from_p2p=true&${fromParam}`
-      }
+      url = isTncAccepted ? `https://${baseUrl}/dashboard/kyc/address?is_from_p2p=true&${fromParam}` : `https://${baseUrl}/dashboard/onboarding/kyc-poa?is_from_p2p=true&${fromParam}`
     }
   } else if (section === "home") {
-    if (isV1Signup) {
-      url = `https://${baseUrl}`
-    } else {
-      url = `https://${baseUrl}/dashboard/home`
-    }
+    url = `https://${baseUrl}/dashboard/home`
   } else if (section === "homeProfile") {
-    if (isV1Signup) {
-      url = `https://${baseUrl}/account/personal-details`
-    } else {
-      url = `https://${baseUrl}/dashboard/profile`
-    }
+    url = `https://${baseUrl}/dashboard/profile`
   } else if (section === "onboardingProfile") {
-    if (isV1Signup) {
-      url = `https://${baseUrl}/account/personal-details`
-    } else {
-      url = `https://${baseUrl}/dashboard/onboarding/personal-details?is_from_p2p=true&${fromParam}`
-    }
+    url = `https://${baseUrl}/dashboard/onboarding/personal-details?is_from_p2p=true&${fromParam}`
   } else if (section === "onboardingPNV") {
-    if (isV1Signup) {
-      url = `https://${baseUrl}/account/personal-details`
+    if (isWebApp) {
+      url = isTncAccepted
+        ? `https://${baseUrl}/dashboard/profile/phone-number?is_from_p2p=true&${fromParam}`
+        : `https://${baseUrl}/dashboard/onboarding/verify-user?is_from_p2p=true&${fromParam}`
     } else {
-      if (isWebApp) {
-        url = isTncAccepted
-          ? `https://${baseUrl}/dashboard/profile/phone-number?is_from_p2p=true&${fromParam}`
-          : `https://${baseUrl}/dashboard/onboarding/verify-user?is_from_p2p=true&${fromParam}`
-      } else {
-        url = isTncAccepted
-          ? `https://${baseUrl}/dashboard/details?is_from_p2p=true&${fromParam}`
-          : `https://${baseUrl}/dashboard/onboarding/verify?is_from_p2p=true&${fromParam}`
-      }
+      url = isTncAccepted
+        ? `https://${baseUrl}/dashboard/details?is_from_p2p=true&${fromParam}`
+        : `https://${baseUrl}/dashboard/onboarding/verify?is_from_p2p=true&${fromParam}`
     }
   } else if (section === "financialAssessment") {
-    if (isV1Signup) {
-      url = isProduction
-        ? `https://app.${domain}/account/financial-assessment`
-        : `https://staging-app.${domain}/account/financial-assessment`
-    } else {
-      url = `https://${baseUrl}/dashboard/profile/financial-assessment`
-    }
+    url = `https://${baseUrl}/dashboard/profile/financial-assessment`
   } else {
     url = baseUrl
   }
@@ -731,7 +687,7 @@ export const getHomeUrl = (isV1Signup = false, section = "", isWalletAccount = f
   return url
 }
 
-export const getLoginUrl = (isV1Signup = false) => {
+export const getLoginUrl = () => {
   const isProduction = process.env.NEXT_PUBLIC_NODE_ENV === "production"
   const currentDomain = typeof window !== "undefined" ? window.location.hostname : ""
 
@@ -740,10 +696,6 @@ export const getLoginUrl = (isV1Signup = false) => {
     domain = "deriv.me"
   } else if (currentDomain.includes("deriv.be")) {
     domain = "deriv.be"
-  }
-
-  if (isV1Signup) {
-    return isProduction ? `https://app.${domain}` : `https://staging-app.${domain}`
   }
 
   return isProduction ? `https://home.${domain}/dashboard/login` : `https://staging-home.${domain}/dashboard/login`

@@ -1,3 +1,4 @@
+import { z } from "zod"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { p2pFetch } from "./p2p-fetch"
 import { getCoreUrl } from "@/lib/get-core-url"
@@ -6,6 +7,8 @@ import {
   WALLET_TRANSACTIONS_PAGE_SIZE,
   type WalletTransactionsPageResult,
 } from "@/lib/wallet-transactions-pagination"
+import { parseArrayWithItemIsolation, parseWithSchema, reportedNumber, reportedString } from "@/lib/api/schema-coercion"
+import { schemaReporter } from "@/lib/api/schema-reporter"
 
 export type { WalletTransactionsPageResult } from "@/lib/wallet-transactions-pagination"
 export { WALLET_TRANSACTIONS_PAGE_SIZE } from "@/lib/wallet-transactions-pagination"
@@ -13,6 +16,50 @@ export { WALLET_TRANSACTIONS_PAGE_SIZE } from "@/lib/wallet-transactions-paginat
 const getAuthHeader = () => ({
   "Content-Type": "application/json",
 })
+
+const WALLET_TRANSACTIONS_ENDPOINT = "v1/wallets/transactions"
+
+// Money fields live under each transaction's `metadata` — optional/nullable
+// since different transaction types (top-up, transfer, etc.) don't all carry
+// fee data. `.passthrough()` at every level keeps every other metadata field
+// (order_type, wallet_transaction_type, statement_metadata, ...) untouched.
+const walletTransactionMoneyFieldsSchema = z
+  .object({
+    metadata: z
+      .object({
+        transaction_net_amount: reportedString({
+          endpoint: WALLET_TRANSACTIONS_ENDPOINT,
+          field: "data[].metadata.transaction_net_amount",
+          reporter: schemaReporter,
+        })
+          .nullable()
+          .optional(),
+        transaction_gross_amount: reportedString({
+          endpoint: WALLET_TRANSACTIONS_ENDPOINT,
+          field: "data[].metadata.transaction_gross_amount",
+          reporter: schemaReporter,
+        })
+          .nullable()
+          .optional(),
+        transaction_fee_amount: reportedString({
+          endpoint: WALLET_TRANSACTIONS_ENDPOINT,
+          field: "data[].metadata.transaction_fee_amount",
+          reporter: schemaReporter,
+        })
+          .nullable()
+          .optional(),
+        transaction_fee_percentage: reportedNumber({
+          endpoint: WALLET_TRANSACTIONS_ENDPOINT,
+          field: "data[].metadata.transaction_fee_percentage",
+          reporter: schemaReporter,
+        })
+          .nullable()
+          .optional(),
+      })
+      .passthrough()
+      .optional(),
+  })
+  .passthrough()
 
 export async function fetchTransactions(
   selectedCurrencyCode?: string,
@@ -48,7 +95,12 @@ export async function fetchTransactions(
     .then((res) => res.json())
     .then((data: Record<string, unknown>) => {
       const nested = data?.data as { transactions?: unknown[] } | undefined
-      const transactions = nested?.transactions ?? []
+      const rawTransactions = nested?.transactions ?? []
+      const transactions = parseArrayWithItemIsolation(walletTransactionMoneyFieldsSchema, rawTransactions, {
+        endpoint: WALLET_TRANSACTIONS_ENDPOINT,
+        field: "data",
+        reporter: schemaReporter,
+      })
       return {
         transactions,
         nextCursor: extractWalletTransactionsNextCursor(data ?? {}),
@@ -165,6 +217,71 @@ export interface TransferValidateResponse {
   errors?: Array<TransferValidateErrorItem>
 }
 
+const TRANSFER_VALIDATE_ENDPOINT = "v1/core/business/config/transfer/validate"
+
+// Validates only the transfer-preview money fields — `.passthrough()` at
+// every level keeps `transfer`/`is_cross_currency`/ids/etc. untouched.
+const transferValidateMoneyFieldsSchema = z
+  .object({
+    data: z
+      .object({
+        details: z
+          .object({
+            source: z
+              .object({
+                amount: reportedString({
+                  endpoint: TRANSFER_VALIDATE_ENDPOINT,
+                  field: "data.details.source.amount",
+                  reporter: schemaReporter,
+                }),
+                net_amount: reportedString({
+                  endpoint: TRANSFER_VALIDATE_ENDPOINT,
+                  field: "data.details.source.net_amount",
+                  reporter: schemaReporter,
+                }),
+              })
+              .passthrough(),
+            // `quote.fee?.amount`/`quote.fee?.percentage` are read with optional
+            // chaining + fallbacks in transfer.tsx (unlike source/destination,
+            // read without guards) — some transfer types have no fee at all, so
+            // this must not reject the whole quote when `fee` is absent.
+            fee: z
+              .object({
+                amount: reportedString({
+                  endpoint: TRANSFER_VALIDATE_ENDPOINT,
+                  field: "data.details.fee.amount",
+                  reporter: schemaReporter,
+                })
+                  .nullable()
+                  .optional(),
+                percentage: reportedNumber({
+                  endpoint: TRANSFER_VALIDATE_ENDPOINT,
+                  field: "data.details.fee.percentage",
+                  reporter: schemaReporter,
+                })
+                  .nullable()
+                  .optional(),
+              })
+              .passthrough()
+              .nullable()
+              .optional(),
+            destination: z
+              .object({
+                amount: reportedString({
+                  endpoint: TRANSFER_VALIDATE_ENDPOINT,
+                  field: "data.details.destination.amount",
+                  reporter: schemaReporter,
+                }),
+              })
+              .passthrough(),
+          })
+          .passthrough(),
+      })
+      .passthrough()
+      .optional(),
+  })
+  .passthrough()
+
 export async function validateTransfer(
   params: ValidateTransferParams,
 ): Promise<TransferValidateResponse> {
@@ -191,7 +308,11 @@ export async function validateTransfer(
     return { errors: [{ message: `validate transfer failed: ${response.status}` }] }
   }
 
-  const data = (await response.json()) as TransferValidateResponse
+  const rawData = await response.json()
+  const data = parseWithSchema(transferValidateMoneyFieldsSchema, rawData, {
+    endpoint: TRANSFER_VALIDATE_ENDPOINT,
+    reporter: schemaReporter,
+  }) as unknown as TransferValidateResponse
   return data
 }
 

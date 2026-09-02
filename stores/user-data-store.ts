@@ -76,28 +76,6 @@ const initialState = {
   oryEmailVerified: false,
 }
 
-const getCachedSignup = (): string | null => {
-  if (typeof window === "undefined") return null
-  try {
-    return localStorage.getItem("user_signup")
-  } catch {
-    return null
-  }
-}
-
-const cacheSignup = (signup: string | undefined) => {
-  if (typeof window === "undefined") return
-  try {
-    if (signup) {
-      localStorage.setItem("user_signup", signup)
-    } else {
-      localStorage.removeItem("user_signup")
-    }
-  } catch {
-    // localStorage quota exceeded — signup will be re-fetched from the API on next load
-  }
-}
-
 const cacheWalletAccount = (isWallet: boolean) => {
   if (typeof window === "undefined") return
   try {
@@ -113,7 +91,6 @@ export const useUserDataStore = create<UserDataState>()(
       ...initialState,
 
       setUserData: (data: UserData) => {
-        cacheSignup(data.signup)
         set({ userData: data })
       },
 
@@ -134,7 +111,6 @@ export const useUserDataStore = create<UserDataState>()(
       updateUserData: (data: Partial<UserData>) =>
         set((state: UserDataState) => {
           const newUserData = state.userData ? { ...state.userData, ...data } : data
-          cacheSignup(newUserData.signup)
           return { userData: newUserData }
         }),
 
@@ -160,7 +136,6 @@ export const useUserDataStore = create<UserDataState>()(
       setOryEmailVerified: (verified) => set({ oryEmailVerified: verified }),
 
       clearUserData: () => {
-        cacheSignup(undefined)
         if (typeof window !== "undefined") {
           localStorage.removeItem("is_wallet_account")
         }
@@ -173,5 +148,3 @@ export const useUserDataStore = create<UserDataState>()(
     }
   )
 )
-
-export { getCachedSignup }

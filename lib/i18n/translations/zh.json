@@ -485,6 +485,10 @@
     "liveChatLink": "在线聊天",
     "title": "系统维护进行中"
   },
+  "connection": {
+    "lostMessage": "连接可能不稳定。",
+    "refreshCta": "刷新"
+  },
   "market": {
     "advertisers": "广告商",
     "browseMarket": "浏览市场",

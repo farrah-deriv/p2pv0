@@ -1,5 +1,10 @@
-import { extractP2PErrorCode, handleP2PApiStatusCode } from "@/lib/api/p2p-api-status-handler"
+import {
+  extractP2PErrorCode,
+  handleP2PApiStatusCode,
+  reportUnrecognizedErrorEnvelope,
+} from "@/lib/api/p2p-api-status-handler"
 import { isP2PMaintenanceActive } from "@/lib/p2p-maintenance-env"
+import { schemaReporter } from "@/lib/api/schema-reporter"
 import { useP2PMaintenanceStore } from "@/stores/p2p-maintenance-store"
 
 function requestUrl(input: RequestInfo | URL): URL | null {
@@ -69,6 +74,9 @@ export async function p2pFetch(input: RequestInfo | URL, init?: RequestInit): Pr
   try {
     const body = (await response.clone().json()) as unknown
     handleP2PApiStatusCode(extractP2PErrorCode(body))
+    if (!response.ok) {
+      reportUnrecognizedErrorEnvelope(schemaReporter, url?.pathname ?? "(unknown)", body)
+    }
   } catch (error) {
     if (error instanceof SyntaxError) {
       // Empty or malformed JSON bodies are ignored.

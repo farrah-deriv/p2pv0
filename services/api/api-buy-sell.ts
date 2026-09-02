@@ -1,6 +1,9 @@
+import { z } from "zod"
 import { API, AUTH } from "@/lib/local-variables"
 import { p2pFetch } from "./p2p-fetch"
 import { useUserDataStore } from "@/stores/user-data-store"
+import { parseArrayWithItemIsolation, reportedNumber, reportedString } from "@/lib/api/schema-coercion"
+import { schemaReporter } from "@/lib/api/schema-reporter"
 
 // Define the Advertisement interface directly in this file
 export interface Advertisement {
@@ -70,6 +73,72 @@ export interface PaymentMethod {
   method: string
 }
 
+const ADVERTS_ENDPOINT = "p2p/v1/adverts"
+
+// Validates only the advert's money/decimal fields — rating/completion-rate
+// fields on `user` stay out of scope, matching the mobile pass. `.passthrough()`
+// keeps every other field (id, user, account_currency, ...) untouched.
+const advertMoneyFieldsSchema = z
+  .object({
+    exchange_rate: reportedNumber({
+      endpoint: ADVERTS_ENDPOINT,
+      field: "data[].exchange_rate",
+      reporter: schemaReporter,
+    }),
+    effective_rate: reportedNumber({
+      endpoint: ADVERTS_ENDPOINT,
+      field: "data[].effective_rate",
+      reporter: schemaReporter,
+    })
+      .nullable()
+      .optional(),
+    effective_rate_display: reportedNumber({
+      endpoint: ADVERTS_ENDPOINT,
+      field: "data[].effective_rate_display",
+      reporter: schemaReporter,
+    })
+      .nullable()
+      .optional(),
+    // These four caused a live incident: required here but apparently null/
+    // absent for some real adverts, so every item in a query (e.g. Markets
+    // filtered to IDR) was getting rejected -> "all items rejected" ->
+    // SchemaMismatchError for the whole list. `minimum_order_amount`/
+    // `maximum_order_amount`/`actual_maximum_order_amount` already render
+    // with `|| "N/A"` fallbacks in market.orderLimits, and `available_amount`
+    // isn't read anywhere in Markets' UI at all (only in My Ads) — none of
+    // these are worth failing the whole list over. `exchange_rate` stays
+    // required: `order-sidebar.tsx` does unguarded `current.exchange_rate / 100`.
+    minimum_order_amount: reportedString({
+      endpoint: ADVERTS_ENDPOINT,
+      field: "data[].minimum_order_amount",
+      reporter: schemaReporter,
+    })
+      .nullable()
+      .optional(),
+    maximum_order_amount: reportedString({
+      endpoint: ADVERTS_ENDPOINT,
+      field: "data[].maximum_order_amount",
+      reporter: schemaReporter,
+    })
+      .nullable()
+      .optional(),
+    actual_maximum_order_amount: reportedString({
+      endpoint: ADVERTS_ENDPOINT,
+      field: "data[].actual_maximum_order_amount",
+      reporter: schemaReporter,
+    })
+      .nullable()
+      .optional(),
+    available_amount: reportedNumber({
+      endpoint: ADVERTS_ENDPOINT,
+      field: "data[].available_amount",
+      reporter: schemaReporter,
+    })
+      .nullable()
+      .optional(),
+  })
+  .passthrough()
+
 /**
  * Get all available advertisements
  */
@@ -125,13 +194,17 @@ export async function getAdvertisements(params?: SearchParams, signal?: AbortSig
       data = { data: [] }
     }
 
-    if (data && data.data && Array.isArray(data.data)) {
-      return data.data
-    } else if (Array.isArray(data)) {
-      return data
-    } else {
-      return []
-    }
+    const rawItems: unknown[] =
+      data && data.data && Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : []
+
+    // zod's `.passthrough()` preserves every field at runtime (id, user,
+    // account_currency, ...) beyond the money fields it validates/coerces —
+    // `z.infer` just doesn't reflect passthrough keys in its type, hence the cast.
+    return parseArrayWithItemIsolation(advertMoneyFieldsSchema, rawItems, {
+      endpoint: ADVERTS_ENDPOINT,
+      field: "data",
+      reporter: schemaReporter,
+    }) as unknown as Advertisement[]
   } catch (error) {
     console.error("Error fetching advertisements:", error)
     throw error

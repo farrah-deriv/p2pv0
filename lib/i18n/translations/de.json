@@ -512,6 +512,10 @@
     "liveChatLink": "Live-Chat",
     "title": "Systemwartung läuft"
   },
+  "connection": {
+    "lostMessage": "Die Verbindung könnte instabil sein.",
+    "refreshCta": "Aktualisieren"
+  },
   "market": {
     "advertisers": "Inserenten",
     "browseMarket": "Durchsuchen Sie den Markt",

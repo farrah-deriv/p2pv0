@@ -9,9 +9,8 @@ const makeDeps = (overrides: Partial<OrderErrorDispatcherDeps> = {}): OrderError
   handleClose: jest.fn(),
   track: jest.fn(),
   retry: jest.fn(),
-  isV1Signup: false,
   advertisementsQueryKey: ADS_QUERY_KEY,
-  getHomeUrl: (_isV1: boolean, page: string) => `https://home.example.com/${page}`,
+  getHomeUrl: (page: string) => `https://home.example.com/${page}`,
   ...overrides,
 })
 
@@ -147,11 +146,11 @@ describe("createOrderErrorDispatcher", () => {
       expect(window.location.href).toContain("poi")
     })
 
-    it("passes isV1Signup to getHomeUrl", () => {
+    it("calls getHomeUrl with the poi page", () => {
       const getHomeUrl = jest.fn(() => "https://example.com/poi")
-      const deps = makeDeps({ isV1Signup: true, getHomeUrl })
+      const deps = makeDeps({ getHomeUrl })
       createOrderErrorDispatcher(deps)(OrderErrorAction.VerifyAccount)
-      expect(getHomeUrl).toHaveBeenCalledWith(true, "poi")
+      expect(getHomeUrl).toHaveBeenCalledWith("poi")
     })
   })
 
@@ -162,7 +161,7 @@ describe("createOrderErrorDispatcher", () => {
       const getHomeUrl = jest.fn(() => "https://example.com/financialAssessment")
       const deps = makeDeps({ getHomeUrl })
       createOrderErrorDispatcher(deps)(OrderErrorAction.CompleteAssessment)
-      expect(getHomeUrl).toHaveBeenCalledWith(false, "financialAssessment")
+      expect(getHomeUrl).toHaveBeenCalledWith("financialAssessment")
     })
   })
 })

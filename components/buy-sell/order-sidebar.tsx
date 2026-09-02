@@ -18,11 +18,11 @@ import AddPaymentMethodPanel from "@/app/profile/components/add-payment-method-p
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { useToast } from "@/hooks/use-toast"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
-import { useUserDataStore } from "@/stores/user-data-store"
 import { isRtlLocale } from "@/lib/i18n/config"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { ExchangeRateDisplay } from "@/components/exchange-rate-display"
-import { useWebSocketContext } from "@/contexts/websocket-context"
+import { ALERT_INLINE_FLEX, ALERT_INLINE_TEXT } from "@/lib/rtl"
+import { useWebSocketContext, useChannelHeartbeat } from "@/contexts/websocket-context"
 import {
   flattenUserPaymentMethodsPages,
   useAddPaymentMethod,
@@ -382,7 +382,6 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
   const { toast } = useToast()
   const [showAddPaymentPanel, setShowAddPaymentPanel] = useState(false)
   const [selectedPaymentMethodType, setSelectedPaymentMethodType] = useState<string | undefined>()
-  const userData = useUserDataStore((state) => state.userData)
   const {
     joinExchangeRatesChannel,
     leaveExchangeRatesChannel,
@@ -424,13 +423,11 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
   const adId = ad?.id
   useEffect(() => {
     if (isOpen && ad && ad.payment_currency && ad.account_currency && isConnected) {
-      let requestTimer: ReturnType<typeof setTimeout> | undefined
-
       if (ad.exchange_rate_type === "float") {
         joinExchangeRatesChannel(ad.account_currency, ad.payment_currency)
-        requestTimer = setTimeout(() => {
-          requestExchangeRate(ad.account_currency, ad.payment_currency)
-        }, 400)
+        // The socket client queues this until the current connection has
+        // completed the channel join, including after reconnect.
+        requestExchangeRate(ad.account_currency, ad.payment_currency)
       }
 
       const unsubscribe = subscribe((data) => {
@@ -478,7 +475,6 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
       })
 
       return () => {
-        if (requestTimer) clearTimeout(requestTimer)
         if (ad.exchange_rate_type === "float") {
           leaveExchangeRatesChannel(ad.account_currency, ad.payment_currency)
         }
@@ -486,6 +482,12 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
       }
     }
   }, [isOpen, adId, isConnected])
+
+  const isFloatRateChannelActive = isOpen && !!ad && ad.exchange_rate_type === "float" && isConnected
+  useChannelHeartbeat(
+    ad ? `exchange_rates/${ad.account_currency}/${ad.payment_currency}` : "",
+    isFloatRateChannelActive,
+  )
 
   useEffect(() => {
     if (isOpen) {
@@ -649,7 +651,12 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
 
       const numAmount = Number.parseFloat(amount ?? "0")
 
-      const rateToUse = lockedConfirmationRate || marketRate
+      // Don't block order submission on the exchange_rates WS resolving — on a
+      // slow connection marketRate can still be null here, which used to send
+      // exchange_rate: 0 and trip the backend's OrderExchangeRateRequired.
+      // Fall back to the advert's own effective_rate immediately, same as mobile
+      // (markets_advert_bottom_sheet.dart _submitOrder: "Always pass effectiveRate").
+      const rateToUse = lockedConfirmationRate ?? marketRate ?? localAd.effective_rate
       const confirmedVersion = pendingRateUpdate?.version ?? localAd.version
       if (lockedConfirmationRate) {
         setMarketRate(lockedConfirmationRate)
@@ -679,7 +686,6 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
           // Mapper-driven path: every other code routes through mapOrderError +
           // dispatchOrderErrorAction. The dispatcher is the single place that
           // wires CTA actions (route, intercom, retry, list-invalidate, etc).
-          const isV1Signup = userData?.signup === "v1"
           const existingOrderId = (order.errors[0]?.detail?.order_id as number | undefined)
 
           const dispatch = createOrderErrorDispatcher({
@@ -688,7 +694,6 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
             handleClose,
             track,
             retry: proceedWithOrder,
-            isV1Signup,
             advertisementsQueryKey: queryKeys.buySell.advertisements(),
             getHomeUrl,
           })

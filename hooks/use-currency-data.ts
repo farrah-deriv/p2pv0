@@ -4,6 +4,7 @@ import { useMemo } from "react"
 import type { Currency } from "@/components/currency-filter/types"
 import { useSettings } from "@/hooks/use-api-queries"
 import { useTranslations } from "@/lib/i18n/use-translations"
+import type { Country } from "@/services/api/api-auth"
 
 export function useCurrencyData(currency = "USD") {
   const { t } = useTranslations()
@@ -18,9 +19,11 @@ export function useCurrencyData(currency = "USD") {
       const countries = response.countries || []
 
       const currencyList: Currency[] = countries
-        .map((country: { currency: string; currency_name: string }) => ({
-          code: country.currency,
-          name: country.currency_name,
+        .map((country: Country) => ({
+          code: country.currency ?? "",
+          // `currency_name` is genuinely optional (backend may omit it) —
+          // fall back to the currency code itself rather than showing blank.
+          name: country.currency_name ?? country.currency ?? "",
         }))
         .reduce((acc: Currency[], curr: Currency) => {
           // Remove duplicates

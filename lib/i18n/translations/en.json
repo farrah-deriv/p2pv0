@@ -1312,6 +1312,10 @@
     "errorTitle": "System maintenance in progress",
     "errorMessage": "Deriv P2P is temporarily unavailable. For urgent queries, contact us via live chat."
   },
+  "connection": {
+    "lostMessage": "Connection might be unstable.",
+    "refreshCta": "Refresh"
+  },
   "presence": {
     "seenJustNow": "Seen just now",
     "seenMinutesAgo": "Seen {count} minute{plural} ago",

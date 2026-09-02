@@ -12,6 +12,10 @@ interface AdActionsMenuProps {
   onDelete: (adId: string) => void
   onShare?: (ad: Ad) => void
   variant?: "default" | "drawer"
+  /** Hard-blocks Edit/Delete only (no sheet) when true — mirrors mobile,
+   * which keeps editing/deleting an existing ad off-limits while KYC is
+   * unverified. Toggle-status/Share are unaffected. */
+  isKycUnverified?: boolean
 }
 
 export function AdActionsMenu({
@@ -21,6 +25,7 @@ export function AdActionsMenu({
   onDelete,
   onShare,
   variant = "default",
+  isKycUnverified = false,
 }: AdActionsMenuProps) {
   const { t } = useTranslations()
   const isActive = ad.is_active !== undefined ? ad.is_active : ad.status === "Active"
@@ -31,6 +36,7 @@ export function AdActionsMenu({
         size="sm"
         className="w-full hover:!bg-transparent !font-normal !justify-start !text-grayscale-600 !my-1"
         onClick={() => onEdit(ad)}
+        disabled={isKycUnverified}
         data-testid={`ads-btn-edit-${ad.id}`}
       >
         <span className="flex items-center gap-2">
@@ -65,6 +71,7 @@ export function AdActionsMenu({
         size="sm"
         className="w-full hover:!bg-transparent !font-normal !justify-start !my-1"
         onClick={() => onDelete(ad.id)}
+        disabled={isKycUnverified}
         data-testid={`ads-btn-delete-${ad.id}`}
       >
         <span className="flex items-center gap-2">

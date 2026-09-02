@@ -177,6 +177,13 @@ type OrderChatProps = {
   counterpartyLastOnlineAt?: number
 }
 
+// Module-level (not per-instance) guard, keyed by orderId: this component is
+// mounted twice at once for the same order (mobile full-screen chat view vs.
+// the desktop panel that stays mounted, CSS-hidden, below the lg breakpoint),
+// so more than one instance can request chat history for the same order at
+// nearly the same moment. Dedupe here rather than chase the exact mount trigger.
+const chatHistoryRequestedAt: Record<string, number> = {}
+
 export default function OrderChat({
   orderId,
   counterpartyName,
@@ -318,9 +325,14 @@ export default function OrderChat({
 
   useEffect(() => {
     if (!isConnected) return
-
-    const timerId = setTimeout(() => getChatHistory("orders", orderId), 100)
-    return () => clearTimeout(timerId)
+    const timeoutId = setTimeout(() => {
+      const now = Date.now()
+      const last = chatHistoryRequestedAt[orderId] ?? 0
+      if (now - last < 2000) return
+      chatHistoryRequestedAt[orderId] = now
+      getChatHistory("orders", orderId)
+    }, 100)
+    return () => clearTimeout(timeoutId)
   }, [isConnected, getChatHistory, orderId])
 
   useEffect(() => {

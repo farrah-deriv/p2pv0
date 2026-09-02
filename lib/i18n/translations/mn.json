@@ -485,6 +485,10 @@
     "liveChatLink": "шууд чат",
     "title": "Системийн засвар үйлчилгээ явагдаж байна"
   },
+  "connection": {
+    "lostMessage": "Холболт тогтворгүй байж магадгүй.",
+    "refreshCta": "Сэргээх"
+  },
   "market": {
     "advertisers": "Сурталчлагчид",
     "browseMarket": "Зах зээлийг үзэх",

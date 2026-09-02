@@ -485,6 +485,10 @@
     "liveChatLink": "සජීව සංවාදය",
     "title": "පද්ධති නඩත්තුව සිදුවෙමින් පවතී"
   },
+  "connection": {
+    "lostMessage": "සම්බන්ධතාවය අස්ථිර විය හැක.",
+    "refreshCta": "නැවුම් කරන්න"
+  },
   "market": {
     "advertisers": "දැන්වීම්කරුවන්",
     "browseMarket": "වෙළඳපල පිරික්සන්න",

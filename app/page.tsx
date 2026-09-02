@@ -34,13 +34,14 @@ import { TemporaryBanAlert } from "@/components/temporary-ban-alert"
 import { ExchangeRateDisplay } from "@/components/exchange-rate-display"
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import { getTotalBalance } from "@/services/api/api-auth"
+import { useBalanceChangeWs } from "@/hooks/use-balance-change-ws"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { indefiniteArticleFor } from "@/lib/i18n/indefinite-article"
 import { usePaymentMethods, useAdvertisements } from "@/hooks/use-api-queries"
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 import { VerifiedBadge } from "@/components/verified-badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useWebSocketContext } from "@/contexts/websocket-context"
+import { useWebSocketContext, useChannelHeartbeat } from "@/contexts/websocket-context"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useTrackers } from "@/analytics/useTrackers"
 import { PresenceLastSeen } from "@/components/presence-last-seen"
@@ -134,7 +135,7 @@ export default function BuySellPage() {
   const isMobile = useIsMobile()
   const { track } = useTrackers()
 
-  const { isConnected, joinAdvertsChannel, leaveAdvertsChannel, subscribe, subscribeToUserUpdates, unsubscribeFromUserUpdates, joinUsersOnlineChannel, leaveUsersOnlineChannel } = useWebSocketContext()
+  const { isConnected, joinAdvertsChannel, leaveAdvertsChannel, subscribe, joinUsersOnlineChannel, leaveUsersOnlineChannel } = useWebSocketContext()
 
 
   const { data: advertsData, isLoading, error, refetch: refetchAdverts, fetchNextPage, hasNextPage, isFetchingNextPage, queryKey: advertsQueryKey } = useAdvertisements(
@@ -155,11 +156,11 @@ export default function BuySellPage() {
   useEffect(() => { advertsQueryKeyRef.current = advertsQueryKey }, [advertsQueryKey])
 
   const hasActiveFilters = filterOptions.fromFollowing !== false || sortBy !== "trade_band_rank"
-  const isV1Signup = userData?.signup === "v1"
   const tempBanUntil = userData?.temp_ban_until
   const firstTradeableAdIndex = adverts.findIndex(ad => Number(userId) !== ad.user.id)
 
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
+
   const displayCurrency = currency || localCurrency || selectedAccountCurrency
   const showCurrencyFilter = currencies.length > 0 || Boolean(displayCurrency)
   const hasFilteredPaymentMethods =
@@ -170,20 +171,13 @@ export default function BuySellPage() {
   const balancesKey = useMemo(() => {
     if (!userData?.signup) return null
 
-    if (isV1Signup) {
-      const balances = userData?.balances
-      if (!balances) return "v1-empty"
-      return `v1-${balances.amount || "0"}-${balances.currency || "USD"}`
-    }
-    return "v2"
-  }, [isV1Signup, userData?.balances, userData?.signup])
+    const balances = userData?.balances
+    if (!balances) return "empty"
+    return `${balances.amount || "0"}-${balances.currency || "USD"}`
+  }, [userData?.balances, userData?.signup])
 
   const fetchBalance = useCallback(async () => {
     if (!userData?.signup) {
-      return
-    }
-
-    if (isV1Signup && !userData?.balances) {
       return
     }
 
@@ -205,7 +199,7 @@ export default function BuySellPage() {
     } finally {
       setIsLoadingBalance(false)
     }
-  }, [balancesKey, isV1Signup, userData])
+  }, [balancesKey, userData])
 
   useEffect(() => {
     fetchBalance()
@@ -221,33 +215,11 @@ export default function BuySellPage() {
   }, [pendingAd, openedFromSearch, setPendingAd])
 
   // Subscribe to WebSocket updates for users/me to get real-time balance updates
-  useEffect(() => {
-    if (!isConnected) return
-
-    subscribeToUserUpdates()
-
-    const unsubscribe = subscribe((data: any) => {
-      // Check if message is from users/me channel with balance data
-      if (data?.options?.channel?.startsWith("users/me")) {
-        if (data?.payload?.data?.event === "balance_change" && data?.payload?.data?.user?.total_account_value) {
-          setBalance(data?.payload?.data?.user?.total_account_value.amount?.toString() || "0.00")
-          setBalanceCurrency(data?.payload?.data?.user?.total_account_value.currency || "USD")
-
-          // Update the user data store with the new balance
-          const updateBalances = useUserDataStore.getState().updateBalances
-          updateBalances({
-            amount: data.payload.data.user.total_account_value.amount?.toString() || "0.00",
-            currency: data.payload.data.user.total_account_value.currency || "USD",
-          })
-        }
-      }
-    })
-
-    return () => {
-      unsubscribe()
-      unsubscribeFromUserUpdates()
-    }
-  }, [isConnected, subscribe, subscribeToUserUpdates, unsubscribeFromUserUpdates])
+  const handleBalanceChangeWs = useCallback((amount: string, currency: string) => {
+    setBalance(amount)
+    setBalanceCurrency(currency)
+  }, [])
+  useBalanceChangeWs(handleBalanceChangeWs)
 
   useEffect(() => {
     const operation = searchParams.get("operation")
@@ -417,6 +389,11 @@ export default function BuySellPage() {
     }
   }, [isMaintenanceActive, isConnected, selectedAccountCurrency, currency, activeTab, joinAdvertsChannel, leaveAdvertsChannel])
 
+  const advertsChannel = selectedAccountCurrency && currency && activeTab
+    ? `adverts/currency/${selectedAccountCurrency}/${currency}/${activeTab}`
+    : null
+  useChannelHeartbeat(advertsChannel ?? "", !isMaintenanceActive && isConnected && Boolean(advertsChannel))
+
   useEffect(() => {
     const unsubscribe = subscribe((data: any) => {
       if (data?.options?.channel?.startsWith("adverts/currency/")) {
@@ -571,26 +548,24 @@ export default function BuySellPage() {
           {tempBanUntil && !isMaintenanceActive && <TemporaryBanAlert tempBanUntil={tempBanUntil} />}
           <div className="flex flex-wrap gap-2 md:gap-3 md:px-0 md:mb-0 md:justify-end">
             <div className="flex gap-2 items-center md:ms-auto md:flex-none max-md:w-full">
-              {!isV1Signup && (
-                <div className="flex gap-2 mb-3 flex-1 hidden">
-                  {accountCurrencies.map((curr) => (
-                    <Button
-                      key={curr.code}
-                      variant={selectedAccountCurrency === curr.code ? "black" : "outline"}
-                      onClick={() => setSelectedAccountCurrency(curr.code)}
-                      className={cn(
-                        "px-4 py-2 rounded-full font-normal border-slate-800",
-                        selectedAccountCurrency === curr.code
-                          ? ""
-                          : "text-grayscale-600 hover:bg-transparent border-gray-300",
-                      )}
-                      size="sm"
-                    >
-                      {curr.code}
-                    </Button>
-                  ))}
-                </div>
-              )}
+              <div className="flex gap-2 mb-3 flex-1 hidden">
+                {accountCurrencies.map((curr) => (
+                  <Button
+                    key={curr.code}
+                    variant={selectedAccountCurrency === curr.code ? "black" : "outline"}
+                    onClick={() => setSelectedAccountCurrency(curr.code)}
+                    className={cn(
+                      "px-4 py-2 rounded-full font-normal border-slate-800",
+                      selectedAccountCurrency === curr.code
+                        ? ""
+                        : "text-grayscale-600 hover:bg-transparent border-gray-300",
+                    )}
+                    size="sm"
+                  >
+                    {curr.code}
+                  </Button>
+                ))}
+              </div>
               <div className="md:flex md:items-center md:gap-2 md:flex-none">
                 <PaymentMethodsFilter
                   paymentMethods={paymentMethods}

@@ -9,6 +9,16 @@ import { getCoreUrl } from "@/lib/get-core-url"
 import { getOryUrl } from "@/lib/get-ory-url"
 import { localeToBcp47, type Locale } from "@/lib/i18n/config"
 import { isP2PWebSocketEligible } from "@/lib/p2p-websocket-eligibility"
+import { resetWebSocketClient } from "@/contexts/websocket-context"
+import { z } from "zod"
+import {
+  parseArrayWithItemIsolation,
+  parseWithSchema,
+  reportedBoolean,
+  reportedString,
+} from "@/lib/api/schema-coercion"
+import { schemaReporter } from "@/lib/api/schema-reporter"
+import { SchemaMismatchError } from "@/lib/api/schema-mismatch-error"
 
 export interface LoginRequest {
   email: string
@@ -55,9 +65,19 @@ export interface KycStatusResponse {
   status: string
 }
 
+// Corrected to match the actual runtime shape (previously declared as
+// `{balance, currency}`, which doesn't match what the backend returns or what
+// `app/wallet/page.tsx` actually reads off this — a stale/wrong interface).
 export interface TotalBalanceResponse {
-  balance: number
-  currency: string
+  wallets: {
+    items: Array<{
+      type: string
+      total_balance: {
+        approximate_total_balance: string
+        converted_to: string
+      }
+    }>
+  }
 }
 
 export interface OnboardingStatusResponse {
@@ -284,6 +304,25 @@ export async function getSession(): Promise<boolean> {
   }
 }
 
+// Two independent call sites (app/main.tsx auth gating, lib/i18n/language-sync.tsx
+// locale-sync precondition) both call this on every initial page load for unrelated
+// reasons — neither can share a React Query cache (language-sync.tsx renders outside
+// ReactQueryProvider in app/layout.tsx). Share a single in-flight/short-lived result
+// here instead, so whichever call fires first is the only one that hits the network.
+let sessionPromise: Promise<boolean> | null = null
+let sessionPromiseAt = 0
+const SESSION_CACHE_MS = 1000 * 60 * 10
+
+export function getSessionCached(): Promise<boolean> {
+  const now = Date.now()
+  if (sessionPromise && now - sessionPromiseAt < SESSION_CACHE_MS) {
+    return sessionPromise
+  }
+  sessionPromiseAt = now
+  sessionPromise = getSession()
+  return sessionPromise
+}
+
 /**
  * Logout user
  */
@@ -300,6 +339,11 @@ export async function logout(): Promise<void> {
 
     useUserDataStore.getState().clearUserData()
     useP2PMaintenanceStore.getState().clearMaintenance()
+    // Defensive — the page navigation below already wipes the module
+    // singleton via full reload today, but this covers the window before
+    // that reload happens and guards against the navigation strategy ever
+    // changing to client-side routing.
+    resetWebSocketClient()
     useUserCountryInvalidStore.getState().clearUserCountryInvalid()
     localStorage.removeItem("auth_token")
     localStorage.removeItem("socket_token")
@@ -336,6 +380,26 @@ export async function getMe(): Promise<any> {
 /**
  * Fetch user data and store user_id in localStorage
  */
+const P2P_USER_ME_ENDPOINT = "p2p/v1/users/me"
+
+// The P2P balance field (CLAUDE.md gotcha: `total_account_value` — same
+// field mobile reads as `myProfileProvider.totalAccountValue`, stored here
+// under the `balances` store key). `.passthrough()` keeps any other field.
+export const totalAccountValueSchema = z
+  .object({
+    amount: reportedString({
+      endpoint: P2P_USER_ME_ENDPOINT,
+      field: "total_account_value.amount",
+      reporter: schemaReporter,
+    }),
+    currency: reportedString({
+      endpoint: P2P_USER_ME_ENDPOINT,
+      field: "total_account_value.currency",
+      reporter: schemaReporter,
+    }),
+  })
+  .passthrough()
+
 export async function fetchUserIdAndStore(): Promise<void> {
   try {
     await getClientProfile()
@@ -422,7 +486,28 @@ export async function fetchUserIdAndStore(): Promise<void> {
     const brandClientId = result?.data?.brand_client_id
     const brand = result?.data?.brand
     const tempBanUntil = result?.data?.temp_ban_until
-    const balances = result?.data?.total_account_value
+    const rawTotalAccountValue = result?.data?.total_account_value
+    // `any` (not `unknown`) to preserve the pre-existing loose typing this
+    // value flows into (`updateUserData({ balances, ... })` etc.).
+    let balances: any = rawTotalAccountValue
+    if (rawTotalAccountValue) {
+      try {
+        balances = parseWithSchema(totalAccountValueSchema, rawTotalAccountValue, {
+          endpoint: P2P_USER_ME_ENDPOINT,
+          reporter: schemaReporter,
+        })
+      } catch (error) {
+        if (!(error instanceof SchemaMismatchError)) throw error
+        // Fail closed on just this field — the rest of this function's user
+        // data (userId, trade band, etc.) must still get stored below.
+        // Prefer the user's already-derived local currency (residence-based)
+        // over a hardcoded "USD" sentinel, which would briefly render the
+        // wrong currency for non-USD markets — "USD" is only the last-resort
+        // default when we don't know better either.
+        const fallbackCurrency = useUserDataStore.getState().localCurrency ?? "USD"
+        balances = { amount: "0", currency: fallbackCurrency }
+      }
+    }
     const status = result?.data?.status
     const tradeBand = result?.data?.trade_band
 
@@ -539,20 +624,17 @@ export async function getClientProfile(): Promise<void> {
 /**
  * Get websocket token
  */
-export async function getSocketToken(token?: string): Promise<void> {
+export async function getSocketToken(): Promise<string | null> {
   try {
     if (!isP2PWebSocketEligible()) {
       useUserDataStore.getState().setSocketToken(null)
-      return
+      return null
     }
 
     const response = await p2pFetch(`${getCoreUrl()}/p2p/v1/user-websocket-token`, {
       method: "GET",
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...getAuthHeader(),
-      },
+      headers: getAuthHeader(),
     })
 
     if (!response.ok) {
@@ -560,13 +642,21 @@ export async function getSocketToken(token?: string): Promise<void> {
     }
 
     const result = await response.json()
-    const socketToken = result?.data.token
+    const socketToken = result?.data?.token
 
-    if (socketToken) {
-      useUserDataStore.getState().setSocketToken(socketToken.toString())
-    }
+    if (!socketToken) return null
+
+    const value = socketToken.toString()
+    useUserDataStore.getState().setSocketToken(value)
+    return value
   } catch (error) {
+    // Swallowed on purpose, and `null` is returned rather than rethrown: the
+    // handshake still falls back to cookie auth, so a token failure must not
+    // leave the query retrying and stall the connect effect that waits on it
+    // settling. Returning a value (never `undefined`) also keeps React Query
+    // from treating this as an errored query.
     console.error("Error fetching token:", error)
+    return null
   }
 }
 
@@ -620,6 +710,34 @@ export async function getOnboardingStatus(): Promise<OnboardingStatusResponse> {
 /**
  * Get total balance for the user
  */
+const TOTAL_BALANCE_ENDPOINT = "v1/client/total-balance"
+
+const totalBalanceEnvelopeSchema = z
+  .object({
+    wallets: z
+      .object({
+        items: z.array(z.unknown()),
+      })
+      .passthrough(),
+  })
+  .passthrough()
+
+// Validates only the wallet item's money field — `.passthrough()` keeps
+// `type`/`converted_to`/etc. untouched.
+const totalBalanceWalletItemSchema = z
+  .object({
+    total_balance: z
+      .object({
+        approximate_total_balance: reportedString({
+          endpoint: TOTAL_BALANCE_ENDPOINT,
+          field: "wallets.items[].total_balance.approximate_total_balance",
+          reporter: schemaReporter,
+        }),
+      })
+      .passthrough(),
+  })
+  .passthrough()
+
 export async function getTotalBalance(): Promise<TotalBalanceResponse> {
   try {
     const response = await p2pFetch(`${getCoreUrl()}/v1/client/total-balance`, {
@@ -633,7 +751,17 @@ export async function getTotalBalance(): Promise<TotalBalanceResponse> {
     }
 
     const result = await response.json()
-    return result.data
+    const parsed = parseWithSchema(totalBalanceEnvelopeSchema, result.data, {
+      endpoint: TOTAL_BALANCE_ENDPOINT,
+      reporter: schemaReporter,
+    })
+    const items = parseArrayWithItemIsolation(totalBalanceWalletItemSchema, parsed.wallets.items, {
+      endpoint: TOTAL_BALANCE_ENDPOINT,
+      field: "wallets.items",
+      reporter: schemaReporter,
+    })
+
+    return { ...parsed, wallets: { ...parsed.wallets, items } } as unknown as TotalBalanceResponse
   } catch (error) {
     console.error("Error fetching total balance:", error)
     throw error
@@ -694,7 +822,70 @@ export async function getCurrencies(): Promise<CurrenciesResponse> {
 /**
  * Get user settings
  */
-export async function getSettings(): Promise<any> {
+const P2P_SETTINGS_ENDPOINT = "p2p/v1/settings"
+
+// Only validates the fields the web app actually reads off settings
+// (`float_rate_enabled`, `order_verification_enabled`, `countries`) — the
+// origin incident was `float_rate_enabled` drifting type, so this schema
+// isn't restricted to money fields the way adverts/orders/wallets are.
+// `.passthrough()` at every level so unlisted fields survive untouched.
+const p2pSettingsSchema = z
+  .object({
+    float_rate_enabled: reportedBoolean({
+      endpoint: P2P_SETTINGS_ENDPOINT,
+      field: "data.float_rate_enabled",
+      reporter: schemaReporter,
+    }),
+    order_verification_enabled: reportedBoolean({
+      endpoint: P2P_SETTINGS_ENDPOINT,
+      field: "data.order_verification_enabled",
+      reporter: schemaReporter,
+    }),
+    countries: z.array(z.unknown()),
+  })
+  .passthrough()
+
+const p2pSettingsCountrySchema = z
+  .object({
+    code: reportedString({
+      endpoint: P2P_SETTINGS_ENDPOINT,
+      field: "data.countries[].code",
+      reporter: schemaReporter,
+    }),
+    name: reportedString({
+      endpoint: P2P_SETTINGS_ENDPOINT,
+      field: "data.countries[].name",
+      reporter: schemaReporter,
+    }),
+    // `currency` stays required — `use-currency-data.ts` builds `code:
+    // country.currency` and sorts on it (`.localeCompare`), which would
+    // throw on `undefined`. `currency_name` only feeds display text, so it's
+    // safe to drop when absent — and `Country.currency_name` is genuinely
+    // optional per the interface, unlike `currency`.
+    currency: reportedString({
+      endpoint: P2P_SETTINGS_ENDPOINT,
+      field: "data.countries[].currency",
+      reporter: schemaReporter,
+    }),
+    currency_name: reportedString({
+      endpoint: P2P_SETTINGS_ENDPOINT,
+      field: "data.countries[].currency_name",
+      reporter: schemaReporter,
+    }).optional(),
+  })
+  .passthrough()
+
+// Hand-written rather than derived via `Omit<z.infer<typeof p2pSettingsSchema>, ...>`
+// — `Omit`/`Pick` over a `.passthrough()` schema's inferred type (which carries
+// an index signature) collapses named properties to `unknown` (confirmed via
+// isolated repro). Keep this in sync with `p2pSettingsSchema`'s validated fields.
+export interface P2PSettings {
+  float_rate_enabled: boolean
+  order_verification_enabled: boolean
+  countries: Country[]
+}
+
+export async function getSettings(): Promise<P2PSettings> {
   try {
     const response = await p2pFetch(`${getCoreUrl()}/p2p/v1/settings`, {
       method: "GET",
@@ -707,7 +898,22 @@ export async function getSettings(): Promise<any> {
     }
 
     const result = await response.json()
-    return result.data
+    const parsed = parseWithSchema(p2pSettingsSchema, result.data, {
+      endpoint: P2P_SETTINGS_ENDPOINT,
+      reporter: schemaReporter,
+    })
+    const countries = parseArrayWithItemIsolation(p2pSettingsCountrySchema, parsed.countries, {
+      endpoint: P2P_SETTINGS_ENDPOINT,
+      field: "data.countries",
+      reporter: schemaReporter,
+    }) as unknown as Country[]
+
+    // `parsed`'s inferred type loses precision on named properties when
+    // spread here (generic inference through `parseWithSchema`'s `z.ZodType<T>`
+    // parameter is less precise than a direct `z.infer` for a `.passthrough()`
+    // schema) — the runtime shape is already validated above, so this cast is
+    // safe. Keep `P2PSettings` in sync with `p2pSettingsSchema` by hand.
+    return { ...parsed, countries } as P2PSettings
   } catch (error) {
     console.error("Error fetching settings:", error)
     throw error

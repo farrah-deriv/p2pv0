@@ -58,13 +58,7 @@ export function KycOnboardingStepRow({ step, statusLabels }: KycOnboardingStepRo
           />
         </div>
       )}
-      {showStatusBadge && (
-        <KycStatusBadge
-          status={step.expired ? "expired" : displayStatus}
-          labels={statusLabels}
-          showUnverified={Boolean(step.expired)}
-        />
-      )}
+      {showStatusBadge && <KycStatusBadge status={displayStatus} labels={statusLabels} />}
     </div>
   )
 }

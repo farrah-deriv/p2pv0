@@ -494,6 +494,10 @@
     "liveChatLink": "লাইভ চ্যাটের মাধ্যমে",
     "title": "সিস্টেম রক্ষণাবেক্ষণ চলছে"
   },
+  "connection": {
+    "lostMessage": "সংযোগ অস্থির হতে পারে।",
+    "refreshCta": "রিফ্রেশ"
+  },
   "market": {
     "advertisers": "বিজ্ঞাপনদাতা",
     "browseMarket": "বাজার ব্রাউজ করুন",

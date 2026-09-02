@@ -11,7 +11,6 @@ import {
 
 const ALL_EXCHANGE_RATES = ""
 const RATE_SETTLE_DELAY_MS = 1500
-const JOIN_REQUEST_DELAY_MS = 400
 
 export interface WizardExchangeRateState {
   pairKey: string
@@ -37,7 +36,6 @@ export function useWizardExchangeRate(
   const [updatesByPair, setUpdatesByPair] = useState<Record<string, ExchangeRateUpdate>>({})
   const [loadingPair, setLoadingPair] = useState<string | null>(null)
   const cachedRatesRef = useRef<Record<string, number>>({})
-  const joinedCurrencyRef = useRef<string | null>(null)
 
   const pairKey = buyCurrency && paymentCurrency ? `${buyCurrency}:${paymentCurrency}` : ""
   const selectedUpdate = pairKey ? updatesByPair[pairKey] : undefined
@@ -57,10 +55,8 @@ export function useWizardExchangeRate(
   useEffect(() => {
     if (!enabled || !isConnected || !buyCurrency) return
 
-    joinedCurrencyRef.current = null
     joinExchangeRatesChannel(buyCurrency, ALL_EXCHANGE_RATES)
     return () => {
-      joinedCurrencyRef.current = null
       leaveExchangeRatesChannel(buyCurrency, ALL_EXCHANGE_RATES)
     }
   }, [
@@ -75,15 +71,11 @@ export function useWizardExchangeRate(
     if (!enabled || !isConnected || !buyCurrency || !paymentCurrency) return
 
     const accountChannel = `exchange_rates/${buyCurrency}`
-    let requestTimer: ReturnType<typeof setTimeout> | undefined
-    if (joinedCurrencyRef.current === buyCurrency) {
-      requestExchangeRate(buyCurrency, ALL_EXCHANGE_RATES)
-    } else {
-      requestTimer = setTimeout(() => {
-        joinedCurrencyRef.current = buyCurrency
-        requestExchangeRate(buyCurrency, ALL_EXCHANGE_RATES)
-      }, JOIN_REQUEST_DELAY_MS)
-    }
+    // The WebSocket client queues rate requests until the channel join is
+    // ready for this socket generation, including after reconnect. Do not use
+    // a component-level timer here: it can fire before server membership is
+    // registered and produces "must be in the channel" errors.
+    requestExchangeRate(buyCurrency, ALL_EXCHANGE_RATES)
 
     const settleTimer = setTimeout(() => {
       setLoadingPair((current) => current === pairKey ? null : current)
@@ -121,7 +113,6 @@ export function useWizardExchangeRate(
     })
 
     return () => {
-      clearTimeout(requestTimer)
       clearTimeout(settleTimer)
       unsubscribe()
     }

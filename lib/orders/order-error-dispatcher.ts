@@ -6,14 +6,13 @@ export interface OrderErrorDispatcherDeps {
   handleClose: () => void
   track: (event: string, props?: Record<string, unknown>) => void
   retry: () => void
-  isV1Signup: boolean
   advertisementsQueryKey: readonly unknown[]
-  getHomeUrl: (isV1: boolean, page: string) => string
+  getHomeUrl: (page: string) => string
 }
 
 export function createOrderErrorDispatcher(deps: OrderErrorDispatcherDeps) {
   return function dispatch(action: OrderErrorAction, ctx: { orderId?: number } = {}): void {
-    const { queryClient, router, handleClose, track, retry, isV1Signup, advertisementsQueryKey, getHomeUrl } = deps
+    const { queryClient, router, handleClose, track, retry, advertisementsQueryKey, getHomeUrl } = deps
 
     switch (action) {
       case OrderErrorAction.Dismiss:
@@ -58,11 +57,11 @@ export function createOrderErrorDispatcher(deps: OrderErrorDispatcherDeps) {
         return
       case OrderErrorAction.VerifyAccount:
         track("ek_verify_account_markets_advert_sheet")
-        window.location.href = getHomeUrl(isV1Signup, "poi")
+        window.location.href = getHomeUrl("poi")
         return
       case OrderErrorAction.CompleteAssessment:
         track("ek_complete_assessment_markets_advert_sheet")
-        window.location.href = getHomeUrl(isV1Signup, "financialAssessment")
+        window.location.href = getHomeUrl("financialAssessment")
         return
       case OrderErrorAction.GoToMarkets:
         track("ek_go_to_markets_p2p_disabled_error")

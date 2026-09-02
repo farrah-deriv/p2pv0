@@ -485,6 +485,10 @@
     "liveChatLink": "الدردشة المباشرة",
     "title": "حدث خطأ ما."
   },
+  "connection": {
+    "lostMessage": "قد يكون الاتصال غير مستقر.",
+    "refreshCta": "تحديث"
+  },
   "market": {
     "advertisers": "المعلنون",
     "browseMarket": "تصفح السوق",

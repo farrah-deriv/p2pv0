@@ -1,13 +1,13 @@
 "use client"
 
 import Link from "next/link"
+import { useEffect, useState } from "react"
 import { usePathname } from 'next/navigation'
 import { cn, getHomeUrl } from "@/lib/utils"
 import { shouldShowMobileFooterNav } from "@/lib/mobile-footer-nav"
 import { useChatVisibilityStore } from "@/stores/chat-visibility-store"
-import { useUserDataStore, getCachedSignup } from "@/stores/user-data-store"
+import { useUserDataStore } from "@/stores/user-data-store"
 import { useWalletViewStore } from "@/stores/wallet-view-store"
-import { useState, useEffect } from "react"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { SvgIcon } from "@/components/icons/svg-icon"
 import HomeIcon from "@/public/icons/ic-house.svg"
@@ -26,25 +26,7 @@ export default function MobileFooterNav({ className }: { className?: string }) {
   const { isTransactionListVisible } = useWalletViewStore()
   const { t } = useTranslations()
   const { userData } = useUserDataStore()
-  const [showWallet, setShowWallet] = useState<boolean>(() => {
-    const cached = getCachedSignup()
-    return cached !== "v1"
-  })
-  const [isV1Signup, setIsV1Signup] = useState(() => {
-    const cached = getCachedSignup()
-    if (cached !== null) return cached === "v1"
-    return userData?.signup === "v1"
-  })
-
-  useEffect(() => {
-    if (userData?.signup === "v1") {
-      setShowWallet(false)
-      setIsV1Signup(true)
-    } else if (userData?.signup) {
-      setShowWallet(true)
-      setIsV1Signup(false)
-    }
-  }, [userData?.signup])
+  const showWallet = true
 
   // Optimistic pending state: the tapped tab flips red immediately and shows a
   // pulsing dot while its route is still committing. Mirrors home-app's
@@ -86,7 +68,7 @@ export default function MobileFooterNav({ className }: { className?: string }) {
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 10px)" }}
       >
         <Link
-          href={getHomeUrl(isV1Signup, "home")}
+          href={getHomeUrl("home")}
           data-testid="footer-nav-link-home"
           className="flex flex-col items-center gap-1.5 px-4 pt-2 pb-2 min-h-14 justify-center text-[12px] font-semibold text-neutral-600 transition-colors w-[100px]"
         >

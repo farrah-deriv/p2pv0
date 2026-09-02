@@ -24,7 +24,6 @@ import { useChatVisibilityStore } from "@/stores/chat-visibility-store"
 import { HeaderSegmentedControl } from "@/components/header-segmented-control"
 import { DateFilter } from "./components/date-filter"
 import { format, startOfDay, endOfDay } from "date-fns"
-import { PreviousOrdersSection } from "./components/previous-orders-section"
 import { TemporaryBanAlert } from "@/components/temporary-ban-alert"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -60,11 +59,9 @@ export default function OrdersPage() {
   const [selectedOrderId, setSelectedOrderId] = useState(null)
   const [showChat, setShowChat] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
-  const [showPreviousOrders, setShowPreviousOrders] = useState(false)
-  const [showCheckPreviousOrdersButton, setShowCheckPreviousOrdersButton] = useState(false)
   const [showKycPopup, setShowKycPopup] = useState(false)
   const isMobile = useIsMobile()
-  const { joinChannel } = useWebSocketContext()
+  const { isConnected, acquireOrdersChannel, releaseOrdersChannel } = useWebSocketContext()
   const { userData, userId } = useUserDataStore()
   const tempBanUntil = userData?.temp_ban_until
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
@@ -138,21 +135,6 @@ export default function OrdersPage() {
     return () => observer.disconnect()
   }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
-  useEffect(() => {
-    if (userData?.signup === "v1") {
-      setShowCheckPreviousOrdersButton(true)
-    } else if (userData?.signup) {
-      setShowCheckPreviousOrdersButton(false)
-    }
-  }, [userData?.signup])
-
-  const handleCheckPreviousOrders = () => {
-    setShowPreviousOrders(true)
-  }
-
-  const handleBackFromPreviousOrders = () => {
-    setShowPreviousOrders(false)
-  }
 
   const formatDate = (dateString: string) => formatAppDate(new Date(dateString), locale)
 
@@ -219,12 +201,16 @@ export default function OrdersPage() {
       setSelectedOrder(order)
       setShowChat(true)
       setIsChatVisible(true)
-
-      joinChannel("orders", order.id)
     } else {
       navigateToOrderDetails(order.id)
     }
   }
+
+  useEffect(() => {
+    if (!isConnected || !isMobile || !showChat || !selectedOrder) return
+    acquireOrdersChannel(Number(selectedOrder.id))
+    return () => releaseOrdersChannel()
+  }, [isConnected, isMobile, showChat, selectedOrder?.id])
 
   const handleTabChange = (tabValue: string) => {
     if (tabValue === "active") track("ek_active_tab_orders")
@@ -273,14 +259,6 @@ export default function OrdersPage() {
     )
   }
 
-  if (showPreviousOrders) {
-    return (
-      <div data-testid="orders-section-previous">
-        <PreviousOrdersSection onBack={handleBackFromPreviousOrders} />
-      </div>
-    )
-  }
-
   return (
     <>
       {showKycPopup && <span data-testid="orders-alert-kyc" aria-hidden="true" className="hidden" />}
@@ -297,25 +275,6 @@ export default function OrdersPage() {
                 { value: "past", label: t("orders.past"), testId: "orders-tab-past" },
               ]}
             />
-            {showCheckPreviousOrdersButton && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="shrink-0 text-white font-normal hover:text-white hover:bg-transparent "
-                onClick={handleCheckPreviousOrders}
-                data-testid="orders-btn-check-previous"
-              >
-                {t("orders.checkPreviousOrders")}
-                <Image
-                  src="/icons/chevron-right-white.png"
-                  width={10}
-                  height={24}
-                  className="ms-1 rtl:rotate-180"
-                  alt=""
-                  aria-hidden
-                />
-              </Button>
-            )}
           </div>
           {tempBanUntil && !isMaintenanceActive && (
             <div className="mt-4" data-testid="orders-alert-temp-ban">

@@ -1,7 +1,10 @@
+import { z } from "zod"
 import { normalizeUpdateAdPayload } from "@/lib/ads/advert-edit-patch"
 import { p2pFetch } from "./p2p-fetch"
 import { API, AUTH } from "@/lib/local-variables"
 import { useUserDataStore } from "@/stores/user-data-store"
+import { parseArrayWithItemIsolation, parseWithSchema, reportedNumber } from "@/lib/api/schema-coercion"
+import { schemaReporter } from "@/lib/api/schema-reporter"
 
 export interface APIAdvert {
   id: number
@@ -34,6 +37,58 @@ export interface APIAdvert {
   payment_method_names: string[]
   type?: string
 }
+
+const MY_ADS_ENDPOINT = "p2p/v1/adverts"
+
+// Same telemetry endpoint as api-buy-sell.ts's adverts schema — this is the
+// My Ads (own-ads) view of the same `/p2p/v1/adverts` list, per-item shaped
+// as `APIAdvert` rather than `Advertisement`. Validates only money fields;
+// `.passthrough()` keeps everything else untouched.
+const myAdvertMoneyFieldsSchema = z
+  .object({
+    exchange_rate: reportedNumber({
+      endpoint: MY_ADS_ENDPOINT,
+      field: "data[].exchange_rate",
+      reporter: schemaReporter,
+    }),
+    minimum_order_amount: reportedNumber({
+      endpoint: MY_ADS_ENDPOINT,
+      field: "data[].minimum_order_amount",
+      reporter: schemaReporter,
+    }),
+    maximum_order_amount: reportedNumber({
+      endpoint: MY_ADS_ENDPOINT,
+      field: "data[].maximum_order_amount",
+      reporter: schemaReporter,
+    }),
+    actual_maximum_order_amount: reportedNumber({
+      endpoint: MY_ADS_ENDPOINT,
+      field: "data[].actual_maximum_order_amount",
+      reporter: schemaReporter,
+    })
+      .nullable()
+      .optional(),
+    available_amount: reportedNumber({
+      endpoint: MY_ADS_ENDPOINT,
+      field: "data[].available_amount",
+      reporter: schemaReporter,
+    }),
+    open_order_amount: reportedNumber({
+      endpoint: MY_ADS_ENDPOINT,
+      field: "data[].open_order_amount",
+      reporter: schemaReporter,
+    })
+      .nullable()
+      .optional(),
+    completed_order_amount: reportedNumber({
+      endpoint: MY_ADS_ENDPOINT,
+      field: "data[].completed_order_amount",
+      reporter: schemaReporter,
+    })
+      .nullable()
+      .optional(),
+  })
+  .passthrough()
 
 export interface MyAd {
   id: string
@@ -278,7 +333,27 @@ export async function getUserAdverts(isActive?: boolean, page = 1, per_page = 20
       return []
     }
 
-    return apiData.data.map((advert: APIAdvert) => {
+    // Coerce/validate money fields before reshaping — fixes a live bug where
+    // `exchangeRate.toFixed(4)` below would throw if the backend ever sent
+    // `exchange_rate` as a numeric string instead of a number.
+    // Cast to plain `any` (not `APIAdvert[]`) to preserve the pre-existing
+    // loose typing of the `.map()` below — its return object doesn't fully
+    // satisfy `MyAd` (e.g. `currency` fields are `string | undefined`), which
+    // was previously masked by `apiData.data` being untyped `any`. A `U[]`
+    // element type would still make TS infer the `.map()` callback's return
+    // type strictly, so this needs to be `any`, not `any[]`. Confirmed by
+    // testing: switching to `as unknown as APIAdvert[]` (the pattern used in
+    // api-orders.ts) breaks compilation — TS2322, the `.map()` return object
+    // genuinely isn't assignable to `MyAd[]`. Fixing that properly means
+    // reconciling the callback's return shape with `MyAd` field-by-field, a
+    // separate, larger change — not a drive-by cast swap.
+    const validatedAdverts: any = parseArrayWithItemIsolation(myAdvertMoneyFieldsSchema, apiData.data, {
+      endpoint: MY_ADS_ENDPOINT,
+      field: "data",
+      reporter: schemaReporter,
+    })
+
+    return validatedAdverts.map((advert: APIAdvert) => {
       const minAmount = advert.minimum_order_amount || 0
       const maxAmount = advert.maximum_order_amount || 0
       const exchangeRate = advert.exchange_rate || 0
@@ -674,6 +749,13 @@ export async function getAdvert(id: string): Promise<MyAd> {
       data = JSON.parse(responseText)
     } catch (e) {
       data = {}
+    }
+
+    if (data && data.data && typeof data.data === "object") {
+      data.data = parseWithSchema(myAdvertMoneyFieldsSchema, data.data, {
+        endpoint: MY_ADS_ENDPOINT,
+        reporter: schemaReporter,
+      })
     }
 
     return data

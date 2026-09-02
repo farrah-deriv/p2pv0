@@ -21,16 +21,13 @@ interface KycOnboardingSheetProps {
 
 function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
   const { t } = useTranslations()
-  const { isWalletAccount } = useUserDataStore()
   const onboardingStatus = useUserDataStore((state) => state.onboardingStatus)
   const userId = useUserDataStore((state) => state.userId)
-  const userData = useUserDataStore((state) => state.userData)
   const queryClient = useQueryClient()
   const setIsOnboardingStatusRefreshing = useUserDataStore((state) => state.setIsOnboardingStatusRefreshing)
   const hasRefreshedOnboardingStatus = useRef(false)
   const [isRefreshingOnboardingStatus, setIsRefreshingOnboardingStatus] = useState(!userId)
   const [hasCreatedP2PUser, setHasCreatedP2PUser] = useState(false)
-  const isV1Signup = userData?.signup === "v1"
 
   useLayoutEffect(() => {
     if (!userId) setIsOnboardingStatusRefreshing(true)
@@ -141,7 +138,7 @@ function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
         title: t("kyc.setupProfile"),
         icon: "/icons/account-profile.svg",
         completed: isProfileCompleted,
-        link: getHomeUrl(isV1Signup, "onboardingProfile", isWalletAccount, fromParam, isTncAccepted),
+        link: getHomeUrl("onboardingProfile", fromParam, isTncAccepted),
       },
       {
         id: "phone",
@@ -149,7 +146,7 @@ function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
         icon: "/icons/pnv.svg",
         completed: isPhoneCompleted,
         status: isPhoneCompleted ? "verified" : "none",
-        link: getHomeUrl(isV1Signup, "onboardingPNV", isWalletAccount, fromParam, isTncAccepted),
+        link: getHomeUrl("onboardingPNV", fromParam, isTncAccepted),
       },
       {
         id: "poi",
@@ -160,7 +157,7 @@ function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
         inReview: isPoiInReview,
         expired: isPoiIncomplete,
         status: onboardingKycStepStatusFromRaw(onboardingStatus?.kyc?.poi_status),
-        link: getHomeUrl(isV1Signup, "poi", isWalletAccount, fromParam, isTncAccepted),
+        link: getHomeUrl("poi", fromParam, isTncAccepted),
       },
       {
         id: "poa",
@@ -171,14 +168,12 @@ function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
         inReview: isPoaInReview,
         expired: isPoaIncomplete,
         status: onboardingKycStepStatusFromRaw(onboardingStatus?.kyc?.poa_status),
-        link: getHomeUrl(isV1Signup, "poa", isWalletAccount, fromParam, isTncAccepted),
+        link: getHomeUrl("poa", fromParam, isTncAccepted),
       },
     ],
     [
       t,
       isProfileCompleted,
-      isV1Signup,
-      isWalletAccount,
       fromParam,
       isTncAccepted,
       isPhoneCompleted,
@@ -217,8 +212,8 @@ function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
   }
 
   const handlePoiPoaExpiredLink = () => {
-    if (isPoiIncomplete) window.location.href = getHomeUrl(isV1Signup, "poi")
-    else window.location.href = getHomeUrl(isV1Signup, "poa")
+    if (isPoiIncomplete) window.location.href = getHomeUrl("poi")
+    else window.location.href = getHomeUrl("poa")
   }
 
   const allStepsVerifiedOrInReview = verificationSteps.every(

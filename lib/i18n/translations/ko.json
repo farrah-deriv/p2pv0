@@ -485,6 +485,10 @@
     "liveChatLink": "라이브 채팅",
     "title": "시스템 점검 진행 중"
   },
+  "connection": {
+    "lostMessage": "연결이 불안정할 수 있습니다.",
+    "refreshCta": "새로고침"
+  },
   "market": {
     "advertisers": "판매자",
     "browseMarket": "마켓 둘러보기",

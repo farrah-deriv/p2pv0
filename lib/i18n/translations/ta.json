@@ -485,6 +485,10 @@
     "liveChatLink": "நேரடி அரட்டை",
     "title": "கணினி பராமரிப்பு நடைபெறுகிறது"
   },
+  "connection": {
+    "lostMessage": "இணைப்பு நிலையற்றதாக இருக்கலாம்.",
+    "refreshCta": "புதுப்பி"
+  },
   "market": {
     "advertisers": "விளம்பரதாரர்கள்",
     "browseMarket": "சந்தையை உலாவவும்",

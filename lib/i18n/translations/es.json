@@ -494,6 +494,10 @@
     "liveChatLink": "chat en vivo",
     "title": "Mantenimiento del sistema en curso"
   },
+  "connection": {
+    "lostMessage": "La conexión podría ser inestable.",
+    "refreshCta": "Actualizar"
+  },
   "market": {
     "advertisers": "Anunciantes",
     "browseMarket": "Explorar el mercado",

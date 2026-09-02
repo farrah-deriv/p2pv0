@@ -489,6 +489,10 @@
     "liveChatLink": "czat na żywo",
     "title": "Trwa konserwacja systemu"
   },
+  "connection": {
+    "lostMessage": "Połączenie może być niestabilne.",
+    "refreshCta": "Odśwież"
+  },
   "market": {
     "advertisers": "Ogłaszający",
     "browseMarket": "Przeglądaj rynek",

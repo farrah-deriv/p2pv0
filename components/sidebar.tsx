@@ -7,7 +7,7 @@ import { cn, getHomeUrl } from "@/lib/utils"
 import { getHelpCentreUrl } from "@/lib/get-help-centre-url"
 import { NovuNotifications } from "./novu-notifications"
 import { useState, useEffect, useRef, Fragment } from "react"
-import { useUserDataStore, getCachedSignup } from "@/stores/user-data-store"
+import { useUserDataStore } from "@/stores/user-data-store"
 import { SvgIcon } from "@/components/icons/svg-icon"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { StandaloneSearchRegularIcon, StandaloneUserFillIcon, StandaloneChevronRightRegularIcon } from "@deriv/quill-icons/Standalone"
@@ -189,15 +189,7 @@ export default function Sidebar({ className }: SidebarProps) {
     setDebouncedSearchInput("")
     setNickname("")
   }
-  const [showWallet, setShowWallet] = useState<boolean>(() => {
-    const cached = getCachedSignup()
-    return cached !== "v1"
-  })
-  const [isV1Signup, setIsV1Signup] = useState(() => {
-    const cached = getCachedSignup()
-    if (cached !== null) return cached === "v1"
-    return userData?.signup === "v1"
-  })
+  const showWallet = true
 
   const firstName = userData?.first_name
   const lastName = userData?.last_name
@@ -205,18 +197,8 @@ export default function Sidebar({ className }: SidebarProps) {
   const email = userData?.email
   const isDisabled = userData?.status === "disabled"
 
-  useEffect(() => {
-    if (userData?.signup === "v1") {
-      setShowWallet(false)
-      setIsV1Signup(true)
-    } else if (userData?.signup) {
-      setShowWallet(true)
-      setIsV1Signup(false)
-    }
-  }, [userData?.signup])
-
-  const homeUrl = getHomeUrl(isV1Signup, "home")
-  const homeProfileUrl = getHomeUrl(isV1Signup, "homeProfile")
+  const homeUrl = getHomeUrl("home")
+  const homeProfileUrl = getHomeUrl("homeProfile")
 
   const helpCentreUrl = `${getHelpCentreUrl(locale)}/help-centre/deriv-p2p`
 

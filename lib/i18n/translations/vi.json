@@ -528,6 +528,10 @@
     "liveChatLink": "trò chuyện trực tiếp",
     "title": "Đang bảo trì hệ thống"
   },
+  "connection": {
+    "lostMessage": "Kết nối có thể không ổn định.",
+    "refreshCta": "Làm mới"
+  },
   "market": {
     "advertisers": "Nhà quảng cáo",
     "browseMarket": "Duyệt thị trường",

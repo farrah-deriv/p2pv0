@@ -7,6 +7,9 @@
   --background-rgb: 255, 255, 255;
   --component-segmentedControl-bg-single-body: rgba(255, 255, 255, 0.04);
   --component-segmentedControl-bg-single-selected: rgba(255, 255, 255, 0.16);
+  /* @deriv-com/quill-ui-v2's Snackbar positioning CSS reads this token but the
+     package never defines it, so top/bottom offsets fall back to 0 without it. */
+  --quill-semantic-spacing-16: 1rem;
 }
 
 body {
@@ -14,6 +17,12 @@ body {
   background: rgb(var(--background-rgb));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Quill's Snackbar action button has no underline prop — the connection-lost
+   banner's "Refresh" CTA needs one, so it's targeted via the banner's own testid. */
+[data-testid="connection-lost-banner"] .quill-actionButton-ZWtBp {
+  text-decoration: underline;
 }
 
 @keyframes shimmer {

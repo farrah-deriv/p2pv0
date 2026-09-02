@@ -485,6 +485,10 @@
     "liveChatLink": "即時聊天",
     "title": "系統維護進行中"
   },
+  "connection": {
+    "lostMessage": "連線可能不穩定。",
+    "refreshCta": "重新整理"
+  },
   "market": {
     "advertisers": "廣告商",
     "browseMarket": "瀏覽市場",

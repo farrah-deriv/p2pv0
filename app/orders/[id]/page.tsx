@@ -9,7 +9,8 @@ import Navigation from "@/components/navigation"
 import { Button } from "@/components/ui/button"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
-import { OrdersAPI, AuthAPI } from "@/services/api"
+import { useSettings } from "@/hooks/use-api-queries"
+import { OrdersAPI } from "@/services/api"
 import type { Order } from "@/services/api/api-orders"
 import OrderChat from "@/components/order-chat"
 import OrderChatSkeleton from "@/components/order-chat-skeleton"
@@ -29,7 +30,7 @@ import {
   copyToClipboard,
 } from "@/lib/utils"
 import OrderDetailsSidebar from "@/components/order-details-sidebar"
-import { useWebSocketContext } from "@/contexts/websocket-context"
+import { useWebSocketContext, useChannelHeartbeat } from "@/contexts/websocket-context"
 import { useUserDataStore } from "@/stores/user-data-store"
 import Image from "next/image"
 import { RatingSidebar } from "@/components/rating-filter"
@@ -70,25 +71,29 @@ export default function OrderDetailsPage() {
   const [showPaymentConfirmation, setShowPaymentConfirmation] = useState(false)
   const [showPaymentReceivedConfirmation, setShowPaymentReceivedConfirmation] = useState(false)
   const [isChatLoading, setIsChatLoading] = useState(true)
-  const [orderVerificationEnabled, setOrderVerificationEnabled] = useState<boolean>(true)
-  const { isConnected, joinChannel, reconnect, subscribe, joinUsersOnlineChannel, leaveUsersOnlineChannel } = useWebSocketContext()
+  const { data: settings } = useSettings()
+  const orderVerificationEnabled = settings?.order_verification_enabled ?? true
+  const { isConnected, acquireOrdersChannel, releaseOrdersChannel, reconnect, subscribe, joinUsersOnlineChannel, leaveUsersOnlineChannel, onReconnect } = useWebSocketContext()
   const [otpRequested, setOtpRequested] = useState(false)
 
   useEffect(() => {
     fetchOrderDetails()
-    fetchSettings()
 
     if (!isConnected) {
       reconnect()
     }
   }, [orderId])
 
+  useEffect(() => onReconnect(() => fetchOrderDetails()), [onReconnect])
+
   useEffect(() => {
-    if (isConnected) {
-      joinChannel("orders", orderId)
-      setIsChatLoading(false)
-    }
+    if (!isConnected) return
+    setIsChatLoading(false)
+    acquireOrdersChannel(Number(orderId))
+    return () => releaseOrdersChannel()
   }, [isConnected, orderId])
+
+  useChannelHeartbeat("orders")
 
   const handleUsersOnlineUpdate = useCallback((data: any) => {
     if (data?.options?.channel === "users_online") {
@@ -386,17 +391,6 @@ export default function OrderDetailsPage() {
       },
       type: "warning",
     })
-  }
-
-  const fetchSettings = async () => {
-    try {
-      const settings = await AuthAPI.getSettings()
-      if (settings) {
-        setOrderVerificationEnabled(settings.order_verification_enabled)
-      }
-    } catch (error) {
-      setOrderVerificationEnabled(true)
-    }
   }
 
   const handlePaymentReceived = async () => {

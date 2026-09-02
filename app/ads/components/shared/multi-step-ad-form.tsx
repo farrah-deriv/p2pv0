@@ -284,12 +284,12 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
       const countriesData: Country[] = settingsData.countries || []
       setCountries(countriesData)
 
-      const uniqueCurrencies = countriesData
-        .reduce((acc, country) => {
-          const code = country.currency
-          if (code && !acc.some(c => c.code === code)) {
-            acc.push({ code, name: country.currency_name ?? code })
-          }
+        const uniqueCurrencies = countriesData
+         .reduce((acc, country) => {
+           const code = country.currency
+           if (code && !acc.some(c => c.code === code)) {
+             acc.push({ code, name: country.currency_name ?? code })
+           }
           return acc
         }, [] as { code: string; name: string }[])
         .sort((a, b) => a.code.localeCompare(b.code))

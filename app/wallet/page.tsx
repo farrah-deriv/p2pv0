@@ -8,14 +8,14 @@ import { useCurrencies, useTotalBalance } from "@/hooks/use-api-queries"
 import { TemporaryBanAlert } from "@/components/temporary-ban-alert"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { P2PAccessRemoved } from "@/components/p2p-access-removed"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { useTranslations } from "@/lib/i18n/use-translations"
-import { useWebSocketContext } from "@/contexts/websocket-context"
 import { useTrackers } from "@/analytics/useTrackers"
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import EmptyState from "@/components/empty-state"
 import { useWalletViewStore } from "@/stores/wallet-view-store"
 import type { Transaction } from "./types"
+import { useBalanceChangeWs } from "@/hooks/use-balance-change-ws"
 import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 
 interface Balance {
@@ -26,26 +26,23 @@ interface Balance {
 }
 
 export default function WalletPage() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const { t } = useTranslations()
   const { track } = useTrackers()
   const { openKycIfUnverified } = useKycOverlay({ route: "wallets" })
   const kycPopupHandledRef = useRef(false)
-  const { data: currenciesResponse, isLoading: isCurrenciesLoading } = useCurrencies()
+  const { data: currenciesResponse } = useCurrencies()
   const {
     data: balanceData,
     isLoading: isBalanceLoading,
     isError: isBalanceError,
     refetch: refetchBalance,
   } = useTotalBalance()
-  const { isConnected, subscribeToUserUpdates, unsubscribeFromUserUpdates, subscribe } = useWebSocketContext()
   const [displayBalances, setDisplayBalances] = useState(true)
   const [selectedCurrency, setSelectedCurrency] = useState<string | null>("USD")
   const [totalBalance, setTotalBalance] = useState("0.00")
   const [balanceCurrency, setBalanceCurrency] = useState("USD")
   const [p2pBalances, setP2pBalances] = useState<Balance[]>([])
-  const [hasCheckedSignup, setHasCheckedSignup] = useState(false)
   const [hasBalance, setHasBalance] = useState(false)
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
   const { userData } = useUserDataStore()
@@ -106,45 +103,15 @@ export default function WalletPage() {
   }, [searchParams, openKycIfUnverified])
 
   useEffect(() => {
-    if (userData?.signup === "v1") {
-      router.push("/")
-    } else {
-      setHasCheckedSignup(true)
-    }
-  }, [userData?.signup, router])
-
-  useEffect(() => {
     processBalanceData(currenciesResponse || {}, balanceData)
   }, [balanceData, currenciesResponse, processBalanceData])
 
   // Subscribe to WebSocket updates for users/me to get real-time balance updates
-  useEffect(() => {
-    if (!isConnected) return
-
-    subscribeToUserUpdates()
-
-    const unsubscribe = subscribe((data: any) => {
-      // Check if message is from users/me channel with balance data
-      if (data?.options?.channel?.startsWith("users/me")) {
-        if (data?.payload?.data?.event === "balance_change" && data?.payload?.data?.user?.total_account_value) {
-          setTotalBalance(data?.payload?.data?.user?.total_account_value.amount?.toString() || "0.00")
-          setBalanceCurrency(data?.payload?.data?.user?.total_account_value.currency || "USD")
-
-          // Update the user data store with the new balance
-          const updateBalances = useUserDataStore.getState().updateBalances
-          updateBalances({
-            amount: data.payload.data.user.total_account_value.amount?.toString() || "0.00",
-            currency: data.payload.data.user.total_account_value.currency || "USD",
-          })
-        }
-      }
-    })
-
-    return () => {
-      unsubscribe()
-      unsubscribeFromUserUpdates()
-    }
-  }, [isConnected, subscribe, subscribeToUserUpdates, unsubscribeFromUserUpdates])
+  const handleBalanceChangeWs = useCallback((amount: string, currency: string) => {
+    setTotalBalance(amount)
+    setBalanceCurrency(currency)
+  }, [])
+  useBalanceChangeWs(handleBalanceChangeWs)
 
   const handleBalanceClick = (currency: string, balance: string) => {
     track("ek_wallet_item_wallets", { currency_code: currency })
@@ -167,10 +134,6 @@ export default function WalletPage() {
         setBalanceCurrency(p2pWallet.total_balance.converted_to || "USD")
       }
     }
-  }
-
-  if (userData?.signup === "v1") {
-    return null
   }
 
   if (isDisabled) {
@@ -200,7 +163,7 @@ export default function WalletPage() {
             hasBalance={hasBalance}
             selectedTransaction={selectedTransaction}
             onTransactionSelect={setSelectedTransaction}
-            actionsDisabled={isMaintenanceActive}
+            actionsDisabled={!!tempBanUntil || isMaintenanceActive}
             onViewTransactionDetails={(transaction) => {
               const currency = transaction.metadata?.transaction_currency || selectedCurrency || "USD"
               setDisplayBalances(false)

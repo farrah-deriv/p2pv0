@@ -207,13 +207,12 @@ The email input is a custom Radix UI `Input` component wrapped in a container. T
 
 **Impact on generated code:** Never call `loginPage.emailNativeInput.fill(email)` directly in tests — always use `loginPage.enterEmail(email)` or the full `loginPage.login()` method.
 
-### Unauthenticated redirect target varies by user type
+### Unauthenticated redirect target
 
-`getLoginUrl()` returns different URLs based on `isV1Signup` flag:
-- New format users → `https://staging-home.deriv.com/dashboard/login`
-- V1 users → `https://staging-app.deriv.com`
+`getLoginUrl()` redirects unauthenticated users to
+`https://staging-home.deriv.com/dashboard/login` on staging.
 
-**Impact on generated code:** For the unauthenticated redirect test (Flow 3), assert that the user is **not** on `/` rather than asserting the exact target URL. This avoids flakiness as the redirect target depends on which account type triggered the check.
+**Impact on generated code:** For the unauthenticated redirect test (Flow 3), assert the Home login route rather than a legacy app-domain URL.
 
 ### Log in button is disabled when email is empty
 
