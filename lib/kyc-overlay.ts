@@ -20,12 +20,18 @@ export function resolveKycOverlay({
   verificationStatus?: VerificationStatus | null
   onboardingStatus?: OnboardingStatusResponse | null
 }): KycOverlay {
-  const { verified, ready } = isP2PVerifiedFromStatus({
+  const { verified, ready, blockedByPaymentLockOnly } = isP2PVerifiedFromStatus({
     verificationStatus,
     onboardingStatus,
   })
   if (!ready) return "wait"
-  if (!verified) return "kyc"
-  if (userId) return "allow"
-  return "intro"
+  if (verified) return userId ? "allow" : "intro"
+  // An existing P2P user held back only by a deposit/withdrawal lock has nothing
+  // left to do in the onboarding sheet: every step already reads as approved, so
+  // its CTA collapses to "Got it" and merely closes the sheet — a dead end that
+  // also blocks Sell, the one route a withdrawal-locked client has to move funds
+  // out (issue #1508). Run the gated action instead. Buy stays reachable too and
+  // is rejected server-side at order placement; that tradeoff is deliberate.
+  if (userId && blockedByPaymentLockOnly) return "allow"
+  return "kyc"
 }
