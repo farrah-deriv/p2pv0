@@ -412,7 +412,7 @@ export default function AdDetailsForm({
         <div>
           {!isEditMode && (
             <div data-guide-id="ad-guide-trade-type">
-              <TradeTypeSelector value={type} onChange={setType} />
+              <TradeTypeSelector value={type} onChange={setType} currency={buyCurrency} />
             </div>
           )}
 

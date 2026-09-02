@@ -1,7 +1,9 @@
 {
   "common": {
     "buy": "Buy",
+    "buyCurrency": "Buy {currency}",
     "sell": "Sell",
+    "sellCurrency": "Sell {currency}",
     "market": "Market",
     "orders": "Orders",
     "myAds": "My Ads",

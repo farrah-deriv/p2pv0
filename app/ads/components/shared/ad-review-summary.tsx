@@ -182,8 +182,8 @@ export function AdReviewSummary({
       {
         label: t("adForm.reviewAdType"),
         value: isBuy
-          ? `${t("adForm.buyCurrency")} ${account}`
-          : `${t("adForm.sellCurrency")} ${account}`,
+          ? t("common.buyCurrency", { currency: account })
+          : t("common.sellCurrency", { currency: account }),
         changed: false,
       },
       {
