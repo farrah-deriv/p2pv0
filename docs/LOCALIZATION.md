@@ -52,6 +52,16 @@ While a non-English chunk is loading, UI shows **English** strings (same per-key
   - `mobile-first` (e.g. `ar`): overwrites when mobile has a match.
   - Requires sibling repo `p2p/ai-deriv-p2p-app/lib/l10n/`.
 
+### Non-translatable navigation labels
+
+**Agents and contributors: read `lib/i18n/NON_TRANSLATABLE.md` before editing locale files.**
+
+Sidebar and mobile footer nav labels must stay **English in every locale**. Do not translate:
+
+`navigation.home`, `navigation.askAmy`, `navigation.market`, `navigation.myAds`, `navigation.orders`, `navigation.p2pHelpCentre`, `navigation.profile`, `navigation.wallet`
+
+Copy the exact English strings from `en.json` into all other locale JSON files. Do not change `scripts/i18n_manual_translations.py` to use localized values for these keys.
+
 ## Bundle behaviour
 
 | Locale | Bundle |

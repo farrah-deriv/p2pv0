@@ -11,6 +11,7 @@ import {
   startLoginFlow,
   type KratosFlow,
 } from "@/lib/ory-bff-helpers"
+import { readLoginIdentifier } from "@/lib/ory-login-request-body"
 
 // next-on-pages requires every route handler to run on the edge runtime.
 export const runtime = "edge"
@@ -33,8 +34,8 @@ export async function POST(request: NextRequest) {
   if (!isLocalDev()) return notAvailableOutsideLocalDev()
 
   try {
-    const body = await readJsonBody<{ email?: string }>(request)
-    const identifier = typeof body?.email === "string" ? body.email.trim() : ""
+    const body = await readJsonBody<{ email?: string; identifier?: string }>(request)
+    const identifier = readLoginIdentifier(body)
     if (!identifier) {
       return NextResponse.json({ error_code: "invalid_request" }, { status: 400 })
     }

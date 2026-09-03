@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Fill web locale keys that still match English using mobile ARB + in-file fallbacks."""
+"""Fill web locale keys that still match English using mobile ARB + in-file fallbacks.
+
+Skips keys listed in lib/i18n/NON_TRANSLATABLE.md (navigation labels stay English).
+"""
 
 from __future__ import annotations
 
@@ -10,6 +13,18 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MOBILE_L10N = REPO_ROOT.parent / "p2p" / "ai-deriv-p2p-app-languages" / "lib" / "l10n"
 WEB_L10N = REPO_ROOT / "lib" / "i18n" / "translations"
+
+# navigation.* keys — English in every locale (sidebar + mobile footer). See NON_TRANSLATABLE.md.
+NON_TRANSLATABLE_KEYS = frozenset({
+    "navigation.home",
+    "navigation.askAmy",
+    "navigation.market",
+    "navigation.myAds",
+    "navigation.orders",
+    "navigation.p2pHelpCentre",
+    "navigation.profile",
+    "navigation.wallet",
+})
 
 LOCALES = [
     "ar", "bn", "de", "es", "fr", "it", "ko", "pl", "pt", "ru", "sw", "vi", "zh", "zh_TW", "ta", "si", "mn",
@@ -78,6 +93,24 @@ EXPLICIT_MOBILE: dict[str, str] = {
     "p2pAccess.title": "accountDisabledTitle",
     "p2pAccess.description": "accountDisabledMessage",
     "p2pAccess.illustrationAlt": "onboardingHeroImageLabel",
+    "login.emailOrPhoneNumber": "authEmailOrPhoneNumber",
+    "login.phonePlaceholder": "authPhoneHint",
+    "navigation.askAmy": "askAmyButtonLabel",
+    "guideIntro.amyTitle": "askAmyButtonLabel",
+    "login.password": "authPasswordLabel",
+    "orderDetails.instructions": "orderDetailsInstructions",
+    "paymentMethodFields.instructions": "orderDetailsInstructions",
+    "paymentMethodFields.name": "profileNameLabel",
+    "wallet.date": "transactionDetails_date",
+    "orders.date": "transactionDetails_date",
+    "orders.status": "profileApiTokenTableStatusColumn",
+    "orderDetails.status": "profileApiTokenTableStatusColumn",
+    "myAds.status": "profileApiTokenTableStatusColumn",
+    "adForm.payingWith": "createAdPayingWith",
+    "adForm.receiveIn": "createAdReceiveIn",
+    "adForm.countryAll": "countriesSelectionAllCountries",
+    "learnPage.termExchangeRateTitle": "filterSortExchangeRate",
+    "learnPage.visitHelpCentre": "common.learnMore",
 }
 
 # Copy translated value from another web key in the same locale file.
@@ -89,6 +122,11 @@ WEB_KEY_FALLBACK: dict[str, str] = {
     "wallet.transferUnexpectedError": "wallet.transferUnsuccessfulMessage",
     "notifications.loading": "common.loading",
     "market.tradeLimitsLabel": "market.orderLimits",
+    "login.loginWithEmail": "login.email",
+    "login.loginWithPhone": "kyc.phoneNumber",
+    "login.phoneNumber": "kyc.phoneNumber",
+    "orderDetails.total": "order.total",
+    "wallet.mainWallet": "walletTransactions_wallet",
 }
 
 # Accessibility / UI chrome — no mobile English match; translate per locale.
@@ -228,6 +266,8 @@ def fill_locale(locale: str) -> tuple[int, int]:
 
     for path, en_val in web_en.items():
         if not isinstance(en_val, str):
+            continue
+        if path in NON_TRANSLATABLE_KEYS:
             continue
         current = web_loc.get(path)
         if current != en_val:

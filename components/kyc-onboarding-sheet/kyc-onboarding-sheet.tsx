@@ -30,7 +30,10 @@ function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
   const [hasCreatedP2PUser, setHasCreatedP2PUser] = useState(false)
 
   useLayoutEffect(() => {
-    if (!userId) setIsOnboardingStatusRefreshing(true)
+    // userId is tri-state: null until /users/me resolves, "" when no P2P profile,
+    // real id for existing users. Only null means "still loading" — "" must not
+    // re-arm the full-page loader or it sticks after fetchUserIdAndStore settles.
+    if (userId === null) setIsOnboardingStatusRefreshing(true)
   }, [setIsOnboardingStatusRefreshing, userId])
 
   useEffect(() => {
@@ -43,13 +46,13 @@ function KycOnboardingSheet({ route, onClose }: KycOnboardingSheetProps) {
       return
     }
 
-    // userId appeared mid-fetch (ensureP2PUser resolved during the async gap,
-    // or the effect re-ran under Concurrent Mode before the .finally). The
-    // refresh already did its job — clear the local loader so the sheet does
-    // not render null forever (line ~298). The async .finally is guarded by
-    // isMounted and skips this when cleanup has run.
-    if (userId && hasRefreshedOnboardingStatus.current) {
-      if (isMounted) setIsRefreshingOnboardingStatus(false)
+    // userId appeared mid-fetch, or /users/me resolved to "" (no P2P profile).
+    // The refresh already ran — clear loaders so the sheet does not stay blank.
+    if (userId !== null && hasRefreshedOnboardingStatus.current) {
+      if (isMounted) {
+        setIsRefreshingOnboardingStatus(false)
+        setIsOnboardingStatusRefreshing(false)
+      }
       return
     }
 

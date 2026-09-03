@@ -4,6 +4,7 @@ import { useUserDataStore } from "@/stores/user-data-store"
 import { useGuideStore } from "@/stores/guide-store"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { useRefreshOnboardingStatus } from "@/hooks/use-refresh-onboarding-status"
+import { refreshClientProfileEmailEligibility } from "@/lib/refresh-client-profile-email-eligibility"
 import jest from "jest"
 
 const mockOpenIntro = jest.fn()
@@ -11,6 +12,9 @@ const mockRequestOpenIntro = jest.fn()
 const mockShowAlert = jest.fn()
 const mockHideAlert = jest.fn()
 const mockRefreshOnboardingStatus = jest.fn()
+const mockRefreshClientProfileEmailEligibility = refreshClientProfileEmailEligibility as jest.MockedFunction<
+  typeof refreshClientProfileEmailEligibility
+>
 const mockSetIsOnboardingStatusRefreshing = jest.fn()
 
 jest.mock("@/stores/user-data-store", () => ({
@@ -27,6 +31,17 @@ jest.mock("@/hooks/use-alert-dialog", () => ({
 
 jest.mock("@/hooks/use-refresh-onboarding-status", () => ({
   useRefreshOnboardingStatus: jest.fn(),
+}))
+
+jest.mock("@/lib/refresh-client-profile-email-eligibility", () => ({
+  refreshClientProfileEmailEligibility: jest.fn(),
+}))
+
+jest.mock("@/lib/create-email-required-alert-config", () => ({
+  createEmailRequiredAlertConfig: (_t: unknown, opts: { onAddEmail: () => void; onDismiss?: () => void }) => ({
+    kind: "email-required",
+    opts,
+  }),
 }))
 
 jest.mock("@/components/kyc-onboarding-sheet", () => ({
@@ -72,9 +87,11 @@ describe("useKycOverlay", () => {
       isOpen: false,
     } as any)
     mockRefreshOnboardingStatus.mockResolvedValue(undefined)
+    mockRefreshClientProfileEmailEligibility.mockResolvedValue("eligible")
     mockUseRefreshOnboardingStatus.mockReturnValue(mockRefreshOnboardingStatus)
     mockUseUserDataStore.getState = jest.fn(() => ({
       userId: null,
+      emailEligibility: "eligible",
       verificationStatus: { phone_verified: false, kyc_verified: false, p2p_allowed: false },
       onboardingStatus: unverifiedOnboarding,
       setIsOnboardingStatusRefreshing: mockSetIsOnboardingStatusRefreshing,
@@ -89,12 +106,25 @@ describe("useKycOverlay", () => {
     mockUseUserDataStore.mockImplementation((selector?: (state: any) => unknown) => {
       const state = {
         userId: null,
+        emailEligibility: "eligible" as const,
         verificationStatus: null,
         onboardingStatus: null,
         ...overrides,
       }
       return selector ? selector(state) : state
     })
+    mockUseUserDataStore.getState = jest.fn(() => ({
+      userId: null,
+      emailEligibility: "eligible" as const,
+      verificationStatus: {
+        phone_verified: false,
+        kyc_verified: false,
+        p2p_allowed: false,
+      },
+      onboardingStatus: unverifiedOnboarding,
+      setIsOnboardingStatusRefreshing: mockSetIsOnboardingStatusRefreshing,
+      ...overrides,
+    }))
   }
 
   it("runs the original action when the user is a verified P2P user", () => {
@@ -368,5 +398,77 @@ describe("useKycOverlay", () => {
       expect(mockShowAlert).toHaveBeenCalledTimes(1)
     })
     expect(mockOpenIntro).not.toHaveBeenCalled()
+  })
+
+  it("shows the email-required dialog when the user has no email", async () => {
+    stubUser({ userId: "user-1", emailEligibility: "missing" })
+    mockRefreshClientProfileEmailEligibility.mockResolvedValue("missing")
+    const onAllow = jest.fn()
+    const { result } = renderHook(() => useKycOverlay({ route: "markets" }))
+
+    act(() => {
+      result.current.runGatedAction(onAllow)
+    })
+
+    await waitFor(() => {
+      expect(mockShowAlert).toHaveBeenCalledWith(
+        expect.objectContaining({ kind: "email-required" }),
+      )
+    })
+    expect(onAllow).not.toHaveBeenCalled()
+    expect(mockOpenIntro).not.toHaveBeenCalled()
+  })
+
+  it("runs the original action when email eligibility refresh fails", async () => {
+    stubUser({
+      emailEligibility: "unknown",
+      userId: "user-1",
+      verificationStatus: {
+        email_verified: true,
+        phone_verified: true,
+        kyc_verified: true,
+        p2p_allowed: true,
+      },
+      onboardingStatus: verifiedOnboarding,
+    })
+    mockRefreshClientProfileEmailEligibility.mockResolvedValue("error")
+    const onAllow = jest.fn()
+    const { result } = renderHook(() => useKycOverlay({ route: "markets" }))
+
+    act(() => {
+      result.current.runGatedAction(onAllow)
+    })
+
+    await waitFor(() => {
+      expect(onAllow).toHaveBeenCalledTimes(1)
+    })
+    expect(mockShowAlert).not.toHaveBeenCalledWith(
+      expect.objectContaining({ kind: "email-required" }),
+    )
+  })
+
+  it("skips the email gate for users without a P2P profile", async () => {
+    stubUser({
+      userId: "",
+      emailEligibility: "missing",
+      verificationStatus: { phone_verified: false, kyc_verified: false, p2p_allowed: false },
+      onboardingStatus: unverifiedOnboarding,
+    })
+    mockRefreshClientProfileEmailEligibility.mockResolvedValue("missing")
+    const onAllow = jest.fn()
+    const { result } = renderHook(() => useKycOverlay({ route: "markets" }))
+
+    act(() => {
+      result.current.runGatedAction(onAllow)
+    })
+
+    await waitFor(() => {
+      expect(mockShowAlert).toHaveBeenCalledTimes(1)
+    })
+    expect(mockShowAlert).not.toHaveBeenCalledWith(
+      expect.objectContaining({ kind: "email-required" }),
+    )
+    expect(mockRefreshClientProfileEmailEligibility).not.toHaveBeenCalled()
+    expect(onAllow).not.toHaveBeenCalled()
   })
 })

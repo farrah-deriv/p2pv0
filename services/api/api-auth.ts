@@ -19,6 +19,7 @@ import {
 } from "@/lib/api/schema-coercion"
 import { schemaReporter } from "@/lib/api/schema-reporter"
 import { SchemaMismatchError } from "@/lib/api/schema-mismatch-error"
+import { emailEligibilityFromProfileEmail } from "@/lib/email-eligibility"
 
 export interface LoginRequest {
   email: string
@@ -402,7 +403,12 @@ export const totalAccountValueSchema = z
 
 export async function fetchUserIdAndStore(): Promise<void> {
   try {
-    await getClientProfile()
+    const profile = await getClientProfile()
+    if (profile) {
+      useUserDataStore.getState().setEmailEligibility(emailEligibilityFromProfileEmail(profile.email))
+    } else {
+      useUserDataStore.getState().setEmailEligibility("error")
+    }
 
     const response = await p2pFetch(`${getCoreUrl()}/p2p/v1/users/me`, {
       method: "GET",
@@ -589,11 +595,20 @@ export async function fetchUserIdAndStore(): Promise<void> {
   }
 }
 
-export async function getClientProfile(): Promise<void> {
+export interface ClientProfileData {
+  email?: string | null
+  first_name?: string
+  last_name?: string
+  nickname?: string
+  residence?: string
+}
+
+export async function getClientProfile(): Promise<ClientProfileData | null> {
   try {
     const response = await p2pFetch(`${getCoreUrl()}/v1/client/profile`, {
       method: "GET",
       credentials: "include",
+      cache: "no-store",
     })
 
     if (!response.ok) {
@@ -601,11 +616,11 @@ export async function getClientProfile(): Promise<void> {
     }
 
     const result = await response.json()
-    const { data } = result
+    const { data } = result as { data: ClientProfileData }
 
     const userData = {
       adverts_are_listed: true,
-      email: data.email,
+      email: data.email ?? undefined,
       first_name: data.first_name,
       last_name: data.last_name,
       nickname: data.nickname,
@@ -616,8 +631,13 @@ export async function getClientProfile(): Promise<void> {
     if (data.residence) {
       useUserDataStore.getState().setResidenceCountry(data.residence)
     }
+
+    useUserDataStore.getState().setEmailEligibility(emailEligibilityFromProfileEmail(data.email))
+
+    return data
   } catch (error) {
     console.error("Error fetching profile:", error)
+    return null
   }
 }
 

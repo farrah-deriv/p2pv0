@@ -46,6 +46,7 @@ import InfoCircleIcon from "@/public/icons/info-circle-bold.svg"
 import { useTrackers } from "@/analytics/useTrackers"
 import { shouldDisableChatAttachments } from "@/lib/orders/order-chat-gating"
 import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 
 export default function OrderDetailsPage() {
   const { t, locale } = useTranslations()
@@ -54,6 +55,7 @@ export default function OrderDetailsPage() {
   const orderId = params.id as string
   const isMobile = useIsMobile()
   const { showAlert, showWarningDialog, hideAlert } = useAlertDialog()
+  const { runGatedAction } = useKycOverlay({ route: "orders" })
   const { toast } = useToast()
   const { setIsChatVisible } = useChatVisibilityStore()
   const userId = useUserDataStore((state) => state.userId)
@@ -174,39 +176,41 @@ export default function OrderDetailsPage() {
   }
 
   const handlePayOrder = async () => {
-    setIsPaymentLoading(true)
-    try {
-      await OrdersAPI.payOrder(orderId)
-      fetchOrderDetails()
-      setShowPaymentConfirmation(false)
-      toast({
-        description: (
-          <div className="flex items-center gap-2">
-            <Image src="/icons/tick.svg" alt={t("common.success")} width={24} height={24} className="text-white" />
-            <span>{t("orderDetails.proofOfTransferSubmitted")}</span>
-          </div>
-        ),
-        className: TOAST_SUCCESS_CLASS,
-        duration: 2500,
-      })
-    } catch (err) {
-      const errorCode = err instanceof Error ? err.message : "UnknownError"
-      if (errorCode === "OrderTempLocked") {
-        showAlert({
-          title: t("order.tempLockedTitle"),
-          description: t("order.tempLockedDescription"),
-          confirmText: t("order.tryAgain"),
-          cancelText: t("order.goBack"),
-          type: "warning",
-          onCancel: () => setShowPaymentConfirmation(false),
+    runGatedAction(async () => {
+      setIsPaymentLoading(true)
+      try {
+        await OrdersAPI.payOrder(orderId)
+        fetchOrderDetails()
+        setShowPaymentConfirmation(false)
+        toast({
+          description: (
+            <div className="flex items-center gap-2">
+              <Image src="/icons/tick.svg" alt={t("common.success")} width={24} height={24} className="text-white" />
+              <span>{t("orderDetails.proofOfTransferSubmitted")}</span>
+            </div>
+          ),
+          className: TOAST_SUCCESS_CLASS,
+          duration: 2500,
         })
-      } else {
-        console.error("Error marking payment as sent:", err)
-        showAlert(createGenericMutationErrorAlertConfig(t, { errorCode, onConfirm: hideAlert }))
+      } catch (err) {
+        const errorCode = err instanceof Error ? err.message : "UnknownError"
+        if (errorCode === "OrderTempLocked") {
+          showAlert({
+            title: t("order.tempLockedTitle"),
+            description: t("order.tempLockedDescription"),
+            confirmText: t("order.tryAgain"),
+            cancelText: t("order.goBack"),
+            type: "warning",
+            onCancel: () => setShowPaymentConfirmation(false),
+          })
+        } else {
+          console.error("Error marking payment as sent:", err)
+          showAlert(createGenericMutationErrorAlertConfig(t, { errorCode, onConfirm: hideAlert }))
+        }
+      } finally {
+        setIsPaymentLoading(false)
       }
-    } finally {
-      setIsPaymentLoading(false)
-    }
+    })
   }
 
   const handleSubmitReview = () => {
@@ -342,13 +346,16 @@ export default function OrderDetailsPage() {
   }, [order])
 
   const handleShowPaymentConfirmation = () => {
-    track("ek_ive_paid_order_details")
-    setShowPaymentConfirmation(true)
+    runGatedAction(() => {
+      track("ek_ive_paid_order_details")
+      setShowPaymentConfirmation(true)
+    })
   }
 
   const handleCancelOrder = () => {
-    track("ek_cancel_order_order_details")
-    showAlert({
+    runGatedAction(() => {
+      track("ek_cancel_order_order_details")
+      showAlert({
       title: t("orderDetails.cancellingYourOrder"),
       description: t("orderDetails.dontCancelIfPaid"),
       confirmText: t("orderDetails.cancelOrder"),
@@ -391,15 +398,17 @@ export default function OrderDetailsPage() {
       },
       type: "warning",
     })
+    })
   }
 
-  const handlePaymentReceived = async () => {
-    track("ek_ive_received_payment_order_details")
-    if (orderVerificationEnabled) {
-      setShowPaymentReceivedConfirmation(true)
-    } else {
-      setIsConfirmLoading(true)
-      try {
+  const handlePaymentReceived = () => {
+    runGatedAction(async () => {
+      track("ek_ive_received_payment_order_details")
+      if (orderVerificationEnabled) {
+        setShowPaymentReceivedConfirmation(true)
+      } else {
+        setIsConfirmLoading(true)
+        try {
         const result = await OrdersAPI.completeOrder(orderId, null)
 
         if (result.errors && result.errors.length > 0) {
@@ -429,7 +438,8 @@ export default function OrderDetailsPage() {
       } finally {
         setIsConfirmLoading(false)
       }
-    }
+      }
+    })
   }
 
   if (hasLoadError) {
@@ -537,8 +547,10 @@ export default function OrderDetailsPage() {
               variant="secondary-outline"
               className="md:flex-1"
               onClick={() => {
-                track("ek_make_complaint_order_details")
-                setShowComplaintForm(true)
+                runGatedAction(() => {
+                  track("ek_make_complaint_order_details")
+                  setShowComplaintForm(true)
+                })
               }}
               data-testid="order-details-btn-complaint"
             >
@@ -562,8 +574,10 @@ export default function OrderDetailsPage() {
               <Button
                 variant="secondary-outline"
                 onClick={() => {
-                  track("ek_rate_transaction_order_details")
-                  setShowRatingSidebar(true)
+                  runGatedAction(() => {
+                    track("ek_rate_transaction_order_details")
+                    setShowRatingSidebar(true)
+                  })
                 }}
                 className="flex-auto md:flex-none"
               >
@@ -827,8 +841,10 @@ export default function OrderDetailsPage() {
                           <Button
                             variant="secondary-outline"
                             onClick={() => {
-                              track("ek_rate_transaction_order_details")
-                              setShowRatingSidebar(true)
+                              runGatedAction(() => {
+                                track("ek_rate_transaction_order_details")
+                                setShowRatingSidebar(true)
+                              })
                             }}
                             className="flex-auto md:flex-none"
                             data-testid="order-details-btn-rate"

@@ -1205,6 +1205,11 @@
     "notInFavouritesTitle": "Not in favourites",
     "notInFavouritesMessage": "This trader is not in your favourites."
   },
+  "emailRequired": {
+    "title": "Add your email to continue",
+    "description": "You need an email address on your Deriv account to buy or sell on Deriv P2P.",
+    "addEmail": "Add email"
+  },
   "kyc": {
     "accessP2PMessage": "To continue, complete the remaining steps:",
     "setupProfile": "Profile details",
@@ -1336,6 +1341,15 @@
     "failedToResendCodeTryAgain": "Failed to resend code. Please try again.",
     "failedToSendCode": "Failed to send code. Please try again.",
     "incorrectCredentials": "Incorrect email or password. Please try again.",
+    "incorrectCredentialsIdentifier": "Incorrect email, phone number, or password. Please try again.",
+    "countryCode": "Country code",
+    "countryCodePlaceholder": "+60",
+    "emailOrPhoneNumber": "Email/Phone number",
+    "loginWithEmail": "Email",
+    "loginWithPhone": "Phone number",
+    "phoneNumber": "Phone number",
+    "phonePlaceholder": "Phone number",
+    "usePhoneCode": "Log in with phone code instead",
     "logIn": "Log in",
     "loggingIn": "Logging in...",
     "loginFailed": "Login failed. Please try again.",

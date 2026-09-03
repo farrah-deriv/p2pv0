@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server"
 import { notAvailableOutsideLocalDev } from "@/lib/dev-proxy"
 import { isLocalDev } from "@/lib/is-local-dev"
 import { extractFlowErrorText, forwardSetCookies, getOryBaseUrl, readJsonBody } from "@/lib/ory-bff-helpers"
+import { readLoginIdentifier } from "@/lib/ory-login-request-body"
 
 // next-on-pages requires every route handler to run on the edge runtime.
 export const runtime = "edge"
@@ -30,11 +31,12 @@ export async function POST(request: NextRequest) {
   try {
     const body = await readJsonBody<{
       email?: string
+      identifier?: string
       flow_id?: string
       csrf_token?: string
       code?: string
     }>(request)
-    const identifier = typeof body?.email === "string" ? body.email.trim() : ""
+    const identifier = readLoginIdentifier(body)
     const flowId = body?.flow_id
     const csrfToken = body?.csrf_token
     const code = body?.code

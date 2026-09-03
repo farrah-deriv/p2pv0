@@ -149,19 +149,21 @@ export default function Sidebar({ className }: SidebarProps) {
 
   const handleBuySellClick = (ad: Advertisement) => {
     if (isMaintenanceActive) return
-    track("ek_advert_action_markets_search", { advert_type: ad.type === "buy" ? "sell" : "buy" })
-    const risk = evaluateRisk(ad)
-    if (risk) {
-      setPendingRiskAd(ad)
-      setRiskResult(risk)
-      setIsRiskWarningOpen(true)
-      return
-    }
-    setPendingAd(ad)
-    setIsSearchFocused(false)
-    if (pathname.startsWith("/advertiser")) {
-      router.push("/")
-    }
+    runGatedAction(() => {
+      track("ek_advert_action_markets_search", { advert_type: ad.type === "buy" ? "sell" : "buy" })
+      const risk = evaluateRisk(ad)
+      if (risk) {
+        setPendingRiskAd(ad)
+        setRiskResult(risk)
+        setIsRiskWarningOpen(true)
+        return
+      }
+      setPendingAd(ad)
+      setIsSearchFocused(false)
+      if (pathname.startsWith("/advertiser")) {
+        router.push("/")
+      }
+    })
   }
 
   const handleRiskContinue = () => {

@@ -42,6 +42,7 @@ import { useWebSocketContext } from "@/contexts/websocket-context"
 import { PresenceLastSeen } from "@/components/presence-last-seen"
 import { ExchangeRateDisplay } from "@/components/exchange-rate-display"
 import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 
 interface UsersOnlineUpdate {
   user_id: number
@@ -126,6 +127,8 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
   const [isRiskWarningOpen, setIsRiskWarningOpen] = useState(false)
   const { t } = useTranslations()
   const queryClient = useQueryClient()
+  const { runGatedAction: runMarketsGatedAction } = useKycOverlay({ route: "markets" })
+  const { runGatedAction: runProfileGatedAction } = useKycOverlay({ route: "profile" })
 
   const { isConnected, subscribe, joinUsersOnlineChannel, leaveUsersOnlineChannel } = useWebSocketContext()
 
@@ -263,7 +266,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
     }
   }, [adIdParam, adverts, isBlocked])
 
-  const toggleFollow = async () => {
+  const performToggleFollow = async () => {
     if (!profile) return
 
     setIsFollowLoading(true)
@@ -313,6 +316,12 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
     } finally {
       setIsFollowLoading(false)
     }
+  }
+
+  const handleFollowClick = () => {
+    runProfileGatedAction(() => {
+      void performToggleFollow()
+    })
   }
 
   const handleAddToClosedGroup = async () => {
@@ -404,55 +413,57 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
   }
 
   const handleBlockClick = () => {
-    if (!isBlocked) {
-      showAlert({
-        title: t("advertiser.blockUser", { nickname: profile?.nickname }),
-        description: t("advertiser.blockDescription", { nickname: profile?.nickname }),
-        confirmText: t("advertiser.block"),
-        cancelText: t("common.cancel"),
-        type: "warning",
-        onConfirm: async () => {
-          if (!profile) return
+    runProfileGatedAction(() => {
+      if (!isBlocked) {
+        showAlert({
+          title: t("advertiser.blockUser", { nickname: profile?.nickname }),
+          description: t("advertiser.blockDescription", { nickname: profile?.nickname }),
+          confirmText: t("advertiser.block"),
+          cancelText: t("common.cancel"),
+          type: "warning",
+          onConfirm: async () => {
+            if (!profile) return
 
-          setIsBlockLoading(true)
-          try {
-            const result = await toggleBlockAdvertiser(profile.id, true)
+            setIsBlockLoading(true)
+            try {
+              const result = await toggleBlockAdvertiser(profile.id, true)
 
-            if (result.success) {
-              setIsBlocked(true)
-              // Blocking a followed advertiser unfollows them server-side, so mirror
-              // that here to avoid a stale "Following" state that would later trigger
-              // an UserFavouriteNotFound error when trying to unfollow.
-              setIsFollowing(false)
-              setIsGroupMember(false)
-              queryClient.invalidateQueries({ queryKey: queryKeys.auth.tradePartners() })
-              queryClient.invalidateQueries({ queryKey: queryKeys.auth.blockedUsers() })
-              queryClient.invalidateQueries({ queryKey: queryKeys.auth.followers() })
-              queryClient.invalidateQueries({ queryKey: queryKeys.buySell.favouriteUsers() })
+              if (result.success) {
+                setIsBlocked(true)
+                // Blocking a followed advertiser unfollows them server-side, so mirror
+                // that here to avoid a stale "Following" state that would later trigger
+                // an UserFavouriteNotFound error when trying to unfollow.
+                setIsFollowing(false)
+                setIsGroupMember(false)
+                queryClient.invalidateQueries({ queryKey: queryKeys.auth.tradePartners() })
+                queryClient.invalidateQueries({ queryKey: queryKeys.auth.blockedUsers() })
+                queryClient.invalidateQueries({ queryKey: queryKeys.auth.followers() })
+                queryClient.invalidateQueries({ queryKey: queryKeys.buySell.favouriteUsers() })
 
-              toast({
-                description: (
-                  <div className="flex items-center gap-2">
-                    <Image src="/icons/tick.svg" alt={t("common.success")} width={24} height={24} className="text-white" />
-                    <span>{t("advertiser.userBlocked", { nickname: profile?.nickname })}</span>
-                  </div>
-                ),
-                className: TOAST_SUCCESS_CLASS,
-                duration: 2500,
-              })
-            } else {
-              console.error("Failed to toggle block status:", result.message)
+                toast({
+                  description: (
+                    <div className="flex items-center gap-2">
+                      <Image src="/icons/tick.svg" alt={t("common.success")} width={24} height={24} className="text-white" />
+                      <span>{t("advertiser.userBlocked", { nickname: profile?.nickname })}</span>
+                    </div>
+                  ),
+                  className: TOAST_SUCCESS_CLASS,
+                  duration: 2500,
+                })
+              } else {
+                console.error("Failed to toggle block status:", result.message)
+              }
+            } catch (error) {
+              console.error("Error toggling block status:", error)
+            } finally {
+              setIsBlockLoading(false)
             }
-          } catch (error) {
-            console.error("Error toggling block status:", error)
-          } finally {
-            setIsBlockLoading(false)
-          }
-        },
-      })
-    } else {
-      handleUnblock()
-    }
+          },
+        })
+      } else {
+        void handleUnblock()
+      }
+    })
   }
 
   const handleUnblock = async () => {
@@ -488,17 +499,19 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
   }
 
   const handleOrderClick = (ad: Advertisement, type: "buy" | "sell") => {
-    const risk = evaluateRisk(ad)
-    if (risk) {
-      setPendingRiskAd(ad)
-      setPendingRiskOrderType(type)
-      setRiskResult(risk)
-      setIsRiskWarningOpen(true)
-      return
-    }
-    setSelectedAd(ad)
-    setOrderType(type)
-    setIsOrderSidebarOpen(true)
+    runMarketsGatedAction(() => {
+      const risk = evaluateRisk(ad)
+      if (risk) {
+        setPendingRiskAd(ad)
+        setPendingRiskOrderType(type)
+        setRiskResult(risk)
+        setIsRiskWarningOpen(true)
+        return
+      }
+      setSelectedAd(ad)
+      setOrderType(type)
+      setIsOrderSidebarOpen(true)
+    })
   }
 
   const handleRiskContinue = () => {
@@ -665,7 +678,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                                     <DrawerClose asChild>
                                       <Button
                                         data-testid="advertiser-btn-unfollow"
-                                        onClick={toggleFollow}
+                                        onClick={handleFollowClick}
                                         variant="ghost"
                                         size="sm"
                                         className="!w-full !justify-start !font-normal"
@@ -713,7 +726,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                                 <DropdownMenuContent align="end" className="w-56">
                                   <DropdownMenuItem
                                     data-testid="advertiser-btn-unfollow"
-                                    onSelect={toggleFollow}
+                                    onSelect={handleFollowClick}
                                     className="cursor-pointer"
                                   >
                                     <span className="flex items-center gap-1.5">
@@ -737,7 +750,7 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                           ) : (
                             <Button
                               data-testid={isFollowing ? "advertiser-btn-unfollow" : "advertiser-btn-follow"}
-                              onClick={toggleFollow}
+                              onClick={handleFollowClick}
                               variant="secondary-outline"
                               size="sm"
                               disabled={isFollowLoading || isBlockLoading || isClosedGroupLoading}

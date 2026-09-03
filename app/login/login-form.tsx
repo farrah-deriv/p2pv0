@@ -1,13 +1,18 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { BackArrowIcon } from "@/components/ui/back-arrow-icon"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTranslations } from "@/lib/i18n/use-translations"
+import {
+  buildLocalDevLoginIdentifier,
+  type LocalDevLoginMethod,
+} from "@/lib/local-dev-login-identifier"
+import { cn } from "@/lib/utils"
 
-type Step = "email" | "password" | "verification"
+type Step = "identifier" | "password" | "verification"
 
 const RESEND_SECONDS = 59
 
@@ -29,8 +34,6 @@ function isAllowedBrowserRedirect(value: unknown): value is string {
       hostname.endsWith(".deriv.be") ||
       hostname.endsWith(".deriv.me")
 
-    // Deriv hosts are https-only. Plain http is allowed solely for the local
-    // dev server's own origin, which is what this form runs on.
     const isSameOrigin = url.origin === window.location.origin
 
     return isSameOrigin || (isDerivHost && url.protocol === "https:")
@@ -48,8 +51,11 @@ function isAllowedBrowserRedirect(value: unknown): value is string {
  */
 export function LoginForm() {
   const { t } = useTranslations()
-  const [step, setStep] = useState<Step>("email")
+  const [step, setStep] = useState<Step>("identifier")
+  const [loginMethod, setLoginMethod] = useState<LocalDevLoginMethod>("email")
   const [email, setEmail] = useState("")
+  const [dialCode, setDialCode] = useState("+60")
+  const [phoneNumber, setPhoneNumber] = useState("")
   const [password, setPassword] = useState("")
   const [flowId, setFlowId] = useState("")
   const [csrfToken, setCsrfToken] = useState("")
@@ -58,6 +64,19 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const resendIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const identifier = useMemo(
+    () =>
+      buildLocalDevLoginIdentifier({
+        method: loginMethod,
+        email,
+        dialCode,
+        phoneNumber,
+      }),
+    [dialCode, email, loginMethod, phoneNumber],
+  )
+
+  const canContinue = loginMethod === "email" ? email.trim().length > 0 : identifier.length > 0
 
   const clearResendTimer = useCallback(() => {
     if (resendIntervalRef.current) {
@@ -94,13 +113,17 @@ export function LoginForm() {
       const response = await fetch("/api/ory/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier, password }),
         credentials: "include",
       })
       const data = await response.json()
 
       if (!response.ok) {
-        setError(data.error_code === "incorrect_credentials" ? t("login.incorrectCredentials") : t("login.loginFailed"))
+        setError(
+          data.error_code === "incorrect_credentials"
+            ? t("login.incorrectCredentialsIdentifier")
+            : t("login.loginFailed"),
+        )
         return
       }
 
@@ -120,7 +143,7 @@ export function LoginForm() {
       const response = await fetch("/api/ory/login-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ identifier }),
         credentials: "include",
       })
       const data = await response.json()
@@ -150,7 +173,12 @@ export function LoginForm() {
       const response = await fetch("/api/ory/verify-login-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, flow_id: flowId, csrf_token: csrfToken, code: verificationCode }),
+        body: JSON.stringify({
+          identifier,
+          flow_id: flowId,
+          csrf_token: csrfToken,
+          code: verificationCode,
+        }),
         credentials: "include",
       })
       const data = await response.json()
@@ -178,6 +206,9 @@ export function LoginForm() {
       </Button>
     </div>
   )
+
+  const otpButtonLabel =
+    loginMethod === "phone" ? t("login.usePhoneCode") : t("login.useEmailCode")
 
   if (step === "verification") {
     return (
@@ -224,7 +255,7 @@ export function LoginForm() {
   if (step === "password") {
     return (
       <div className="min-h-screen bg-background px-4 py-6">
-        {backButton(() => setStep("email"))}
+        {backButton(() => setStep("identifier"))}
         <div className="mx-auto max-w-md">
           <h1 className="mb-8 text-3xl font-bold text-foreground text-start">{t("login.welcomeBack")}</h1>
           <div className="mb-6">
@@ -246,7 +277,7 @@ export function LoginForm() {
           </Button>
           <div className="mt-6 text-center">
             <Button variant="ghost" size="sm" onClick={handleRequestOtp} disabled={isLoading}>
-              {t("login.useEmailCode")}
+              {otpButtonLabel}
             </Button>
           </div>
         </div>
@@ -258,27 +289,98 @@ export function LoginForm() {
     <div className="min-h-screen bg-background px-4 py-6">
       <div className="mx-auto mt-12 max-w-md">
         <h1 className="mb-8 text-4xl font-bold text-foreground text-start">{t("login.welcomeBack")}</h1>
-        <div className="mb-6">
-          <label className="mb-3 block text-muted-foreground text-start" htmlFor="login-email">
-            {t("login.email")}
-          </label>
-          <Input
-            id="login-email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder={t("login.emailPlaceholder")}
-          />
-          {errorMessage}
+
+        <div className="mb-6 flex gap-2 rounded-xl bg-muted p-1" role="tablist" aria-label={t("login.emailOrPhoneNumber")}>
+          <Button
+            type="button"
+            variant={loginMethod === "email" ? "default" : "ghost"}
+            className={cn("flex-1", loginMethod !== "email" && "bg-transparent")}
+            onClick={() => {
+              setLoginMethod("email")
+              setError("")
+            }}
+            role="tab"
+            aria-selected={loginMethod === "email"}
+            data-testid="login-tab-email"
+          >
+            {t("login.loginWithEmail")}
+          </Button>
+          <Button
+            type="button"
+            variant={loginMethod === "phone" ? "default" : "ghost"}
+            className={cn("flex-1", loginMethod !== "phone" && "bg-transparent")}
+            onClick={() => {
+              setLoginMethod("phone")
+              setError("")
+            }}
+            role="tab"
+            aria-selected={loginMethod === "phone"}
+            data-testid="login-tab-phone"
+          >
+            {t("login.loginWithPhone")}
+          </Button>
         </div>
+
+        {loginMethod === "email" ? (
+          <div className="mb-6">
+            <label className="mb-3 block text-muted-foreground text-start" htmlFor="login-email">
+              {t("login.email")}
+            </label>
+            <Input
+              id="login-email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder={t("login.emailPlaceholder")}
+              data-testid="login-input-email"
+            />
+            {errorMessage}
+          </div>
+        ) : (
+          <div className="mb-6 space-y-4">
+            <div>
+              <label className="mb-3 block text-muted-foreground text-start" htmlFor="login-dial-code">
+                {t("login.countryCode")}
+              </label>
+              <Input
+                id="login-dial-code"
+                type="tel"
+                autoComplete="tel-country-code"
+                inputMode="tel"
+                value={dialCode}
+                onChange={(event) => setDialCode(event.target.value)}
+                placeholder={t("login.countryCodePlaceholder")}
+                data-testid="login-input-dial-code"
+              />
+            </div>
+            <div>
+              <label className="mb-3 block text-muted-foreground text-start" htmlFor="login-phone">
+                {t("login.phoneNumber")}
+              </label>
+              <Input
+                id="login-phone"
+                type="tel"
+                autoComplete="tel-national"
+                inputMode="numeric"
+                value={phoneNumber}
+                onChange={(event) => setPhoneNumber(event.target.value.replace(/[^\d\s]/g, ""))}
+                placeholder={t("login.phonePlaceholder")}
+                data-testid="login-input-phone"
+              />
+            </div>
+            {errorMessage}
+          </div>
+        )}
+
         <Button
           className="w-full"
           onClick={() => {
             setError("")
             setStep("password")
           }}
-          disabled={!email.trim()}
+          disabled={!canContinue}
+          data-testid="login-btn-continue"
         >
           {t("common.continue")}
         </Button>

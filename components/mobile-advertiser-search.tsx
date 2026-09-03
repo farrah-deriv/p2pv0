@@ -119,16 +119,18 @@ export default function MobileAdvertiserSearch({ isOpen, onClose }: MobileAdvert
     const [isRiskWarningOpen, setIsRiskWarningOpen] = useState(false)
 
     const handleBuySellClick = (ad: Advertisement) => {
-        track("ek_advert_action_markets_search", { advert_type: ad.type === "buy" ? "sell" : "buy" })
-        const risk = evaluateRisk(ad)
-        if (risk) {
-            setPendingRiskAd(ad)
-            setRiskResult(risk)
-            setIsRiskWarningOpen(true)
-            return
-        }
-        setPendingAd(ad, true)
-        handleClose()
+        runGatedAction(() => {
+            track("ek_advert_action_markets_search", { advert_type: ad.type === "buy" ? "sell" : "buy" })
+            const risk = evaluateRisk(ad)
+            if (risk) {
+                setPendingRiskAd(ad)
+                setRiskResult(risk)
+                setIsRiskWarningOpen(true)
+                return
+            }
+            setPendingAd(ad, true)
+            handleClose()
+        })
     }
 
     const handleRiskContinue = () => {

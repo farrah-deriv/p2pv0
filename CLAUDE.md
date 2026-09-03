@@ -95,6 +95,8 @@ All API calls go through `services/api/`. Each file maps to a backend domain (`a
 2. Add translated values to the other 11 locale files (`bn, de, es, fr, it, ko, pl, pt, ru, sw, vi`).
 3. Never hardcode user-facing strings in components.
 
+**Non-translatable nav labels:** `navigation.home`, `navigation.askAmy`, `navigation.market`, `navigation.myAds`, `navigation.orders`, `navigation.p2pHelpCentre`, `navigation.profile`, and `navigation.wallet` must remain **English in every locale** (sidebar + mobile footer). See `lib/i18n/NON_TRANSLATABLE.md` — do not translate or auto-localize these keys.
+
 ### UI components
 
 - Use `components/ui/` wrappers (Button, Alert, Dialog, Tabs, ...) — never use raw HTML buttons or custom modals when a primitive exists.

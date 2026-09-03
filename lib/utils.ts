@@ -680,6 +680,8 @@ export const getHomeUrl = (section = "", fromParam = "", isTncAccepted = false) 
     }
   } else if (section === "financialAssessment") {
     url = `https://${baseUrl}/dashboard/profile/financial-assessment`
+  } else if (section === "emailAddress") {
+    url = `https://${baseUrl}/dashboard/profile/email-address`
   } else {
     url = baseUrl
   }

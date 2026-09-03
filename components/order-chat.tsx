@@ -16,6 +16,7 @@ import { useTranslations } from "@/lib/i18n/use-translations"
 import { PresenceLastSeen } from "@/components/presence-last-seen"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import type { Order } from "@/services/api/api-orders"
 import { shouldDisableChatAttachments } from "@/lib/orders/order-chat-gating"
@@ -198,6 +199,7 @@ export default function OrderChat({
 }: OrderChatProps) {
   const { t, locale } = useTranslations()
   const { showAlert } = useAlertDialog()
+  const { runGatedAction } = useKycOverlay({ route: "orders" })
   const userId = useUserDataStore((state) => state.userId)
   const isAttachmentBlocked =
     order != null ? shouldDisableChatAttachments(order, userId) : isAttachmentUploadDisabled
@@ -379,35 +381,37 @@ export default function OrderChat({
   const handleSendMessage = async () => {
     if (message.trim() === "" || isSending) return
 
-    setIsSending(true)
+    runGatedAction(async () => {
+      setIsSending(true)
 
-    const messageToSend = message
-    setMessage("")
+      const messageToSend = message
+      setMessage("")
 
-    try {
-      await OrdersAPI.sendChatMessage(orderId, messageToSend, null)
-    } catch (error) {
-      const chatError = getChatSendErrorInfo(error)
-      const errorCode = chatError?.code ?? "UnknownError"
+      try {
+        await OrdersAPI.sendChatMessage(orderId, messageToSend, null)
+      } catch (error) {
+        const chatError = getChatSendErrorInfo(error)
+        const errorCode = chatError?.code ?? "UnknownError"
 
-      if (errorCode === "OrderTempLocked") {
-        showOrderTempLockedAlert()
-      } else if (errorCode === "PendingPotSubmission") {
-        showPendingPotSubmissionAlert()
-      } else if (errorCode === "OrderChatMessageRejected") {
-        // Server pushes the rejected message over WebSocket with moderation tags.
-      } else if (errorCode === "BothChatMessageAndAttachmentPresent") {
-        showAlert({
-          title: t("chat.oneItemAtATimeTitle"),
-          description: t("chat.oneItemAtATimeDescription"),
-          confirmText: t("common.gotIt"),
-          type: "warning",
-        })
+        if (errorCode === "OrderTempLocked") {
+          showOrderTempLockedAlert()
+        } else if (errorCode === "PendingPotSubmission") {
+          showPendingPotSubmissionAlert()
+        } else if (errorCode === "OrderChatMessageRejected") {
+          // Server pushes the rejected message over WebSocket with moderation tags.
+        } else if (errorCode === "BothChatMessageAndAttachmentPresent") {
+          showAlert({
+            title: t("chat.oneItemAtATimeTitle"),
+            description: t("chat.oneItemAtATimeDescription"),
+            confirmText: t("common.gotIt"),
+            type: "warning",
+          })
+        }
+      } finally {
+        setIsSending(false)
+        focusMessageInput()
       }
-    } finally {
-      setIsSending(false)
-      focusMessageInput()
-    }
+    })
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -451,73 +455,75 @@ export default function OrderChat({
         return
       }
 
-      setIsSending(true)
+      runGatedAction(async () => {
+        setIsSending(true)
 
-      try {
-        const base64 = await fileToBase64(file)
-        await OrdersAPI.sendChatMessage(orderId, "", base64)
-      } catch (error) {
-        const chatError = getChatSendErrorInfo(error)
-        const errorCode = chatError?.code ?? "UnknownError"
+        try {
+          const base64 = await fileToBase64(file)
+          await OrdersAPI.sendChatMessage(orderId, "", base64)
+        } catch (error) {
+          const chatError = getChatSendErrorInfo(error)
+          const errorCode = chatError?.code ?? "UnknownError"
 
-        if (errorCode === "OrderChatFileSizeExceeded") {
-          showFileTooLargeDialog()
-        } else if (errorCode === "ChatAttachmentCorrupted") {
-          showAlert({
-            title: t("chat.attachmentCorruptedTitle"),
-            description: t("chat.attachmentCorruptedDescription"),
-            confirmText: t("common.gotIt"),
-            type: "warning",
-          })
-        } else if (errorCode === "OrderTempLocked") {
-          showOrderTempLockedAlert()
-        } else if (errorCode === "PendingPotSubmission") {
-          showPendingPotSubmissionAlert()
-        } else if (errorCode === "OrderChatAttachmentRejected") {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: `local-rejected-${Date.now()}`,
-              attachment: { name: file.name, url: "" },
-              message: "",
-              sender_is_self: true,
-              isCounterparty: false,
-              is_read: false,
-              time: Date.now(),
-              rejected: true,
-              tags: rejectionTags(chatError?.tags ?? [], "attachment_rejected"),
-            },
-          ])
-        } else if (errorCode === "ChatAttachmentLimitReached") {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: `local-rejected-${Date.now()}`,
-              attachment: { name: file.name, url: "" },
-              message: "",
-              sender_is_self: true,
-              isCounterparty: false,
-              is_read: false,
-              time: Date.now(),
-              rejected: true,
-              tags: rejectionTags(chatError?.tags ?? [], "attachment_limit_reached"),
-            },
-          ])
-        } else if (errorCode === "BothChatMessageAndAttachmentPresent") {
-          showAlert({
-            title: t("chat.oneItemAtATimeTitle"),
-            description: t("chat.oneItemAtATimeDescription"),
-            confirmText: t("common.gotIt"),
-            type: "warning",
-          })
+          if (errorCode === "OrderChatFileSizeExceeded") {
+            showFileTooLargeDialog()
+          } else if (errorCode === "ChatAttachmentCorrupted") {
+            showAlert({
+              title: t("chat.attachmentCorruptedTitle"),
+              description: t("chat.attachmentCorruptedDescription"),
+              confirmText: t("common.gotIt"),
+              type: "warning",
+            })
+          } else if (errorCode === "OrderTempLocked") {
+            showOrderTempLockedAlert()
+          } else if (errorCode === "PendingPotSubmission") {
+            showPendingPotSubmissionAlert()
+          } else if (errorCode === "OrderChatAttachmentRejected") {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: `local-rejected-${Date.now()}`,
+                attachment: { name: file.name, url: "" },
+                message: "",
+                sender_is_self: true,
+                isCounterparty: false,
+                is_read: false,
+                time: Date.now(),
+                rejected: true,
+                tags: rejectionTags(chatError?.tags ?? [], "attachment_rejected"),
+              },
+            ])
+          } else if (errorCode === "ChatAttachmentLimitReached") {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: `local-rejected-${Date.now()}`,
+                attachment: { name: file.name, url: "" },
+                message: "",
+                sender_is_self: true,
+                isCounterparty: false,
+                is_read: false,
+                time: Date.now(),
+                rejected: true,
+                tags: rejectionTags(chatError?.tags ?? [], "attachment_limit_reached"),
+              },
+            ])
+          } else if (errorCode === "BothChatMessageAndAttachmentPresent") {
+            showAlert({
+              title: t("chat.oneItemAtATimeTitle"),
+              description: t("chat.oneItemAtATimeDescription"),
+              confirmText: t("common.gotIt"),
+              type: "warning",
+            })
+          }
+        } finally {
+          setIsSending(false)
+          if (fileInputRef.current) {
+            fileInputRef.current.value = ""
+          }
+          focusMessageInput()
         }
-      } finally {
-        setIsSending(false)
-        if (fileInputRef.current) {
-          fileInputRef.current.value = ""
-        }
-        focusMessageInput()
-      }
+      })
     }
   }
 

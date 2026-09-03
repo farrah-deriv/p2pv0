@@ -9,6 +9,7 @@ import {
   readJsonBody,
   startLoginFlow,
 } from "@/lib/ory-bff-helpers"
+import { readLoginIdentifier } from "@/lib/ory-login-request-body"
 
 // next-on-pages requires every route handler to run on the edge runtime.
 export const runtime = "edge"
@@ -40,11 +41,11 @@ export async function POST(request: NextRequest) {
   if (!isLocalDev()) return notAvailableOutsideLocalDev()
 
   try {
-    const body = await readJsonBody<{ email?: string; password?: string }>(request)
-    const email = typeof body?.email === "string" ? body.email.trim() : ""
+    const body = await readJsonBody<{ email?: string; identifier?: string; password?: string }>(request)
+    const identifier = readLoginIdentifier(body)
     const password = typeof body?.password === "string" ? body.password : ""
 
-    if (!email || !password) {
+    if (!identifier || !password) {
       return NextResponse.json({ error_code: "invalid_request" }, { status: 400 })
     }
 
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         csrf_token: started.csrfToken,
         method: "password",
-        identifier: email,
+        identifier: identifier,
         password,
       }),
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),

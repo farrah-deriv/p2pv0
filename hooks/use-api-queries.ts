@@ -13,6 +13,7 @@ import { useUserDataStore } from '@/stores/user-data-store'
 import { useP2PQueriesBlocked } from '@/hooks/use-p2p-system-maintenance'
 import { isPaymentMethodSessionElevationEnabled } from '@/lib/payment-method-session-elevation'
 import { isP2PWebSocketEligibleFromState } from '@/lib/p2p-websocket-eligibility'
+import { wrapWithP2PEmailMutationGate } from '@/lib/p2p-email-mutation-guard'
 import type { Advertisement, SearchParams as BuySellSearchParams, PaymentMethod } from '@/services/api/api-buy-sell'
 import type { Order, OrderFilters } from '@/services/api/api-orders'
 import type { MyAd } from '@/services/api/api-my-ads'
@@ -330,7 +331,7 @@ export function useFollowers(enabled = true, nickname?: string) {
 export function useAddPaymentMethod() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ method, fields }: { method: string; fields: Record<string, string> }) => {
+    mutationFn: wrapWithP2PEmailMutationGate(async ({ method, fields }: { method: string; fields: Record<string, string> }) => {
       return runPaymentMethodMutation("p2p_payment_method_create", async () => {
         const result = await ProfileAPI.addPaymentMethod(method, fields)
         if (!result.success) {
@@ -342,7 +343,7 @@ export function useAddPaymentMethod() {
         }
         return result
       })
-    },
+    }),
     retry: 0,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.auth.userPaymentMethods() })
@@ -353,7 +354,7 @@ export function useAddPaymentMethod() {
 export function useUpdatePaymentMethod() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, method, fields }: { id: string; method: string; fields: Record<string, string> }) => {
+    mutationFn: wrapWithP2PEmailMutationGate(async ({ id, method, fields }: { id: string; method: string; fields: Record<string, string> }) => {
       return runPaymentMethodMutation("p2p_payment_method_update", async () => {
         const result = await ProfileAPI.updatePaymentMethod(id, { method, fields })
         if (!result.success) {
@@ -365,7 +366,7 @@ export function useUpdatePaymentMethod() {
         }
         return result
       })
-    },
+    }),
     retry: 0,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.auth.userPaymentMethods() })
@@ -376,7 +377,7 @@ export function useUpdatePaymentMethod() {
 export function useDeletePaymentMethod() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: wrapWithP2PEmailMutationGate(async (id: string) => {
       return runPaymentMethodMutation("p2p_payment_method_delete", async () => {
         const result = await ProfileAPI.deletePaymentMethod(id)
         if (!result.success && result.errors && result.errors.length > 0) {
@@ -388,7 +389,7 @@ export function useDeletePaymentMethod() {
         }
         return result
       })
-    },
+    }),
     retry: 0,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.auth.userPaymentMethods() })
@@ -414,7 +415,7 @@ export function useUserAdverts(isActive?: boolean, enabled = true) {
 export function useCreateAd() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (payload: any) => {
+    mutationFn: wrapWithP2PEmailMutationGate(async (payload: any) => {
       const result = await AdsAPI.createAd(payload)
       if (!result.success && result.errors && result.errors.length > 0) {
         const error: any = new Error(result.errors[0].message || 'Failed to create ad')
@@ -422,7 +423,7 @@ export function useCreateAd() {
         throw error
       }
       return result
-    },
+    }),
     retry: 0,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.ads.allUserAdverts() })
@@ -433,7 +434,7 @@ export function useCreateAd() {
 export function useUpdateAd() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, adData }: { id: string; adData: any }) => {
+    mutationFn: wrapWithP2PEmailMutationGate(async ({ id, adData }: { id: string; adData: any }) => {
       const result = await AdsAPI.updateAd(id, adData)
       if (!result.success && result.errors && result.errors.length > 0) {
         const error: any = new Error(result.errors[0].message || 'Failed to update ad')
@@ -441,7 +442,7 @@ export function useUpdateAd() {
         throw error
       }
       return result
-    },
+    }),
     retry: 0,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.ads.allUserAdverts() })
@@ -452,7 +453,7 @@ export function useUpdateAd() {
 export function useDeleteAd() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: wrapWithP2PEmailMutationGate(async (id: string) => {
       const response = await AdsAPI.deleteAd(id)
       if (!response.success) {
         const error: any = new Error(response.errors?.[0]?.message || 'Failed to delete ad')
@@ -460,7 +461,7 @@ export function useDeleteAd() {
         throw error
       }
       return response
-    },
+    }),
     retry: 0,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.ads.allUserAdverts() })
@@ -471,7 +472,7 @@ export function useDeleteAd() {
 export function useToggleAdActiveStatus() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+    mutationFn: wrapWithP2PEmailMutationGate(async ({ id, isActive }: { id: string; isActive: boolean }) => {
       const result = await AdsAPI.toggleAdActiveStatus(id, isActive)
       if (!result.success && result.errors && result.errors.length > 0) {
         const error: any = new Error(result.errors[0].message || 'Failed to update ad status')
@@ -479,7 +480,7 @@ export function useToggleAdActiveStatus() {
         throw error
       }
       return result
-    },
+    }),
     retry: 0,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.ads.allUserAdverts() })
@@ -490,7 +491,7 @@ export function useToggleAdActiveStatus() {
 export function useHideMyAds() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (hide: boolean) => AdsAPI.hideMyAds(hide),
+    mutationFn: wrapWithP2PEmailMutationGate((hide: boolean) => AdsAPI.hideMyAds(hide)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.ads.allUserAdverts() })
     },
@@ -668,8 +669,8 @@ export function useDisputeOrder() {
 export function useCreateOrder() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ advertId, exchangeRate, amount, paymentMethodIds }: Parameters<typeof OrdersAPI.createOrder>[0]) =>
-      OrdersAPI.createOrder(advertId as any, exchangeRate as any, amount as any, paymentMethodIds as any),
+    mutationFn: wrapWithP2PEmailMutationGate(({ advertId, exchangeRate, amount, paymentMethodIds }: Parameters<typeof OrdersAPI.createOrder>[0]) =>
+      OrdersAPI.createOrder(advertId as any, exchangeRate as any, amount as any, paymentMethodIds as any)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.list() })
     },

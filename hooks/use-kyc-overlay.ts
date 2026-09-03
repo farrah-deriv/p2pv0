@@ -5,17 +5,30 @@ import { useUserDataStore } from "@/stores/user-data-store"
 import { useGuideStore } from "@/stores/guide-store"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { useRefreshOnboardingStatus } from "@/hooks/use-refresh-onboarding-status"
+import { useTranslations } from "@/lib/i18n/use-translations"
 import {
   createKycOnboardingAlertConfig,
   type KycOnboardingRoute,
 } from "@/components/kyc-onboarding-sheet"
 import { resolveKycOverlay, type KycOverlay } from "@/lib/kyc-overlay"
+import { createEmailRequiredAlertConfig } from "@/lib/create-email-required-alert-config"
+import { isEmailEligibleForP2P, isExistingP2PUser } from "@/lib/email-eligibility"
+import { refreshClientProfileEmailEligibility } from "@/lib/refresh-client-profile-email-eligibility"
+import { getHomeUrl } from "@/lib/utils"
 import type { AlertDialogConfig } from "@/types/alert-dialog"
+import type { EmailEligibility } from "@/stores/user-data-store"
 
 type OverlayDialog = {
   hideAlert: () => void
   showAlert: (config: AlertDialogConfig) => void
   isOpen: boolean
+}
+
+async function resolveEmailEligibilityForAction(current: EmailEligibility): Promise<EmailEligibility> {
+  if (current === "eligible") return "eligible"
+  if (current === "missing") return "missing"
+  const result = await refreshClientProfileEmailEligibility()
+  return result === "error" ? "eligible" : result
 }
 
 // Shared exclusive overlay for every KYC-gated action (Create ad, Buy/Sell,
@@ -28,7 +41,9 @@ export function useKycOverlay(options?: {
   dialog?: OverlayDialog
 }) {
   const route = options?.route ?? "markets"
+  const { t } = useTranslations()
   const userId = useUserDataStore((state) => state.userId)
+  const emailEligibility = useUserDataStore((state) => state.emailEligibility)
   const verificationStatus = useUserDataStore((state) => state.verificationStatus)
   const onboardingStatus = useUserDataStore((state) => state.onboardingStatus)
   const openIntro = useGuideStore((state) => state.openIntro)
@@ -46,6 +61,18 @@ export function useKycOverlay(options?: {
   // latest value and read it inside the callback.
   const isAlertOpenRef = useRef(isAlertOpen)
   isAlertOpenRef.current = isAlertOpen
+
+  const showEmailRequiredDialog = useCallback(() => {
+    showAlert(
+      createEmailRequiredAlertConfig(t, {
+        onAddEmail: () => {
+          hideAlert()
+          window.location.assign(getHomeUrl("emailAddress"))
+        },
+        onDismiss: hideAlert,
+      }),
+    )
+  }, [hideAlert, showAlert, t])
 
   const applyOverlay = useCallback(
     (overlay: KycOverlay, onAllow?: () => void) => {
@@ -110,7 +137,7 @@ export function useKycOverlay(options?: {
     }
   }, [refreshOnboardingStatus])
 
-  const runGatedAction = useCallback(
+  const runKycGatedAction = useCallback(
     (onAllow: () => void) => {
       const overlay = resolveKycOverlay({
         userId,
@@ -139,7 +166,35 @@ export function useKycOverlay(options?: {
     ],
   )
 
+  const runGatedAction = useCallback(
+    (onAllow: () => void) => {
+      void (async () => {
+        const { userId: latestUserId, emailEligibility: latestEmailEligibility } =
+          useUserDataStore.getState()
+        if (isExistingP2PUser(latestUserId)) {
+          const resolvedEligibility = await resolveEmailEligibilityForAction(latestEmailEligibility)
+          if (!isEmailEligibleForP2P(resolvedEligibility)) {
+            showEmailRequiredDialog()
+            return
+          }
+        }
+        runKycGatedAction(onAllow)
+      })()
+    },
+    [runKycGatedAction, showEmailRequiredDialog],
+  )
+
   const openKycIfUnverified = useCallback(async () => {
+    const { userId: latestUserId, emailEligibility: latestEmailEligibility } =
+      useUserDataStore.getState()
+    if (isExistingP2PUser(latestUserId)) {
+      const resolvedEligibility = await resolveEmailEligibilityForAction(latestEmailEligibility)
+      if (!isEmailEligibleForP2P(resolvedEligibility)) {
+        showEmailRequiredDialog()
+        return "wait" as KycOverlay
+      }
+    }
+
     const overlay = resolveKycOverlay({
       userId,
       verificationStatus,
@@ -160,10 +215,19 @@ export function useKycOverlay(options?: {
       useUserDataStore.getState().setIsOnboardingStatusRefreshing(false)
       return overlay
     }
-  }, [applyRefreshedOverlay, onboardingStatus, resolveLatestOverlay, userId, verificationStatus])
+  }, [
+    applyRefreshedOverlay,
+    onboardingStatus,
+    resolveLatestOverlay,
+    showEmailRequiredDialog,
+    userId,
+    verificationStatus,
+  ])
 
   return {
     runGatedAction,
     openKycIfUnverified,
+    showEmailRequiredDialog,
+    emailEligibility,
   }
 }

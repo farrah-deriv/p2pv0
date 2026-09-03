@@ -25,6 +25,8 @@ export interface VerificationStatus {
   p2p_allowed: boolean
 }
 
+export type EmailEligibility = "unknown" | "loading" | "eligible" | "missing" | "error"
+
 interface UserDataState {
   userData: UserData | null
   userId: string | null
@@ -39,6 +41,7 @@ interface UserDataState {
   socketToken: string | null
   isWalletAccount: boolean
   isOnboardingStatusRefreshing: boolean
+  emailEligibility: EmailEligibility
   oryEmailVerified: boolean
   setUserData: (data: UserData) => void
   setExternalId: (id: string) => void
@@ -55,6 +58,7 @@ interface UserDataState {
   setSocketToken: (token: string | null) => void
   setIsWalletAccount: (isWallet: boolean) => void
   setIsOnboardingStatusRefreshing: (isRefreshing: boolean) => void
+  setEmailEligibility: (eligibility: EmailEligibility) => void
   setOryEmailVerified: (verified: boolean) => void
   clearUserData: () => void
 }
@@ -73,6 +77,7 @@ const initialState = {
   socketToken: null,
   isWalletAccount: typeof window !== "undefined" ? localStorage.getItem("is_wallet_account") === "true" : false,
   isOnboardingStatusRefreshing: false,
+  emailEligibility: "unknown",
   oryEmailVerified: false,
 }
 
@@ -132,6 +137,8 @@ export const useUserDataStore = create<UserDataState>()(
       },
 
       setIsOnboardingStatusRefreshing: (isRefreshing) => set({ isOnboardingStatusRefreshing: isRefreshing }),
+
+      setEmailEligibility: (eligibility) => set({ emailEligibility: eligibility }),
 
       setOryEmailVerified: (verified) => set({ oryEmailVerified: verified }),
 

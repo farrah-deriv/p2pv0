@@ -16,6 +16,7 @@ import Image from "next/image"
 import { StandaloneChevronDownRegularIcon, StandaloneXmarkFillIcon } from "@deriv/quill-icons/Standalone"
 import AddPaymentMethodPanel from "@/app/profile/components/add-payment-method-panel"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 import { useToast } from "@/hooks/use-toast"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 import { isRtlLocale } from "@/lib/i18n/config"
@@ -379,6 +380,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
   const [sellerPaymentMethods, setSellerPaymentMethods] = useState<SellerPaymentMethod[]>([])
   const [tempSelectedPaymentMethods, setTempSelectedPaymentMethods] = useState<string[]>([])
   const { hideAlert, showAlert } = useAlertDialog()
+  const { runGatedAction } = useKycOverlay({ route: "markets" })
   const { toast } = useToast()
   const [showAddPaymentPanel, setShowAddPaymentPanel] = useState(false)
   const [selectedPaymentMethodType, setSelectedPaymentMethodType] = useState<string | undefined>()
@@ -621,7 +623,9 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
       return
     }
 
-    await proceedWithOrder()
+    runGatedAction(() => {
+      void proceedWithOrder()
+    })
   }
 
   const handleAdvertUpdateConfirm = () => {
