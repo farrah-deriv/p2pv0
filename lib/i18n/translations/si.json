@@ -596,14 +596,14 @@
   "navigation": {
     "backToHome": "Home වෙත යන්න",
     "goToMyAds": "මගේ දැන්වීම් වෙත යන්න",
-    "home": "නිවස",
+    "home": "Home",
     "askAmy": "Ask Amy",
-    "market": "වෙළෙඳපොළ",
-    "myAds": "මගේ දැන්වීම්",
-    "orders": "නියෝග",
-    "p2pHelpCentre": "P2P උපකාරක මධ්‍යස්ථානය",
-    "profile": "පැතිකඩ",
-    "wallet": "පසුම්බිය"
+    "market": "Market",
+    "myAds": "My Ads",
+    "orders": "Orders",
+    "p2pHelpCentre": "P2P help centre",
+    "profile": "Profile",
+    "wallet": "Wallet"
   },
   "notifications": {
     "error": "යමක් වැරදී ඇත. කරුණාකර නැවත උත්සාහ කරන්න.",

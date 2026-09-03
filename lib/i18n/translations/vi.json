@@ -639,14 +639,14 @@
   "navigation": {
     "backToHome": "Quay lại Trang chủ",
     "goToMyAds": "Đi tới Quảng cáo của tôi",
-    "home": "Trang chủ",
+    "home": "Home",
     "askAmy": "Ask Amy",
-    "market": "Thị trường",
-    "myAds": "Quảng cáo của tôi",
-    "orders": "Đơn hàng",
-    "p2pHelpCentre": "Trung tâm trợ giúp P2P",
-    "profile": "Hồ sơ",
-    "wallet": "Ví"
+    "market": "Market",
+    "myAds": "My Ads",
+    "orders": "Orders",
+    "p2pHelpCentre": "P2P help centre",
+    "profile": "Profile",
+    "wallet": "Wallet"
   },
   "notifications": {
     "error": "Đã xảy ra lỗi. Vui lòng thử lại.",

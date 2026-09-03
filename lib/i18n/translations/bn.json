@@ -605,14 +605,14 @@
   "navigation": {
     "backToHome": "হোমে ফিরে যান",
     "goToMyAds": "আমার বিজ্ঞাপনে যান",
-    "home": "হোম",
+    "home": "Home",
     "askAmy": "Ask Amy",
-    "market": "মার্কেট",
-    "myAds": "আমার বিজ্ঞাপন",
-    "orders": "অর্ডার",
-    "p2pHelpCentre": "P2P সাহায্য কেন্দ্র",
-    "profile": "প্রোফাইল",
-    "wallet": "ওয়ালেট"
+    "market": "Market",
+    "myAds": "My Ads",
+    "orders": "Orders",
+    "p2pHelpCentre": "P2P help centre",
+    "profile": "Profile",
+    "wallet": "Wallet"
   },
   "notifications": {
     "error": "কিছু ভুল হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।",

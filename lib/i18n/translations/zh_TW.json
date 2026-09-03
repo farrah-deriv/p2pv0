@@ -596,14 +596,14 @@
   "navigation": {
     "backToHome": "回到首頁",
     "goToMyAds": "轉到我的廣告",
-    "home": "首頁",
+    "home": "Home",
     "askAmy": "Ask Amy",
-    "market": "市場",
-    "myAds": "我的廣告",
-    "orders": "訂單",
-    "p2pHelpCentre": "P2P 幫助中心",
-    "profile": "公司簡介",
-    "wallet": "錢包"
+    "market": "Market",
+    "myAds": "My Ads",
+    "orders": "Orders",
+    "p2pHelpCentre": "P2P help centre",
+    "profile": "Profile",
+    "wallet": "Wallet"
   },
   "notifications": {
     "error": "出了點問題。請再試一次。",

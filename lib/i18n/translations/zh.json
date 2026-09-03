@@ -596,14 +596,14 @@
   "navigation": {
     "backToHome": "回到首页",
     "goToMyAds": "转到我的广告",
-    "home": "首页",
+    "home": "Home",
     "askAmy": "Ask Amy",
-    "market": "市场",
-    "myAds": "我的广告",
-    "orders": "订单",
-    "p2pHelpCentre": "P2P 帮助中心",
-    "profile": "公司简介",
-    "wallet": "钱包"
+    "market": "Market",
+    "myAds": "My Ads",
+    "orders": "Orders",
+    "p2pHelpCentre": "P2P help centre",
+    "profile": "Profile",
+    "wallet": "Wallet"
   },
   "notifications": {
     "error": "出了点问题。请再试一次。",

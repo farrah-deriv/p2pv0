@@ -645,14 +645,14 @@
   "navigation": {
     "backToHome": "홈으로 이동",
     "goToMyAds": "내 광고로 이동",
-    "home": "홈",
+    "home": "Home",
     "askAmy": "Ask Amy",
-    "market": "마켓",
-    "myAds": "내 광고",
-    "orders": "주문",
-    "p2pHelpCentre": "P2P 도움말 센터",
-    "profile": "프로필",
-    "wallet": "지갑"
+    "market": "Market",
+    "myAds": "My Ads",
+    "orders": "Orders",
+    "p2pHelpCentre": "P2P help centre",
+    "profile": "Profile",
+    "wallet": "Wallet"
   },
   "notifications": {
     "error": "문제가 발생했습니다. 다시 시도하세요.",

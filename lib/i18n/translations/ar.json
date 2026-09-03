@@ -596,14 +596,14 @@
   "navigation": {
     "backToHome": "اذهب إلى الصفحة الرئيسية",
     "goToMyAds": "اذهب إلى إعلاناتي",
-    "home": "الصفحة الرئيسية",
+    "home": "Home",
     "askAmy": "Ask Amy",
-    "market": "السوق",
-    "myAds": "إعلاناتي",
-    "orders": "أوامر",
-    "p2pHelpCentre": "P2P مركز المساعدة",
-    "profile": "الملف الشخصي",
-    "wallet": "المحفظة"
+    "market": "Market",
+    "myAds": "My Ads",
+    "orders": "Orders",
+    "p2pHelpCentre": "P2P help centre",
+    "profile": "Profile",
+    "wallet": "Wallet"
   },
   "notifications": {
     "error": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",

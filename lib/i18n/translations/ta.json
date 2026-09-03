@@ -596,14 +596,14 @@
   "navigation": {
     "backToHome": "முகப்புக்குச் செல்",
     "goToMyAds": "எனது விளம்பரங்களுக்குச் செல்லவும்",
-    "home": "வீடு",
+    "home": "Home",
     "askAmy": "Ask Amy",
-    "market": "சந்தை",
-    "myAds": "எனது விளம்பரங்கள்",
-    "orders": "ஆர்டர்கள்",
-    "p2pHelpCentre": "P2P உதவி மையம்",
-    "profile": "சுயவிவரம்",
-    "wallet": "பணப்பை"
+    "market": "Market",
+    "myAds": "My Ads",
+    "orders": "Orders",
+    "p2pHelpCentre": "P2P help centre",
+    "profile": "Profile",
+    "wallet": "Wallet"
   },
   "notifications": {
     "error": "ஏதோ தவறாகிவிட்டது. மீண்டும் முயற்சிக்கவும்.",

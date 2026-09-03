@@ -607,14 +607,14 @@
   "navigation": {
     "backToHome": "Torna alla Home",
     "goToMyAds": "Vai a I miei annunci",
-    "home": "Casa",
+    "home": "Home",
     "askAmy": "Ask Amy",
-    "market": "Mercato",
-    "myAds": "I Miei Annunci",
-    "orders": "Ordini",
-    "p2pHelpCentre": "Centro Assistenza P2P",
-    "profile": "Profilo",
-    "wallet": "Portafoglio"
+    "market": "Market",
+    "myAds": "My Ads",
+    "orders": "Orders",
+    "p2pHelpCentre": "P2P help centre",
+    "profile": "Profile",
+    "wallet": "Wallet"
   },
   "notifications": {
     "error": "Qualcosa è andato storto. Riprova.",

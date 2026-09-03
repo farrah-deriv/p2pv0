@@ -621,14 +621,14 @@
   "navigation": {
     "backToHome": "Вернуться на главную",
     "goToMyAds": "Перейти в Мои объявления",
-    "home": "Главная",
+    "home": "Home",
     "askAmy": "Ask Amy",
-    "market": "Рынок",
-    "myAds": "Мои объявления",
-    "orders": "Ордера",
-    "p2pHelpCentre": "Справочный центр P2P",
-    "profile": "Профиль",
-    "wallet": "Кошелек"
+    "market": "Market",
+    "myAds": "My Ads",
+    "orders": "Orders",
+    "p2pHelpCentre": "P2P help centre",
+    "profile": "Profile",
+    "wallet": "Wallet"
   },
   "newErrors": {
     "invalidExchangeRateMessage": "Указанный вами курс обмена недействителен.",

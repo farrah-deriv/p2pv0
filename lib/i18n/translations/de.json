@@ -623,14 +623,14 @@
   "navigation": {
     "backToHome": "Zurück zur Startseite",
     "goToMyAds": "Gehen Sie zu Meine Anzeigen",
-    "home": "Startseite",
+    "home": "Home",
     "askAmy": "Ask Amy",
-    "market": "Markt",
-    "myAds": "Meine Anzeigen",
-    "orders": "Aufträge",
-    "p2pHelpCentre": "P2P-Hilfezentrum",
-    "profile": "Profil",
-    "wallet": "Geldbörse"
+    "market": "Market",
+    "myAds": "My Ads",
+    "orders": "Orders",
+    "p2pHelpCentre": "P2P help centre",
+    "profile": "Profile",
+    "wallet": "Wallet"
   },
   "notifications": {
     "error": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.",

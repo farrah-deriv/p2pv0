@@ -608,14 +608,14 @@
   "navigation": {
     "backToHome": "Powrót do strony głównej",
     "goToMyAds": "Przejdź do Moich reklam",
-    "home": "Strona główna",
+    "home": "Home",
     "askAmy": "Ask Amy",
-    "market": "Rynek",
-    "myAds": "Moje ogłoszenia",
-    "orders": "Zamówienia",
-    "p2pHelpCentre": "Centrum pomocy P2P",
-    "profile": "Profil",
-    "wallet": "Portfel"
+    "market": "Market",
+    "myAds": "My Ads",
+    "orders": "Orders",
+    "p2pHelpCentre": "P2P help centre",
+    "profile": "Profile",
+    "wallet": "Wallet"
   },
   "notifications": {
     "error": "Coś poszło nie tak. Spróbuj ponownie.",

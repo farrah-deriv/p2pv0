@@ -609,14 +609,14 @@
   "navigation": {
     "backToHome": "Voltar ao Início",
     "goToMyAds": "Ir para Meus anúncios",
-    "home": "Início",
+    "home": "Home",
     "askAmy": "Ask Amy",
-    "market": "Mercado",
-    "myAds": "Meus Anúncios",
-    "orders": "Pedidos",
-    "p2pHelpCentre": "Centro de Ajuda P2P",
-    "profile": "Perfil",
-    "wallet": "Carteira"
+    "market": "Market",
+    "myAds": "My Ads",
+    "orders": "Orders",
+    "p2pHelpCentre": "P2P help centre",
+    "profile": "Profile",
+    "wallet": "Wallet"
   },
   "notifications": {
     "error": "Algo deu errado. Por favor, tente novamente.",

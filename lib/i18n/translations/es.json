@@ -605,14 +605,14 @@
   "navigation": {
     "backToHome": "Volver al Inicio",
     "goToMyAds": "Ir a Mis anuncios",
-    "home": "Inicio",
+    "home": "Home",
     "askAmy": "Ask Amy",
-    "market": "Mercado",
-    "myAds": "Mis Anuncios",
-    "orders": "Órdenes",
-    "p2pHelpCentre": "Centro de Ayuda P2P",
-    "profile": "Perfil",
-    "wallet": "Billetera"
+    "market": "Market",
+    "myAds": "My Ads",
+    "orders": "Orders",
+    "p2pHelpCentre": "P2P help centre",
+    "profile": "Profile",
+    "wallet": "Wallet"
   },
   "notifications": {
     "error": "Algo salió mal. Por favor, inténtalo de nuevo.",

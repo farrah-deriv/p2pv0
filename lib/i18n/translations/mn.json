@@ -596,14 +596,14 @@
   "navigation": {
     "backToHome": "Гэртээ оч",
     "goToMyAds": "Миний зар руу оч",
-    "home": "Гэр",
+    "home": "Home",
     "askAmy": "Ask Amy",
-    "market": "Зах зээл",
-    "myAds": "Миний зарууд",
-    "orders": "Захиалга",
-    "p2pHelpCentre": "P2P тусламжийн төв",
-    "profile": "Профайл",
-    "wallet": "Түрийвч"
+    "market": "Market",
+    "myAds": "My Ads",
+    "orders": "Orders",
+    "p2pHelpCentre": "P2P help centre",
+    "profile": "Profile",
+    "wallet": "Wallet"
   },
   "notifications": {
     "error": "Ямар нэг алдаа гарлаа. Дахин оролдоно уу.",

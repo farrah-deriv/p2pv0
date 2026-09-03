@@ -604,14 +604,14 @@
   "navigation": {
     "backToHome": "Rudi Nyumbani",
     "goToMyAds": "Nenda kwa matangazo Yangu",
-    "home": "Nyumbani",
+    "home": "Home",
     "askAmy": "Ask Amy",
-    "market": "Soko",
-    "myAds": "Tangazoni Zangu",
-    "orders": "Miamala",
-    "p2pHelpCentre": "Kituo cha Msaada wa P2P",
-    "profile": "Wasifu",
-    "wallet": "Hazina"
+    "market": "Market",
+    "myAds": "My Ads",
+    "orders": "Orders",
+    "p2pHelpCentre": "P2P help centre",
+    "profile": "Profile",
+    "wallet": "Wallet"
   },
   "notifications": {
     "error": "Kitu kimetokea. Tafadhali jaribu tena.",
