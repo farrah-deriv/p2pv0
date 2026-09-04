@@ -55,6 +55,7 @@ import {
   normalizeTradeBandForComparison,
   type AdvertEditSnapshot,
 } from "@/lib/ads/advert-edit-patch"
+import { getAmountLimitsSubmissionError } from "@/lib/ads/ad-amount-limits"
 import { toNumericPaymentMethodIds } from "@/lib/payment-methods/payment-method-selection-utils"
 import {
   MY_ADS_FROM_TAB_QUERY,
@@ -670,6 +671,32 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     selectedPaymentMethodIdsForSubmit: string[],
     isPrivate: boolean
   ) => {
+    // Last line of defence. Step 2 is otherwise only consulted through the
+    // cached `paymentFormValid` flag, and the payloads below coerce a missing
+    // limit to 0 — which is how an advert went live with a 0.00 floor.
+    const amountLimitsError = getAmountLimitsSubmissionError(
+      {
+        totalAmount: finalData.totalAmount,
+        minAmount: finalData.minAmount,
+        maxAmount: finalData.maxAmount,
+      },
+      t,
+    )
+
+    if (amountLimitsError) {
+      showAlert({
+        title: t("adForm.invalidValuesTitle"),
+        description: amountLimitsError,
+        confirmText: t("adForm.editLimitsForRangeOverlap"),
+        type: "error",
+        testId: "invalid-order-limits-dialog",
+        onConfirm: () => {
+          setCurrentStep(ORDER_LIMITS_STEP_INDEX)
+        },
+      })
+      return
+    }
+
     setIsSubmitting(true)
 
     if (mode === "create") {
@@ -680,9 +707,11 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
         type: finalData.type || "buy",
         account_currency: finalData.buyCurrency,
         payment_currency: finalData.forCurrency,
-        minimum_order_amount: finalData.minAmount || 0,
-        maximum_order_amount: finalData.maxAmount || 0,
-        available_amount: finalData.totalAmount || 0,
+        // Guaranteed finite and positive by the guard above — no `|| 0` fallback,
+        // which is what let an absent limit be posted as a deliberate zero.
+        minimum_order_amount: Number(finalData.minAmount),
+        maximum_order_amount: Number(finalData.maxAmount),
+        available_amount: Number(finalData.totalAmount),
         exchange_rate: exchangeRateValue || 0,
         exchange_rate_type: (finalData.priceType || "fixed") as "fixed" | "float",
         description: finalData.instructions || "",

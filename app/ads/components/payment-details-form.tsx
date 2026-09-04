@@ -40,6 +40,14 @@ import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-m
 import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
 import { getPaymentMethodFieldValidationIssue } from "@/lib/payment-method-validation"
 import {
+  amountToInputValue,
+  areAmountsValid as areAmountValuesValid,
+  getVisibleAmountErrors,
+  parseAmountInput,
+  resolveSyncedAmountInput,
+  validateAmountFields,
+} from "@/lib/ads/ad-amount-limits"
+import {
   appendSelectedPaymentMethodId,
   getCreatedPaymentMethodId,
   getPaymentMethodSelectionLines,
@@ -72,24 +80,6 @@ interface AvailablePaymentMethod {
   display_name: string
   type: string
   method: string
-}
-
-interface AmountValidationErrors {
-  totalAmount?: string
-  minAmount?: string
-  maxAmount?: string
-}
-
-/**
- * Converts an initial amount (total / min / max order) into the string shown in
- * its CurrencyInput. A missing or zero amount renders as an empty field so the
- * "0.00" placeholder is displayed instead of a literal "0".
- */
-function amountToInputValue(amount: number | string | undefined): string {
-  if (amount === undefined || amount === null || amount === "") return ""
-  const numeric = Number(amount)
-  if (!Number.isFinite(numeric) || numeric === 0) return ""
-  return amount.toString()
 }
 
 interface PaymentDetailsFormProps {
@@ -601,7 +591,6 @@ export default function PaymentDetailsForm({
   const [totalAmount, setTotalAmount] = useState(amountToInputValue(initialData.totalAmount))
   const [minAmount, setMinAmount] = useState(amountToInputValue(initialData.minAmount))
   const [maxAmount, setMaxAmount] = useState(amountToInputValue(initialData.maxAmount))
-  const [amountErrors, setAmountErrors] = useState<AmountValidationErrors>({})
   const [amountTouched, setAmountTouched] = useState({
     totalAmount: false,
     minAmount: false,
@@ -629,71 +618,44 @@ export default function PaymentDetailsForm({
     return getPaymentMethodFieldValidationIssue("bank_transfer", "instructions", value) === null
   }
 
-  const areAmountsValid = () => {
+  const amountValues = useMemo(
+    () => ({ totalAmount, minAmount, maxAmount }),
+    [totalAmount, minAmount, maxAmount],
+  )
+
+  // Derived during render rather than in an effect: the previous effect left
+  // errors one commit behind the values they described, so the message could
+  // disagree with the field and `isFormValid()` could read a stale result.
+  const amountErrors = useMemo(() => validateAmountFields(amountValues, t), [amountValues, t])
+  // Validity comes from the values; display waits until the field is blurred.
+  const visibleAmountErrors = useMemo(
+    () => getVisibleAmountErrors(amountErrors, amountTouched),
+    [amountErrors, amountTouched],
+  )
+
+  const isFormValid = () => {
     return (
-      !!totalAmount &&
-      !!minAmount &&
-      !!maxAmount &&
-      Object.keys(amountErrors).length === 0
+      selectedPaymentMethodIds.length > 0 &&
+      validateInstructions(instructions) &&
+      areAmountValuesValid(amountValues, t)
     )
   }
 
-  const isFormValid = () => {
-    return selectedPaymentMethodIds.length > 0 && validateInstructions(instructions) && areAmountsValid()
-  }
-
+  // Seeds the fields from the parent (edit-mode prefill, rate recovery) without
+  // letting the parent echo its own round-tripped number back over whatever the
+  // user is currently typing.
   useEffect(() => {
-    if (initialData.totalAmount !== undefined) setTotalAmount(amountToInputValue(initialData.totalAmount))
-    if (initialData.minAmount !== undefined) setMinAmount(amountToInputValue(initialData.minAmount))
-    if (initialData.maxAmount !== undefined) setMaxAmount(amountToInputValue(initialData.maxAmount))
+    if (initialData.totalAmount !== undefined) {
+      setTotalAmount((current) => resolveSyncedAmountInput(initialData.totalAmount, current))
+    }
+    if (initialData.minAmount !== undefined) {
+      setMinAmount((current) => resolveSyncedAmountInput(initialData.minAmount, current))
+    }
+    if (initialData.maxAmount !== undefined) {
+      setMaxAmount((current) => resolveSyncedAmountInput(initialData.maxAmount, current))
+    }
     if (initialData.instructions !== undefined) setInstructions(initialData.instructions || "")
   }, [initialData.totalAmount, initialData.minAmount, initialData.maxAmount, initialData.instructions])
-
-  useEffect(() => {
-    const errors: AmountValidationErrors = {}
-    const total = Number(totalAmount)
-    const min = Number(minAmount)
-    const max = Number(maxAmount)
-
-    if (amountTouched.totalAmount) {
-      if (!totalAmount) {
-        errors.totalAmount = t("adForm.totalAmountRequired")
-      } else if (total <= 0) {
-        errors.totalAmount = t("adForm.totalAmountGreaterThanZero")
-      }
-    }
-
-    if (minAmount && totalAmount && min > total) {
-      errors.minAmount = t("adForm.minAmountLessThanTotal")
-    }
-
-    if (maxAmount && totalAmount && max > total) {
-      errors.maxAmount = t("adForm.maxAmountLessThanTotal")
-    }
-
-    if (amountTouched.minAmount) {
-      if (!minAmount) {
-        errors.minAmount = t("adForm.minAmountRequired")
-      } else if (min <= 0) {
-        errors.minAmount = t("adForm.minAmountGreaterThanZero")
-      }
-    }
-
-    if (amountTouched.minAmount && amountTouched.maxAmount && min > max) {
-      errors.minAmount = t("adForm.minAmountLessThanMax")
-      errors.maxAmount = t("adForm.maxAmountGreaterThanMin")
-    }
-
-    if (amountTouched.maxAmount) {
-      if (!maxAmount) {
-        errors.maxAmount = t("adForm.maxAmountRequired")
-      } else if (max <= 0) {
-        errors.maxAmount = t("adForm.maxAmountGreaterThanZero")
-      }
-    }
-
-    setAmountErrors(errors)
-  }, [totalAmount, minAmount, maxAmount, amountTouched, t])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -928,9 +890,11 @@ export default function PaymentDetailsForm({
 
     onFormDataChange(
       {
-        totalAmount: Number.parseFloat(totalAmount) || 0,
-        minAmount: Number.parseFloat(minAmount) || 0,
-        maxAmount: Number.parseFloat(maxAmount) || 0,
+        // undefined, not 0, while an entry is blank or half-typed — a partial
+        // keystroke must never look like a deliberate zero upstream.
+        totalAmount: parseAmountInput(totalAmount),
+        minAmount: parseAmountInput(minAmount),
+        maxAmount: parseAmountInput(maxAmount),
         payment_method_ids: toNumericPaymentMethodIds(selectedPaymentMethodIds),
         paymentMethods: paymentMethodNames,
         instructions,
@@ -945,7 +909,7 @@ export default function PaymentDetailsForm({
     totalAmount,
     minAmount,
     maxAmount,
-    amountErrors,
+    t,
     onFormDataChange,
   ])
 
@@ -967,7 +931,6 @@ export default function PaymentDetailsForm({
                   onValueChange={(value) => {
                     if (value === "") {
                       setTotalAmount("")
-                      setAmountTouched((prev) => ({ ...prev, totalAmount: true }))
                       return
                     }
 
@@ -980,16 +943,15 @@ export default function PaymentDetailsForm({
                     }
 
                     setTotalAmount(value)
-                    setAmountTouched((prev) => ({ ...prev, totalAmount: true }))
                   }}
                   onBlur={() => setAmountTouched((prev) => ({ ...prev, totalAmount: true }))}
                   placeholder={adType === "sell" ? t("adForm.sellQuantity") : t("adForm.buyQuantity")}
                   isEditMode={isEditMode}
-                  error={amountTouched.totalAmount && !!amountErrors.totalAmount}
+                  error={!!visibleAmountErrors.totalAmount}
                   currency={buyCurrency}
                 />
-                {amountTouched.totalAmount && amountErrors.totalAmount && (
-                  <p className="text-destructive text-xs mt-1 ms-4">{amountErrors.totalAmount}</p>
+                {visibleAmountErrors.totalAmount && (
+                  <p className="text-destructive text-xs mt-1 ms-4">{visibleAmountErrors.totalAmount}</p>
                 )}
               </div>
               <div className="flex flex-col md:flex-row md:items-baseline gap-4">
@@ -1000,7 +962,6 @@ export default function PaymentDetailsForm({
                     onValueChange={(value) => {
                       if (value === "") {
                         setMinAmount("")
-                        setAmountTouched((prev) => ({ ...prev, minAmount: true }))
                         return
                       }
 
@@ -1013,16 +974,15 @@ export default function PaymentDetailsForm({
                       }
 
                       setMinAmount(value)
-                      setAmountTouched((prev) => ({ ...prev, minAmount: true }))
                     }}
                     onBlur={() => setAmountTouched((prev) => ({ ...prev, minAmount: true }))}
                     placeholder={t("adForm.minimumOrder")}
-                    error={amountTouched.minAmount && !!amountErrors.minAmount}
+                    error={!!visibleAmountErrors.minAmount}
                     currency={buyCurrency}
                   />
-                  {amountTouched.minAmount && amountErrors.minAmount && (
+                  {visibleAmountErrors.minAmount && (
                     <p className="text-destructive text-xs mt-1 ms-4" data-testid="ad-form-error-amount">
-                      {amountErrors.minAmount}
+                      {visibleAmountErrors.minAmount}
                     </p>
                   )}
                 </div>
@@ -1034,7 +994,6 @@ export default function PaymentDetailsForm({
                     onValueChange={(value) => {
                       if (value === "") {
                         setMaxAmount("")
-                        setAmountTouched((prev) => ({ ...prev, maxAmount: true }))
                         return
                       }
 
@@ -1047,16 +1006,15 @@ export default function PaymentDetailsForm({
                       }
 
                       setMaxAmount(value)
-                      setAmountTouched((prev) => ({ ...prev, maxAmount: true }))
                     }}
                     onBlur={() => setAmountTouched((prev) => ({ ...prev, maxAmount: true }))}
                     placeholder={t("adForm.maximumOrder")}
-                    error={amountTouched.maxAmount && !!amountErrors.maxAmount}
+                    error={!!visibleAmountErrors.maxAmount}
                     currency={buyCurrency}
                   />
-                  {amountTouched.maxAmount && amountErrors.maxAmount && (
+                  {visibleAmountErrors.maxAmount && (
                     <p className="text-destructive text-xs mt-1 ms-4" data-testid="ad-form-error-amount">
-                      {amountErrors.maxAmount}
+                      {visibleAmountErrors.maxAmount}
                     </p>
                   )}
                 </div>
