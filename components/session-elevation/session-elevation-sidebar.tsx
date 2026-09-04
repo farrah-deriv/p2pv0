@@ -129,7 +129,7 @@ export function SessionElevationSidebar() {
           {seconds > 0 ? (
             <p className="mt-2 text-sm text-grayscale-600">{t("login.resendCodeTimer", { seconds })}</p>
           ) : (
-            <Button variant="ghost" className="mt-1 p-0 font-normal text-grayscale-600 underline hover:bg-transparent" onClick={() => void send()} disabled={isSending || isVerifying}>
+            <Button variant="ghost" size="sm" className="mt-1 p-0 font-normal text-grayscale-600 underline hover:bg-transparent" onClick={() => void send()} disabled={isSending || isVerifying}>
               {t("login.resendCode")}
             </Button>
           )}
