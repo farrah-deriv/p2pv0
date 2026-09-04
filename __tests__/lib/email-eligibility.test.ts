@@ -2,6 +2,7 @@ import {
   emailEligibilityFromProfileEmail,
   isEmailEligibleForP2P,
   isExistingP2PUser,
+  isKnownNonP2PUser,
   normalizeClientProfileEmail,
 } from "@/lib/email-eligibility"
 
@@ -45,6 +46,23 @@ describe("email-eligibility", () => {
       expect(isExistingP2PUser("")).toBe(false)
       expect(isExistingP2PUser(null)).toBe(false)
       expect(isExistingP2PUser(undefined)).toBe(false)
+    })
+  })
+
+  describe("isKnownNonP2PUser", () => {
+    it("is true only for the resolved \"no P2P profile\" id", () => {
+      expect(isKnownNonP2PUser("")).toBe(true)
+    })
+
+    // The guard that keeps `useTotalBalance` from disabling itself mid-hydration and
+    // flashing the zero-wallets empty state at a funded user.
+    it("is false while the user-data store has not resolved yet", () => {
+      expect(isKnownNonP2PUser(null)).toBe(false)
+      expect(isKnownNonP2PUser(undefined)).toBe(false)
+    })
+
+    it("is false for an existing P2P user", () => {
+      expect(isKnownNonP2PUser("123")).toBe(false)
     })
   })
 })

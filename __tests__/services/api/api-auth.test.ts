@@ -240,3 +240,73 @@ describe("updatePreferredLanguage", () => {
     })
   })
 })
+
+/**
+ * Regression coverage for the wallet list rendering "Couldn't load wallets" instead of
+ * the BuyCurrencies empty state for clients with no P2P wallet (phone-only signups).
+ * `/v1/client/total-balance` answers 403/404 for that cohort — a final answer, not a
+ * failure — so `getTotalBalance` must resolve with zero wallets rather than throw.
+ */
+describe("getTotalBalance", () => {
+  const jsonResponse = (status: number, body: unknown) =>
+    ({
+      ok: status >= 200 && status < 300,
+      status,
+      statusText: `status ${status}`,
+      headers: { get: () => "application/json" },
+      clone: () => ({ json: async () => body }),
+      json: async () => body,
+    }) as unknown as Response
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it("resolves with zero wallets on 403 (no P2P profile yet)", async () => {
+    const mockFetch = fetch as jest.MockedFunction<typeof fetch>
+    mockFetch.mockResolvedValue(jsonResponse(403, { errors: [{ code: "PermissionDenied" }] }))
+
+    await expect(AuthAPI.getTotalBalance()).resolves.toEqual({ wallets: { items: [] } })
+  })
+
+  it("resolves with zero wallets on 404 (no wallet provisioned yet)", async () => {
+    const mockFetch = fetch as jest.MockedFunction<typeof fetch>
+    mockFetch.mockResolvedValue(jsonResponse(404, { errors: [{ code: "NotFound" }] }))
+
+    await expect(AuthAPI.getTotalBalance()).resolves.toEqual({ wallets: { items: [] } })
+  })
+
+  it("still throws on 5xx so the wallet list keeps its error state and Retry", async () => {
+    const mockFetch = fetch as jest.MockedFunction<typeof fetch>
+    mockFetch.mockResolvedValue(jsonResponse(500, { errors: [{ code: "ServerError" }] }))
+
+    await expect(AuthAPI.getTotalBalance()).rejects.toThrow()
+  })
+
+  it("still throws on a network failure", async () => {
+    const mockFetch = fetch as jest.MockedFunction<typeof fetch>
+    mockFetch.mockRejectedValue(new TypeError("Failed to fetch"))
+
+    await expect(AuthAPI.getTotalBalance()).rejects.toThrow()
+  })
+
+  it("returns the parsed wallet items on 200", async () => {
+    const mockFetch = fetch as jest.MockedFunction<typeof fetch>
+    mockFetch.mockResolvedValue(
+      jsonResponse(200, {
+        data: {
+          wallets: {
+            items: [
+              { type: "p2p", total_balance: { approximate_total_balance: "10.00", converted_to: "USD" } },
+            ],
+          },
+        },
+      }),
+    )
+
+    const result = await AuthAPI.getTotalBalance()
+
+    expect(result.wallets.items).toHaveLength(1)
+    expect(result.wallets.items[0].total_balance.approximate_total_balance).toBe("10.00")
+  })
+})

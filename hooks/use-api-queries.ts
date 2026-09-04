@@ -13,6 +13,7 @@ import { useUserDataStore } from '@/stores/user-data-store'
 import { useP2PQueriesBlocked } from '@/hooks/use-p2p-system-maintenance'
 import { isPaymentMethodSessionElevationEnabled } from '@/lib/payment-method-session-elevation'
 import { isP2PWebSocketEligibleFromState } from '@/lib/p2p-websocket-eligibility'
+import { isKnownNonP2PUser } from '@/lib/email-eligibility'
 import { wrapWithP2PEmailMutationGate } from '@/lib/p2p-email-mutation-guard'
 import type { Advertisement, SearchParams as BuySellSearchParams, PaymentMethod } from '@/services/api/api-buy-sell'
 import type { Order, OrderFilters } from '@/services/api/api-orders'
@@ -166,11 +167,19 @@ export function useOnboardingStatus(enabled = true) {
 
 export function useTotalBalance() {
   const maintenanceBlocked = useP2PQueriesBlocked()
+  const userId = useUserDataStore((state) => state.userId)
+  // Skip a call we already know 403s: `/v1/client/total-balance` has no wallets to report
+  // for a client with no P2P profile. Gated on the positive signal only — `userId` is `""`
+  // once `/p2p/v1/users/me` has told us there is no profile, and `null` while the store is
+  // still hydrating. Gating on `!isExistingP2PUser(userId)` would also catch `null` and
+  // disable the query mid-hydration; a disabled query reports `isLoading: false` with no
+  // data, so a funded user would flash the zero-wallets empty state on every load.
+  const hasNoP2PProfile = isKnownNonP2PUser(userId)
   return useQuery({
     queryKey: queryKeys.auth.totalBalance(),
     queryFn: () => AuthAPI.getTotalBalance(),
     staleTime: 1000 * 60 * 2, // 2 minutes for balance
-    enabled: !maintenanceBlocked,
+    enabled: !maintenanceBlocked && !hasNoP2PProfile,
   })
 }
 

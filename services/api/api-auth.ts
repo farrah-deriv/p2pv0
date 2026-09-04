@@ -766,6 +766,17 @@ export async function getTotalBalance(): Promise<TotalBalanceResponse> {
       headers: getAuthHeader(),
     })
 
+    // Returns zero wallets for 403/404 (no P2P profile or no wallet provisioned yet) —
+    // the same convention `getMe()` uses above. That is a final answer from the backend,
+    // not a failure: a client who signed up by phone with no email has no P2P wallet, and
+    // rejecting here pinned the wallet list on its error state ("Couldn't load wallets" +
+    // Retry) because `resolveListViewState` branches error before empty. Resolving with an
+    // empty, well-formed payload lets that list reach its existing empty state instead.
+    // Every other non-2xx keeps throwing, so a real network failure or 5xx still surfaces.
+    if (response.status === 403 || response.status === 404) {
+      return { wallets: { items: [] } }
+    }
+
     if (!response.ok) {
       throw new Error(`Failed to fetch total balance: ${response.statusText}`)
     }
