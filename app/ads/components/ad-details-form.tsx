@@ -18,6 +18,7 @@ import { RateSectionSkeleton } from "./ui/rate-section-skeleton"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
 import { CurrencyFilter } from "@/components/currency-filter/currency-filter"
+import { calculateRecoveredFixedRate } from "@/lib/ads/exchange-rate-recovery"
 import type { WizardExchangeRateState } from "../hooks/use-wizard-exchange-rate"
 
 interface AdDetailsFormProps {
@@ -26,6 +27,19 @@ interface AdDetailsFormProps {
   initialData?: Partial<AdFormData>
   isEditMode?: boolean
   isLoadingInitialData?: boolean
+  /**
+   * The wizard has not settled which rate field belongs on screen yet — see
+   * PendingRatePaint in multi-step-ad-form. Keeps the rate section skeletonised so a
+   * floating input is never painted for a pair that has no floating rate.
+   */
+  isRateResolving?: boolean
+  /**
+   * The wizard has finished deriving the recovered fixed rate for this draft, so
+   * whatever it handed over is final — even an empty field, which means no rate could
+   * be recovered and the user is expected to type one. Autofill must never overwrite
+   * it, or the value changes under the user after it has been painted.
+   */
+  isRecoveredRateFinal?: boolean
   currencies?: Array<{ code: string; name?: string }>
   exchangeRate: WizardExchangeRateState
 }
@@ -44,6 +58,12 @@ interface PriceRange {
 const SHOW_ACCOUNT_CURRENCY_SELECTOR = false
 
 const FIXED_RATE_MAX_DECIMALS = 6
+
+function parseFloatingRatePercentage(value: unknown): number | null {
+  if (value == null || value === "") return null
+  const parsed = typeof value === "number" ? value : Number.parseFloat(String(value))
+  return Number.isFinite(parsed) ? parsed : null
+}
 
 function RateInfoRow({
   label,
@@ -80,6 +100,8 @@ export default function AdDetailsForm({
   onFormDataChange,
   initialData,
   isLoadingInitialData,
+  isRateResolving,
+  isRecoveredRateFinal,
   isEditMode,
   currencies: currenciesProp = [],
   exchangeRate,
@@ -102,8 +124,20 @@ export default function AdDetailsForm({
   const isExchangeRateLoading = exchangeRate.isLoading
   const [priceRange, setPriceRange] = useState<PriceRange>({ lowestPrice: null, highestPrice: null })
   // Preserve any prefilled fixed rate (edit load OR stale-rate recovery) against autofill.
-  const userEditedFixedRateRef = useRef(!!initialData?.fixedRate)
-  const lastAutoFillPairRef = useRef<string | null>(null)
+  // A final recovered rate is preserved the same way even when it is empty, which is
+  // the whole point of isRecoveredRateFinal: an empty field there is a decision, not a
+  // gap waiting to be filled.
+  const userEditedFixedRateRef = useRef(!!initialData?.fixedRate || !!isRecoveredRateFinal)
+  const lastAutoFillPairRef = useRef<string | null>(
+    isRecoveredRateFinal ? `${buyCurrency}:${forCurrency}` : null,
+  )
+  // A draft downgraded from floating keeps its floatingRate (buildRecoveredRateFormData
+  // spreads the previous draft), which is what makes the previous effective rate
+  // recomputable. Autofilling the raw market rate into such a draft would show a
+  // different number from the one the recovery set out to prefill.
+  const recoveredFloatingRateRef = useRef<number | null>(
+    initialData?.priceType === "fixed" ? parseFloatingRatePercentage(initialData?.floatingRate) : null,
+  )
   const prevPriceTypeRef = useRef<"fixed" | "float">(initialData?.priceType || "fixed")
   const isMobile = useIsMobile()
   const { data: settings } = useSettings()
@@ -157,6 +191,17 @@ export default function AdDetailsForm({
     const constraints = getDecimalConstraints(forCurrency || buyCurrency, accountCurrencies)
     const decimals = Math.min(constraints?.maximum ?? 2, FIXED_RATE_MAX_DECIMALS)
     return rate.toFixed(decimals)
+  }
+
+  // For a draft downgraded from floating the equivalent of the old ad is the effective
+  // rate — market x (1 + pct/100) — not the market rate itself.
+  const autoFillValueFor = (rate: number): string => {
+    const floatingPercentage = recoveredFloatingRateRef.current
+    if (floatingPercentage != null) {
+      const recovered = calculateRecoveredFixedRate(rate, floatingPercentage, maxFixedRateDecimals())
+      if (recovered != null) return recovered
+    }
+    return formatMarketRateForInput(rate)
   }
 
   const maxFixedRateDecimals = (): number => {
@@ -295,7 +340,7 @@ export default function AdDetailsForm({
 
     if (!shouldAutofill) return
 
-    setFixedRate(formatMarketRateForInput(marketPrice))
+    setFixedRate(autoFillValueFor(marketPrice))
     lastAutoFillPairRef.current = pairKey
     if (switchedToFixed) {
       userEditedFixedRateRef.current = false
@@ -480,13 +525,16 @@ export default function AdDetailsForm({
                 title={type === "buy" ? t("market.payWith") : t("market.receiveIn")}
                 triggerTestId="ad-form-select-payment-currency"
                 triggerClassName="!h-14 !px-4"
+                // Mobile parity: CreateEditAdPage1 locks the currency and rate type in
+                // edit mode. handleForCurrencyChange stays for create mode.
+                disabled={isEditMode}
               />
             </div>
           </div>
         </div>
 
         <div data-guide-id="ad-guide-rate">
-          {isExchangeRateLoading ? (
+          {isExchangeRateLoading || isRateResolving ? (
             <RateSectionSkeleton />
           ) : (
             <>

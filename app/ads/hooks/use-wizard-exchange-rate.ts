@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useWebSocketContext } from "@/contexts/websocket-context"
 import type { WebSocketMessage } from "@/lib/websocket-message"
 import {
@@ -18,7 +18,29 @@ export interface WizardExchangeRateState {
   cachedRate: number | null
   status: string | null
   isLoading: boolean
+  /**
+   * An update for this pair has actually been received, so `status` reflects the
+   * feed rather than "nothing has arrived yet".
+   *
+   * Deliberately separate from `isLoading`: the settle timer clears `isLoading`
+   * whether or not the feed ever answered, so `!isLoading` alone cannot be used to
+   * decide anything that depends on the status being *known*. Callers that must
+   * not paint the wrong thing (the edit wizard's rate section) gate on this;
+   * `hasSettled` is the upper bound that stops a silent feed blocking forever.
+   */
+  hasResolvedStatus: boolean
+  /** The settle timer for this pair expired without an update arriving. */
+  hasSettled: boolean
   isExplicitlyUnavailable: boolean
+  /**
+   * The cached rate for an arbitrary pair, or null.
+   *
+   * `cachedRate` above is keyed off this hook's own `pairKey`, which stays empty
+   * until the caller knows the payment currency. The edit prefill has to read the
+   * advert's pair in the very tick that first sets it, so it cannot wait for
+   * `pairKey` to catch up — hence the explicit lookup.
+   */
+  getCachedRate: (pairKey: string) => number | null
 }
 
 export function useWizardExchangeRate(
@@ -35,7 +57,13 @@ export function useWizardExchangeRate(
   } = useWebSocketContext()
   const [updatesByPair, setUpdatesByPair] = useState<Record<string, ExchangeRateUpdate>>({})
   const [loadingPair, setLoadingPair] = useState<string | null>(null)
+  const [settledPair, setSettledPair] = useState<string | null>(null)
   const cachedRatesRef = useRef<Record<string, number>>({})
+  // Read by the feed subscription instead of being a dependency of it: the payment
+  // currency only narrows which update clears `isLoading`, and re-subscribing on
+  // every change would restart the join/request round trip for no reason.
+  const paymentCurrencyRef = useRef(paymentCurrency)
+  paymentCurrencyRef.current = paymentCurrency
 
   const pairKey = buyCurrency && paymentCurrency ? `${buyCurrency}:${paymentCurrency}` : ""
   const selectedUpdate = pairKey ? updatesByPair[pairKey] : undefined
@@ -52,40 +80,32 @@ export function useWizardExchangeRate(
     setLoadingPair(pairKey)
   }, [enabled, pairKey, selectedUpdate])
 
+  // Deliberately gated on the socket and the account currency ALONE — not on
+  // `enabled`, not on the payment currency. The channel is keyed by account currency
+  // and requestExchangeRate asks for ALL_EXCHANGE_RATES, so neither the advert load
+  // nor the payment currency is needed to start the round trip. Waiting for them is
+  // what left the edit wizard with no rate in hand at prefill time, and so with a
+  // fixed field that painted empty and filled a second later.
   useEffect(() => {
-    if (!enabled || !isConnected || !buyCurrency) return
-
-    joinExchangeRatesChannel(buyCurrency, ALL_EXCHANGE_RATES)
-    return () => {
-      leaveExchangeRatesChannel(buyCurrency, ALL_EXCHANGE_RATES)
-    }
-  }, [
-    enabled,
-    isConnected,
-    buyCurrency,
-    joinExchangeRatesChannel,
-    leaveExchangeRatesChannel,
-  ])
-
-  useEffect(() => {
-    if (!enabled || !isConnected || !buyCurrency || !paymentCurrency) return
+    if (!isConnected || !buyCurrency) return
 
     const accountChannel = `exchange_rates/${buyCurrency}`
+    joinExchangeRatesChannel(buyCurrency, ALL_EXCHANGE_RATES)
     // The WebSocket client queues rate requests until the channel join is
     // ready for this socket generation, including after reconnect. Do not use
     // a component-level timer here: it can fire before server membership is
     // registered and produces "must be in the channel" errors.
     requestExchangeRate(buyCurrency, ALL_EXCHANGE_RATES)
 
-    const settleTimer = setTimeout(() => {
-      setLoadingPair((current) => current === pairKey ? null : current)
-    }, RATE_SETTLE_DELAY_MS)
-
     const unsubscribe = subscribe((message: WebSocketMessage) => {
       const channel = message.options?.channel
       if (!channel?.startsWith(accountChannel)) return
 
-      const updates = extractExchangeRateUpdates(message.payload, channel, paymentCurrency)
+      const updates = extractExchangeRateUpdates(
+        message.payload,
+        channel,
+        paymentCurrencyRef.current ?? "",
+      )
       if (Object.keys(updates).length === 0) return
 
       for (const [currency, update] of Object.entries(updates)) {
@@ -107,32 +127,44 @@ export function useWizardExchangeRate(
         return next
       })
 
-      if (updates[paymentCurrency]) {
-        setLoadingPair((current) => current === pairKey ? null : current)
+      const selectedCurrency = paymentCurrencyRef.current
+      if (selectedCurrency && updates[selectedCurrency]) {
+        const updatedPair = `${buyCurrency}:${selectedCurrency}`
+        setLoadingPair((current) => current === updatedPair ? null : current)
       }
     })
 
     return () => {
-      clearTimeout(settleTimer)
       unsubscribe()
+      leaveExchangeRatesChannel(buyCurrency, ALL_EXCHANGE_RATES)
     }
   }, [
-    enabled,
     isConnected,
     buyCurrency,
-    paymentCurrency,
-    pairKey,
+    joinExchangeRatesChannel,
+    leaveExchangeRatesChannel,
     requestExchangeRate,
     subscribe,
   ])
 
+  // Pair-scoped upper bound on waiting for the feed. It gives up whether or not an
+  // update ever arrives — which is why `hasSettled` is exposed separately from
+  // `hasResolvedStatus` and why callers that must not paint the wrong thing gate on
+  // the latter. Covers the disconnected case too: no socket means no update, so the
+  // timer is the only thing that can release `isLoading`.
   useEffect(() => {
-    if (isConnected || !enabled || !pairKey) return
+    if (!enabled || !pairKey || selectedUpdate) return
     const timer = setTimeout(() => {
       setLoadingPair((current) => current === pairKey ? null : current)
+      setSettledPair(pairKey)
     }, RATE_SETTLE_DELAY_MS)
     return () => clearTimeout(timer)
-  }, [enabled, isConnected, pairKey])
+  }, [enabled, pairKey, selectedUpdate])
+
+  const getCachedRate = useCallback((key: string) => {
+    const cached = key ? cachedRatesRef.current[key] : undefined
+    return typeof cached === "number" ? cached : null
+  }, [])
 
   return useMemo(() => {
     const rate = selectedUpdate?.rate ?? null
@@ -143,7 +175,10 @@ export function useWizardExchangeRate(
       cachedRate: pairKey ? cachedRatesRef.current[pairKey] ?? rate : null,
       status,
       isLoading: loadingPair === pairKey,
+      hasResolvedStatus: !!pairKey && selectedUpdate !== undefined,
+      hasSettled: !!pairKey && settledPair === pairKey,
       isExplicitlyUnavailable: isExplicitlyUnavailableRate(status),
+      getCachedRate,
     }
-  }, [pairKey, selectedUpdate, loadingPair])
+  }, [pairKey, selectedUpdate, loadingPair, settledPair, getCachedRate])
 }

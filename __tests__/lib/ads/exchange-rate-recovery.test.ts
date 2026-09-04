@@ -9,6 +9,7 @@ import {
   INITIAL_STALE_EPISODE_STATE,
   isExplicitlyUnavailableRate,
   isFloatingRateRecoveryError,
+  resolveStaleRateRecovery,
 } from "@/lib/ads/exchange-rate-recovery"
 
 describe("exchange-rate recovery", () => {
@@ -61,6 +62,63 @@ describe("exchange-rate recovery", () => {
     expect(active.notify).toBe(false)
     expect(advanceStaleEpisode(active.state, "USD:IDR", "stale", true).notify).toBe(true)
     expect(advanceStaleEpisode(first.state, "USD:EUR", "stale", true).notify).toBe(true)
+  })
+
+  it("recovers silently in edit mode and only notifies in create mode", () => {
+    // Editing an existing float advert on a dead pair must never pop the blocking
+    // "Exchange rate outdated" dialog — the user did not choose float in this session
+    // and the modal's own advice (pick another currency) is unreachable in edit mode.
+    const edit = resolveStaleRateRecovery(INITIAL_STALE_EPISODE_STATE, "USD:AFN", "inactive", {
+      isFloatingDraft: true,
+      mode: "edit",
+    })
+    expect(edit.action).toBe("recover")
+
+    // Create mode keeps the dialog: the user actively picked floating and the feed
+    // went stale underneath them, so the interruption is warranted.
+    const create = resolveStaleRateRecovery(INITIAL_STALE_EPISODE_STATE, "USD:AFN", "inactive", {
+      isFloatingDraft: true,
+      mode: "create",
+    })
+    expect(create.action).toBe("notify")
+  })
+
+  it("stays quiet for fixed drafts, healthy pairs, and repeated stale ticks", () => {
+    expect(
+      resolveStaleRateRecovery(INITIAL_STALE_EPISODE_STATE, "USD:AFN", "inactive", {
+        isFloatingDraft: false,
+        mode: "edit",
+      }).action,
+    ).toBe("none")
+
+    expect(
+      resolveStaleRateRecovery(INITIAL_STALE_EPISODE_STATE, "USD:IDR", "active", {
+        isFloatingDraft: true,
+        mode: "edit",
+      }).action,
+    ).toBe("none")
+
+    expect(
+      resolveStaleRateRecovery(INITIAL_STALE_EPISODE_STATE, "USD:IDR", null, {
+        isFloatingDraft: true,
+        mode: "create",
+      }).action,
+    ).toBe("none")
+
+    // Bookkeeping is shared with advanceStaleEpisode, so a re-render or a currency
+    // round-trip cannot re-fire the recovery for the same pair.
+    const first = resolveStaleRateRecovery(INITIAL_STALE_EPISODE_STATE, "USD:AFN", "stale", {
+      isFloatingDraft: true,
+      mode: "edit",
+    })
+    expect(first.action).toBe("recover")
+    expect(
+      resolveStaleRateRecovery(first.state, "USD:AFN", "stale", {
+        isFloatingDraft: true,
+        mode: "edit",
+      }).action,
+    ).toBe("none")
+    expect(first.state).toEqual({ pairKey: "USD:AFN", unavailable: true, notified: true })
   })
 
   it("calculates without clamping and caps payment precision at six decimals", () => {

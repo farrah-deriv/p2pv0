@@ -131,10 +131,18 @@ export function PriceTypeSelector({
       onClick={() => setOpen((o) => !o)}
       aria-expanded={open}
       aria-haspopup="listbox"
-      className="!h-12 !w-full !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-3 !text-sm !font-normal focus:!ring-1 focus:!ring-black [&>span]:!w-full"
+      className={cn(
+        "!h-12 !w-full !rounded-lg !border !border-solid !border-neutral-200 !px-3 !text-sm !font-normal focus:!ring-1 focus:!ring-black [&>span]:!w-full",
+        // Edit mode locks the rate type (mobile parity). The forced white fill would
+        // otherwise win over Quill's own disabled styling and leave the control
+        // looking interactive even though it is inert.
+        disabled ? "!bg-grayscale-500 !cursor-not-allowed" : "!bg-white",
+      )}
     >
       <span className="flex w-full flex-row items-center justify-between">
-        <span className="truncate text-slate-1200">{rateTypeLabel}</span>
+        <span className={cn("truncate", disabled ? "text-grayscale-text-muted" : "text-slate-1200")}>
+          {rateTypeLabel}
+        </span>
         {open && !isMobile ? (
           <StandaloneChevronUpRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />
         ) : (

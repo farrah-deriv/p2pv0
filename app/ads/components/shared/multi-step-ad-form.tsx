@@ -74,16 +74,45 @@ import { useWizardExchangeRate } from "@/app/ads/hooks/use-wizard-exchange-rate"
 import { useAccountCurrencies } from "@/hooks/use-account-currencies"
 import { getDecimalConstraints } from "@/lib/currency-decimal"
 import {
-  advanceStaleEpisode,
   buildRecoveredRateFormData,
   getAdvertRatePrefill,
+  hasFloatRateDisabledStatus,
   INITIAL_STALE_EPISODE_STATE,
   isFloatingRateRecoveryError,
+  markStaleEpisodeHandled,
+  resolveStaleRateRecovery,
   type StaleEpisodeState,
 } from "@/lib/ads/exchange-rate-recovery"
 
 /** Step 2/3 "Set amount and payment" — where the min/max order limit inputs live. */
 const ORDER_LIMITS_STEP_INDEX = 1
+
+/**
+ * Why the edit wizard is holding the rate section behind its skeleton.
+ *
+ * Both cases exist because the recovery from a dead floating rate needs the market
+ * rate, which only the websocket has, while the *rate type* must be settled before
+ * the first paint — otherwise the float input flashes for a second and the form
+ * then remounts as fixed under the user.
+ *
+ * - "recover": the advert itself said floating is unavailable for this pair, so the
+ *   draft is already fixed. Only the numeric rate is outstanding.
+ * - "resolve": the advert carried no `visibility_status`, so the rate type genuinely
+ *   is not known yet and we wait for the feed rather than guessing.
+ */
+interface PendingRatePaint {
+  pairKey: string
+  reason: "recover" | "resolve"
+}
+
+/**
+ * Upper bound on holding the rate section while the recovered fixed rate is still
+ * being derived. Deliberately NOT the feed's own 1500ms settle timer: that timer
+ * starts with the request and was pre-empting feeds that answer just after it,
+ * releasing the gate with no rate and painting an empty field that filled a moment
+ * later. This bound only has to stop a silent feed skeletonising forever.
+ */
+const RECOVERED_RATE_PAINT_TIMEOUT_MS = 4000
 
 interface MultiStepAdFormProps {
   mode: "create" | "edit"
@@ -195,6 +224,14 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
   const [showSharePage, setShowSharePage] = useState(false)
   const [originalEditSnapshot, setOriginalEditSnapshot] = useState<AdvertEditSnapshot | null>(null)
   const staleEpisodeRef = useRef<StaleEpisodeState>(INITIAL_STALE_EPISODE_STATE)
+  // Set while the edit wizard must not paint a rate field yet. See PendingRatePaint.
+  const [pendingRatePaint, setPendingRatePaint] = useState<PendingRatePaint | null>(null)
+  // The pair whose RECOVERED_RATE_PAINT_TIMEOUT_MS bound expired with no rate in hand.
+  const [ratePaintTimedOutPair, setRatePaintTimedOutPair] = useState<string | null>(null)
+  // Set once the recovered fixed rate has been decided for an edit draft. From then
+  // on the value on screen is final — including when it is empty — so AdDetailsForm
+  // must not autofill over it however late the feed answers.
+  const [isRecoveredRateFinal, setIsRecoveredRateFinal] = useState(false)
 
   const guideStep = useGuideStore((s) => s.currentStep)
   const guideType = useGuideStore((s) => s.guideType)
@@ -253,6 +290,15 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
   )
   const cachedMarketRateRef = useRef<number | null>(exchangeRate.cachedRate)
   cachedMarketRateRef.current = exchangeRate.cachedRate
+  // The edit prefill runs before formData.forCurrency exists, so exchangeRate.pairKey
+  // — and with it cachedMarketRateRef — is still empty at that point. Look the
+  // advert's own pair up directly instead.
+  const getCachedRateRef = useRef(exchangeRate.getCachedRate)
+  getCachedRateRef.current = exchangeRate.getCachedRate
+  // Read by the edit prefill, which must not re-fetch the advert just because the
+  // currency list settled.
+  const accountCurrenciesRef = useRef(accountCurrencies)
+  accountCurrenciesRef.current = accountCurrencies
 
   const isLoadingCountries = isLoadingSettings
 
@@ -361,7 +407,7 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
           }
 
           const ratePrefill = getAdvertRatePrefill(data.exchange_rate, data.exchange_rate_type)
-          const formattedData = {
+          const baseFormattedData = {
             ...data,
             totalAmount:
               Number.parseFloat(data.available_amount) +
@@ -379,6 +425,48 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
             floatingRate: ratePrefill.floatingRate,
           }
 
+          // Settle the rate type here, before the first paint, rather than reacting to
+          // the websocket status afterwards — reacting is what made the recovery land
+          // 1-2s late, with the float input visible in between.
+          const isFloatAdvert = data.exchange_rate_type === "float"
+          const pairKey = `${data.account_currency || "USD"}:${data.payment_currency}`
+          let formattedData: Partial<AdFormData> = baseFormattedData
+          let nextPendingRatePaint: PendingRatePaint | null = null
+          let recoveredRateIsFinal = false
+
+          if (isFloatAdvert && hasFloatRateDisabledStatus(data.visibility_status)) {
+            // The advert already knows floating is gone for this pair, so the draft is
+            // fixed from the first render. The recovered value still needs a market
+            // rate; until one is in hand the rate section stays skeletonised rather
+            // than painting an empty fixed field that fills in a moment later.
+            const decimals =
+              getDecimalConstraints(data.payment_currency || "", accountCurrenciesRef.current)
+                ?.maximum ?? 6
+            formattedData = buildRecoveredRateFormData(
+              baseFormattedData as Record<string, unknown>,
+              getCachedRateRef.current(pairKey) ?? cachedMarketRateRef.current,
+              decimals,
+            ) as Partial<AdFormData>
+            // The websocket will report this pair as unavailable shortly. Close the
+            // episode now so that tick does not re-run the recovery and remount again.
+            staleEpisodeRef.current = markStaleEpisodeHandled(pairKey)
+            if (formattedData.fixedRate === "") {
+              nextPendingRatePaint = { pairKey, reason: "recover" }
+            } else {
+              // A rate was already cached, so this first paint is also the last word.
+              recoveredRateIsFinal = true
+            }
+          } else if (isFloatAdvert && data.visibility_status === undefined) {
+            // This endpoint did not return visibility_status, so the rate type cannot be
+            // decided from the advert. Fall back to the feed: hold the rate section
+            // until the pair's status is genuinely resolved (or the settle timer gives
+            // up), instead of painting float on a pair that may not support it.
+            nextPendingRatePaint = { pairKey, reason: "resolve" }
+          }
+
+          setPendingRatePaint(nextPendingRatePaint)
+          setRatePaintTimedOutPair(null)
+          setIsRecoveredRateFinal(recoveredRateIsFinal)
           setFormData(formattedData)
           formDataRef.current = formattedData
           // AdDetailsForm treats its draft as mount-time state. Remount after
@@ -552,12 +640,37 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     [syncFormData],
   )
 
-  const showStaleRateRecovery = useCallback(() => {
-    const current = formDataRef.current
-    const paymentCurrency = current.forCurrency || ""
+  // Downgrade the draft from floating to a fixed rate derived from the last known
+  // market rate (or an empty input when none was cached). Shared by the dialog's
+  // confirm action and by the silent edit-mode recovery, so both land the wizard in
+  // exactly the same state.
+  const applyRecoveredRate = useCallback(() => {
+    const paymentCurrency = formDataRef.current.forCurrency || ""
     const constraints = getDecimalConstraints(paymentCurrency, accountCurrencies)
     const decimals = constraints?.maximum ?? 6
 
+    const updatedData = buildRecoveredRateFormData(
+      formDataRef.current as Record<string, unknown>,
+      cachedMarketRateRef.current,
+      decimals,
+    )
+    formDataRef.current = updatedData as Partial<AdFormData>
+    // Step first so AdDetailsForm remounts with recovered fixed rate, then
+    // bump key so retained local float UI cannot fight the new form data.
+    setCurrentStep(0)
+    setAdDetailsRemountKey((key) => key + 1)
+    setFormData(updatedData as Partial<AdFormData>)
+    setAdFormValid(false)
+    // In edit mode this is the last word on the rate value, including when it comes
+    // out empty because nothing could be recovered. Marking it final stops the
+    // autofill in AdDetailsForm rewriting the field once a rate finally lands — the
+    // user must never see the value change under them after it has been painted.
+    // Create mode keeps its existing behaviour: there the recovery follows the user's
+    // own confirmation and a later market rate is still welcome to fill the field.
+    if (mode === "edit") setIsRecoveredRateFinal(true)
+  }, [accountCurrencies, mode])
+
+  const showStaleRateRecovery = useCallback(() => {
     showAlert({
       title: t("adForm.exchangeRateOutdatedTitle"),
       description: t("adForm.exchangeRateOutdatedDescription"),
@@ -567,34 +680,96 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
       confirmTestId: "stale-exchange-rate-edit-rate",
       hideCloseButton: true,
       preventOutsideClose: true,
-      onConfirm: () => {
-        const updatedData = buildRecoveredRateFormData(
-          formDataRef.current as Record<string, unknown>,
-          cachedMarketRateRef.current,
-          decimals,
-        )
-        formDataRef.current = updatedData as Partial<AdFormData>
-        // Step first so AdDetailsForm remounts with recovered fixed rate, then
-        // bump key so retained local float UI cannot fight the new form data.
-        setCurrentStep(0)
-        setAdDetailsRemountKey((key) => key + 1)
-        setFormData(updatedData as Partial<AdFormData>)
-        setAdFormValid(false)
-      },
+      onConfirm: applyRecoveredRate,
     })
-  }, [accountCurrencies, showAlert, t])
+  }, [applyRecoveredRate, showAlert, t])
 
+  // Reacting to the pair's rate becoming unavailable while the draft is floating.
+  // Edit mode recovers silently — see resolveStaleRateRecovery for why the dialog
+  // is wrong there. The dialog still fires from handleFinalSubmit and handleAdError,
+  // which follow a user action rather than a landing.
+  //
+  // isFloatingDraft is read from state, not formDataRef, so it is a real dependency:
+  // an unavailable status can land before the edit prefill resolves, and the ref
+  // alone would leave the effect stuck on the pre-load "not floating yet" reading.
+  const isFloatingDraft = formData.priceType === "float"
   useEffect(() => {
     if (!exchangeRate.pairKey) return
-    const result = advanceStaleEpisode(
+    const result = resolveStaleRateRecovery(
       staleEpisodeRef.current,
       exchangeRate.pairKey,
       exchangeRate.status,
-      formDataRef.current.priceType === "float",
+      { isFloatingDraft, mode },
     )
     staleEpisodeRef.current = result.state
-    if (result.notify) showStaleRateRecovery()
-  }, [exchangeRate.pairKey, exchangeRate.status, showStaleRateRecovery])
+    if (result.action === "recover") applyRecoveredRate()
+    else if (result.action === "notify") showStaleRateRecovery()
+  }, [
+    exchangeRate.pairKey,
+    exchangeRate.status,
+    isFloatingDraft,
+    mode,
+    applyRecoveredRate,
+    showStaleRateRecovery,
+  ])
+
+  // Lifts the rate-section gate set by the edit prefill. Declared AFTER the effect
+  // above on purpose: when the feed resolves a pair as unavailable, that effect
+  // flips the draft to fixed in the same commit in which this one clears the gate,
+  // so React batches both and the skeleton is never replaced by a float input.
+  useEffect(() => {
+    if (!pendingRatePaint) return
+    if (exchangeRate.pairKey !== pendingRatePaint.pairKey) {
+      setPendingRatePaint(null)
+      return
+    }
+
+    if (pendingRatePaint.reason === "recover") {
+      // The rate TYPE is already settled here; what is still missing is the rate
+      // VALUE, so a resolved status alone is not enough to release the gate — only
+      // an actual rate is, or a resolved status that says there is none. Waiting on
+      // the 1500ms settle timer instead is what painted an empty field just before
+      // the feed answered.
+      const isRateKnown =
+        exchangeRate.rate != null ||
+        exchangeRate.cachedRate != null ||
+        exchangeRate.hasResolvedStatus
+      if (!isRateKnown && ratePaintTimedOutPair !== pendingRatePaint.pairKey) return
+
+      setPendingRatePaint(null)
+      applyRecoveredRate()
+      return
+    }
+
+    // "resolve" is still only waiting on the rate TYPE, so the feed's own settle
+    // timer remains the right upper bound: a silent feed must not skeletonise the
+    // form forever, and on timeout we paint whatever the draft holds, as before.
+    if (!exchangeRate.hasResolvedStatus && !exchangeRate.hasSettled) return
+    // The recovery itself is handled by the effect above, which downgrades the draft
+    // if the pair turned out to be unavailable and leaves a healthy pair floating.
+    setPendingRatePaint(null)
+  }, [
+    pendingRatePaint,
+    ratePaintTimedOutPair,
+    exchangeRate.pairKey,
+    exchangeRate.rate,
+    exchangeRate.cachedRate,
+    exchangeRate.hasResolvedStatus,
+    exchangeRate.hasSettled,
+    applyRecoveredRate,
+  ])
+
+  // Upper bound for the "recover" gate above. Scoped to the pair so a currency change
+  // cannot inherit a previous pair's expiry.
+  useEffect(() => {
+    if (pendingRatePaint?.reason !== "recover") return
+    const { pairKey } = pendingRatePaint
+    const timer = setTimeout(
+      () => setRatePaintTimedOutPair(pairKey),
+      RECOVERED_RATE_PAINT_TIMEOUT_MS,
+    )
+    return () => clearTimeout(timer)
+  }, [pendingRatePaint])
 
   const handleAdDetailsNext = (data: Partial<AdFormData>, errors?: Record<string, string>) => {
     const updatedData = { ...formDataRef.current, ...data }
@@ -1197,6 +1372,8 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
                         isEditMode={mode === "edit"}
                         currencies={currencies}
                         isLoadingInitialData={isLoadingInitialData}
+                        isRateResolving={pendingRatePaint !== null}
+                        isRecoveredRateFinal={isRecoveredRateFinal}
                         exchangeRate={exchangeRate}
                       />
                     )

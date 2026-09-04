@@ -148,12 +148,21 @@ export function CurrencyFilter({
       aria-expanded={isOpen}
       aria-haspopup="listbox"
       className={cn(
-        "!h-12 !w-full !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-3 !text-sm !font-normal focus:!ring-1 focus:!ring-black [&>span]:!w-full",
+        "!h-12 !w-full !rounded-lg !border !border-solid !border-neutral-200 !px-3 !text-sm !font-normal focus:!ring-1 focus:!ring-black [&>span]:!w-full",
+        // The forced white fill would otherwise win over Quill's own disabled styling
+        // and leave a locked control looking fully interactive, so the greyed state is
+        // spelled out rather than inherited.
+        disabled ? "!bg-grayscale-500 !cursor-not-allowed" : "!bg-white",
         triggerClassName,
       )}
     >
       <span className="flex w-full flex-row items-center justify-between">
-        <span className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+        <span
+          className={cn(
+            "flex min-w-0 flex-1 items-center gap-2 overflow-hidden",
+            disabled && "text-grayscale-text-muted",
+          )}
+        >
           {flagSrc && (
             <Image
               src={flagSrc}

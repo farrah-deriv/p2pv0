@@ -76,6 +76,34 @@ export function isExplicitlyUnavailableRate(status: string | null | undefined): 
   return typeof status === "string" && status.trim() !== "" && status.toLowerCase() !== "active"
 }
 
+/**
+ * The advert-level flag My ads already reads to render "Your ad isn't visible":
+ * floating is no longer available for this advert's currency pair. Unlike the
+ * websocket status it travels with the advert itself, so it is known before the
+ * edit wizard's first paint.
+ */
+export const FLOAT_RATE_DISABLED_VISIBILITY_STATUS = "advert_float_rate_disabled"
+
+export function hasFloatRateDisabledStatus(visibilityStatus: unknown): boolean {
+  return (
+    Array.isArray(visibilityStatus) &&
+    visibilityStatus.some(
+      (entry) =>
+        typeof entry === "string" &&
+        entry.trim().toLowerCase() === FLOAT_RATE_DISABLED_VISIBILITY_STATUS,
+    )
+  )
+}
+
+/**
+ * Records a pair as already recovered, so the websocket status tick that arrives
+ * later finds the episode closed and does not run a second, redundant recovery
+ * (which would remount the form under the user for no visible reason).
+ */
+export function markStaleEpisodeHandled(pairKey: string): StaleEpisodeState {
+  return { pairKey, unavailable: true, notified: true }
+}
+
 export function advanceStaleEpisode(
   previous: StaleEpisodeState,
   pairKey: string,
@@ -95,6 +123,39 @@ export function advanceStaleEpisode(
     },
     notify,
   }
+}
+
+/**
+ * "none"    — nothing to do for this tick.
+ * "notify"  — interrupt with the "Exchange rate outdated" dialog.
+ * "recover" — downgrade the draft to fixed silently, no dialog.
+ */
+export type StaleRateRecoveryAction = "none" | "notify" | "recover"
+
+/**
+ * Decides how the wizard should react when the exchange rate for the current pair
+ * turns out to be unavailable while the draft is still floating.
+ *
+ * The split is by mode, because the two situations are not the same event:
+ * in create mode the user actively chose Floating and the feed went stale under
+ * them, so a dialog is a fair interruption. In edit mode the advert was already
+ * floating when it was opened, so the dialog fires on landing from nothing the
+ * user did — and its advice is unreachable, since the rate-type selector is
+ * disabled in edit mode and the currency dropdown sits behind the overlay. There
+ * the only sensible outcome is the recovery itself, applied silently.
+ *
+ * Episode bookkeeping is shared with advanceStaleEpisode, so a recovery fires at
+ * most once per pair and survives a currency round-trip.
+ */
+export function resolveStaleRateRecovery(
+  previous: StaleEpisodeState,
+  pairKey: string,
+  status: string | null | undefined,
+  options: { isFloatingDraft: boolean; mode: "create" | "edit" },
+): { state: StaleEpisodeState; action: StaleRateRecoveryAction } {
+  const { state, notify } = advanceStaleEpisode(previous, pairKey, status, options.isFloatingDraft)
+  if (!notify) return { state, action: "none" }
+  return { state, action: options.mode === "edit" ? "recover" : "notify" }
 }
 
 export function calculateRecoveredFixedRate(
