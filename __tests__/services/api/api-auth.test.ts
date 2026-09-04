@@ -307,6 +307,86 @@ describe("getTotalBalance", () => {
     const result = await AuthAPI.getTotalBalance()
 
     expect(result.wallets.items).toHaveLength(1)
-    expect(result.wallets.items[0].total_balance.approximate_total_balance).toBe("10.00")
+    expect(result.wallets.items[0].total_balance?.approximate_total_balance).toBe("10.00")
+  })
+
+  /**
+   * The reporting cohort's real 200 payload, from a live network capture: an enabled p2p
+   * wallet with an empty `balances[]` and NO item-level `total_balance` block. The backend
+   * simply omits the block for a wallet with nothing in it. Requiring it made
+   * `parseArrayWithItemIsolation` reject 1-of-1 items, trip its all-items-rejected throw,
+   * and pin the list on "Couldn't load wallets" instead of the BuyCurrencies empty state.
+   */
+  it("resolves a 200 whose wallet item omits the item-level total_balance", async () => {
+    const mockFetch = fetch as jest.MockedFunction<typeof fetch>
+    mockFetch.mockResolvedValue(
+      jsonResponse(200, {
+        data: {
+          total_balance: { amount: "0.00", currency: "USD" },
+          wallets: {
+            total_balance: { amount: "0.00", currency: "USD" },
+            items: [
+              {
+                wallet_id: "fafedafa-47e5-431f-8969-b290705d04b4",
+                counterparty: "dsvg",
+                brand: "deriv",
+                type: "p2p",
+                status: "enabled",
+                balances: [],
+                pending_balance: [],
+              },
+            ],
+          },
+        },
+      }),
+    )
+
+    const result = await AuthAPI.getTotalBalance()
+
+    expect(result.wallets.items).toHaveLength(1)
+    expect(result.wallets.items[0].total_balance).toBeUndefined()
+    // `.passthrough()` must keep the rest of the item intact for `processBalanceData`.
+    expect((result.wallets.items[0] as Record<string, unknown>).balances).toEqual([])
+  })
+
+  /**
+   * Optional must not mean unvalidated: a `total_balance` that IS present still has to
+   * carry a usable `approximate_total_balance`, and an item that fails that is still
+   * rejected — which, as the only item, still throws.
+   */
+  it("still rejects a wallet item whose present total_balance is malformed", async () => {
+    const mockFetch = fetch as jest.MockedFunction<typeof fetch>
+    mockFetch.mockResolvedValue(
+      jsonResponse(200, {
+        data: {
+          wallets: {
+            items: [{ type: "p2p", total_balance: { approximate_total_balance: null } }],
+          },
+        },
+      }),
+    )
+
+    await expect(AuthAPI.getTotalBalance()).rejects.toThrow()
+  })
+
+  it("keeps an item with no total_balance while dropping one whose total_balance is malformed", async () => {
+    const mockFetch = fetch as jest.MockedFunction<typeof fetch>
+    mockFetch.mockResolvedValue(
+      jsonResponse(200, {
+        data: {
+          wallets: {
+            items: [
+              { type: "main", total_balance: { approximate_total_balance: { nested: "object" } } },
+              { type: "p2p", balances: [] },
+            ],
+          },
+        },
+      }),
+    )
+
+    const result = await AuthAPI.getTotalBalance()
+
+    expect(result.wallets.items).toHaveLength(1)
+    expect(result.wallets.items[0].type).toBe("p2p")
   })
 })

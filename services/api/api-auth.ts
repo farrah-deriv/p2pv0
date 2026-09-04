@@ -73,7 +73,8 @@ export interface TotalBalanceResponse {
   wallets: {
     items: Array<{
       type: string
-      total_balance: {
+      // Omitted by the backend for a wallet holding nothing — callers must optional-chain.
+      total_balance?: {
         approximate_total_balance: string
         converted_to: string
       }
@@ -744,6 +745,15 @@ const totalBalanceEnvelopeSchema = z
 
 // Validates only the wallet item's money field — `.passthrough()` keeps
 // `type`/`converted_to`/etc. untouched.
+//
+// `total_balance` is `.optional()` because the backend omits the block entirely for a
+// wallet holding nothing: a phone-only signup gets a 200 carrying one enabled p2p wallet
+// with `balances: []` and no item-level `total_balance`. Requiring it rejected 1-of-1
+// items, which tripped `parseArrayWithItemIsolation`'s all-items-rejected throw and pinned
+// the wallet list on "Couldn't load wallets" + Retry — `resolveListViewState` branches
+// error before empty, so the existing `<BuyCurrencies />` empty state was unreachable.
+// Optional is not unvalidated: a block that IS present still has to carry a usable
+// `approximate_total_balance`, and an item that fails that is still dropped.
 const totalBalanceWalletItemSchema = z
   .object({
     total_balance: z
@@ -754,7 +764,8 @@ const totalBalanceWalletItemSchema = z
           reporter: schemaReporter,
         }),
       })
-      .passthrough(),
+      .passthrough()
+      .optional(),
   })
   .passthrough()
 
