@@ -53,6 +53,44 @@ export function filterPaymentMethodsForAdvert<T extends { method: string }>(
   return methods.filter((method) => isPaymentMethodCompatibleWithAdvert(method, acceptedMethods))
 }
 
+export type PaymentSelectionEntry = "loading" | "selection" | "catalogue"
+
+/**
+ * Decide what a "select payment methods" entry point should open, so an empty
+ * selection sheet whose only action is "add" is never shown (issue #1387).
+ *
+ * `eligibleMethods` is the caller's own notion of what may be picked here: the
+ * whole saved list on the advert form (the advert has no accepted methods yet),
+ * or `filterPaymentMethodsForAdvert(...)` during place order. `methods` stays
+ * the raw unfiltered list because pagination is driven off it.
+ */
+export function resolvePaymentSelectionEntry({
+  isLoading,
+  hasNextPage,
+  methods,
+  eligibleMethods,
+  currentSelection = [],
+}: {
+  isLoading: boolean
+  hasNextPage: boolean
+  methods: unknown[]
+  eligibleMethods: unknown[]
+  currentSelection?: (string | number)[]
+}): PaymentSelectionEntry {
+  // Amending an existing selection is not starting from nothing — never skip.
+  if (normalizePaymentMethodIds(currentSelection).length > 0) return "selection"
+
+  if (isLoading) return "loading"
+  if (eligibleMethods.length > 0) return "selection"
+
+  // Nothing eligible yet, but a compatible method can sit on a later page —
+  // exhaust pagination before concluding empty. A short/empty first page has
+  // no next page, so this also short-circuits the "no saved methods" case.
+  if (methods.length > 0 && hasNextPage) return "loading"
+
+  return "catalogue"
+}
+
 export function upsertUserPaymentMethod<T extends { id: string | number }>(
   methods: T[],
   created: T,

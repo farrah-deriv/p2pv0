@@ -34,9 +34,9 @@ import {
   isPaymentMethodElevationCancelled,
   useUserPaymentMethods,
   type PaymentMethodError,
+  type UserPaymentMethod,
 } from "@/hooks/use-api-queries"
-import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
-import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
+import { createPaymentMethodAddErrorAlertConfig } from "@/lib/payment-methods/create-payment-method-add-error-alert-config"
 import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
 import { getPaymentMethodFieldValidationIssue } from "@/lib/payment-method-validation"
 import {
@@ -55,6 +55,7 @@ import {
   isUserPaymentMethodSelectionDisabled,
   mergeCreatedPaymentMethodIntoList,
   normalizePaymentMethodId,
+  resolvePaymentSelectionEntry,
   resolveSelectedUserPaymentMethodIds,
   toNumericPaymentMethodIds,
 } from "@/lib/payment-methods/payment-method-selection-utils"
@@ -65,15 +66,6 @@ interface PaymentMethod {
   method: string
   type: string
   fields: Record<string, unknown>
-}
-
-interface UserPaymentMethod {
-  id: string
-  type: string
-  display_name: string
-  fields: Record<string, unknown>
-  is_enabled: number
-  method: string
 }
 
 interface AvailablePaymentMethod {
@@ -353,7 +345,7 @@ const PaymentSelectionContent = ({
 
   // Live paginated list (alert props are a snapshot). Merge prop extras for just-created PMs.
   const userMethods = useMemo(() => {
-    const live = flattenUserPaymentMethodsPages(paymentMethodsPages) as UserPaymentMethod[]
+    const live = flattenUserPaymentMethodsPages(paymentMethodsPages)
     const fromProps = paymentMethods.filter(
       (method): method is UserPaymentMethod => "id" in method,
     )
@@ -601,6 +593,9 @@ export default function PaymentDetailsForm({
   const [instructionsError, setInstructionsError] = useState("")
   const [tempSelectedPaymentMethods, setTempSelectedPaymentMethods] = useState<string[]>([])
   const [showAddPaymentPanel, setShowAddPaymentPanel] = useState(false)
+  // Bumped to remount AddPaymentMethodPanel so it reopens at its catalogue
+  // (method list) step instead of the details form the user just failed on.
+  const [addPanelInstanceId, setAddPanelInstanceId] = useState(0)
   const [showFullPageModal, setShowFullPageModal] = useState(false)
   // When true, Drawer/Dialog onOpenChange from programmatic hideAlert (add-PM
   // transition) must not wipe the draft selection back to last confirmed.
@@ -611,8 +606,25 @@ export default function PaymentDetailsForm({
   const { hideAlert, showAlert } = useAdvertAlertDialog()
   const { toast } = useToast()
   const { selectedPaymentMethodIds, setSelectedPaymentMethodIds } = usePaymentSelection()
+  // Read the query directly rather than the `userPaymentMethods` prop: the prop
+  // is synced into parent state by an effect, so it is still `[]` for a render
+  // after page 1 lands and would make an in-flight list look empty.
+  const {
+    data: userPaymentMethodsPages,
+    isPending: isLoadingUserPaymentMethods,
+    hasNextPage: hasMoreUserPaymentMethods,
+  } = useUserPaymentMethods()
+  const liveUserPaymentMethods = useMemo(
+    () => flattenUserPaymentMethodsPages(userPaymentMethodsPages),
+    [userPaymentMethodsPages],
+  )
 
   const adType = initialData.type || "buy"
+  // Only the sell entry point branches on emptiness, so only it has to wait.
+  // Mirrors the `initialData.type === "buy"` test in handleShowPaymentSelection
+  // rather than `adType`, which defaults an unset type to "buy".
+  const isSellPaymentSelectionLoading =
+    initialData.type !== "buy" && isLoadingUserPaymentMethods
 
   const validateInstructions = (value: string) => {
     return getPaymentMethodFieldValidationIssue("bank_transfer", "instructions", value) === null
@@ -688,7 +700,10 @@ export default function PaymentDetailsForm({
         (tempSelectedPaymentMethods.length > 0
           ? tempSelectedPaymentMethods
           : selectedPaymentMethodIds)
-      const methodsForSheet = methodsOverride ?? userPaymentMethods
+      // Same reason as the entry resolver above: read the live query, not the
+      // `userPaymentMethods` prop, so the sheet is never opened against the
+      // empty snapshot the parent effect has not flushed yet.
+      const methodsForSheet = methodsOverride ?? liveUserPaymentMethods
 
       showAlert({
         title: t("paymentMethod.paymentMethodsSheetTitle"),
@@ -728,26 +743,65 @@ export default function PaymentDetailsForm({
     [
       handleAddPaymentMethodClick,
       hideSellPaymentSelection,
+      liveUserPaymentMethods,
       onBottomSheetOpenChange,
       selectedPaymentMethodIds,
       setSelectedPaymentMethodIds,
       showAlert,
       t,
       tempSelectedPaymentMethods,
-      userPaymentMethods,
     ],
   )
 
   const handleShowPaymentSelection = () => {
-    onBottomSheetOpenChange?.(true)
     if (initialData.type === "buy") {
+      onBottomSheetOpenChange?.(true)
       setShowFullPageModal(true)
-    } else if (userPaymentMethods.length === 0) {
+      return
+    }
+
+    // The advert has no accepted methods yet, so every saved method is eligible
+    // and the catalogue opens unfiltered.
+    const entry = resolvePaymentSelectionEntry({
+      isLoading: isLoadingUserPaymentMethods,
+      hasNextPage: !!hasMoreUserPaymentMethods,
+      methods: liveUserPaymentMethods,
+      eligibleMethods: liveUserPaymentMethods,
+      currentSelection:
+        tempSelectedPaymentMethods.length > 0
+          ? tempSelectedPaymentMethods
+          : selectedPaymentMethodIds,
+    })
+
+    // Page 1 is still in flight — the button shows its loader; don't decide yet.
+    if (entry === "loading") return
+
+    onBottomSheetOpenChange?.(true)
+    if (entry === "catalogue") {
+      // Not opened from the sheet, so closing must return to the form rather
+      // than reopen the empty sheet this skip exists to avoid.
       addPanelOpenedFromSelectionRef.current = false
       setShowAddPaymentPanel(true)
     } else {
       openSellPaymentSelection()
     }
+  }
+
+  /**
+   * Reopen the catalogue after a failed add. The panel is remounted so it lands
+   * on the method list, and it is no longer "opened from the selection sheet",
+   * so closing it returns to the form rather than the empty sheet this whole
+   * change exists to avoid.
+   */
+  const reopenSellPaymentCatalogue = () => {
+    addPanelOpenedFromSelectionRef.current = false
+    setAddPanelInstanceId((id) => id + 1)
+    setShowAddPaymentPanel(true)
+  }
+
+  /** Dismiss the alert only — AddPaymentMethodPanel keeps the entered values. */
+  const stayOnSellAddPaymentForm = () => {
+    hideAlert()
   }
 
   const returnToSellPaymentSelection = () => {
@@ -766,9 +820,13 @@ export default function PaymentDetailsForm({
         const created = result.data as UserPaymentMethod | undefined
         const createdId = getCreatedPaymentMethodId(created)
         // Reopen selection from the create response so the user sees it
-        // immediately; refresh the canonical list in the background.
+        // immediately; refresh the canonical list in the background. Merge into
+        // the live query result rather than the `userPaymentMethods` prop —
+        // seeding from the prop's stale snapshot would both shrink the reopened
+        // sheet and starve the max-3 / same-key e-wallet guard in
+        // appendSelectedPaymentMethodId below of the methods it reasons over.
         const nextUserPaymentMethods = mergeCreatedPaymentMethodIntoList(
-          userPaymentMethods,
+          liveUserPaymentMethods,
           created,
         )
         let nextSelection = [...tempSelectedPaymentMethods]
@@ -810,38 +868,34 @@ export default function PaymentDetailsForm({
       if (isPaymentMethodElevationCancelled(error)) return
       const errorCode = error?.errors?.[0]?.code
 
-      if (errorCode === "PaymentMethodDuplicate") {
-        showAlert(
-          createPaymentMethodDuplicateAlertConfig(t, {
-            onManage: returnToSellPaymentSelection,
-            onCancel: returnToSellPaymentSelection,
-          }),
-        )
-        return
-      }
+      const recoverableAlert = createPaymentMethodAddErrorAlertConfig(t, {
+        errorCode,
+        fieldValue: resolvePaymentMethodAccountFieldValue(fields, t),
+        destinations: {
+          stayOnForm: stayOnSellAddPaymentForm,
+          openCatalogue: reopenSellPaymentCatalogue,
+          openSelectionSheet: returnToSellPaymentSelection,
+          // A buy advert selects payment method *types* in
+          // FullPagePaymentSelection and has no saved-methods sheet.
+          canOpenSelectionSheet: initialData.type === "sell",
+          // The advert has no accepted methods yet, so every saved method is
+          // eligible — same inputs as the first-open resolver above.
+          resolveEntry: () =>
+            resolvePaymentSelectionEntry({
+              isLoading: isLoadingUserPaymentMethods,
+              hasNextPage: !!hasMoreUserPaymentMethods,
+              methods: liveUserPaymentMethods,
+              eligibleMethods: liveUserPaymentMethods,
+              currentSelection:
+                tempSelectedPaymentMethods.length > 0
+                  ? tempSelectedPaymentMethods
+                  : selectedPaymentMethodIds,
+            }),
+        },
+      })
 
-      if (errorCode === "PaymentMethodInvalidFieldValue") {
-        showAlert(
-          createPaymentMethodInvalidFieldValueAlertConfig(t, {
-            fieldValue: resolvePaymentMethodAccountFieldValue(fields, t),
-            onEdit: () => hideAlert(),
-            onCancel: returnToSellPaymentSelection,
-          }),
-        )
-        return
-      }
-
-      if (errorCode === "PaymentMethodNotFound") {
-        showAlert({
-          title: t("paymentMethod.notFound"),
-          description: t("paymentMethod.notFoundDescription"),
-          confirmText: t("paymentMethod.addPaymentMethod"),
-          cancelText: t("common.cancel"),
-          type: "warning",
-          onConfirm: returnToSellPaymentSelection,
-          onCancel: returnToSellPaymentSelection,
-          onClose: returnToSellPaymentSelection,
-        })
+      if (recoverableAlert) {
+        showAlert(recoverableAlert)
         return
       }
 
@@ -1032,17 +1086,26 @@ export default function PaymentDetailsForm({
                   className="!h-12 !w-full !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-3 !font-normal focus:!ring-1 focus:!ring-black hover:!bg-white [&>span]:!w-full"
                   onClick={() => handleShowPaymentSelection()}
                   type="button"
+                  data-testid="ad-form-btn-select-payment"
+                  disabled={isSellPaymentSelectionLoading}
+                  aria-busy={isSellPaymentSelectionLoading}
                 >
-                  <span className="flex w-full flex-row items-center justify-between">
-                    <span
-                      className={`truncate text-start text-sm font-normal ${
-                        selectedPaymentMethodIds.length > 0 ? "text-slate-1200" : "text-neutral-400"
-                      }`}
-                    >
-                      {getSelectedPaymentMethodsText()}
+                  {isSellPaymentSelectionLoading ? (
+                    <span className="flex w-full items-center justify-center">
+                      <Spinner size="xs" />
                     </span>
-                    <StandaloneChevronDownRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />
-                  </span>
+                  ) : (
+                    <span className="flex w-full flex-row items-center justify-between">
+                      <span
+                        className={`truncate text-start text-sm font-normal ${
+                          selectedPaymentMethodIds.length > 0 ? "text-slate-1200" : "text-neutral-400"
+                        }`}
+                      >
+                        {getSelectedPaymentMethodsText()}
+                      </span>
+                      <StandaloneChevronDownRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />
+                    </span>
+                  )}
                 </Button>
               </div>
 
@@ -1089,6 +1152,7 @@ export default function PaymentDetailsForm({
 
       {showAddPaymentPanel && (
         <AddPaymentMethodPanel
+          key={addPanelInstanceId}
           onAdd={handleAddPaymentMethod}
           isLoading={isAddingPaymentMethod}
           onClose={() => {

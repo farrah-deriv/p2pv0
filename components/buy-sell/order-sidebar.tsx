@@ -42,8 +42,7 @@ import { useTrackers } from "@/analytics/useTrackers"
 import { mapOrderError } from "@/lib/orders/order-error-mapper"
 import { createOrderErrorDispatcher } from "@/lib/orders/order-error-dispatcher"
 import { OrderErrorAction } from "@/lib/orders/order-error-actions"
-import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
-import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
+import { createPaymentMethodAddErrorAlertConfig } from "@/lib/payment-methods/create-payment-method-add-error-alert-config"
 import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
 import {
   appendSelectedPaymentMethodId,
@@ -54,7 +53,9 @@ import {
   isUserPaymentMethodSelectionDisabled,
   mergeCreatedPaymentMethodIntoList,
   normalizePaymentMethodId,
+  resolvePaymentSelectionEntry,
   resolveSelectedUserPaymentMethodIds,
+  type PaymentSelectionEntry,
 } from "@/lib/payment-methods/payment-method-selection-utils"
 import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
@@ -80,6 +81,9 @@ interface SellerPaymentMethod {
   type: string
   method: string
 }
+
+/** Safety net for the picker's page drain — 50 methods a page, so ~1000 rows. */
+const MAX_PAYMENT_ENTRY_PAGE_DRAINS = 20
 
 const areStringArraysEqual = (first: string[] = [], second: string[] = []) => {
   if (first.length !== second.length) return false
@@ -384,6 +388,9 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
   const { toast } = useToast()
   const [showAddPaymentPanel, setShowAddPaymentPanel] = useState(false)
   const [selectedPaymentMethodType, setSelectedPaymentMethodType] = useState<string | undefined>()
+  // Bumped to remount AddPaymentMethodPanel so it reopens at its catalogue
+  // (method list) step instead of the details form the user just failed on.
+  const [addPanelInstanceId, setAddPanelInstanceId] = useState(0)
   const {
     joinExchangeRatesChannel,
     leaveExchangeRatesChannel,
@@ -404,13 +411,57 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
 
   // Use React Query hooks
   const addPaymentMethod = useAddPaymentMethod()
-  const { data: paymentMethodsResponse } = useUserPaymentMethods(isOpen)
+  const {
+    data: paymentMethodsResponse,
+    isPending: isLoadingPaymentMethods,
+    hasNextPage: hasMorePaymentMethods,
+    fetchNextPage: fetchMorePaymentMethods,
+    isFetchingNextPage: isFetchingMorePaymentMethods,
+  } = useUserPaymentMethods(isOpen)
   const queryClient = useQueryClient()
+  // True while the picker entry point is deciding between the selection sheet
+  // and the add-payment catalogue — see the resolver effect below.
+  const [isResolvingPaymentEntry, setIsResolvingPaymentEntry] = useState(false)
+  const paymentEntryPagesDrainedRef = useRef(0)
 
   const clearSelectedPaymentMethods = () => {
     setSelectedPaymentMethods([])
     setTempSelectedPaymentMethods([])
   }
+
+  // Raw saved list across every page loaded so far — pagination is driven off it.
+  const allPaymentMethods = useMemo(
+    () => flattenUserPaymentMethodsPages(paymentMethodsResponse),
+    [paymentMethodsResponse],
+  )
+
+  // Filter and transform user payment methods based on ad's accepted methods
+  const filteredPaymentMethods = useMemo(() => {
+    if (allPaymentMethods.length === 0 || !localAd?.payment_methods) return []
+
+    return filterPaymentMethodsForAdvert(allPaymentMethods, localAd.payment_methods)
+  }, [allPaymentMethods, localAd?.payment_methods])
+
+  // Which sheet the picker should open. The advert accepts only a subset of
+  // types, so "empty" here means no *compatible* saved method — a user with
+  // saved methods that don't match the advert still counts as empty.
+  const resolvePaymentEntry = useCallback(
+    () =>
+      resolvePaymentSelectionEntry({
+        isLoading: isLoadingPaymentMethods,
+        hasNextPage: !!hasMorePaymentMethods,
+        methods: allPaymentMethods,
+        eligibleMethods: filteredPaymentMethods,
+        currentSelection: tempSelectedPaymentMethods,
+      }),
+    [
+      allPaymentMethods,
+      filteredPaymentMethods,
+      hasMorePaymentMethods,
+      isLoadingPaymentMethods,
+      tempSelectedPaymentMethods,
+    ],
+  )
 
   // Sync local ad copy with prop — keeps localAd current when parent updates the ad
   useEffect(() => {
@@ -584,7 +635,54 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
   )
 
   const handleShowPaymentSelection = () => {
-    openPaymentSelection()
+    // `orderType === "buy"` is a BUY advert, so the current user is the seller
+    // and the sheet title is "Sell USD" (see `title` below). Only that side
+    // picks from its own saved methods, so only it can hit the empty sheet and
+    // needs the entry resolver.
+    //
+    // The arm below is unreachable today: the only caller is the button
+    // rendered under `{isBuy && …}`. It is kept deliberately as the buyer-side
+    // guard — if a payment button is ever wired on that path it must keep
+    // opening the plain sheet rather than falling through `resolvePaymentEntry`,
+    // which filters against the advert's accepted methods and could jump
+    // straight to the catalogue (the behaviour #1387 forbids on the buyer side).
+    if (orderType !== "buy") {
+      openPaymentSelection()
+      return
+    }
+
+    const entry = resolvePaymentEntry()
+
+    // Resolve synchronously when the answer is already known, so the common
+    // path opens the sheet without flashing the loader for a frame.
+    if (entry === "selection") {
+      openPaymentSelection()
+      return
+    }
+    if (entry === "catalogue") {
+      setShowAddPaymentPanel(true)
+      return
+    }
+
+    // Page 1 is still in flight, or a compatible method may sit on a later
+    // page — hand off to the effect below, which drains and then decides.
+    paymentEntryPagesDrainedRef.current = 0
+    setIsResolvingPaymentEntry(true)
+  }
+
+  /**
+   * Reopen the catalogue after a failed add. Remounting the panel drops it back
+   * to the method list rather than the details form that just failed.
+   */
+  const reopenPaymentCatalogue = () => {
+    setSelectedPaymentMethodType(undefined)
+    setAddPanelInstanceId((id) => id + 1)
+    setShowAddPaymentPanel(true)
+  }
+
+  /** Dismiss the alert only — AddPaymentMethodPanel keeps the entered values. */
+  const stayOnAddPaymentForm = () => {
+    hideAlert()
   }
 
   const returnToPaymentSelection = () => {
@@ -595,6 +693,20 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
     // immediately closing the newly opened selector.
     requestAnimationFrame(() => openPaymentSelection())
   }
+
+  /**
+   * Same split as handleShowPaymentSelection. `orderType === "buy"` is a BUY
+   * advert, i.e. the current user is the seller ("Sell USD"): that side picks
+   * from its own saved methods and can therefore hit the empty sheet.
+   *
+   * The `"selection"` arm is unreachable today for the same reason as the guard
+   * in handleShowPaymentSelection — the only entry point is rendered under
+   * `{isBuy && …}`. It is retained deliberately as the buyer-side guard: on the
+   * buyer side the sheet also lists the seller's methods, so it is never empty
+   * and must keep opening plainly instead of consulting the entry resolver.
+   */
+  const resolveAddErrorEntry = (): PaymentSelectionEntry =>
+    orderType === "buy" ? resolvePaymentEntry() : "selection"
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAmount(e.target.value)
@@ -757,6 +869,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
       setAmount(null)
       setValidationError(null)
       setTempSelectedPaymentMethods([])
+      setIsResolvingPaymentEntry(false)
       setShowRateChangeConfirmation(false)
       setLockedConfirmationRate(null)
       setPendingRateUpdate(null)
@@ -819,38 +932,19 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
       if (isPaymentMethodElevationCancelled(error)) return
       const errorCode = error?.errors?.[0]?.code
 
-      if (errorCode === "PaymentMethodDuplicate") {
-        showAlert(
-          createPaymentMethodDuplicateAlertConfig(t, {
-            onManage: returnToPaymentSelection,
-            onCancel: returnToPaymentSelection,
-          }),
-        )
-        return
-      }
+      const recoverableAlert = createPaymentMethodAddErrorAlertConfig(t, {
+        errorCode,
+        fieldValue: resolvePaymentMethodAccountFieldValue(fields, t),
+        destinations: {
+          stayOnForm: stayOnAddPaymentForm,
+          openCatalogue: reopenPaymentCatalogue,
+          openSelectionSheet: returnToPaymentSelection,
+          resolveEntry: resolveAddErrorEntry,
+        },
+      })
 
-      if (error.errors?.[0]?.code === "PaymentMethodInvalidFieldValue") {
-        showAlert(
-          createPaymentMethodInvalidFieldValueAlertConfig(t, {
-            fieldValue: resolvePaymentMethodAccountFieldValue(fields, t),
-            onEdit: () => hideAlert(),
-            onCancel: returnToPaymentSelection,
-          }),
-        )
-        return
-      }
-
-      if (errorCode === "PaymentMethodNotFound") {
-        showAlert({
-          title: t("paymentMethod.notFound"),
-          description: t("paymentMethod.notFoundDescription"),
-          confirmText: t("paymentMethod.addPaymentMethod"),
-          cancelText: t("common.cancel"),
-          type: "warning",
-          onConfirm: returnToPaymentSelection,
-          onCancel: returnToPaymentSelection,
-          onClose: returnToPaymentSelection,
-        })
+      if (recoverableAlert) {
+        showAlert(recoverableAlert)
         return
       }
 
@@ -880,14 +974,6 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
 
   const minLimit = localAd?.minimum_order_amount || "0.00"
   const maxLimit = localAd?.actual_maximum_order_amount || "0.00"
-
-  // Filter and transform user payment methods based on ad's accepted methods
-  const filteredPaymentMethods = useMemo(() => {
-    const allMethods = flattenUserPaymentMethodsPages(paymentMethodsResponse)
-    if (allMethods.length === 0 || !localAd?.payment_methods) return []
-
-    return filterPaymentMethodsForAdvert(allMethods, localAd.payment_methods)
-  }, [paymentMethodsResponse, localAd?.payment_methods])
 
   // Set user payment methods and seller payment methods.
   // Always sync even when empty — clears stale choices when advert payment methods are removed.
@@ -919,6 +1005,49 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
       return areStringArraysEqual(current, next) ? current : next
     })
   }, [filteredPaymentMethods])
+
+  // Entry-point guard for the picker: never open a selection sheet whose only
+  // action is "add". Deciding "empty" can need later pages first, so this runs
+  // as an effect and drains pagination while the button shows its loader.
+  useEffect(() => {
+    if (!isResolvingPaymentEntry) return
+
+    const entry = resolvePaymentEntry()
+
+    if (entry === "loading") {
+      if (isLoadingPaymentMethods || isFetchingMorePaymentMethods || !hasMorePaymentMethods) return
+
+      // Bound the drain so a failing page fetch degrades to the old behaviour
+      // instead of spinning forever.
+      if (paymentEntryPagesDrainedRef.current >= MAX_PAYMENT_ENTRY_PAGE_DRAINS) {
+        setIsResolvingPaymentEntry(false)
+        openPaymentSelection()
+        return
+      }
+
+      paymentEntryPagesDrainedRef.current += 1
+      void fetchMorePaymentMethods()
+      return
+    }
+
+    setIsResolvingPaymentEntry(false)
+
+    if (entry === "catalogue") {
+      // Straight to the catalogue, constrained to what this advert accepts.
+      setShowAddPaymentPanel(true)
+      return
+    }
+
+    openPaymentSelection()
+  }, [
+    fetchMorePaymentMethods,
+    hasMorePaymentMethods,
+    isFetchingMorePaymentMethods,
+    isLoadingPaymentMethods,
+    isResolvingPaymentEntry,
+    openPaymentSelection,
+    resolvePaymentEntry,
+  ])
 
   if (!isOpen && !isAnimating) return null
 
@@ -999,23 +1128,31 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
                       data-testid="order-sidebar-btn-select-payment"
                       className="!h-12 !w-full !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-3 !font-normal hover:!bg-neutral-50 focus:!ring-1 focus:!ring-black [&>span]:!w-full"
                       onClick={handleShowPaymentSelection}
+                      disabled={isResolvingPaymentEntry}
+                      aria-busy={isResolvingPaymentEntry}
                     >
-                      <span className="flex w-full flex-row items-center justify-between">
-                        <span className="flex min-w-0 flex-1 flex-col items-start gap-[1px]">
-                          {selectedPaymentMethods.length > 0 && (
-                            <span className="text-xs font-normal text-grayscale-600">
-                              {t("order.receivePaymentTo")}
-                            </span>
-                          )}
-                          <span
-                            data-testid="order-sidebar-text-payment-method"
-                            className="min-w-0 truncate text-sm font-normal text-grayscale-600"
-                          >
-                            {getSelectedPaymentMethodsText()}
-                          </span>
+                      {isResolvingPaymentEntry ? (
+                        <span className="flex w-full items-center justify-center">
+                          <Spinner size="xs" />
                         </span>
-                        <StandaloneChevronDownRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />
-                      </span>
+                      ) : (
+                        <span className="flex w-full flex-row items-center justify-between">
+                          <span className="flex min-w-0 flex-1 flex-col items-start gap-[1px]">
+                            {selectedPaymentMethods.length > 0 && (
+                              <span className="text-xs font-normal text-grayscale-600">
+                                {t("order.receivePaymentTo")}
+                              </span>
+                            )}
+                            <span
+                              data-testid="order-sidebar-text-payment-method"
+                              className="min-w-0 truncate text-sm font-normal text-grayscale-600"
+                            >
+                              {getSelectedPaymentMethodsText()}
+                            </span>
+                          </span>
+                          <StandaloneChevronDownRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />
+                        </span>
+                      )}
                     </Button>
                   </div>
                 )}
@@ -1113,6 +1250,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
 
       {showAddPaymentPanel && (
         <AddPaymentMethodPanel
+          key={addPanelInstanceId}
           onAdd={handleAddPaymentMethod}
           isLoading={addPaymentMethod.isPending}
           allowedPaymentMethods={localAd?.payment_methods}

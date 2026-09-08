@@ -34,6 +34,7 @@ import {
   useSettings,
   useUserPaymentMethods,
   usePaymentMethods,
+  type UserPaymentMethod,
 } from "@/hooks/use-api-queries"
 import type { Ad } from "@/types"
 import { useTrackers } from "@/analytics/useTrackers"
@@ -160,15 +161,6 @@ function isSameFormValue(current: unknown, incoming: unknown): boolean {
     }
   }
   return Object.is(current, incoming)
-}
-
-interface UserPaymentMethod {
-  id: string
-  type: string
-  display_name: string
-  fields: Record<string, unknown>
-  is_enabled: number
-  method: string
 }
 
 interface AvailablePaymentMethod {
