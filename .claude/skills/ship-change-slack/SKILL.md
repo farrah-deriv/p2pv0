@@ -58,9 +58,19 @@ them. If `resume_pr_number` is set, an open PR already owns this thread: continu
 Lexi may also stamp `CONTINUE PR: <N>` as the first line of `bug_text` — treat that the
 same as `resume_pr_number`. Do not invent that header yourself.
 
-**Attribution.** This repo has no Slack-ID-to-name mapping. Record the raw
-`reporter_slack_id` in the issue body (`Reported by slack_id=<id> via Slack`) and move on — a
-missing name never blocks a run.
+**Attribution.** `bug_text` begins with a `SLACK SOURCE` block whenever Lexi could resolve
+the reporter and the thread:
+
+```
+SLACK SOURCE
+Reported by: Jane Doe
+Slack thread: https://deriv-group.slack.com/archives/C01ABC2DEF/p1730900000123456
+```
+
+Use those two values as the attribution: a name, and a link a reader can follow. Do **not**
+write `slack_id=<id>` or a bare thread timestamp as the attribution — this repo can resolve
+neither, which is exactly why Lexi resolves them upstream and sends the block. If the block
+is absent, record the raw `reporter_slack_id` and move on: a missing name never blocks a run.
 
 **Branch naming is always `claude/<topic>`.** Issues are always **unassigned** — never
 `--assignee @me` (it resolves to the App/bot) and never guess a GitHub login.
@@ -115,7 +125,17 @@ For a newly created issue:
 - **Title:** derived from `bug_text`, human-readable, no conventional-commit prefix.
 - **Body:** the hypothesis from `/tmp/investigation.txt`, the verbatim `bug_text`,
   `slack-thread: <ts>` on its own line (this stamp is what the duplicate guard matches on
-  re-runs), and `Reported by slack_id=<id> via Slack`.
+  re-runs — keep it verbatim even though the Source section links the same thread), and a
+  `## Source` section built from the `SLACK SOURCE` block (§0):
+
+  ```
+  ## Source
+  - **Reported by:** <name>
+  - **Slack thread:** <permalink>
+  ```
+
+  With no `SLACK SOURCE` block, name the raw `reporter_slack_id` there instead and omit the
+  thread link rather than inventing one.
 - **Label:** `bug`. Do not apply `icore-fix` — that label triggers the *other* pipeline
   (`issue-to-pr-trigger.yml`) and would start a second, competing run against the same issue.
 - **Assignee:** none.
@@ -175,6 +195,8 @@ Otherwise open one PR against `main`. The PR body must carry:
 - the hypothesis from `/tmp/investigation.txt` (so a reviewer can check the diagnosis, not
   just the diff)
 - `slack-thread: <ts>` on its own line
+- the same `## Source` section as the issue (§2), so a reviewer can see who reported it and
+  open the thread without going back to Slack
 - `Closes #<issue-number>` from §2
 - a `Playwright impact:` line (see §3)
 
