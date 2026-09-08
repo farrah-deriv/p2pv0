@@ -308,7 +308,6 @@ jobs:
 
           - [ ] Confirm release tag version on production:
             - [ ] Check `/app-info.json` returns the correct version
-            - [ ] Verify the release announcement was sent in the release Slack channel
           - [ ] Ensure no new console errors:
             - [ ] Navigate through Markets, My Ads, Orders, and Profile
             - [ ] Check the browser console for errors or uncaught exceptions
@@ -318,8 +317,6 @@ jobs:
             - [ ] **Orders:** active orders list, order details navigation
             - [ ] **Wallets & Transfers:** balance display, transfer modal
             - [ ] **Payment Methods:** payment methods list displays correctly
-          - [ ] Telemetry & monitoring:
-            - [ ] Check Datadog RUM for the release version tag and error rates
           - [ ] Post-release concluded — all checks above completed and the release is stable.
           CHECKLIST_EOF
             echo "Checklist source: this workflow's inline default"
