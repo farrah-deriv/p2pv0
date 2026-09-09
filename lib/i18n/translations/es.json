@@ -1439,7 +1439,6 @@
     "transactions": "Transacciones",
     "transfer": "Transferir",
     "transferAmount": "Monto de transferencia",
-    "transferErrorDuring": "No pudimos procesar tu transferencia. Por favor, inténtalo de nuevo.",
     "transferFee": "Comisión de transferencia",
     "transferRouteP2pToP2p": "Billetera P2P → Billetera P2P",
     "transferRouteP2pToWallet": "Billetera P2P → Cartera",

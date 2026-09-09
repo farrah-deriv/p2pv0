@@ -1429,7 +1429,6 @@
     "transactions": "Miamala",
     "transfer": "Uhamisho",
     "transferAmount": "Kiasi cha uhamisho",
-    "transferErrorDuring": "Hatukuweza kuchakata uhamisho wako. Tafadhali jaribu tena.",
     "transferFee": "Ada ya uhamisho",
     "transferRouteP2pToP2p": "Pochi ya P2P → Pochi ya P2P",
     "transferRouteP2pToWallet": "Pochi ya P2P → Pochi",

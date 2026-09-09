@@ -9,6 +9,31 @@ import {
 } from "@/lib/wallet-transactions-pagination"
 import { parseArrayWithItemIsolation, parseWithSchema, reportedNumber, reportedString } from "@/lib/api/schema-coercion"
 import { schemaReporter } from "@/lib/api/schema-reporter"
+import type { WalletTransferApiError } from "@/lib/wallet-transfer"
+
+/** Failure envelope returned by walletTransfer / walletExchangeTransfer. */
+export interface WalletTransferErrorResult {
+  errors: WalletTransferApiError[]
+}
+
+/** Success body from a completed transfer (Core returns the transfer under `data`). */
+export interface WalletTransferSuccessResult {
+  data?: Record<string, unknown> & { errors?: WalletTransferApiError[] }
+  [key: string]: unknown
+}
+
+/**
+ * Discriminated on the presence of a top-level `errors` array. Use
+ * isWalletTransferError() to narrow.
+ */
+export type WalletTransferResult = WalletTransferErrorResult | WalletTransferSuccessResult
+
+/** Narrows a transfer result to the failure envelope. */
+export function isWalletTransferError(
+  result: WalletTransferResult | null,
+): result is WalletTransferErrorResult {
+  return !!result && Array.isArray((result as WalletTransferErrorResult).errors)
+}
 
 export type { WalletTransactionsPageResult } from "@/lib/wallet-transactions-pagination"
 export { WALLET_TRANSACTIONS_PAGE_SIZE } from "@/lib/wallet-transactions-pagination"
@@ -316,13 +341,49 @@ export async function validateTransfer(
   return data
 }
 
+/**
+ * Normalise a failed transfer response into { errors: [...] } so the caller can
+ * surface the backend's structured rejection reason and CTA via
+ * getWalletTransferRejectionInfo. Handles the various shapes Core returns
+ * (bare array, { errors }, { data: { errors } }, single structured error).
+ *
+ * No message is attached to the transport-level fallback on purpose:
+ * "transfer_failed" is not a recognised rejection code, so the caller falls
+ * back to the WITHDRAWAL_NOT_ALLOWED copy/CTA rather than a raw status string.
+ */
+async function normaliseTransferFailure(response: Response): Promise<WalletTransferErrorResult> {
+  try {
+    const errorBody = await response.json()
+    if (Array.isArray(errorBody) && errorBody.length > 0) {
+      return { errors: errorBody }
+    }
+    if (errorBody?.errors && Array.isArray(errorBody.errors) && errorBody.errors.length > 0) {
+      return { errors: errorBody.errors }
+    }
+    if (
+      errorBody?.data?.errors &&
+      Array.isArray(errorBody.data.errors) &&
+      errorBody.data.errors.length > 0
+    ) {
+      return { errors: errorBody.data.errors }
+    }
+    // Single structured error object (has a code and/or context) — wrap it.
+    if (errorBody && (errorBody.code || errorBody.context || errorBody.message)) {
+      return { errors: [errorBody] }
+    }
+  } catch {
+    // JSON parse failed — fall through to a generic transport-level error.
+  }
+  return { errors: [{ code: "transfer_failed" }] }
+}
+
 export async function walletTransfer(params: {
   amount: string
   currency: string
   destination_wallet_id: string
   request_id: string
   source_wallet_id: string
-}): Promise<any> {
+}): Promise<WalletTransferResult> {
   const url = `${getCoreUrl()}/v1/wallets/transfers`
   const headers = getAuthHeader()
 
@@ -337,38 +398,10 @@ export async function walletTransfer(params: {
   })
 
   if (!response.ok) {
-    try {
-      const errorBody = await response.json()
-      // Normalise the various failure body shapes into { errors: [...] } so the
-      // caller can surface the backend's structured rejection reason and CTA
-      // via getWalletTransferRejectionInfo.
-      if (Array.isArray(errorBody) && errorBody.length > 0) {
-        return { errors: errorBody }
-      }
-      if (errorBody?.errors && Array.isArray(errorBody.errors) && errorBody.errors.length > 0) {
-        return { errors: errorBody.errors }
-      }
-      if (
-        errorBody?.data?.errors &&
-        Array.isArray(errorBody.data.errors) &&
-        errorBody.data.errors.length > 0
-      ) {
-        return { errors: errorBody.data.errors }
-      }
-      // Single structured error object (has a code and/or context) — wrap it.
-      if (errorBody && (errorBody.code || errorBody.context || errorBody.message)) {
-        return { errors: [errorBody] }
-      }
-    } catch {
-      // JSON parse failed — fall through to a generic transport-level error.
-    }
-    // No message here on purpose: "transfer_failed" is not a recognised
-    // rejection code, so the caller falls back to the translated generic
-    // message (wallet.transferErrorDuring) rather than a raw status string.
-    return { errors: [{ code: "transfer_failed" }] }
+    return await normaliseTransferFailure(response)
   }
 
-  return await response.json()
+  return (await response.json()) as WalletTransferSuccessResult
 }
 
 export async function fetchBalance(selectedCurrency: string): Promise<number> {
@@ -474,27 +507,25 @@ export async function walletExchangeTransfer(params: {
   destination_currency: string
   rate_token: string
   exchange_rate: string
-}): Promise<any> {
-  try {
-    const url = `${getCoreUrl()}/v1/wallets/transfers/exchange`
-    const headers = getAuthHeader()
+}): Promise<WalletTransferResult> {
+  const url = `${getCoreUrl()}/v1/wallets/transfers/exchange`
+  const headers = getAuthHeader()
 
-    const response = await p2pFetch(url, {
-      method: "POST",
-      headers: {
-        ...headers,
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(params),
-    })
+  const response = await p2pFetch(url, {
+    method: "POST",
+    headers: {
+      ...headers,
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(params),
+  })
 
-    const data = await response.json()
-    return data
-  } catch (error) {
-    console.error("Error in exchange transfer:", error)
-    return null
+  if (!response.ok) {
+    return await normaliseTransferFailure(response)
   }
+
+  return (await response.json()) as WalletTransferSuccessResult
 }
 
 export async function fetchTransactionByReferenceId(referenceId: string): Promise<any> {

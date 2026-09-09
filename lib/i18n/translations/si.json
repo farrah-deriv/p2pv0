@@ -1421,7 +1421,6 @@
     "transactions": "ගනුදෙනු",
     "transfer": "මාරු කරන්න",
     "transferAmount": "මාරු මුදල",
-    "transferErrorDuring": "අපට ඔබේ මාරු කිරීම ක්‍රියාවට නැංවීමට නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.",
     "transferFee": "මාරු ගාස්තුව",
     "transferRouteP2pToP2p": "P2P පසුම්බිය → P2P පසුම්බිය",
     "transferRouteP2pToWallet": "P2P පසුම්බිය → පසුම්බිය",

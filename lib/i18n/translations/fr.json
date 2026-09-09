@@ -1437,7 +1437,6 @@
     "transactions": "Opérations",
     "transfer": "Transfert",
     "transferAmount": "Montant du transfert",
-    "transferErrorDuring": "Nous n'avons pas pu traiter votre transfert. Veuillez réessayer.",
     "transferFee": "Frais de transfert",
     "transferRouteP2pToP2p": "Portefeuille P2P → Portefeuille P2P",
     "transferRouteP2pToWallet": "Portefeuille P2P → Portefeuille",

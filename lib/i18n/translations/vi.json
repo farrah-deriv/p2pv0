@@ -1465,7 +1465,6 @@
     "transactions": "Giao dịch",
     "transfer": "Chuyển khoản",
     "transferAmount": "Số tiền chuyển",
-    "transferErrorDuring": "Chúng tôi không thể xử lý giao dịch chuyển khoản của bạn. Vui lòng thử lại.",
     "transferFee": "Phí chuyển khoản",
     "transferRouteP2pToP2p": "Ví P2P → Ví P2P",
     "transferRouteP2pToWallet": "Ví P2P → Ví",

@@ -1421,7 +1421,6 @@
     "transactions": "交易",
     "transfer": "转乘",
     "transferAmount": "转账金额",
-    "transferErrorDuring": "我们无法处理您的转帐。请再试一次。",
     "transferFee": "转让费",
     "transferRouteP2pToP2p": "P2P 钱包 → P2P 钱包",
     "transferRouteP2pToWallet": "P2P 钱包 → 钱包",

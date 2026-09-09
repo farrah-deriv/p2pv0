@@ -15,6 +15,7 @@ import {
   fetchExchangeRate,
   walletExchangeTransfer,
   validateTransfer,
+  isWalletTransferError,
   type TransferValidateDetails,
 } from "@/services/api/api-wallets"
 import * as WalletsAPI from "@/services/api/api-wallets"
@@ -659,10 +660,13 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     overrideErrorCode?: string,
   ) => {
     const rejectionInfo = errorObj ? getWalletTransferRejectionInfo(errorObj) : null
-    const errorMessage = overrideMessage || rejectionInfo?.message || errorObj?.message || t("wallet.transferErrorDuring")
+    const errorMessage = overrideMessage || rejectionInfo?.message || errorObj?.message || null
     setTransferErrorMessage(errorMessage)
-    setTransferRejectionCta(rejectionInfo?.cta ?? null)
-    setTransferRejectionCode(rejectionInfo?.code ?? null)
+    // When the failure has no recognised rejection code, fall back to the
+    // WITHDRAWAL_NOT_ALLOWED copy/CTA (contact support) instead of a generic
+    // message, so users always get an actionable reason.
+    setTransferRejectionCta(rejectionInfo?.cta ?? "contact_us")
+    setTransferRejectionCode(rejectionInfo?.code ?? "WITHDRAWAL_NOT_ALLOWED")
     setTransferRejectionAmounts(rejectionInfo?.amounts ?? {})
     setShowDesktopConfirmPopup(false)
     setShowMobileConfirmSheet(false)
@@ -737,9 +741,9 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
         result = await walletTransfer(transferParams)
       }
 
-      if (result?.errors?.length > 0) {
-        handleTransferFailure(result.errors[0])
-      } else if (result?.data?.errors?.length > 0) {
+      if (isWalletTransferError(result)) {
+        handleTransferFailure(result.errors[0] ?? null)
+      } else if (result?.data?.errors?.length) {
         handleTransferFailure(result.data.errors[0])
       } else if (result?.data) {
         handleTransferSuccess(result.data)
@@ -2250,13 +2254,9 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     const amounts = Object.fromEntries(
       Object.entries(transferRejectionAmounts).filter(([, v]) => v !== undefined)
     ) as Record<string, string>
-    const codeSlug = transferRejectionCode ? transferRejectionCode.toLowerCase() : null
-    const title = codeSlug
-      ? t(`wallet.transfer_wr_err_${codeSlug}_title`)
-      : t("wallet.transferUnsuccessful")
-    const body = codeSlug
-      ? t(`wallet.transfer_wr_err_${codeSlug}_body`, amounts)
-      : transferErrorMessage || t("wallet.transferUnsuccessfulMessage")
+    const codeSlug = (transferRejectionCode ?? "WITHDRAWAL_NOT_ALLOWED").toLowerCase()
+    const title = t(`wallet.transfer_wr_err_${codeSlug}_title`)
+    const body = t(`wallet.transfer_wr_err_${codeSlug}_body`, amounts)
 
     return (
       <div

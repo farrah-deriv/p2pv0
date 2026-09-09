@@ -1433,7 +1433,6 @@
     "transactions": "Transakcje",
     "transfer": "Przelew",
     "transferAmount": "Kwota transferu",
-    "transferErrorDuring": "Nie mogliśmy przetworzyć Twojego transferu. Spróbuj ponownie.",
     "transferFee": "Opłata za transfer",
     "transferRouteP2pToP2p": "Portfel P2P → Portfel P2P",
     "transferRouteP2pToWallet": "Portfel P2P → Portfel",

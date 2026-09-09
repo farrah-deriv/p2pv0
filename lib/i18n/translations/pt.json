@@ -1443,7 +1443,6 @@
     "transactions": "Transações",
     "transfer": "Transferir",
     "transferAmount": "Valor da transferência",
-    "transferErrorDuring": "Não foi possível processar sua transferência. Por favor, tente novamente.",
     "transferFee": "Taxa de transferência",
     "transferRouteP2pToP2p": "Carteira P2P → Carteira P2P",
     "transferRouteP2pToWallet": "Carteira P2P → Carteira",

@@ -78,7 +78,6 @@ EXPLICIT_MOBILE: dict[str, str] = {
     "wallet.marketplaceTitle": "depositWithdrawPage2_marketplace",
     "wallet.marketplaceDescription": "depositWithdrawPage2_tradeUsdDirectly",
     "wallet.transferUnexpectedError": "transferUnsuccessful_body",
-    "wallet.transferErrorDuring": "transferUnsuccessful_body",
     "wallet.depositToP2p": "walletPage_deposit",
     "wallet.withdrawFromP2p": "walletPage_withdraw",
     "wallet.directDepositTitle": "walletTransactions_deposit",
@@ -212,7 +211,6 @@ A11Y: dict[str, dict[str, str]] = {
         "wallet.withdrawFromP2p": "Auszahlung von P2P",
         "wallet.directDepositTitle": "Direkte Einzahlung",
         "wallet.directWithdrawalTitle": "Direkte Auszahlung",
-        "wallet.transferErrorDuring": "Bei der Übertragung ist ein Fehler aufgetreten.",
     },
 }
 
