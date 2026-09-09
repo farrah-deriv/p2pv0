@@ -11,10 +11,10 @@ overrides:
   diff@<8.0.3: '>=8.0.3'
   esbuild@<0.28.1: 0.28.1
   glob@>=10.2.0 <10.5.0: '>=10.5.0'
-  js-yaml@>=4.0.0 <4.3.1: 4.3.1
+  js-yaml@>=4.0.0 <4.3.2: '>=4.3.2'
   lodash: 4.18.1
   seroval@<1.4.1: '>=1.4.1'
-  svgo@>=3.0.0 <3.3.4: '>=3.3.4 <4'
+  svgo@>=3.0.0 <3.3.5: '>=3.3.5 <4'
   seroval@<=1.4.0: '>=1.4.1'
   tar@<=7.5.20: '>=7.5.21'
   undici@>=4.5.0 <5.28.5: '>=5.28.5'
@@ -60,6 +60,7 @@ overrides:
   sharp@<0.35.4: '>=0.35.4'
   playwright@<1.61.1: '>=1.61.1'
   nodemailer@^8.0.4: '>=9.0.1'
+  nodemailer@<9.1.1: '>=9.1.1'
   sharp: 0.35.4
   brace-expansion@<=5.0.8: '>=5.0.9'
   dompurify@<=3.4.12: '>=3.4.13'
@@ -352,8 +353,8 @@ importers:
         specifier: 0.35.4
         version: 0.35.4(@types/node@22.0.0)
       svgo:
-        specifier: '>=3.3.4 <4'
-        version: 3.3.4
+        specifier: '>=3.3.5 <4'
+        version: 3.3.5
       tailwindcss:
         specifier: ^3.4.17
         version: 3.4.17(ts-node@10.9.1(@types/node@22.0.0)(typescript@5.0.2))
@@ -5213,10 +5214,6 @@ packages:
     resolution: {integrity: sha512-6EuL879VkRA+1Cz578mKMiKvjPNEuk6+r1JaFzoSWejZmtf7xWbIyw1e3KkxlkzTIt9Taw6JBhEppG7utc1P+w==}
     hasBin: true
 
-  js-yaml@4.3.1:
-    resolution: {integrity: sha512-CY6crGq313MX8GkwvB7tzgp99vjQxY1++5y10/BKN/GUfHqWaOGQMNZkBvqSzsZKWk/ijwHlWzzkLulsGHhjWQ==}
-    hasBin: true
-
   js-yaml@4.3.2:
     resolution: {integrity: sha512-SFNOvSJ+Dgf/9An904Yx+CgSlIPCkIpao4qo51lpee25TIRejdH3rhR4EZMGoNx3/TP3O+wzWuiTFl4sqbltzA==}
     hasBin: true
@@ -5540,9 +5537,9 @@ packages:
     resolution: {integrity: sha512-YHs7BmmcsdAI5Ozuf8JZo6PT0mv2GIWC9vMfvUC3dp65M8hn7Ux8CPL+2oBI7juNuj9d0ndhTcznq2ODBps9cQ==}
     engines: {node: '>=18'}
 
-  nodemailer@9.0.3:
-    resolution: {integrity: sha512-n+YP+NKwR5zRWa60k3GiQ6Q3B4KXCoAw40dAKeCtYn020iNN74aWK2liXIC3ZEATeGql7we3tE3t8QwhY0eskw==}
-    engines: {node: '>=6.0.0'}
+  nodemailer@10.0.1:
+    resolution: {integrity: sha512-c+gU9cL9HLDax3vjxL88kW+6NOgdtEUWaZ+AUtxdJR6LLhf0kGdCLExof7yiKW7zdO9EfXCSIgmhGyFmUM0mYQ==}
+    engines: {node: '>=20.0.0'}
 
   nopt@8.1.0:
     resolution: {integrity: sha512-ieGu42u/Qsa4TFktmaKEwM6MQH0pOWnaB3htzh0JRtx84+Mebc0cbZYN5bC+6WTZ4+77xrL9Pn5m7CV6VIkV7A==}
@@ -6373,8 +6370,8 @@ packages:
   svg-parser@2.0.4:
     resolution: {integrity: sha512-e4hG1hRwoOdRb37cIMSgzNsxyzKfayW6VOflrwvR+/bzrkyxY/31WkbgnQpgtrNp1SdpJvpUAGTa/ZoiPNDuRQ==}
 
-  svgo@3.3.4:
-    resolution: {integrity: sha512-GsNRis4e8jxn2Y9ENz/8lbJ93CstG8svtMnuRaHbiF2LTJ5tK0/q3t/URPq9Zc7zVWBJnNnJMIp6bevK7bSmNg==}
+  svgo@3.3.5:
+    resolution: {integrity: sha512-8SQMzdrvWaD8deUmrnYB+ASyxBVgWUOilg+A75nE/76WdLpj6LopCwiAVvkzkcqy/9b7t2Mg7faFLjg0ZRcZ3w==}
     engines: {node: '>=14.0.0'}
     hasBin: true
 
@@ -7886,7 +7883,7 @@ snapshots:
       commander: 11.1.0
       cookie: 0.7.0
       esbuild: 0.28.1
-      js-yaml: 4.3.1
+      js-yaml: 4.3.2
       miniflare: 3.20250718.3
       package-manager-manager: 0.2.0
       pcre-to-regexp: 1.1.0
@@ -9811,7 +9808,7 @@ snapshots:
       '@svgr/core': 8.1.0(typescript@5.0.2)
       cosmiconfig: 8.3.6(typescript@5.0.2)
       deepmerge: 4.3.1
-      svgo: 3.3.4
+      svgo: 3.3.5
     transitivePeerDependencies:
       - typescript
 
@@ -10959,7 +10956,7 @@ snapshots:
   cosmiconfig@8.3.6(typescript@5.0.2):
     dependencies:
       import-fresh: 3.3.1
-      js-yaml: 4.3.1
+      js-yaml: 4.3.2
       parse-json: 5.2.0
       path-type: 4.0.0
     optionalDependencies:
@@ -12404,10 +12401,6 @@ snapshots:
       argparse: 1.0.10
       esprima: 4.0.1
 
-  js-yaml@4.3.1:
-    dependencies:
-      argparse: 2.0.1
-
   js-yaml@4.3.2:
     dependencies:
       argparse: 2.0.1
@@ -12516,7 +12509,7 @@ snapshots:
   mailisk@2.4.0:
     dependencies:
       axios: 1.18.1
-      nodemailer: 9.0.3
+      nodemailer: 10.0.1
     transitivePeerDependencies:
       - debug
       - supports-color
@@ -12700,7 +12693,7 @@ snapshots:
 
   node-releases@2.0.54: {}
 
-  nodemailer@9.0.3: {}
+  nodemailer@10.0.1: {}
 
   nopt@8.1.0:
     dependencies:
@@ -12820,7 +12813,7 @@ snapshots:
 
   package-manager-manager@0.2.0:
     dependencies:
-      js-yaml: 4.3.1
+      js-yaml: 4.3.2
       shellac: 0.8.0
 
   parent-module@1.0.1:
@@ -13580,7 +13573,7 @@ snapshots:
 
   svg-parser@2.0.4: {}
 
-  svgo@3.3.4:
+  svgo@3.3.5:
     dependencies:
       commander: 7.2.0
       css-select: 5.2.2
