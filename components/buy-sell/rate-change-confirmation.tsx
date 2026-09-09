@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Drawer, DrawerContent, DrawerTitle, DrawerDescription } from "@/components/ui/drawer"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
+import { buildRateChangeCopyParams } from "@/lib/buy-sell/rate-change-copy"
 import { useTranslations } from "@/lib/i18n/use-translations"
 
 interface RateChangeConfirmationProps {
@@ -32,8 +33,7 @@ export default function RateChangeConfirmation({
   const isMobile = useIsMobile()
   const { t } = useTranslations()
 
-  const oldTotal = (Number.parseFloat(amount) * oldRate)
-  const newTotal = (Number.parseFloat(amount) * newRate)
+  const rateChangeCopy = buildRateChangeCopyParams({ amount, oldRate, newRate })
   const buySellLabel = isBuy ? "selling" : "buying"
 
   const content = (
@@ -47,9 +47,10 @@ export default function RateChangeConfirmation({
             action: buySellLabel,
             amount,
             accountCurrency,
-            total: newTotal?.toFixed(2) ?? "0",
+            total: rateChangeCopy.oldTotal,
             paymentCurrency,
-            newRate: newRate?.toFixed(6) ?? "0",
+            oldRate: rateChangeCopy.oldRate,
+            newRate: rateChangeCopy.newRate,
           })}
         </p>
         <p className="text-grayscale-100 text-base">

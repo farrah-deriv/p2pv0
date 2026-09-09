@@ -862,7 +862,7 @@
     "paymentTimeTooltip": "주문 생성 후 {minutes}분 내에 결제를 완료하세요.",
     "placeOrder": "주문 생성",
     "rateChangeContinue": "새 환율로 계속하시겠습니까?",
-    "rateChangeDetails": "{action} {amount} {accountCurrency}에 대해 {total} {paymentCurrency}를 진행 중이지만, 새 환율은 {newRate} {paymentCurrency}입니다.",
+    "rateChangeDetails": "{action} {amount} {accountCurrency}에 대해 {oldRate} {paymentCurrency} 환율로 {total} {paymentCurrency}를 진행 중이지만, 새 환율은 {newRate} {paymentCurrency}입니다.",
     "rateChangeIntro": "주문의 환율이 변경되었습니다.",
     "rateFixed": "고정",
     "rateFloating": "플로팅",

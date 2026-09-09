@@ -856,7 +856,7 @@
     "paymentTimeTooltip": "Hoàn tất thanh toán trong vòng {minutes} phút sau khi đặt hàng.",
     "placeOrder": "Đặt hàng",
     "rateChangeContinue": "Bạn có muốn tiếp tục với tỷ giá mới không?",
-    "rateChangeDetails": "Bạn đang {action} {amount} {accountCurrency} với {total} {paymentCurrency}, nhưng tỷ giá mới là {newRate} {paymentCurrency}.",
+    "rateChangeDetails": "Bạn đang {action} {amount} {accountCurrency} với {total} {paymentCurrency} theo tỷ giá {oldRate} {paymentCurrency}, nhưng tỷ giá mới là {newRate} {paymentCurrency}.",
     "rateChangeIntro": "Tỷ giá hối đoái cho lệnh của bạn đã thay đổi.",
     "rateFixed": "Đã sửa",
     "rateFloating": "Nổi",

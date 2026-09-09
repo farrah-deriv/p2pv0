@@ -840,7 +840,7 @@
     "paymentTimeTooltip": "Schließen Sie Ihre Zahlung innerhalb von {minutes} Minuten nach der Bestellung ab.",
     "placeOrder": "Bestellung aufgeben",
     "rateChangeContinue": "Möchtest du mit dem neuen Kurs fortfahren?",
-    "rateChangeDetails": "Du {action} {amount} {accountCurrency} für {total} {paymentCurrency}, aber der neue Kurs beträgt {newRate} {paymentCurrency}.",
+    "rateChangeDetails": "Du {action} {amount} {accountCurrency} für {total} {paymentCurrency} zu einem Kurs von {oldRate} {paymentCurrency}, aber der neue Kurs beträgt {newRate} {paymentCurrency}.",
     "rateChangeIntro": "Der Wechselkurs für deine Bestellung hat sich geändert.",
     "rateFixed": "Behoben",
     "rateFloating": "Schwebend",

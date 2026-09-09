@@ -813,7 +813,7 @@
     "paymentTimeTooltip": "ඇණවුම ලබා දීමෙන් පසු විනාඩි {minutes} ඇතුළත ඔබේ ගෙවීම සම්පූර්ණ කරන්න.",
     "placeOrder": "ඇණවුම් කරන්න",
     "rateChangeContinue": "ඔබ නව ගාස්තුව දිගටම කරගෙන යාමට කැමතිද?",
-    "rateChangeDetails": "ඔබ{action}{amount}{accountCurrency}සඳහා{total}{paymentCurrency}, නමුත් නව අනුපාතය වේ{newRate}{paymentCurrency}.",
+    "rateChangeDetails": "ඔබ{action}{amount}{accountCurrency}සඳහා{total}{paymentCurrency} {oldRate} {paymentCurrency} අනුපාතයට, නමුත් නව අනුපාතය වේ{newRate}{paymentCurrency}.",
     "rateChangeIntro": "ඔබගේ ඇණවුම සඳහා විනිමය අනුපාතය වෙනස් වී ඇත.",
     "rateFixed": "ස්ථාවර",
     "rateFloating": "පාවෙන",

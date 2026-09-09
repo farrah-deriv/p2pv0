@@ -821,7 +821,7 @@
     "paymentTimeTooltip": "Kamilisha malipo yako ndani ya dakika {minutes} baada ya kuweka amri.",
     "placeOrder": "Weka amri",
     "rateChangeContinue": "Je, ungependa kuendelea na kiwango kipya?",
-    "rateChangeDetails": "Unafanya {action} {amount} {accountCurrency} kwa {total} {paymentCurrency}, lakini kiwango kipya ni {newRate} {paymentCurrency}.",
+    "rateChangeDetails": "Unafanya {action} {amount} {accountCurrency} kwa {total} {paymentCurrency} kwa kiwango cha {oldRate} {paymentCurrency}, lakini kiwango kipya ni {newRate} {paymentCurrency}.",
     "rateChangeIntro": "Kiwango cha ubadilishaji kwa agizo lako kimebadilika.",
     "rateFixed": "Imerekebishwa",
     "rateFloating": "Inaelea",

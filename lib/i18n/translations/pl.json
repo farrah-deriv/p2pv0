@@ -825,7 +825,7 @@
     "paymentTimeTooltip": "Dokończ płatność w ciągu {minutes} minut po złożeniu zamówienia.",
     "placeOrder": "Złóż zamówienie",
     "rateChangeContinue": "Czy chcesz kontynuować z nowym kursem?",
-    "rateChangeDetails": "{action} {amount} {accountCurrency} za {total} {paymentCurrency}, ale nowy kurs wynosi {newRate} {paymentCurrency}.",
+    "rateChangeDetails": "{action} {amount} {accountCurrency} za {total} {paymentCurrency} po kursie {oldRate} {paymentCurrency}, ale nowy kurs wynosi {newRate} {paymentCurrency}.",
     "rateChangeIntro": "Kurs wymiany dla Twojego zamówienia zmienił się.",
     "rateFixed": "Naprawiono",
     "rateFloating": "Pływające",

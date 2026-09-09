@@ -813,7 +813,7 @@
     "paymentTimeTooltip": "下單後 {minutes} 分鐘內完成付款。",
     "placeOrder": "下訂單",
     "rateChangeContinue": "您想繼續使用新的費率嗎？",
-    "rateChangeDetails": "你是{action}{amount}{accountCurrency}為了{total}{paymentCurrency}，但新的比率是{newRate}{paymentCurrency}。",
+    "rateChangeDetails": "你是{action}{amount}{accountCurrency}按 {oldRate} {paymentCurrency} 的匯率為了{total}{paymentCurrency}，但新的比率是{newRate}{paymentCurrency}。",
     "rateChangeIntro": "您訂單的匯率已更改。",
     "rateFixed": "固定",
     "rateFloating": "浮動",

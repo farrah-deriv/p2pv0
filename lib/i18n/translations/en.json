@@ -294,7 +294,7 @@
     "v1DebitFailedTitle": "Payment failed",
     "v1DebitFailedMessage": "We couldn't process the payment for this order. Try again or choose another ad.",
     "rateChangeIntro": "The exchange rate for your order has changed.",
-    "rateChangeDetails": "You're {action} {amount} {accountCurrency} for {total} {paymentCurrency}, but the new rate is {newRate} {paymentCurrency}.",
+    "rateChangeDetails": "You're {action} {amount} {accountCurrency} for {total} {paymentCurrency} at a rate of {oldRate} {paymentCurrency}, but the new rate is {newRate} {paymentCurrency}.",
     "rateChangeContinue": "Would you like to continue with the new rate?",
     "adUpdatedDuringOrderMessage": "The ad details changed while you were placing your order. Review the new details to continue.",
     "adUpdatedTitle": "Ad updated",

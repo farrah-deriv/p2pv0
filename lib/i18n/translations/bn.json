@@ -822,7 +822,7 @@
     "paymentTimeTooltip": "অর্ডার দেওয়ার পরে {minutes} মিনিটের মধ্যে আপনার পেমেন্ট সম্পন্ন করুন।",
     "placeOrder": "অর্ডার দিন",
     "rateChangeContinue": "আপনি কি নতুন হারে চালিয়ে যেতে চান?",
-    "rateChangeDetails": "আপনি {action} করছেন {amount} {accountCurrency} {total} {paymentCurrency} এর জন্য, কিন্তু নতুন হার হল {newRate} {paymentCurrency}।",
+    "rateChangeDetails": "আপনি {action} করছেন {amount} {accountCurrency} {total} {paymentCurrency} এর জন্য {oldRate} {paymentCurrency} হারে, কিন্তু নতুন হার হল {newRate} {paymentCurrency}।",
     "rateChangeIntro": "আপনার অর্ডারের বিনিময় হার পরিবর্তিত হয়েছে।",
     "rateFixed": "স্থির",
     "rateFloating": "ভাসমান",

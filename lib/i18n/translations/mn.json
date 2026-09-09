@@ -813,7 +813,7 @@
     "paymentTimeTooltip": "Захиалга өгснөөс хойш {minutes} минутын дотор төлбөрөө хийж дуусгана уу.",
     "placeOrder": "Захиалга өгөх",
     "rateChangeContinue": "Та шинэ тарифаар үргэлжлүүлэхийг хүсч байна уу?",
-    "rateChangeDetails": "Чи{action}{amount}{accountCurrency}төлөө{total}{paymentCurrency}, гэхдээ шинэ ханш{newRate}{paymentCurrency}.",
+    "rateChangeDetails": "Чи{action}{amount}{accountCurrency}төлөө{total}{paymentCurrency} {oldRate} {paymentCurrency} ханшаар, гэхдээ шинэ ханш{newRate}{paymentCurrency}.",
     "rateChangeIntro": "Таны захиалгын ханш өөрчлөгдсөн байна.",
     "rateFixed": "Тогтмол",
     "rateFloating": "Хөвөгч",

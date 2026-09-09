@@ -813,7 +813,7 @@
     "paymentTimeTooltip": "ஆர்டர் செய்த பிறகு {minutes} நிமிடங்களுக்குள் உங்கள் கட்டணத்தை முடிக்கவும்.",
     "placeOrder": "ஆர்டர் வைக்கவும்",
     "rateChangeContinue": "புதிய கட்டணத்தைத் தொடர விரும்புகிறீர்களா?",
-    "rateChangeDetails": "நீங்கள்{action}{amount}{accountCurrency}க்கான{total}{paymentCurrency}, ஆனால் புதிய விகிதம்{newRate}{paymentCurrency}.",
+    "rateChangeDetails": "நீங்கள்{action}{amount}{accountCurrency}க்கான{total}{paymentCurrency} {oldRate} {paymentCurrency} விகிதத்தில், ஆனால் புதிய விகிதம்{newRate}{paymentCurrency}.",
     "rateChangeIntro": "உங்கள் ஆர்டருக்கான மாற்று விகிதம் மாறிவிட்டது.",
     "rateFixed": "சரி செய்யப்பட்டது",
     "rateFloating": "மிதக்கும்",

@@ -842,7 +842,7 @@
     "paymentTimeTooltip": "Завершите оплату в течение {minutes} минут после размещения заказа.",
     "placeOrder": "Разместить заказ",
     "rateChangeContinue": "Хотите продолжить с новым курсом?",
-    "rateChangeDetails": "Вы {action} {amount} {accountCurrency} за {total} {paymentCurrency}, но новый курс составляет {newRate} {paymentCurrency}.",
+    "rateChangeDetails": "Вы {action} {amount} {accountCurrency} за {total} {paymentCurrency} по курсу {oldRate} {paymentCurrency}, но новый курс составляет {newRate} {paymentCurrency}.",
     "rateChangeIntro": "Обменный курс для вашего заказа изменился.",
     "rateFixed": "Исправлено",
     "rateFloating": "Плавающий",

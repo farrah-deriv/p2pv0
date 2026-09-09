@@ -832,7 +832,7 @@
     "paymentTimeTooltip": "Complete seu pagamento dentro de {minutes} minutos após fazer o pedido.",
     "placeOrder": "Fazer pedido",
     "rateChangeContinue": "Gostaria de continuar com a nova taxa?",
-    "rateChangeDetails": "Você está {action} {amount} {accountCurrency} por {total} {paymentCurrency}, mas a nova taxa é {newRate} {paymentCurrency}.",
+    "rateChangeDetails": "Você está {action} {amount} {accountCurrency} por {total} {paymentCurrency} à taxa de {oldRate} {paymentCurrency}, mas a nova taxa é {newRate} {paymentCurrency}.",
     "rateChangeIntro": "A taxa de câmbio para o seu pedido mudou.",
     "rateFixed": "Corrigido",
     "rateFloating": "Flutuante",

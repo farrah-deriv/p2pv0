@@ -39,6 +39,7 @@ import { SelectedPaymentMethodsSection } from "@/components/payment-methods/sele
 import RateChangeConfirmation from "./rate-change-confirmation"
 import AdUpdatedConfirmation from "./ad-updated-confirmation"
 import { useTrackers } from "@/analytics/useTrackers"
+import { applyPendingAdvertUpdate } from "@/lib/buy-sell/apply-pending-advert-update"
 import { mapOrderError } from "@/lib/orders/order-error-mapper"
 import { createOrderErrorDispatcher } from "@/lib/orders/order-error-dispatcher"
 import { OrderErrorAction } from "@/lib/orders/order-error-actions"
@@ -750,16 +751,20 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
         clearSelectedPaymentMethods()
       }
 
-      setLocalAd({
-        ...localAd,
-        minimum_order_amount: pendingAdvertUpdate.minimum_order_amount,
-        actual_maximum_order_amount: pendingAdvertUpdate.actual_maximum_order_amount,
-        description: pendingAdvertUpdate.description,
-        payment_methods: pendingAdvertUpdate.payment_methods,
-        payment_method_names: pendingAdvertUpdate.payment_method_names,
-        order_expiry_period: pendingAdvertUpdate.order_expiry_period,
-        version: pendingAdvertUpdate.version,
-      })
+      // A combined seller save populates both pending states off one frame, and
+      // this sheet wins the race in handleSubmit — so the rate is applied here
+      // too. The amount effect recomputes the total and re-runs validation off
+      // the new effective_rate_display; the buyer's own amount is left alone.
+      setLocalAd(applyPendingAdvertUpdate({ localAd, pendingAdvertUpdate, pendingRateUpdate }))
+
+      if (pendingRateUpdate) {
+        // The buyer has now accepted this rate. Keep marketRate in step, or the
+        // float-slippage guard in handleSubmit raises a second "Rate updated"
+        // dialog for the change they just reviewed.
+        setMarketRate(pendingRateUpdate.effective_rate)
+        setPendingRateUpdate(null)
+        setLockedConfirmationRate(null)
+      }
     }
     setPendingAdvertUpdate(null)
     setHasAdvertUpdated(false)

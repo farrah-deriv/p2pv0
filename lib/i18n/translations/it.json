@@ -830,7 +830,7 @@
     "paymentTimeTooltip": "Completa il tuo pagamento entro {minutes} minuti dopo aver effettuato l'ordine.",
     "placeOrder": "Effettua ordine",
     "rateChangeContinue": "Vuoi continuare con il nuovo tasso?",
-    "rateChangeDetails": "Stai {action} {amount} {accountCurrency} per {total} {paymentCurrency}, ma il nuovo tasso è {newRate} {paymentCurrency}.",
+    "rateChangeDetails": "Stai {action} {amount} {accountCurrency} per {total} {paymentCurrency} al tasso di {oldRate} {paymentCurrency}, ma il nuovo tasso è {newRate} {paymentCurrency}.",
     "rateChangeIntro": "Il tasso di cambio per il tuo ordine è cambiato.",
     "rateFixed": "Risolto",
     "rateFloating": "Galleggiante",

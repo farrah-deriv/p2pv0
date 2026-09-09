@@ -813,7 +813,7 @@
     "paymentTimeTooltip": "أكمل دفعتك خلال {minutes} دقيقة بعد تقديم الطلب.",
     "placeOrder": "وضع النظام",
     "rateChangeContinue": "هل تريد المتابعة بالسعر الجديد؟",
-    "rateChangeDetails": "أنت تقوم بـ{action} {amount} {accountCurrency} مقابل {total} {paymentCurrency}، لكن السعر الجديد هو {newRate} {paymentCurrency}.",
+    "rateChangeDetails": "أنت تقوم بـ{action} {amount} {accountCurrency} مقابل {total} {paymentCurrency} بسعر {oldRate} {paymentCurrency}، لكن السعر الجديد هو {newRate} {paymentCurrency}.",
     "rateChangeIntro": "تغير سعر الصرف لطلبك.",
     "rateFixed": "ثابت",
     "rateFloating": "عائمة",

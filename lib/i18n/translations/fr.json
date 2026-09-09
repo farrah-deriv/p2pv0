@@ -828,7 +828,7 @@
     "paymentTimeTooltip": "Effectuez votre paiement dans les {minutes} minutes suivant la passation de la commande.",
     "placeOrder": "Passer la commande",
     "rateChangeContinue": "Voulez-vous continuer avec le nouveau taux ?",
-    "rateChangeDetails": "Vous {action} {amount} {accountCurrency} pour {total} {paymentCurrency}, mais le nouveau taux est {newRate} {paymentCurrency}.",
+    "rateChangeDetails": "Vous {action} {amount} {accountCurrency} pour {total} {paymentCurrency} au taux de {oldRate} {paymentCurrency}, mais le nouveau taux est {newRate} {paymentCurrency}.",
     "rateChangeIntro": "Le taux de change pour votre commande a changé.",
     "rateFixed": "Corrigé",
     "rateFloating": "Flottant",

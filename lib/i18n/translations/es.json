@@ -828,7 +828,7 @@
     "paymentTimeTooltip": "Completa tu pago dentro de {minutes} minutos después de realizar la orden.",
     "placeOrder": "Realizar orden",
     "rateChangeContinue": "¿Te gustaría continuar con el nuevo tipo de cambio?",
-    "rateChangeDetails": "Estás {action} {amount} {accountCurrency} por {total} {paymentCurrency}, pero el nuevo tipo es {newRate} {paymentCurrency}.",
+    "rateChangeDetails": "Estás {action} {amount} {accountCurrency} por {total} {paymentCurrency} a un tipo de {oldRate} {paymentCurrency}, pero el nuevo tipo es {newRate} {paymentCurrency}.",
     "rateChangeIntro": "El tipo de cambio para tu pedido ha cambiado.",
     "rateFixed": "Fijo",
     "rateFloating": "flotante",
