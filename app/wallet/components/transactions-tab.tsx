@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import EmptyState from "@/components/empty-state"
 import { Badge } from "@/components/ui/badge"
 import { useTranslations } from "@/lib/i18n/use-translations"
+import { formatOrderCounterparty } from "@/lib/wallet/order-parties"
 import type { Transaction } from "../types"
 
 interface TransactionsTabProps {
@@ -159,12 +160,10 @@ export default function TransactionsTab({
     }
   }
 
-  const getOrderCounterpartyText = (transaction: Transaction) => {
-    const { order_type, buyer_nickname, seller_nickname } = transaction.metadata.statement_metadata ?? {}
-    const buyer = buyer_nickname ?? ""
-    const seller = seller_nickname ?? ""
-    return order_type === "sell" ? `${seller} → ${buyer}` : `${buyer} → ${seller}`
-  }
+  // An order always settles seller → buyer, so the arrow must not be derived
+  // from `order_type` (the viewer's role) — that inverted it for buy orders.
+  const getOrderCounterpartyText = (transaction: Transaction) =>
+    formatOrderCounterparty(transaction.metadata.statement_metadata)
 
   const getTransferDestinationText = (transaction: Transaction) => {
     const { source_wallet_type, destination_wallet_type } = transaction.metadata

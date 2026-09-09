@@ -7,6 +7,7 @@ import { formatAppDate } from "@/lib/format-date"
 import { localeToBcp47 } from "@/lib/i18n/config"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { IS_TRANSFER_FEE_DISPLAY_ENABLED } from "@/lib/utils"
+import { getOrderParties, isOrderStatement } from "@/lib/wallet/order-parties"
 import type { Transaction } from "../types"
 
 interface TransactionDetailsProps {
@@ -71,9 +72,9 @@ export default function TransactionDetails({ transaction }: TransactionDetailsPr
   }
 
   const getFromWalletName = (transaction: Transaction) => {
-    const orderType = transaction.metadata.statement_metadata?.order_type
-    if (orderType === "buy") return transaction.metadata.statement_metadata?.buyer_nickname ?? ""
-    if (orderType === "sell") return transaction.metadata.statement_metadata?.seller_nickname ?? ""
+    // An order always settles seller → buyer, whichever side the viewer is on.
+    const orderParties = getOrderParties(transaction.metadata.statement_metadata)
+    if (orderParties) return orderParties.from
 
     const sourceWalletType = transaction.metadata.source_wallet_type?.toLowerCase()
 
@@ -88,9 +89,8 @@ export default function TransactionDetails({ transaction }: TransactionDetailsPr
   }
 
   const getToWalletName = (transaction: Transaction) => {
-    const orderType = transaction.metadata.statement_metadata?.order_type
-    if (orderType === "buy") return transaction.metadata.statement_metadata?.seller_nickname ?? ""
-    if (orderType === "sell") return transaction.metadata.statement_metadata?.buyer_nickname ?? ""
+    const orderParties = getOrderParties(transaction.metadata.statement_metadata)
+    if (orderParties) return orderParties.to
 
     const destinationWalletType = transaction.metadata.destination_wallet_type?.toLowerCase()
 
@@ -266,9 +266,7 @@ export default function TransactionDetails({ transaction }: TransactionDetailsPr
   const isWalletTransfer = transaction.metadata.wallet_transaction_type === "transfer_between_wallets"
   // Buy/sell orders also use transfer_between_wallets — fee info icon is only for
   // cashier↔wallet style transfers, not P2P order settlements.
-  const isOrder =
-    transaction.metadata.statement_metadata?.order_type === "buy" ||
-    transaction.metadata.statement_metadata?.order_type === "sell"
+  const isOrder = isOrderStatement(transaction.metadata.statement_metadata)
   const feeAmount = Number.parseFloat(transaction.metadata.transaction_fee_amount ?? "0") || 0
   const feePercentage = formatConfiguredFeePercentage(transaction.metadata.transaction_fee_percentage)
   const hasTransferFee = feeAmount > 0 || feePercentage !== "0"
