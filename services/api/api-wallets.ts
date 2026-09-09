@@ -323,25 +323,49 @@ export async function walletTransfer(params: {
   request_id: string
   source_wallet_id: string
 }): Promise<any> {
-  try {
-    const url = `${getCoreUrl()}/v1/wallets/transfers`
-    const headers = getAuthHeader()
+  const url = `${getCoreUrl()}/v1/wallets/transfers`
+  const headers = getAuthHeader()
 
-    const response = await p2pFetch(url, {
-      method: "POST",
-      headers: {
-        ...headers,
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(params),
-    })
+  const response = await p2pFetch(url, {
+    method: "POST",
+    headers: {
+      ...headers,
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(params),
+  })
 
-    const data = await response.json()
-    return data
-  } catch (error) {
-    return null
+  if (!response.ok) {
+    try {
+      const errorBody = await response.json()
+      // Normalise the various failure body shapes into { errors: [...] } so the
+      // caller can surface the backend's structured rejection reason and CTA
+      // via getWalletTransferRejectionInfo.
+      if (Array.isArray(errorBody) && errorBody.length > 0) {
+        return { errors: errorBody }
+      }
+      if (errorBody?.errors && Array.isArray(errorBody.errors) && errorBody.errors.length > 0) {
+        return { errors: errorBody.errors }
+      }
+      if (
+        errorBody?.data?.errors &&
+        Array.isArray(errorBody.data.errors) &&
+        errorBody.data.errors.length > 0
+      ) {
+        return { errors: errorBody.data.errors }
+      }
+      // Single structured error object (has a code and/or context) — wrap it.
+      if (errorBody && (errorBody.code || errorBody.context || errorBody.message)) {
+        return { errors: [errorBody] }
+      }
+    } catch {
+      // JSON parse failed — fall through to a generic transport-level error.
+    }
+    return { errors: [{ message: `wallet transfer failed: ${response.status}`, code: "transfer_failed" }] }
   }
+
+  return await response.json()
 }
 
 export async function fetchBalance(selectedCurrency: string): Promise<number> {
