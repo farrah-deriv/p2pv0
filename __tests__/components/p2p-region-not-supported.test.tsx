@@ -26,20 +26,8 @@ jest.mock("@/lib/utils", () => {
   }
 })
 
-const mockUserDataStore = {
-  signup: "v2" as string,
-}
-
-jest.mock("@/stores/user-data-store", () => ({
-  useUserDataStore: (selector?: (state: { userData: { signup: string } }) => unknown) => {
-    const state = { userData: { signup: mockUserDataStore.signup } }
-    return selector ? selector(state) : state
-  },
-}))
-
 describe("P2PRegionNotSupported", () => {
   beforeEach(() => {
-    mockUserDataStore.signup = "v2"
     jest.clearAllMocks()
     Object.defineProperty(window, "location", {
       configurable: true,
@@ -59,23 +47,16 @@ describe("P2PRegionNotSupported", () => {
     expect(screen.getByRole("button", { name: "p2pRegion.backToHome" })).toBeInTheDocument()
   })
 
+  // The destination is unconditional — the component reads no signup version, so
+  // v1 and v2 accounts resolve to the same Home URL. `section` must be the string
+  // "home": passing anything else (previously a boolean) falls through to
+  // getHomeUrl's fallback and yields a relative navigation.
   it("sends the user to Deriv Home on Back to Home", () => {
     render(<P2PRegionNotSupported />)
 
     fireEvent.click(screen.getByRole("button", { name: "p2pRegion.backToHome" }))
 
-    expect(getHomeUrl).toHaveBeenCalledWith(false, "home")
-    expect(window.location.href).toBe("https://home.deriv.com/dashboard/home")
-  })
-
-  it("sends a v1 user to the v1 Home URL", () => {
-    mockUserDataStore.signup = "v1"
-
-    render(<P2PRegionNotSupported />)
-
-    fireEvent.click(screen.getByRole("button", { name: "p2pRegion.backToHome" }))
-
-    expect(getHomeUrl).toHaveBeenCalledWith(true, "home")
+    expect(getHomeUrl).toHaveBeenCalledWith("home")
     expect(window.location.href).toBe("https://home.deriv.com/dashboard/home")
   })
 })

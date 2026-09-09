@@ -683,7 +683,10 @@ export const getHomeUrl = (section = "", fromParam = "", isTncAccepted = false) 
   } else if (section === "emailAddress") {
     url = `https://${baseUrl}/dashboard/profile/email-address`
   } else {
-    url = baseUrl
+    // Must stay absolute: every caller assigns this to window.location.href /
+    // location.assign() / a <Link href>, so a scheme-less host would navigate
+    // relative to the current origin (https://dp2p.deriv.com/home.deriv.com).
+    url = `https://${baseUrl}`
   }
 
   return url

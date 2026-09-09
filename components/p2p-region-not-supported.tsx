@@ -4,14 +4,12 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { getHomeUrl } from "@/lib/utils"
-import { useUserDataStore } from "@/stores/user-data-store"
 
 export function P2PRegionNotSupported() {
   const { t } = useTranslations()
-  const isV1Signup = useUserDataStore((state) => state.userData?.signup === "v1")
 
   const handleBackToHome = () => {
-    window.location.href = getHomeUrl(isV1Signup, "home")
+    window.location.href = getHomeUrl("home")
   }
 
   return (
