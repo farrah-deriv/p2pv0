@@ -1,134 +1,863 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { X, ChevronRight, ArrowLeft, Plus } from "lucide-react"
+import { Alert } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { Advertisement } from "@/services/api/api-buy-sell"
 import { createOrder } from "@/services/api/api-orders"
-import { getUserPaymentMethods } from "@/app/profile/api/api-payment-methods"
+import { ProfileAPI } from "@/services/api"
+import { formatPaymentMethodName, cn, getHomeUrl } from "@/lib/utils"
+import Image from "next/image"
+import { StandaloneChevronDownRegularIcon, StandaloneXmarkFillIcon } from "@deriv/quill-icons/Standalone"
+import AddPaymentMethodPanel from "@/app/profile/components/add-payment-method-panel"
+import { useAlertDialog } from "@/hooks/use-alert-dialog"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
+import { useToast } from "@/hooks/use-toast"
+import { useIsMobile } from "@/lib/hooks/use-is-mobile"
+import { isRtlLocale } from "@/lib/i18n/config"
+import { useTranslations } from "@/lib/i18n/use-translations"
+import { ExchangeRateDisplay } from "@/components/exchange-rate-display"
+import { ALERT_INLINE_FLEX, ALERT_INLINE_TEXT } from "@/lib/rtl"
+import { useWebSocketContext, useChannelHeartbeat } from "@/contexts/websocket-context"
+import {
+  flattenUserPaymentMethodsPages,
+  useAddPaymentMethod,
+  isPaymentMethodElevationCancelled,
+  useUserPaymentMethods,
+  queryKeys,
+  type PaymentMethodError,
+} from "@/hooks/use-api-queries"
+import { useQueryClient } from "@tanstack/react-query"
+import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
+import { useStablePaymentMethodOrder } from "@/hooks/use-stable-payment-method-order"
+import { SelectedPaymentMethodsSection } from "@/components/payment-methods/selected-payment-methods-section"
+import RateChangeConfirmation from "./rate-change-confirmation"
+import AdUpdatedConfirmation from "./ad-updated-confirmation"
+import { useTrackers } from "@/analytics/useTrackers"
+import { applyPendingAdvertUpdate } from "@/lib/buy-sell/apply-pending-advert-update"
+import { mapOrderError } from "@/lib/orders/order-error-mapper"
+import { createOrderErrorDispatcher } from "@/lib/orders/order-error-dispatcher"
+import { OrderErrorAction } from "@/lib/orders/order-error-actions"
+import { createPaymentMethodAddErrorAlertConfig } from "@/lib/payment-methods/create-payment-method-add-error-alert-config"
+import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
+import {
+  appendSelectedPaymentMethodId,
+  filterPaymentMethodsForAdvert,
+  getCreatedPaymentMethodId,
+  getPaymentMethodSelectionLines,
+  isPaymentMethodIdSelected,
+  isUserPaymentMethodSelectionDisabled,
+  mergeCreatedPaymentMethodIntoList,
+  normalizePaymentMethodId,
+  resolvePaymentSelectionEntry,
+  resolveSelectedUserPaymentMethodIds,
+  type PaymentSelectionEntry,
+} from "@/lib/payment-methods/payment-method-selection-utils"
+import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 interface OrderSidebarProps {
   isOpen: boolean
   onClose: () => void
+  onStartClose?: () => void
   ad: Advertisement | null
   orderType: "buy" | "sell"
+  p2pBalance: number
 }
 
 interface PaymentMethod {
   id: string
   type: string
   display_name: string
-  fields: Record<string, any>
+  fields: Record<string, unknown>
   is_enabled: number
   method: string
 }
 
-export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSidebarProps) {
+interface SellerPaymentMethod {
+  type: string
+  method: string
+}
+
+/** Safety net for the picker's page drain — 50 methods a page, so ~1000 rows. */
+const MAX_PAYMENT_ENTRY_PAGE_DRAINS = 20
+
+const areStringArraysEqual = (first: string[] = [], second: string[] = []) => {
+  if (first.length !== second.length) return false
+
+  const sortedFirst = [...first].sort()
+  const sortedSecond = [...second].sort()
+  return sortedFirst.every((value, index) => value === sortedSecond[index])
+}
+
+const PaymentSelectionContent = ({
+  userPaymentMethods,
+  acceptedPaymentMethods,
+  tempSelectedPaymentMethods,
+  hideAlert,
+  setSelectedPaymentMethods,
+  setTempSelectedPaymentMethods,
+  handleAddPaymentMethodClick,
+  sellerPaymentMethods,
+  onAddPaymentMethodWithType,
+  scrollToPaymentMethodId,
+}: {
+  userPaymentMethods: PaymentMethod[]
+  acceptedPaymentMethods?: string[]
+  tempSelectedPaymentMethods: string[]
+  hideAlert: () => void
+  setSelectedPaymentMethods: (methods: string[]) => void
+  setTempSelectedPaymentMethods: (methods: string[]) => void
+  handleAddPaymentMethodClick: (currentSelection: string[]) => void
+  sellerPaymentMethods: SellerPaymentMethod[]
+  onAddPaymentMethodWithType?: (methodType: string) => void
+  scrollToPaymentMethodId?: string
+}) => {
+  const { t } = useTranslations()
+  const [selectedPMs, setSelectedPMs] = useState(tempSelectedPaymentMethods)
+  /** Resets stable list order when the sheet selection source updates. */
+  const [orderSessionKey, setOrderSessionKey] = useState(tempSelectedPaymentMethods)
+  const lastScrolledPaymentMethodIdRef = useRef<string | null>(null)
+  const {
+    data: paymentMethodsPages,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useUserPaymentMethods()
+  const handleLoadMore = useCallback(() => {
+    void fetchNextPage()
+  }, [fetchNextPage])
+  const { scrollRootRef, sentinelRef } = useLoadMoreOnScroll(
+    !!hasNextPage,
+    handleLoadMore,
+    isFetchingNextPage,
+  )
+
+  useEffect(() => {
+    setSelectedPMs(tempSelectedPaymentMethods)
+    setOrderSessionKey(tempSelectedPaymentMethods)
+  }, [tempSelectedPaymentMethods])
+
+  // Live paginated list (alert props are a snapshot). Merge prop extras for just-created PMs.
+  const compatibleMethods = useMemo(() => {
+    const live = flattenUserPaymentMethodsPages(paymentMethodsPages) as PaymentMethod[]
+    const filteredLive = filterPaymentMethodsForAdvert(live, acceptedPaymentMethods)
+    const fromProps = userPaymentMethods
+    if (filteredLive.length === 0) return fromProps
+
+    const byId = new Map(
+      filteredLive.map((method) => [normalizePaymentMethodId(method.id), method] as const),
+    )
+    for (const method of fromProps) {
+      const id = normalizePaymentMethodId(method.id)
+      if (!byId.has(id)) byId.set(id, method)
+    }
+    return Array.from(byId.values())
+  }, [acceptedPaymentMethods, paymentMethodsPages, userPaymentMethods])
+
+  const getMethodId = useCallback(
+    (method: PaymentMethod) => normalizePaymentMethodId(method.id),
+    [],
+  )
+
+  const sortedPaymentMethods = useStablePaymentMethodOrder(
+    compatibleMethods,
+    orderSessionKey,
+    getMethodId,
+    true,
+  )
+
+  useEffect(() => {
+    if (!scrollToPaymentMethodId) return
+
+    const normalizedId = normalizePaymentMethodId(scrollToPaymentMethodId)
+    if (lastScrolledPaymentMethodIdRef.current === normalizedId) return
+
+    let cancelled = false
+    let attempts = 0
+    const maxAttempts = 30
+
+    const tryScroll = () => {
+      if (cancelled) return
+      const root = scrollRootRef.current
+      const target = root?.querySelector(
+        `[data-payment-method-id="${normalizedId}"]`,
+      ) as HTMLElement | null
+      if (!root || !target) {
+        if (attempts++ < maxAttempts) {
+          window.requestAnimationFrame(tryScroll)
+        }
+        return
+      }
+
+      target.scrollIntoView({ block: "nearest" })
+      lastScrolledPaymentMethodIdRef.current = normalizedId
+    }
+
+    window.requestAnimationFrame(tryScroll)
+
+    return () => {
+      cancelled = true
+    }
+  }, [scrollToPaymentMethodId, scrollRootRef, sortedPaymentMethods.length])
+
+  const handlePaymentMethodToggle = (methodId: string | number) => {
+    setSelectedPMs((prev) => {
+      if (isPaymentMethodIdSelected(prev, methodId)) {
+        return prev.filter((id) => !isPaymentMethodIdSelected([id], methodId))
+      }
+      if (isUserPaymentMethodSelectionDisabled(compatibleMethods, prev, methodId)) {
+        return prev
+      }
+      return [...prev, normalizePaymentMethodId(methodId)]
+    })
+  }
+
+  const handleAcceptedMethodClick = (method: SellerPaymentMethod) => {
+    hideAlert()
+    onAddPaymentMethodWithType?.(method.method)
+  }
+
+  return (
+    <div
+      data-testid="order-sidebar-modal-payment-methods"
+      className="flex h-full min-h-0 w-full flex-1 flex-col"
+    >
+      {compatibleMethods.length > 0 && (
+        <div className="shrink-0 pb-2 text-center text-grayscale-600 md:text-start">
+          {t("paymentMethod.selectUpTo3")}
+        </div>
+      )}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        {compatibleMethods.length === 0 ? (
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-4">
+            <div className="text-slate-1200">{t("paymentMethod.addCompatibleMethod")}</div>
+            {sellerPaymentMethods && sellerPaymentMethods.length > 0 && (
+              <div className="mt-4 space-y-3">
+                {sellerPaymentMethods.map((method) => (
+                  <Button
+                    key={method.method}
+                    type="button"
+                    variant="ghost"
+                    onClick={() => handleAcceptedMethodClick(method)}
+                    className="h-auto w-full justify-start rounded-lg border border-grayscale-200 p-4 font-normal hover:bg-grayscale-300"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Image src="/icons/plus_icon.png" alt={t("common.plus")} width={14} height={24} />
+                      <span className="text-base text-slate-1200">
+                        {formatPaymentMethodName(method.method, t)}
+                      </span>
+                    </span>
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
+            <SelectedPaymentMethodsSection
+              methods={compatibleMethods}
+              selectedIds={selectedPMs}
+              onRemove={handlePaymentMethodToggle}
+            />
+            {/* Mobile list gap: QuillSpacing.sm (8px) */}
+            <div ref={scrollRootRef} className="min-h-0 flex-1 space-y-2 overflow-y-auto">
+              {sortedPaymentMethods.map((method) => {
+                const methodId = normalizePaymentMethodId(method.id)
+                const isSelected = isPaymentMethodIdSelected(selectedPMs, methodId)
+                const isDisabled = isUserPaymentMethodSelectionDisabled(
+                  compatibleMethods,
+                  selectedPMs,
+                  methodId,
+                )
+                const lines = getPaymentMethodSelectionLines(method, t)
+
+                return (
+                  <div
+                    key={methodId}
+                    data-payment-method-id={methodId}
+                    className={`bg-grayscale-500 rounded-lg ps-6 pe-6 py-4 cursor-pointer hover:bg-grayscale-300 transition-colors ${isSelected ? "border border-black" : ""
+                      } ${isDisabled
+                        ? "opacity-30 cursor-not-allowed hover:bg-grayscale-300"
+                        : ""
+                      }`}
+                    onClick={() => {
+                      if (!isDisabled) {
+                        handlePaymentMethodToggle(methodId)
+                      }
+                    }}
+                  >
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className="flex items-center gap-4 min-w-0 flex-1">
+                        <div
+                          className={`h-3 w-3 shrink-0 rounded-full ${method.type === "bank" ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"
+                            }`}
+                        />
+                        <div className="min-w-0 flex flex-col gap-0.5">
+                          <span className="truncate text-base leading-6 text-slate-1200">{lines.title}</span>
+                          {lines.subtitle ? (
+                            <span className="truncate text-xs leading-4 text-grayscale-text-muted">{lines.subtitle}</span>
+                          ) : null}
+                        </div>
+                      </div>
+                      <Checkbox
+                        data-testid={`order-sidebar-checkbox-payment-${methodId}`}
+                        checked={isSelected}
+                        onCheckedChange={() => handlePaymentMethodToggle(methodId)}
+                        disabled={isDisabled}
+                        className="shrink-0 border-neutral-7 data-[state=checked]:bg-black data-[state=checked]:border-black w-[20px] h-[20px] rounded-sm border-[2px] disabled:opacity-30 disabled:cursor-not-allowed pointer-events-none"
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+
+              {hasNextPage && (
+                <div ref={sentinelRef} className="h-1 w-full" data-testid="order-sidebar-payment-methods-sentinel" />
+              )}
+              {isFetchingNextPage && (
+                <div className="flex justify-center py-2">
+                  <Spinner size="md" />
+                </div>
+              )}
+
+              {compatibleMethods.length > 0 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  data-testid="order-sidebar-link-add-payment"
+                  className="h-auto w-full justify-start rounded-lg border border-grayscale-200 p-4 font-normal"
+                  onClick={() => {
+                    handleAddPaymentMethodClick(selectedPMs)
+                  }}
+                >
+                  <span className="flex items-center">
+                    <Image src="/icons/plus_icon.png" alt={t("common.plus")} width={14} height={24} className="me-2" />
+                    <span className="text-slate-1200 text-base font-normal">
+                      {t("paymentMethod.addPaymentMethod")}
+                    </span>
+                  </span>
+                </Button>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+      <div className="shrink-0 pt-2 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+        <Button
+          data-testid="order-sidebar-btn-confirm-payment"
+          className="w-full"
+          disabled={selectedPMs.length === 0}
+          onClick={() => {
+            const confirmedSelection = resolveSelectedUserPaymentMethodIds(
+              selectedPMs,
+              compatibleMethods,
+            )
+            setSelectedPaymentMethods(confirmedSelection)
+            setTempSelectedPaymentMethods(confirmedSelection)
+            hideAlert()
+          }}
+        >
+          {t("common.confirm")}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderType, p2pBalance }: OrderSidebarProps) {
+  const { t, locale } = useTranslations()
+  const dir = isRtlLocale(locale) ? "rtl" : "ltr"
   const router = useRouter()
+  const isMobile = useIsMobile()
   const [amount, setAmount] = useState(null)
   const [totalAmount, setTotalAmount] = useState(0)
   const [validationError, setValidationError] = useState<string | null>(null)
   const [isAnimating, setIsAnimating] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderStatus, setOrderStatus] = useState<{ success: boolean; message: string } | null>(null)
-  const [showPaymentSelection, setShowPaymentSelection] = useState(false)
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>([])
   const [userPaymentMethods, setUserPaymentMethods] = useState<PaymentMethod[]>([])
-  const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(false)
-  const [paymentMethodsError, setPaymentMethodsError] = useState<string | null>(null)
+  const [sellerPaymentMethods, setSellerPaymentMethods] = useState<SellerPaymentMethod[]>([])
+  const [tempSelectedPaymentMethods, setTempSelectedPaymentMethods] = useState<string[]>([])
+  const { hideAlert, showAlert } = useAlertDialog()
+  const { runGatedAction } = useKycOverlay({ route: "markets" })
+  const { toast } = useToast()
+  const [showAddPaymentPanel, setShowAddPaymentPanel] = useState(false)
+  const [selectedPaymentMethodType, setSelectedPaymentMethodType] = useState<string | undefined>()
+  // Bumped to remount AddPaymentMethodPanel so it reopens at its catalogue
+  // (method list) step instead of the details form the user just failed on.
+  const [addPanelInstanceId, setAddPanelInstanceId] = useState(0)
+  const {
+    joinExchangeRatesChannel,
+    leaveExchangeRatesChannel,
+    requestExchangeRate,
+    subscribe,
+    isConnected
+  } = useWebSocketContext()
+  const [localAd, setLocalAd] = useState<Advertisement | null>(ad)
+  const localAdRef = useRef(localAd)
+  const [marketRate, setMarketRate] = useState<number | null>(null)
+  const [showRateChangeConfirmation, setShowRateChangeConfirmation] = useState(false)
+  const [lockedConfirmationRate, setLockedConfirmationRate] = useState<number | null>(null)
+  const [hasAdvertUpdated, setHasAdvertUpdated] = useState(false)
+  const [showAdUpdatedModal, setShowAdUpdatedModal] = useState(false)
+  const { track } = useTrackers()
+  const [pendingAdvertUpdate, setPendingAdvertUpdate] = useState<Advertisement | null>(null)
+  const [pendingRateUpdate, setPendingRateUpdate] = useState<{ effective_rate: number; effective_rate_display: number; version: number } | null>(null)
+
+  // Use React Query hooks
+  const addPaymentMethod = useAddPaymentMethod()
+  const {
+    data: paymentMethodsResponse,
+    isPending: isLoadingPaymentMethods,
+    hasNextPage: hasMorePaymentMethods,
+    fetchNextPage: fetchMorePaymentMethods,
+    isFetchingNextPage: isFetchingMorePaymentMethods,
+  } = useUserPaymentMethods(isOpen)
+  const queryClient = useQueryClient()
+  // True while the picker entry point is deciding between the selection sheet
+  // and the add-payment catalogue — see the resolver effect below.
+  const [isResolvingPaymentEntry, setIsResolvingPaymentEntry] = useState(false)
+  const paymentEntryPagesDrainedRef = useRef(0)
+
+  const clearSelectedPaymentMethods = () => {
+    setSelectedPaymentMethods([])
+    setTempSelectedPaymentMethods([])
+  }
+
+  // Raw saved list across every page loaded so far — pagination is driven off it.
+  const allPaymentMethods = useMemo(
+    () => flattenUserPaymentMethodsPages(paymentMethodsResponse),
+    [paymentMethodsResponse],
+  )
+
+  // Filter and transform user payment methods based on ad's accepted methods
+  const filteredPaymentMethods = useMemo(() => {
+    if (allPaymentMethods.length === 0 || !localAd?.payment_methods) return []
+
+    return filterPaymentMethodsForAdvert(allPaymentMethods, localAd.payment_methods)
+  }, [allPaymentMethods, localAd?.payment_methods])
+
+  // Which sheet the picker should open. The advert accepts only a subset of
+  // types, so "empty" here means no *compatible* saved method — a user with
+  // saved methods that don't match the advert still counts as empty.
+  const resolvePaymentEntry = useCallback(
+    () =>
+      resolvePaymentSelectionEntry({
+        isLoading: isLoadingPaymentMethods,
+        hasNextPage: !!hasMorePaymentMethods,
+        methods: allPaymentMethods,
+        eligibleMethods: filteredPaymentMethods,
+        currentSelection: tempSelectedPaymentMethods,
+      }),
+    [
+      allPaymentMethods,
+      filteredPaymentMethods,
+      hasMorePaymentMethods,
+      isLoadingPaymentMethods,
+      tempSelectedPaymentMethods,
+    ],
+  )
+
+  // Sync local ad copy with prop — keeps localAd current when parent updates the ad
+  useEffect(() => {
+    setLocalAd(ad)
+  }, [ad])
+
+  // Keep ref in sync so the WebSocket callback always reads the latest localAd
+  useEffect(() => {
+    localAdRef.current = localAd
+  }, [localAd])
+
+  const adId = ad?.id
+  useEffect(() => {
+    if (isOpen && ad && ad.payment_currency && ad.account_currency && isConnected) {
+      if (ad.exchange_rate_type === "float") {
+        joinExchangeRatesChannel(ad.account_currency, ad.payment_currency)
+        // The socket client queues this until the current connection has
+        // completed the channel join, including after reconnect.
+        requestExchangeRate(ad.account_currency, ad.payment_currency)
+      }
+
+      const unsubscribe = subscribe((data) => {
+        const current = localAdRef.current
+        if (!current) return
+
+        if (current.exchange_rate_type === "float") {
+          const expectedChannel = `exchange_rates/${current.account_currency}/${current.payment_currency}`
+          if (data.options.channel === expectedChannel && data.payload?.rate) {
+            setMarketRate(data.payload.rate * ((current.exchange_rate / 100) + 1))
+          } else if (data.options.channel === expectedChannel && data.payload?.data?.rate) {
+            const rawRate = data.payload.data.rate
+            setLocalAd((prev) => {
+              if (!prev) return null
+              const computedRate = rawRate * ((prev.exchange_rate / 100) + 1)
+              setMarketRate(computedRate)
+              return { ...prev, effective_rate_display: computedRate }
+            })
+          }
+        }
+
+        if (data?.options?.channel?.startsWith("adverts/currency/")) {
+          if (data?.payload?.data?.event === "update" && data?.payload?.data?.advert) {
+            const updatedAdvert = data.payload.data.advert
+            const updatedFields: string[] = data.payload.data.updated_fields || []
+            if (current.id === updatedAdvert.id) {
+              const rateFields = new Set(["exchange_rate", "effective_rate", "effective_rate_display"])
+              const nonRateFields = new Set(["minimum_order_amount", "actual_maximum_order_amount", "description", "payment_methods", "payment_method_names", "order_expiry_period"])
+              const hasRateChanges = updatedFields.some((f) => rateFields.has(f))
+              const hasNonRateChanges = updatedFields.some((f) => nonRateFields.has(f))
+              if (hasRateChanges) {
+                setPendingRateUpdate({
+                  effective_rate: updatedAdvert.effective_rate ?? updatedAdvert.exchange_rate,
+                  effective_rate_display: updatedAdvert.effective_rate_display ?? updatedAdvert.exchange_rate,
+                  version: updatedAdvert.version,
+                })
+              }
+              if (hasNonRateChanges) {
+                setPendingAdvertUpdate(updatedAdvert)
+                setHasAdvertUpdated(true)
+              }
+            }
+          }
+        }
+      })
+
+      return () => {
+        if (ad.exchange_rate_type === "float") {
+          leaveExchangeRatesChannel(ad.account_currency, ad.payment_currency)
+        }
+        unsubscribe()
+      }
+    }
+  }, [isOpen, adId, isConnected])
+
+  const isFloatRateChannelActive = isOpen && !!ad && ad.exchange_rate_type === "float" && isConnected
+  useChannelHeartbeat(
+    ad ? `exchange_rates/${ad.account_currency}/${ad.payment_currency}` : "",
+    isFloatRateChannelActive,
+  )
 
   useEffect(() => {
     if (isOpen) {
       setIsAnimating(true)
       setOrderStatus(null)
     } else {
-      // Reset animation state when closed
       setIsAnimating(false)
     }
   }, [isOpen])
 
   useEffect(() => {
-    if (ad) {
-      fetchUserPaymentMethods()
-    }
-  }, [ad])
-
-  useEffect(() => {
-    if (ad && amount) {
+    if (localAd && amount) {
       const numAmount = Number.parseFloat(amount)
-      const exchangeRate = ad.exchange_rate || 0
+      const exchangeRate = localAd.effective_rate_display || 0
       const total = numAmount * exchangeRate
       setTotalAmount(total)
 
-      // Validate amount against limits
-      const minLimit = Number.parseFloat(ad.minimum_order_amount) || 0
-      const maxLimit = Number.parseFloat(ad.actual_maximum_order_amount) || 0
+      const minLimit = localAd.minimum_order_amount || "0.00"
+      const maxLimit = localAd.actual_maximum_order_amount || "0.00"
 
-      if (numAmount < minLimit || numAmount > maxLimit) {
-        setValidationError(`Order limit: ${ad.account_currency} ${minLimit} - ${maxLimit}`)
+      if (orderType === "buy" && numAmount > p2pBalance) {
+        setValidationError(t("order.insufficientBalance"))
+      } else if (numAmount < minLimit || numAmount > maxLimit) {
+        setValidationError(t("order.orderLimitError", { min: minLimit, max: maxLimit, currency: localAd.account_currency }))
       } else {
         setValidationError(null)
       }
     }
-  }, [amount, ad])
 
-  const fetchUserPaymentMethods = async () => {
-    try {
-      setIsLoadingPaymentMethods(true)
-      setPaymentMethodsError(null)
+    if (!amount) setTotalAmount(0)
+  }, [amount, localAd, orderType, p2pBalance, t, marketRate])
 
-      const response = await getUserPaymentMethods()
+  const handleAddPaymentMethodWithType = useCallback((methodType: string) => {
+    setSelectedPaymentMethodType(methodType)
+    setShowAddPaymentPanel(true)
+  }, [])
 
-      if (response.error) {
-        setPaymentMethodsError(response.error.message || "Failed to fetch payment methods")
-        return
-      }
+  const handleAddPaymentMethodClick = useCallback((currentSelection: string[]) => {
+    setTempSelectedPaymentMethods(currentSelection)
+    setShowAddPaymentPanel(true)
+    hideAlert()
+  }, [hideAlert])
 
-      // Filter user payment methods to only show those accepted by the buyer
-      const buyerAcceptedMethods = ad?.payment_methods || []
-      const filteredMethods =
-        response.data?.filter((method: PaymentMethod) => {
-          // Check if the user's payment method matches any of the buyer's accepted methods
-          return buyerAcceptedMethods.some(
-            (buyerMethod: string) => method.method.toLowerCase() === buyerMethod.toLowerCase()
-          )
-        }) || []
+  const openPaymentSelection = useCallback(
+    (
+      selectionOverride?: string[],
+      methodsOverride?: PaymentMethod[],
+      scrollToPaymentMethodId?: string,
+    ) => {
+      const currentSelection = selectionOverride ?? tempSelectedPaymentMethods
+      const methodsForSheet = methodsOverride ?? userPaymentMethods
 
-      setUserPaymentMethods(filteredMethods)
-    } catch (error) {
-      console.error("Error fetching payment methods:", error)
-      setPaymentMethodsError("Failed to load payment methods")
-    } finally {
-      setIsLoadingPaymentMethods(false)
+      track("ek_select_payment_method_markets_advert_sheet")
+      showAlert({
+        title: t("paymentMethod.title"),
+        titleAlign: "center",
+        mobileSheetClassName:
+          "!mt-0 h-[90dvh] max-h-[90dvh] z-[60]",
+        mobileSheetFullHeight: true,
+        mobileContentClassName:
+          "flex min-h-0 flex-1 flex-col w-full min-w-0 max-w-full overflow-hidden",
+        // Keep the desktop dialog body stable (empty / no selection).
+        contentClassName: "h-[min(560px,60vh)]",
+        content: (
+          <PaymentSelectionContent
+            userPaymentMethods={methodsForSheet}
+            acceptedPaymentMethods={localAd?.payment_methods}
+            tempSelectedPaymentMethods={currentSelection}
+            setSelectedPaymentMethods={setSelectedPaymentMethods}
+            hideAlert={hideAlert}
+            handleAddPaymentMethodClick={handleAddPaymentMethodClick}
+            setTempSelectedPaymentMethods={setTempSelectedPaymentMethods}
+            sellerPaymentMethods={sellerPaymentMethods}
+            onAddPaymentMethodWithType={handleAddPaymentMethodWithType}
+            scrollToPaymentMethodId={scrollToPaymentMethodId}
+          />
+        ),
+      })
+    },
+    [
+      handleAddPaymentMethodClick,
+      handleAddPaymentMethodWithType,
+      hideAlert,
+      localAd?.payment_methods,
+      sellerPaymentMethods,
+      showAlert,
+      t,
+      tempSelectedPaymentMethods,
+      track,
+      userPaymentMethods,
+    ],
+  )
+
+  const handleShowPaymentSelection = () => {
+    // `orderType === "buy"` is a BUY advert, so the current user is the seller
+    // and the sheet title is "Sell USD" (see `title` below). Only that side
+    // picks from its own saved methods, so only it can hit the empty sheet and
+    // needs the entry resolver.
+    //
+    // The arm below is unreachable today: the only caller is the button
+    // rendered under `{isBuy && …}`. It is kept deliberately as the buyer-side
+    // guard — if a payment button is ever wired on that path it must keep
+    // opening the plain sheet rather than falling through `resolvePaymentEntry`,
+    // which filters against the advert's accepted methods and could jump
+    // straight to the catalogue (the behaviour #1387 forbids on the buyer side).
+    if (orderType !== "buy") {
+      openPaymentSelection()
+      return
     }
+
+    const entry = resolvePaymentEntry()
+
+    // Resolve synchronously when the answer is already known, so the common
+    // path opens the sheet without flashing the loader for a frame.
+    if (entry === "selection") {
+      openPaymentSelection()
+      return
+    }
+    if (entry === "catalogue") {
+      setShowAddPaymentPanel(true)
+      return
+    }
+
+    // Page 1 is still in flight, or a compatible method may sit on a later
+    // page — hand off to the effect below, which drains and then decides.
+    paymentEntryPagesDrainedRef.current = 0
+    setIsResolvingPaymentEntry(true)
   }
 
-  if (!isOpen && !isAnimating) return null
+  /**
+   * Reopen the catalogue after a failed add. Remounting the panel drops it back
+   * to the method list rather than the details form that just failed.
+   */
+  const reopenPaymentCatalogue = () => {
+    setSelectedPaymentMethodType(undefined)
+    setAddPanelInstanceId((id) => id + 1)
+    setShowAddPaymentPanel(true)
+  }
+
+  /** Dismiss the alert only — AddPaymentMethodPanel keeps the entered values. */
+  const stayOnAddPaymentForm = () => {
+    hideAlert()
+  }
+
+  const returnToPaymentSelection = () => {
+    setShowAddPaymentPanel(false)
+    setSelectedPaymentMethodType(undefined)
+    // AlertDialog finishes dismissing its current overlay after the callback.
+    // Opening the selector on the next frame prevents that cleanup from
+    // immediately closing the newly opened selector.
+    requestAnimationFrame(() => openPaymentSelection())
+  }
+
+  /**
+   * Same split as handleShowPaymentSelection. `orderType === "buy"` is a BUY
+   * advert, i.e. the current user is the seller ("Sell USD"): that side picks
+   * from its own saved methods and can therefore hit the empty sheet.
+   *
+   * The `"selection"` arm is unreachable today for the same reason as the guard
+   * in handleShowPaymentSelection — the only entry point is rendered under
+   * `{isBuy && …}`. It is retained deliberately as the buyer-side guard: on the
+   * buyer side the sheet also lists the seller's methods, so it is never empty
+   * and must keep opening plainly instead of consulting the entry resolver.
+   */
+  const resolveAddErrorEntry = (): PaymentSelectionEntry =>
+    orderType === "buy" ? resolvePaymentEntry() : "selection"
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAmount(e.target.value)
   }
 
   const handleSubmit = async () => {
-    if (!ad) return
+    if (!localAd) return
+
+    track("ek_place_order_markets_advert_sheet")
+
+    if (hasAdvertUpdated) {
+      setShowAdUpdatedModal(true)
+      return
+    }
+
+    if (pendingRateUpdate) {
+      setLockedConfirmationRate(pendingRateUpdate.effective_rate)
+      setShowRateChangeConfirmation(true)
+      return
+    }
+
+    if (localAd.exchange_rate_type === "float" && marketRate && marketRate !== localAd.effective_rate) {
+      track("ek_order_rate_slippage_detected_markets_advert_sheet")
+      setLockedConfirmationRate(marketRate)
+      setShowRateChangeConfirmation(true)
+      return
+    }
+
+    runGatedAction(() => {
+      void proceedWithOrder()
+    })
+  }
+
+  const handleAdvertUpdateConfirm = () => {
+    if (localAd && pendingAdvertUpdate) {
+      const paymentMethodsChanged =
+        !areStringArraysEqual(localAd.payment_methods, pendingAdvertUpdate.payment_methods) ||
+        !areStringArraysEqual(localAd.payment_method_names, pendingAdvertUpdate.payment_method_names)
+
+      if (paymentMethodsChanged) {
+        clearSelectedPaymentMethods()
+      }
+
+      // A combined seller save populates both pending states off one frame, and
+      // this sheet wins the race in handleSubmit — so the rate is applied here
+      // too. The amount effect recomputes the total and re-runs validation off
+      // the new effective_rate_display; the buyer's own amount is left alone.
+      setLocalAd(applyPendingAdvertUpdate({ localAd, pendingAdvertUpdate, pendingRateUpdate }))
+
+      if (pendingRateUpdate) {
+        // The buyer has now accepted this rate. Keep marketRate in step, or the
+        // float-slippage guard in handleSubmit raises a second "Rate updated"
+        // dialog for the change they just reviewed.
+        setMarketRate(pendingRateUpdate.effective_rate)
+        setPendingRateUpdate(null)
+        setLockedConfirmationRate(null)
+      }
+    }
+    setPendingAdvertUpdate(null)
+    setHasAdvertUpdated(false)
+    setShowAdUpdatedModal(false)
+  }
+
+  const proceedWithOrder = async () => {
+    if (!localAd) return
 
     try {
       setIsSubmitting(true)
       setOrderStatus(null)
+      setShowRateChangeConfirmation(false)
 
-      const numAmount = Number.parseFloat(amount)
+      const numAmount = Number.parseFloat(amount ?? "0")
 
-      const order = await createOrder(ad.id, numAmount, selectedPaymentMethods)
-      router.push("/orders/" + order.data.id)
+      // Don't block order submission on the exchange_rates WS resolving — on a
+      // slow connection marketRate can still be null here, which used to send
+      // exchange_rate: 0 and trip the backend's OrderExchangeRateRequired.
+      // Fall back to the advert's own effective_rate immediately, same as mobile
+      // (markets_advert_bottom_sheet.dart _submitOrder: "Always pass effectiveRate").
+      const rateToUse = lockedConfirmationRate ?? marketRate ?? localAd.effective_rate
+      const confirmedVersion = pendingRateUpdate?.version ?? localAd.version
+      if (lockedConfirmationRate) {
+        setMarketRate(lockedConfirmationRate)
+        setLocalAd((prev) => prev ? {
+          ...prev,
+          effective_rate: lockedConfirmationRate,
+          effective_rate_display: lockedConfirmationRate,
+          version: confirmedVersion,
+        } : null)
+        setLockedConfirmationRate(null)
+        setPendingRateUpdate(null)
+      }
+      const order = await createOrder(localAd.id, rateToUse ?? 0, numAmount, selectedPaymentMethods, confirmedVersion)
+      if (order.errors.length > 0) {
+        const errorCode = order.errors[0].code
+        track("ek_order_creation_failed_markets_advert_sheet", { error_code: errorCode, error_message: errorCode })
+
+        // Special-case branches that don't fit the mapper's generic shape.
+        if (errorCode === "OrderAdvertVersionChanged") {
+          clearSelectedPaymentMethods()
+          setShowAdUpdatedModal(true)
+        } else if (errorCode === "OrderFloatRateSlippage" || errorCode === "OrderCreateFailRateSlippage") {
+          track("ek_order_rate_slippage_server_markets_advert_sheet")
+          setLockedConfirmationRate(marketRate ?? localAd.effective_rate ?? null)
+          setShowRateChangeConfirmation(true)
+        } else {
+          // Mapper-driven path: every other code routes through mapOrderError +
+          // dispatchOrderErrorAction. The dispatcher is the single place that
+          // wires CTA actions (route, intercom, retry, list-invalidate, etc).
+          const existingOrderId = (order.errors[0]?.detail?.order_id as number | undefined)
+
+          const dispatch = createOrderErrorDispatcher({
+            queryClient,
+            router,
+            handleClose,
+            track,
+            retry: proceedWithOrder,
+            advertisementsQueryKey: queryKeys.buySell.advertisements(),
+            getHomeUrl,
+          })
+
+          const err = mapOrderError(errorCode, t, {
+            isBuyAdvert: orderType === "buy",
+            accountCurrency: localAd.account_currency,
+            paymentCurrency: localAd.payment_currency,
+          })
+
+          showAlert({
+            title: err.title,
+            description: err.message,
+            confirmText: err.primaryCta,
+            cancelText: err.secondaryCta,
+            type: "warning",
+            hideCloseButton: err.primaryAction === OrderErrorAction.GoToMarkets,
+            preventOutsideClose: err.primaryAction === OrderErrorAction.GoToMarkets,
+            onConfirm: () => dispatch(err.primaryAction, { orderId: existingOrderId }),
+            onCancel: err.secondaryAction
+              ? () => dispatch(err.secondaryAction!, { orderId: existingOrderId })
+              : undefined,
+          })
+        }
+      } else {
+        track("ek_order_created_markets_advert_sheet")
+        router.push("/orders/" + order.data.id)
+      }
     } catch (error) {
-      console.error("Failed to create order:", error)
+      const errorCode = error instanceof Error ? error.message : "Unknown Error"
+      track("ek_order_creation_failed_markets_advert_sheet", { error_code: "order_creation_error", error_message: errorCode })
       setOrderStatus({
         success: false,
-        message: error instanceof Error ? error.message : "Failed to create order. Please try again.",
+        message: t("order.createOrderFailed", { code: errorCode }),
       })
     } finally {
       setIsSubmitting(false)
@@ -136,265 +865,431 @@ export default function OrderSidebar({ isOpen, onClose, ad, orderType }: OrderSi
   }
 
   const handleClose = () => {
+    track("ek_close_markets_advert_sheet")
+    onStartClose?.()
     setIsAnimating(false)
     setTimeout(() => {
+      setTotalAmount(0)
       setSelectedPaymentMethods([])
       setAmount(null)
       setValidationError(null)
-      setShowPaymentSelection(false)
+      setTempSelectedPaymentMethods([])
+      setIsResolvingPaymentEntry(false)
+      setShowRateChangeConfirmation(false)
+      setLockedConfirmationRate(null)
+      setPendingRateUpdate(null)
+      setHasAdvertUpdated(false)
+      setPendingAdvertUpdate(null)
+      setShowAdUpdatedModal(false)
       onClose()
     }, 300)
   }
 
-  const handlePaymentMethodToggle = (methodId: string) => {
-    setSelectedPaymentMethods((prev) =>
-      prev.includes(methodId) ? prev.filter((id) => id !== methodId) : [...prev, methodId],
-    )
-  }
+  const handleAddPaymentMethod = async (method: string, fields: Record<string, string>) => {
+    try {
+      const result = await addPaymentMethod.mutateAsync({ method, fields })
 
-  const handleConfirmPaymentSelection = () => {
-    setShowPaymentSelection(false)
+      setShowAddPaymentPanel(false)
+
+      const created = result.data as PaymentMethod | undefined
+      const createdId = getCreatedPaymentMethodId(created)
+      const acceptedMethods = localAd?.payment_methods
+      // Reopen selection immediately from the create response. The refetch
+      // below reconciles the list in the background without a blank gap.
+      const nextUserPaymentMethods = mergeCreatedPaymentMethodIntoList(
+        userPaymentMethods,
+        created,
+        acceptedMethods,
+      )
+
+      setUserPaymentMethods(nextUserPaymentMethods)
+
+      let nextSelection = tempSelectedPaymentMethods
+
+      if (createdId) {
+        nextSelection = appendSelectedPaymentMethodId(
+          tempSelectedPaymentMethods,
+          createdId,
+          3,
+          nextUserPaymentMethods,
+        )
+        setSelectedPaymentMethods(nextSelection)
+        setTempSelectedPaymentMethods(nextSelection)
+      }
+
+      openPaymentSelection(nextSelection, nextUserPaymentMethods, createdId)
+      void queryClient.refetchQueries({ queryKey: queryKeys.auth.userPaymentMethods() })
+
+      const createdMethodName = created?.display_name || formatPaymentMethodName(method, t)
+
+      toast({
+        description: (
+          <div className="flex items-center gap-2">
+            <Image src="/icons/tick.svg" alt={t("common.success")} width={24} height={24} className="text-white" />
+            <span>{t("profile.paymentMethodAddedWithName", { methodName: createdMethodName })}</span>
+          </div>
+        ),
+        className: TOAST_SUCCESS_CLASS,
+        duration: 2500,
+      })
+    } catch (err) {
+      const error = err as PaymentMethodError
+      if (isPaymentMethodElevationCancelled(error)) return
+      const errorCode = error?.errors?.[0]?.code
+
+      const recoverableAlert = createPaymentMethodAddErrorAlertConfig(t, {
+        errorCode,
+        fieldValue: resolvePaymentMethodAccountFieldValue(fields, t),
+        destinations: {
+          stayOnForm: stayOnAddPaymentForm,
+          openCatalogue: reopenPaymentCatalogue,
+          openSelectionSheet: returnToPaymentSelection,
+          resolveEntry: resolveAddErrorEntry,
+        },
+      })
+
+      if (recoverableAlert) {
+        showAlert(recoverableAlert)
+        return
+      }
+
+      showAlert({
+        title: t("paymentMethod.unableToAdd"),
+        description: t("paymentMethod.addError"),
+        confirmText: t("common.ok"),
+        type: "warning",
+      })
+    }
   }
 
   const getSelectedPaymentMethodsText = () => {
-    if (selectedPaymentMethods.length === 0) return "Select payment"
+    if (selectedPaymentMethods.length === 0) return t("order.receivePaymentTo")
     if (selectedPaymentMethods.length === 1) {
-      const method = userPaymentMethods.find((m) => m.id === selectedPaymentMethods[0])
-      return method ? `${method.display_name}` : "Select payment"
+      const method = userPaymentMethods.find((m) =>
+        normalizePaymentMethodId(m.id) === normalizePaymentMethodId(selectedPaymentMethods[0]),
+      )
+      return method ? `${method.display_name}` : t("order.receivePaymentTo")
     }
-    return `Selected (${selectedPaymentMethods.length})`
+    return t("order.selected") + ` (${selectedPaymentMethods.length})`
   }
 
   const isBuy = orderType === "buy"
-  const title = isBuy ? "Sell USD" : "Buy USD"
-  const youSendText = isBuy ? "You receive" : "You pay"
+  const title = isBuy ? `${t("common.sell")} USD` : `${t("common.buy")} USD`
+  const youSendText = isBuy ? t("order.youReceive") : t("order.youPay")
 
-  // Calculate order limits
-  const minLimit = ad?.minimum_order_amount || "0.00"
-  const maxLimit = ad?.actual_maximum_order_amount || "0.00"
+  const minLimit = localAd?.minimum_order_amount || "0.00"
+  const maxLimit = localAd?.actual_maximum_order_amount || "0.00"
+
+  // Set user payment methods and seller payment methods.
+  // Always sync even when empty — clears stale choices when advert payment methods are removed.
+  useEffect(() => {
+    setUserPaymentMethods(filteredPaymentMethods)
+
+    const buyerAcceptedMethods = localAd?.payment_methods || []
+    const sellerMethods: SellerPaymentMethod[] = buyerAcceptedMethods.map((method: string) => ({
+      type: method.toLowerCase().includes("bank") ? "bank" : "ewallet",
+      method: method,
+    }))
+    setSellerPaymentMethods(sellerMethods)
+  }, [filteredPaymentMethods, localAd?.payment_methods])
+
+  // Prune any selected payment method IDs that are no longer compatible with the updated advert.
+  // Uses functional setState so this effect only depends on filteredPaymentMethods,
+  // avoiding the self-referential dependency loop that would occur if selectedPaymentMethods
+  // or tempSelectedPaymentMethods were listed here.
+  useEffect(() => {
+    const compatiblePaymentMethodIds = new Set(filteredPaymentMethods.map((method: PaymentMethod) => method.id))
+
+    setSelectedPaymentMethods((current: string[]) => {
+      const next = current.filter((id: string) => compatiblePaymentMethodIds.has(id))
+      return areStringArraysEqual(current, next) ? current : next
+    })
+
+    setTempSelectedPaymentMethods((current: string[]) => {
+      const next = current.filter((id: string) => compatiblePaymentMethodIds.has(id))
+      return areStringArraysEqual(current, next) ? current : next
+    })
+  }, [filteredPaymentMethods])
+
+  // Entry-point guard for the picker: never open a selection sheet whose only
+  // action is "add". Deciding "empty" can need later pages first, so this runs
+  // as an effect and drains pagination while the button shows its loader.
+  useEffect(() => {
+    if (!isResolvingPaymentEntry) return
+
+    const entry = resolvePaymentEntry()
+
+    if (entry === "loading") {
+      if (isLoadingPaymentMethods || isFetchingMorePaymentMethods || !hasMorePaymentMethods) return
+
+      // Bound the drain so a failing page fetch degrades to the old behaviour
+      // instead of spinning forever.
+      if (paymentEntryPagesDrainedRef.current >= MAX_PAYMENT_ENTRY_PAGE_DRAINS) {
+        setIsResolvingPaymentEntry(false)
+        openPaymentSelection()
+        return
+      }
+
+      paymentEntryPagesDrainedRef.current += 1
+      void fetchMorePaymentMethods()
+      return
+    }
+
+    setIsResolvingPaymentEntry(false)
+
+    if (entry === "catalogue") {
+      // Straight to the catalogue, constrained to what this advert accepts.
+      setShowAddPaymentPanel(true)
+      return
+    }
+
+    openPaymentSelection()
+  }, [
+    fetchMorePaymentMethods,
+    hasMorePaymentMethods,
+    isFetchingMorePaymentMethods,
+    isLoadingPaymentMethods,
+    isResolvingPaymentEntry,
+    openPaymentSelection,
+    resolvePaymentEntry,
+  ])
+
+  if (!isOpen && !isAnimating) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div
-        className={`fixed inset-0 bg-black/30 transition-opacity duration-300 ${isOpen && isAnimating ? "opacity-100" : "opacity-0"
-          }`}
-        onClick={handleClose}
-      />
-      <div
-        className={`relative w-full max-w-md bg-white h-full overflow-y-auto transform transition-transform duration-300 ease-in-out ${isOpen && isAnimating ? "translate-x-0" : "translate-x-full"
-          }`}
-      >
-        {ad && (
-          <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between px-4 py-1 border-b">
-              {showPaymentSelection ? (
-                <>
-                  <div className="flex items-center">
-                    <Button onClick={() => setShowPaymentSelection(false)} variant="ghost" size="icon" className="p-1 mr-3">
-                      <ArrowLeft className="h-6 w-6" />
-                    </Button>
-                    <h2 className="text-xl font-bold">Select payment</h2>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <h2 className="text-xl font-bold">{title}</h2>
-                  <Button onClick={handleClose} variant="ghost" size="icon" className="p-1">
-                    <X className="h-6 w-6" />
-                  </Button>
-                </>
-              )}
-            </div>
-
-            {showPaymentSelection ? (
-              <div className="flex flex-col h-full">
-                <div className="flex-1 p-4 space-y-4">
-                  {isLoadingPaymentMethods ? (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="h-8 w-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
-                      <span className="ml-2 text-gray-600">Loading payment methods...</span>
-                    </div>
-                  ) : paymentMethodsError ? (
-                    <div className="text-center py-8">
-                      <p className="text-red-600 mb-4">{paymentMethodsError}</p>
-                      <Button onClick={fetchUserPaymentMethods} variant="outline">
-                        Retry
-                      </Button>
-                    </div>
-                  ) : userPaymentMethods.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-gray-600 mb-4">No compatible payment methods found</p>
-                      <p className="text-sm text-gray-500">
-                        Add a payment method that matches the buyer's accepted methods
-                      </p>
-                    </div>
-                  ) : (
-                    userPaymentMethods.map((method) => (
-                      <div
-                        key={method.id}
-                        className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-color"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center mb-2">
-                              <div
-                                className={`h-3 w-3 rounded-full mr-2 ${method.type === "bank" ? "bg-green-500" : "bg-blue-500"
-                                  }`}
-                              />
-                              <span className="font-medium text-gray-600">{method.display_name}</span>
-                            </div>
-                          </div>
-                          <Checkbox
-                            checked={selectedPaymentMethods.includes(method.id)}
-                            onCheckedChange={() => handlePaymentMethodToggle(method.id)}
-                          />
-                        </div>
-                      </div>
-                    ))
-                  )}
-
-                  <div className="border border-gray-200 rounded-lg p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors hidden">
-                    <div className="flex items-center justify-center">
-                      <Plus className="h-5 w-5 mr-2 text-gray-600" />
-                      <span className="text-gray-900 font-medium">Add payment method</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 border-t">
-                  <Button
-                    className="w-full"
-                    size="lg"
-                    onClick={handleConfirmPaymentSelection}
-                    disabled={selectedPaymentMethods.length === 0}
-                  >
-                    Confirm
-                  </Button>
-                </div>
+    <>
+      <div data-testid="order-sidebar-container" className="fixed inset-0 z-50 flex justify-end">
+        <div
+          className={`fixed inset-0 bg-black/30 transition-opacity duration-300 ${isOpen && isAnimating ? "opacity-100" : "opacity-0"
+            }`}
+          onClick={handleClose}
+        />
+        <div
+          className={`relative w-full bg-white h-full transform transition-transform duration-300 ease-in-out ${isOpen && isAnimating ? "translate-x-0" : "translate-x-full"
+            }`}
+        >
+          {localAd && (
+            <div className="flex flex-col h-full max-w-xl mx-auto">
+              <div className="flex items-center justify-end px-4 py-3">
+                <Button data-testid="order-sidebar-btn-close" onClick={handleClose} variant="icon-muted" aria-label={t("common.close")}>
+                  <StandaloneXmarkFillIcon width={24} height={24} aria-hidden />
+                </Button>
               </div>
-            ) : (
-              <>
-                <div className="p-4 bg-gray-50 m-4 rounded-lg">
-                  <div className="mb-2">
-                    <div className="flex items-center justify-between">
-                      <Input value={amount} onChange={handleAmountChange} placeholder="Enter amount" />
-                      <span className="text-gray-500 hidden">{ad.account_currency}</span>
+
+              <div className="flex flex-col h-auto overflow-y-auto">
+                <div className="p-4 pb-0">
+                  <Alert variant="warning" dir={dir}>
+                    <h3 className="font-bold text-sm">
+                      {t("order.secureTradeReminder.title")}
+                    </h3>
+                    <div className="text-sm">
+                      {t("order.secureTradeReminder.description")}
                     </div>
+                  </Alert>
+                </div>
+                <h2 className="text-xl font-bold p-4 pb-0">{title}</h2>
+                <div className="p-4">
+                  <div className="mb-4">
+                    <Input
+                      data-testid="order-sidebar-input-amount"
+                      value={amount}
+                      onChange={handleAmountChange}
+                      type="number"
+                      className={cn(
+                        "[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none py-0",
+                        validationError && "border-error focus:border-error focus-visible:ring-0",
+                      )}
+                      step="any"
+                      inputMode="decimal"
+                      onKeyDown={(e) => {
+                        if (["e", "E", "+", "-"].includes(e.key)) {
+                          e.preventDefault()
+                        }
+                      }}
+                      placeholder="0.00"
+                      variant="floatingCurrency"
+                      currency={localAd.account_currency}
+                      label={t("order.amount")}
+                    />
                   </div>
-                  {validationError && <p className="text-xs text-red-500 text-sm mb-2">{validationError}</p>}
+                  {validationError && <p data-testid="order-sidebar-error-amount" className="text-sm text-error mb-2">{validationError}</p>}
                   <div className="flex items-center">
-                    <span className="text-gray-500">{youSendText}:&nbsp;</span>
-                    <span className="font-bold">
-                      {ad.payment_currency}{" "}
+                    <span className="text-grayscale-text-muted">{youSendText}:&nbsp;</span>
+                    <span className="text-slate-1200 font-bold">
                       {Number.parseFloat(totalAmount).toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
-                      })}
+                      })}{" "}
+                      {localAd.payment_currency}
                     </span>
                   </div>
                 </div>
 
                 {isBuy && (
                   <div className="mx-4 mt-4 pb-6 border-b">
-                    <h3 className="text-sm text-slate-1400 mb-3">Receive payment to</h3>
-                    <div
-                      className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-                      onClick={() => setShowPaymentSelection(true)}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      data-testid="order-sidebar-btn-select-payment"
+                      className="!h-12 !w-full !rounded-lg !border !border-solid !border-neutral-200 !bg-white !px-3 !font-normal hover:!bg-neutral-50 focus:!ring-1 focus:!ring-black [&>span]:!w-full"
+                      onClick={handleShowPaymentSelection}
+                      disabled={isResolvingPaymentEntry}
+                      aria-busy={isResolvingPaymentEntry}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-500">
-                          {getSelectedPaymentMethodsText()}
+                      {isResolvingPaymentEntry ? (
+                        <span className="flex w-full items-center justify-center">
+                          <Spinner size="xs" />
                         </span>
-                        <ChevronRight className="h-5 w-5 text-gray-400" />
-                      </div>
-                    </div>
+                      ) : (
+                        <span className="flex w-full flex-row items-center justify-between">
+                          <span className="flex min-w-0 flex-1 flex-col items-start gap-[1px]">
+                            {selectedPaymentMethods.length > 0 && (
+                              <span className="text-xs font-normal text-grayscale-600">
+                                {t("order.receivePaymentTo")}
+                              </span>
+                            )}
+                            <span
+                              data-testid="order-sidebar-text-payment-method"
+                              className="min-w-0 truncate text-sm font-normal text-grayscale-600"
+                            >
+                              {getSelectedPaymentMethodsText()}
+                            </span>
+                          </span>
+                          <StandaloneChevronDownRegularIcon iconSize="xs" fill="currentColor" className="ms-1.5 shrink-0" />
+                        </span>
+                      )}
+                    </Button>
                   </div>
                 )}
 
                 <div className="mx-4 mt-4 text-sm">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-slate-500">Rate ({ad.account_currency} 1)</span>
-                    <span className="text-slate-1400">
-                      {ad.payment_currency} {ad.exchange_rate?.toLocaleString()}
+                  <div className="flex justify-between items-center gap-4 mb-2">
+                    <span className="text-grayscale-text-muted shrink-0">{t("order.rateType")}</span>
+                    <span className="bg-blue-50 text-blue-800 capitalize text-xs rounded-sm p-1 shrink-0">
+                      {localAd.exchange_rate_type === "float" ? t("order.rateFloating") : t("order.rateFixed")}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-slate-500">Order limit</span>
-                    <span className="text-slate-1400">
-                      {ad.account_currency} {minLimit} - {maxLimit}
+                  <div className="flex justify-between items-center gap-4 mb-2">
+                    <span className="text-grayscale-text-muted shrink-0">{t("order.exchangeRate")}</span>
+                    <ExchangeRateDisplay
+                      className="text-slate-1200 shrink-0"
+                      rate={localAd.effective_rate_display}
+                      paymentCurrency={localAd.payment_currency}
+                      accountCurrency={localAd.account_currency}
+                      formatRate={false}
+                    />
+                  </div>
+                  <div className="flex justify-between items-center gap-4 mb-2">
+                    <span className="text-grayscale-text-muted shrink-0">{t("order.orderLimit")}</span>
+                    <span className="text-slate-1200 shrink-0">
+                      {minLimit} - {maxLimit} {localAd.account_currency}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-slate-500">Payment time</span>
-                    <span className="text-slate-1400">{ad.order_expiry_period} min</span>
+                  <div className="flex justify-between items-center gap-4 mb-2">
+                    <span className="text-grayscale-text-muted shrink-0">{t("order.paymentTime")}</span>
+                    <span className="text-slate-1200 shrink-0">
+                      <bdi dir="ltr">{localAd.order_expiry_period}</bdi> {t("market.min")}
+                    </span>
                   </div>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-slate-500">{isBuy ? "Buyer" : "Seller"}</span>
-                    <span className="text-slate-1400">{ad.user?.nickname}</span>
+                  <div className="flex justify-between items-center gap-4 mb-2">
+                    <span className="text-grayscale-text-muted shrink-0">
+                      {isBuy ? t("order.buyer") : t("order.seller")}
+                    </span>
+                    <span className="text-slate-1200 shrink-0">{localAd.user?.nickname}</span>
                   </div>
                 </div>
 
-                <div className="border-t m-4 py-2 text-sm">
-                  <h3 className="text-slate-500">
-                    {isBuy ? "Buyer's payment method(s)" : "Seller's payment method(s)"}
+                <div className="border-t border-slate-1700 m-4 mb-0 pt-4 text-sm">
+                  <h3 className="text-grayscale-text-muted mb-2 text-start">
+                    {isBuy ? t("order.buyersPaymentMethods") : t("order.sellersPaymentMethods")}
                   </h3>
-                  <div className="flex flex-wrap gap-4">
-                    {ad.payment_methods?.map((method, index) => (
-                      <div key={index} className="flex items-center">
+                  <div className="flex flex-col gap-2">
+                    {localAd.payment_methods?.map((method) => (
+                      <div key={method} className="flex items-center min-w-0">
                         <div
-                          className={`h-4 w-4 rounded-full mr-2 ${method.toLowerCase().includes("bank")
-                            ? "bg-green-500"
-                            : method.toLowerCase().includes("wallet") || method.toLowerCase().includes("ewallet")
-                              ? "bg-blue-500"
-                              : "bg-yellow-500"
+                          className={`h-2 w-2 shrink-0 rounded-full me-2 ${method.toLowerCase().includes("bank") ? "bg-paymentMethod-bank" : "bg-paymentMethod-ewallet"
                             }`}
                         />
-                        <span className="text-slate-1400">
-                          {method.toLowerCase().includes("bank")
-                            ? "Bank transfer"
-                            : method.toLowerCase().includes("wallet") || method.toLowerCase().includes("ewallet")
-                              ? "eWallet"
-                              : method}
+                        <span className="text-slate-1200 text-start truncate">
+                          {formatPaymentMethodName(method, t)}
                         </span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="mx-4 mt-4 border-t py-2 text-sm">
-                  <h3 className="text-slate-500">{isBuy ? "Buyer's instructions" : "Seller's instructions"}</h3>
-                  <p className="text-slate-1400 break-words">
-                    {ad.description ||
-                      "Kindly transfer the payment to the provided account details after placing your order."}
+                <div className="mx-4 mt-4 border-t border-slate-1700 py-2 text-sm">
+                  <h3 className="text-grayscale-text-muted">
+                    {isBuy ? t("order.buyersInstructions") : t("order.sellersInstructions")}
+                  </h3>
+                  <p className="text-slate-1200 break-words mt-2">
+                    {localAd.description || "-"}
                   </p>
                 </div>
 
-                <div className="mt-auto p-4 border-t">
+                <div className="mt-auto p-4 flex justify-end">
                   <Button
-                    className="w-full"
-                    variant="primary"
-                    size="lg"
+                    data-testid="order-sidebar-btn-place-order"
+                    className="w-full md:w-auto"
+                    variant="default"
                     onClick={handleSubmit}
-                    disabled={!amount || (isBuy && selectedPaymentMethods.length === 0) || !!validationError || isSubmitting}
+                    disabled={
+                      !amount || (isBuy && selectedPaymentMethods.length === 0) || !!validationError || isSubmitting
+                    }
                   >
                     {isSubmitting ? (
-                      <span className="flex items-center justify-center">
-                        <span className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
-                        Processing...
-                      </span>
+                      <Spinner size="xs" />
                     ) : (
-                      "Place order"
+                      t("order.placeOrder")
                     )}
                   </Button>
                   {orderStatus && !orderStatus.success && (
                     <div className="mt-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">{orderStatus.message}</div>
                   )}
                 </div>
-              </>
-            )}
-          </div>
-        )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+
+      {showAddPaymentPanel && (
+        <AddPaymentMethodPanel
+          key={addPanelInstanceId}
+          onAdd={handleAddPaymentMethod}
+          isLoading={addPaymentMethod.isPending}
+          allowedPaymentMethods={localAd?.payment_methods}
+          onClose={() => {
+            setShowAddPaymentPanel(false)
+            setSelectedPaymentMethodType(undefined)
+          }}
+          selectedMethod={selectedPaymentMethodType}
+        />
+      )}
+
+      <AdUpdatedConfirmation
+        isOpen={showAdUpdatedModal}
+        onConfirm={handleAdvertUpdateConfirm}
+        onCancel={() => setShowAdUpdatedModal(false)}
+      />
+
+      {localAd && (
+        <RateChangeConfirmation
+          isOpen={showRateChangeConfirmation}
+          onConfirm={() => { track("ek_confirm_rate_change_markets_advert_sheet"); proceedWithOrder() }}
+          onCancel={() => {
+            track("ek_cancel_rate_change_markets_advert_sheet")
+            setShowRateChangeConfirmation(false)
+            setLockedConfirmationRate(null)
+          }}
+          amount={amount || "0"}
+          accountCurrency={localAd.account_currency}
+          paymentCurrency={localAd.payment_currency}
+          oldRate={localAd.effective_rate ?? localAd.exchange_rate ?? 0}
+          newRate={lockedConfirmationRate ?? 0}
+          isBuy={isBuy}
+        />
+      )}
+    </>
   )
 }

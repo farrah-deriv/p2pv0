@@ -1,0 +1,372 @@
+# deriv-com/p2p-v0 — .github/workflows/direct-fix.yml
+#
+# Triggered by iCore when a Slack bug report should be fixed directly. Claude
+# investigates, files the GitHub issue with its hypothesis BEFORE writing code,
+# implements the fix, opens a PR, waits for real CI, and writes exactly one
+# machine-readable result file. This workflow never talks to Slack; iCore relays
+# announcement.txt or handback.txt back to the originating thread.
+#
+# Why this runs here and not in deriv-core/core-automation:
+#   The hub's issue-to-pr pipeline clones and pushes over SSH
+#   (git@github.com:...) using a shared deploy key, which is authorised
+#   per-repository and is not granted on this repo — every push fails with
+#   "ERROR: Write access to repository not granted." Running in-repo lets us
+#   mint an installation token for the iCore GitHub App (which *does* have
+#   contents:write here) and push over HTTPS, so no deploy key is involved.
+#   The label-triggered hub path (issue-to-pr-trigger.yml) remains as a
+#   fallback for whenever that key is sorted out.
+#
+# Secrets:
+#   LITELLM_API_KEY
+#     Model access via the LiteLLM proxy at https://litellmsa.deriv.ai, the
+#     same route clawde.yml uses. NOT ANTHROPIC_API_KEY — that secret exists
+#     but is rejected as invalid.
+#   ICORE_GITHUB_APP_ID / ICORE_GITHUB_APP_PRIVATE_KEY
+#     iCore GitHub App — installed on deriv-com with contents:write.
+
+name: direct-fix
+
+on:
+  workflow_dispatch:
+    inputs:
+      bug_text:
+        description: Full bug report, including relevant thread replies
+        required: true
+        type: string
+      reporter_slack_id:
+        description: Slack reporter ID — used only for optional attribution
+        required: true
+        type: string
+      slack_thread_ts:
+        description: Slack thread timestamp — duplicate/provenance anchor
+        required: false
+        type: string
+      scope_hint:
+        description: 'Optional path hint, e.g. src/features/cashier — verified, not trusted blindly'
+        required: false
+        type: string
+      resume_issue_number:
+        description: Existing issue to resume instead of filing a new one
+        required: false
+        type: string
+  repository_dispatch:
+    types: [direct_fix]
+
+concurrency:
+  group: direct-fix-${{ github.event.inputs.slack_thread_ts || github.event.client_payload.slack_thread_ts || github.event.inputs.resume_issue_number || github.event.client_payload.resume_issue_number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  fix:
+    runs-on:
+      # Must be `github_claude_code_reviewer` (underscores) — that is the group
+      # clawde.yml uses and is proven to exist. `github-hosted-code-reviewer`
+      # (hyphens), as used by claude-pr-comment.yml, does NOT exist: every run
+      # of that workflow so far has been skipped by its `if:` condition, so its
+      # group name has never been exercised and will fail with "Required runner
+      # group ... not found" the first time someone actually comments @claude.
+      group: github_claude_code_reviewer
+    timeout-minutes: 120
+    permissions:
+      contents: read
+
+    steps:
+      # Write a fallback hand-back before anything can fail, so iCore always has
+      # exactly one result file to relay even if setup dies early.
+      - name: Collect raw payload
+        id: raw
+        env:
+          RAW_PAYLOAD: ${{ toJSON(github.event.inputs || github.event.client_payload) }}
+        run: |
+          set -euo pipefail
+          # Reserve the final ten minutes of the 120-minute job for deterministic
+          # hand-back publication and artifact upload. 6600s = 110 minutes.
+          echo "$(( $(date +%s) + 6600 ))" > /tmp/direct-fix-deadline-epoch
+          cat > /tmp/handback.txt <<EOF
+          Direct-fix stopped before the agent produced a result. Check the failed setup step and retry after correcting it.
+          Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+          EOF
+          printf '%s' "$RAW_PAYLOAD" > /tmp/raw.json
+          # Keys only — do not persist the full Slack report in public logs.
+          jq -r 'keys[]' /tmp/raw.json
+
+      # Mint before checkout so the checkout itself uses the write token; the
+      # persisted credential is then already the token we push with. Single
+      # repo, so there is no second repository for a host-wide header to shadow
+      # (the failure mode that bit the mobile repo's multi-repo setup).
+      #
+      # Credential history, so nobody re-runs these experiments:
+      #   The ICORE_* private key was corrupted at the org until 2026-08-12,
+      #   producing 401 "A JSON web token could not be decoded" (run
+      #   31522901002). DevOps re-uploaded it and it now works.
+      #   CLIENT_ID_GHAPP is installed here but read-only — 422 (run
+      #   31523652105). CLIENT_ID_GHAPP_WRITE has valid credentials but is not
+      #   installed on this repo — 404 (run 31559900699). Neither is usable.
+      #   GITHUB_TOKEN is not an option either: PRs it opens do not trigger
+      #   other workflows, so CI would never run and §5 could never gate.
+      #
+      #   Switched to LEXI_* 2026-08-14: ICORE_GITHUB_APP_ID/PRIVATE_KEY
+      #   started failing dispatch again (422) from the bug-triage-orchestrator
+      #   side. LEXI_GITHUB_APP_ID/PRIVATE_KEY is the "GH APP BUG TRIAGE"
+      #   GitHub App used by that orchestrator; requested with the exact same
+      #   five permissions ICORE's token used, scoped to this repo only.
+      #   ICORE_* secrets are left in place, untouched, for whenever that
+      #   credential is fixed and this can be switched back.
+      - name: Generate GitHub App token (write, this repo only)
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.LEXI_GITHUB_APP_ID }}
+          private-key: ${{ secrets.LEXI_GITHUB_APP_PRIVATE_KEY }}
+          owner: deriv-com
+          repositories: p2p-v0
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+          # Read-only, but essential: without these the agent cannot see CI at
+          # all. Run 31567389408 produced a correct, CI-green fix yet had to
+          # hand back — every check-status endpoint returned 403 "Resource not
+          # accessible by integration", so it could not honestly claim CI
+          # passed. `checks` covers check-runs; `actions` covers the
+          # /actions/runs endpoint `gh pr checks` also consults.
+          permission-checks: read
+          permission-actions: read
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+          # Submodules are deliberately NOT initialised. playwright/e2e-tests-core
+          # is only needed for the Playwright suite, which this workflow does not
+          # run (it needs ENV_ENCRYPTION_KEY and a live staging backend). lint,
+          # typecheck and vitest all work from a bare checkout.
+
+      - name: Normalize and validate payload
+        run: |
+          set -euo pipefail
+          if ! bash .claude/skills/ship-change-slack/scripts/normalize_payload.sh \
+              /tmp/raw.json > /tmp/ctx.json 2> /tmp/normalize-error.txt; then
+            {
+              echo "Direct-fix rejected the trigger payload."
+              cat /tmp/normalize-error.txt
+              echo "Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            } > /tmp/handback.txt
+            cat /tmp/normalize-error.txt
+            exit 1
+          fi
+          jq -r 'keys[]' /tmp/ctx.json
+
+      # Search is only a candidate fetch. The exact `slack-thread: <ts>` line
+      # decides duplication. Only OPEN PRs count. One open PR is not a
+      # duplicate — it is the live PR for this thread, and the run continues
+      # on it (`resume_pr_number`). Multiple open PRs still block. A leftover
+      # issue only blocks when there is no open PR to continue. Closing a PR
+      # to re-dispatch is the wrong workaround and is not required.
+      - name: Duplicate guard
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          TS=$(jq -r '.slack_thread_ts // empty' /tmp/ctx.json)
+          RESUME=$(jq -r '.resume_issue_number // empty' /tmp/ctx.json)
+          if [ -z "$TS" ]; then
+            echo "No slack_thread_ts supplied — skipping thread duplicate guard."
+            exit 0
+          fi
+
+          gh pr list --search "$TS" --state open --limit 100 --json number,body > /tmp/pr-candidates.json
+          gh issue list --search "$TS" --state all --limit 100 --json number,body > /tmp/issue-candidates.json
+          jq -r --arg anchor "slack-thread: $TS" \
+            '.[] | select(((.body // "") | split("\n") | map(gsub("^[[:space:]]+|[[:space:]]+$"; "") | gsub("^_+|_+$"; "")) | index($anchor)) != null) | .number' \
+            /tmp/pr-candidates.json > /tmp/pr_hits.txt
+          jq -r --arg anchor "slack-thread: $TS" \
+            '.[] | select(((.body // "") | split("\n") | map(gsub("^[[:space:]]+|[[:space:]]+$"; "") | gsub("^_+|_+$"; "")) | index($anchor)) != null) | .number' \
+            /tmp/issue-candidates.json > /tmp/issue_hits.txt
+
+          set +e
+          GUARD_OUT=$(bash .claude/skills/ship-change-slack/scripts/duplicate_guard.sh \
+              /tmp/pr_hits.txt /tmp/issue_hits.txt "$RESUME")
+          GUARD_RC=$?
+          set -e
+          if [ "$GUARD_RC" -ne 0 ]; then
+            {
+              echo "This Slack thread was already picked up; no second fix run was started."
+              echo "$GUARD_OUT"
+              echo "Thread: $TS"
+            } > /tmp/handback.txt
+            cat /tmp/handback.txt
+            exit 1
+          fi
+          case "$GUARD_OUT" in
+            CONTINUE:*)
+              PR_NUM=$(printf '%s' "$GUARD_OUT" | sed -n 's/^CONTINUE: pr=\([0-9][0-9]*\).*/\1/p')
+              if [ -z "$PR_NUM" ]; then
+                echo "duplicate_guard printed CONTINUE but no PR number" >&2
+                exit 1
+              fi
+              jq --arg pr "$PR_NUM" '.resume_pr_number = $pr' /tmp/ctx.json > /tmp/ctx.continued.json
+              mv /tmp/ctx.continued.json /tmp/ctx.json
+              echo "Continuing existing PR #$PR_NUM for this thread."
+              ;;
+          esac
+          if ! jq -e '.resume_pr_number' /tmp/ctx.json >/dev/null; then
+            # Fallback only. The duplicate guard above already set
+            # resume_pr_number when it found exactly one open PR for this
+            # Slack thread (`CONTINUE: pr=N`). This header is what Lexi
+            # stamps as the first line of bug_text when the reporter asks
+            # to patch that same PR — used when the guard found nothing
+            # (new thread, or the PR is not yet searchable). Guard wins
+            # when both fire; this path never overwrites it.
+            HDR=$(jq -r '.bug_text' /tmp/ctx.json | sed -n 's/^CONTINUE PR: \([0-9][0-9]*\).*/\1/p' | head -1)
+            if [ -n "$HDR" ]; then
+              jq --arg pr "$HDR" '.resume_pr_number = $pr' /tmp/ctx.json > /tmp/ctx.continued.json
+              mv /tmp/ctx.continued.json /tmp/ctx.json
+              echo "Continuing PR #$HDR from CONTINUE PR header."
+            fi
+          fi
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: 20.x
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Claude Code CLI
+        run: which claude || npm install -g @anthropic-ai/claude-code
+
+      - name: Configure git identity
+        run: |
+          set -euo pipefail
+          git config user.name "Deriv Fix Agent"
+          git config user.email "fixagent@deriv.com"
+
+      # The agent runs headlessly. Token scope (this repo only), the pre-push
+      # hook's main-branch protection, the job timeout and per-thread concurrency
+      # bound the dangerous permission mode.
+      - name: Run ship-change-slack
+        id: run_skill
+        env:
+          # Route through the LiteLLM proxy, matching clawde.yml — the only
+          # Claude workflow here that actually runs. The raw ANTHROPIC_API_KEY
+          # secret exists but is rejected ("Invalid API key · Fix external API
+          # key", run 31522901002); it was copied from claude-pr-comment.yml,
+          # whose every run is skipped, so nothing had ever exercised it.
+          ANTHROPIC_BASE_URL: https://litellmsa.deriv.ai
+          ANTHROPIC_AUTH_TOKEN: ${{ secrets.LITELLM_API_KEY }}
+          CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1"
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          # Setup succeeded; bound the agent so finalization and artifact upload
+          # still run before the 120-minute job timeout.
+          DEADLINE=$(cat /tmp/direct-fix-deadline-epoch)
+          REMAINING=$(( DEADLINE - $(date +%s) ))
+          if [ "$REMAINING" -lt 60 ]; then
+            cat > /tmp/handback.txt <<EOF
+          Direct-fix setup consumed the execution budget; retry after checking runner/setup performance.
+          Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+          EOF
+            exit 1
+          fi
+          rm -f /tmp/announcement.txt /tmp/handback.txt
+          timeout --signal=TERM --kill-after=30s "${REMAINING}s" claude -p "/ship-change-slack Read /tmp/ctx.json first. \
+            'bug_text' is a symptom, not a specification: investigate and localise the cause before \
+            writing code. Follow CLAUDE.md for this repo. Branches are always 'claude/<topic>'; issues are \
+            always unassigned. If resume_pr_number is set, checkout that PR and continue on its \
+            branch — do not open a second PR. If resume_issue_number is set, reuse that issue and preserve its \
+            slack-thread anchor instead of creating another. Otherwise file the issue immediately after \
+            investigation, before any code. Open the PR with 'Closes #N' only when resume_pr_number is empty, then wait for real CI with \
+            'gh pr checks' — never call a PR green on your own local run. Fix failures your change \
+            caused, using at most two CI-fix iterations; re-run a suspected flake once before treating \
+            it as a real failure, and disclose any tolerated flake in the result. Before each wait or \
+            fix iteration, read /tmp/direct-fix-deadline-epoch and hand back when fewer than five \
+            minutes remain. Write exactly one of /tmp/announcement.txt or /tmp/handback.txt and verify \
+            it with check_output_contract.sh before exiting." \
+            --dangerously-skip-permissions \
+            --model claude-opus-5 \
+            --max-turns 300 \
+            --verbose \
+            --output-format stream-json | tee /tmp/run.jsonl
+
+      - name: Finalize result contract
+        if: always()
+        run: |
+          set -euo pipefail
+          ANNOUNCEMENT=false
+          HANDBACK=false
+          [ -s /tmp/announcement.txt ] && ANNOUNCEMENT=true
+          [ -s /tmp/handback.txt ] && HANDBACK=true
+
+          if [ "$ANNOUNCEMENT" = true ] && [ "$HANDBACK" = true ]; then
+            rm -f /tmp/announcement.txt
+            cat > /tmp/handback.txt <<EOF
+          Direct-fix produced both result files, violating its output contract. Treating the run as a hand-back; inspect the agent log before retrying.
+          Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+          EOF
+          elif [ "$ANNOUNCEMENT" = false ] && [ "$HANDBACK" = false ]; then
+            rm -f /tmp/announcement.txt /tmp/handback.txt
+            cat > /tmp/handback.txt <<EOF
+          Direct-fix ended without a result. Inspect the failed step or agent log before retrying.
+          Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+          EOF
+          fi
+
+          # Guarded: any failure *before* the checkout step (e.g. the App-token
+          # step) leaves the repo unavailable, and an unguarded call here exits
+          # 127 and buries the real error under a "No such file" — which is
+          # exactly what happened on run 31522901002.
+          if [ -f .claude/skills/ship-change-slack/scripts/check_output_contract.sh ]; then
+            bash .claude/skills/ship-change-slack/scripts/check_output_contract.sh \
+              /tmp/announcement.txt /tmp/handback.txt
+          else
+            echo "check_output_contract.sh unavailable (checkout did not run); \
+          relying on the fallback hand-back written before setup."
+          fi
+
+      # The result goes to BOTH the step summary (for humans opening the run)
+      # and stdout (for iCore). iCore's relay reads job logs via
+      # get_workflow_run_output — it cannot see $GITHUB_STEP_SUMMARY — so a
+      # summary-only result would reach a human but silently reach the Slack
+      # thread as nothing at all. The fenced markers below are what iCore
+      # should extract and post verbatim.
+      - name: Publish result
+        if: always()
+        run: |
+          set -euo pipefail
+          if [ -s /tmp/announcement.txt ] && [ ! -s /tmp/handback.txt ]; then
+            echo "### Shipped" >> "$GITHUB_STEP_SUMMARY"
+            cat /tmp/announcement.txt >> "$GITHUB_STEP_SUMMARY"
+            echo "===== DIRECT_FIX_RESULT: SHIPPED ====="
+            cat /tmp/announcement.txt
+            echo "===== END_DIRECT_FIX_RESULT ====="
+          elif [ -s /tmp/handback.txt ] && [ ! -s /tmp/announcement.txt ]; then
+            echo "### Handed back — needs a human" >> "$GITHUB_STEP_SUMMARY"
+            cat /tmp/handback.txt >> "$GITHUB_STEP_SUMMARY"
+            echo "===== DIRECT_FIX_RESULT: HANDBACK ====="
+            cat /tmp/handback.txt
+            echo "===== END_DIRECT_FIX_RESULT ====="
+          else
+            echo "::error::Final result contract is invalid"
+            exit 1
+          fi
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: direct-fix-${{ github.run_id }}
+          path: |
+            /tmp/investigation.txt
+            /tmp/announcement.txt
+            /tmp/handback.txt
+            /tmp/run.jsonl
+          if-no-files-found: error

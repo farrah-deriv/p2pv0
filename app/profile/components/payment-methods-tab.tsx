@@ -1,21 +1,41 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { maskAccountNumber } from "@/lib/utils"
-
-import { useState, useEffect, useCallback } from "react"
-import { MoreVertical, Edit, Trash } from "lucide-react"
+import Image from "next/image"
+import { useState, useMemo, useEffect, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { API, AUTH } from "@/lib/local-variables"
 import { CustomShimmer } from "./ui/custom-shimmer"
-import CustomStatusModal from "./ui/custom-status-modal"
-import { ProfileAPI } from "../api"
-import CustomNotificationBanner from "./ui/custom-notification-banner"
 import EditPaymentMethodPanel from "./edit-payment-method-panel"
-import BankTransferEditPanel from "./bank-transfer-edit-panel"
-import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
 import { Card, CardContent } from "@/components/ui/card"
-import { StatusIndicator } from "@/components/ui/status-indicator"
+import { useToast } from "@/hooks/use-toast"
+import { useAlertDialog } from "@/hooks/use-alert-dialog"
+import EmptyState from "@/components/empty-state"
+import { useUserDataStore } from "@/stores/user-data-store"
+import { isRtlLocale } from "@/lib/i18n/config"
+import { useTranslations } from "@/lib/i18n/use-translations"
+import {
+  PAYMENT_METHOD_INFO,
+  PAYMENT_METHOD_ROW,
+  PAYMENT_METHOD_SECTION_TITLE,
+  PAYMENT_METHOD_TEXT,
+} from "@/lib/rtl"
+import {
+  flattenUserPaymentMethodsPages,
+  useUserPaymentMethods,
+  useUpdatePaymentMethod,
+  useDeletePaymentMethod,
+  isPaymentMethodElevationCancelled,
+  type PaymentMethodError,
+} from "@/hooks/use-api-queries"
+import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
+import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
+import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
+import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
+import { getPaymentMethodInUseRoute } from "@/lib/payment-methods/payment-method-error-routing"
+import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 interface PaymentMethod {
   id: string
@@ -27,111 +47,100 @@ interface PaymentMethod {
   isDefault?: boolean
 }
 
-export default function PaymentMethodsTab() {
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+interface PaymentMethodsTabProps {
+  onAddPaymentMethod?: () => void
+  onPaymentMethodsCountChange?: (count: number) => void
+}
 
-  const [deleteConfirmModal, setDeleteConfirmModal] = useState({
-    show: false,
-    methodId: "",
-    methodName: "",
-  })
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [statusModal, setStatusModal] = useState({
-    show: false,
-    type: "error" as "success" | "error",
-    title: "",
-    message: "",
-  })
-  const [notification, setNotification] = useState<{ show: boolean; message: string }>({
-    show: false,
-    message: "",
-  })
+export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethodsCountChange }: PaymentMethodsTabProps) {
+  const { t, locale } = useTranslations()
+  const router = useRouter()
+  const dir = isRtlLocale(locale) ? "rtl" : "ltr"
+  const menuSide = isRtlLocale(locale) ? "right" : "left"
+  const userId = useUserDataStore((state) => state.userId)
+  const { toast } = useToast()
+  const { showDeleteDialog, showAlert, hideAlert } = useAlertDialog()
 
   const [editPanel, setEditPanel] = useState({
     show: false,
     paymentMethod: null as PaymentMethod | null,
   })
-  const [isEditing, setIsEditing] = useState(false)
 
-  const fetchPaymentMethods = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
+  // Use React Query hooks
+  const {
+    data: methodsResponse,
+    isLoading,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useUserPaymentMethods(!!userId)
+  const updatePaymentMethod = useUpdatePaymentMethod()
+  const deletePaymentMethod = useDeletePaymentMethod()
+  const handleLoadMore = useCallback(() => {
+    void fetchNextPage()
+  }, [fetchNextPage])
+  const { sentinelRef } = useLoadMoreOnScroll(!!hasNextPage, handleLoadMore, isFetchingNextPage)
 
-      const url = `${API.baseUrl}/user-payment-methods`
-      const headers = {
-        ...AUTH.getAuthHeader(),
-        "Content-Type": "application/json",
-        "X-Data-Source": "live",
+  // Transform API response to PaymentMethod format
+  const paymentMethods = useMemo(() => {
+    const methods = flattenUserPaymentMethodsPages(methodsResponse)
+    if (methods.length === 0) return []
+
+    return methods.map((method) => {
+      const methodType = method.method || ""
+
+      let category: "bank_transfer" | "e_wallet" | "other" = "other"
+
+      if (method.type === "bank") {
+        category = "bank_transfer"
+      } else if (method.type === "ewallet") {
+        category = "e_wallet"
       }
-      const response = await fetch(url, {
-        headers,
-        cache: "no-store",
-      })
 
-      if (!response.ok) {
-        throw new Error(`Error fetching payment methods: ${response.statusText}`)
+      let instructions = ""
+      if (method.fields?.instructions?.value) {
+        instructions = method.fields.instructions.value
       }
 
-      const responseText = await response.text()
-      let data
+      const name = method.display_name || methodType.charAt(0).toUpperCase() + methodType.slice(1)
 
-      try {
-        data = JSON.parse(responseText)
-      } catch (error) {
-        console.log(error);
-        data = { data: [] }
+      return {
+        id: String(method.id || ""),
+        name: name,
+        type: methodType,
+        category: category,
+        details: method.fields || {},
+        instructions: instructions,
+        isDefault: false,
       }
+    })
+  }, [methodsResponse])
 
-      const methodsData = data.data || []
-
-      const transformedMethods = methodsData.map((method: any) => {
-        const methodType = method.method || ""
-
-        let category: "bank_transfer" | "e_wallet" | "other" = "other"
-
-        if (method.type === "bank") {
-          category = "bank_transfer"
-        } else if (method.type === "ewallet") {
-          category = "e_wallet"
-        }
-
-        let instructions = ""
-        if (method.fields?.instructions?.value) {
-          instructions = method.fields.instructions.value
-        }
-
-        const name = method.display_name || methodType.charAt(0).toUpperCase() + methodType.slice(1)
-
-        return {
-          id: String(method.id || ""),
-          name: name,
-          type: methodType,
-          category: category,
-          details: method.fields || {},
-          instructions: instructions,
-          isDefault: false,
-        }
-      })
-
-      setPaymentMethods(transformedMethods)
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Failed to load payment methods")
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
+  // Notify parent of count changes
   useEffect(() => {
-    fetchPaymentMethods()
-  }, [fetchPaymentMethods])
+    onPaymentMethodsCountChange?.(paymentMethods.length)
+  }, [paymentMethods.length, onPaymentMethodsCountChange])
 
   const handleEditPaymentMethod = (method: PaymentMethod) => {
+    const transformedDetails: Record<string, { display_name: string; required: boolean; value: string }> = {}
+
+    if (method.details) {
+      Object.entries(method.details).forEach(([key, value]: [string, any]) => {
+        if (value && typeof value === "object" && "value" in value) {
+          transformedDetails[key] = {
+            display_name: value.display_name || key.charAt(0).toUpperCase() + key.slice(1),
+            required: value.required || false,
+            value: value.value || "",
+          }
+        }
+      })
+    }
+
     const cleanedMethod = {
       ...method,
-      details: { ...method.details },
+      details: transformedDetails,
     }
 
     setEditPanel({
@@ -142,152 +151,215 @@ export default function PaymentMethodsTab() {
 
   const handleSavePaymentMethod = async (id: string, fields: Record<string, string>) => {
     try {
-      setIsEditing(true)
-
       const paymentMethod = paymentMethods.find((m) => m.id === id)
-      const formattedFields: Record<string, any> = { ...fields }
+      if (!paymentMethod) return
 
-      if (paymentMethod) {
-        formattedFields.method_type = paymentMethod.type
+      const payload = {
+        method: paymentMethod.type,
+        fields: { ...fields },
       }
 
-      const result = await ProfileAPI.PaymentMethods.updatePaymentMethod(id, formattedFields)
+      await updatePaymentMethod.mutateAsync({ id, ...payload })
 
-      if (result.success) {
-        setNotification({
-          show: true,
-          message: "Payment method details updated successfully.",
-        })
-
-        fetchPaymentMethods()
-      } else {
-        let errorMessage = "Failed to update payment method. Please try again."
-
-        if (result.errors && result.errors.length > 0) {
-          const errorCode = result.errors[0].code
-
-          if (errorCode === "PaymentMethodUsedByOpenOrder") {
-            errorMessage = "This payment method is currently being used by an open order and cannot be modified."
-          } else if (result.errors[0].message) {
-            errorMessage = result.errors[0].message
-          }
-        }
-
-        setStatusModal({
-          show: true,
-          type: "error",
-          title: "Failed to update payment method",
-          message: errorMessage,
-        })
-      }
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "An error occurred. Please try again.")
-
-      setStatusModal({
-        show: true,
-        type: "error",
-        title: "Failed to update payment method",
-        message: error instanceof Error ? error.message : "An error occurred. Please try again.",
+      toast({
+        description: (
+          <div className="flex items-center gap-2">
+            <Image src="/icons/tick.svg" alt={t("common.success")} width={24} height={24} className="text-white" />
+            <span>{t("profile.paymentMethodUpdated")}</span>
+          </div>
+        ),
+        className: TOAST_SUCCESS_CLASS,
+        duration: 2500,
       })
-    } finally {
+
       setEditPanel({
         show: false,
         paymentMethod: null,
       })
-      setIsEditing(false)
+    } catch (err) {
+      const error = err as PaymentMethodError
+      if (isPaymentMethodElevationCancelled(error)) return
+      const errorMessages: Record<string, { title: string; description: string }> = {
+        PaymentMethodInvalid: { title: t("paymentMethod.invalidMethod"), description: t("paymentMethod.invalidMethodDescription") },
+        PaymentMethodInvalidField: { title: t("paymentMethod.invalidField"), description: t("paymentMethod.invalidFieldDescription") },
+        PaymentMethodRequiredField: { title: t("paymentMethod.requiredField"), description: t("paymentMethod.requiredFieldDescription") },
+      }
+
+      const errorCode = error?.errors?.[0]?.code
+
+      const paymentMethodInUseRoute = getPaymentMethodInUseRoute(errorCode)
+      if (paymentMethodInUseRoute) {
+        const isAdvert = paymentMethodInUseRoute === "/ads"
+        showAlert({
+          title: t("profile.cannotUpdatePaymentMethod"),
+          description: isAdvert
+            ? t("profile.paymentMethodLinkedToAd")
+            : t("profile.paymentMethodInUseByOrder"),
+          confirmText: isAdvert ? t("myAds.manageAds") : t("orders.title"),
+          cancelText: t("common.cancel"),
+          type: "warning",
+          onConfirm: () => {
+            setEditPanel({ show: false, paymentMethod: null })
+            router.push(paymentMethodInUseRoute)
+          },
+          onCancel: () => setEditPanel({ show: false, paymentMethod: null }),
+          onClose: () => setEditPanel({ show: false, paymentMethod: null }),
+        })
+        return
+      }
+
+      if (errorCode === "PaymentMethodDuplicate") {
+        showAlert(
+          createPaymentMethodDuplicateAlertConfig(t, {
+            onManage: () => {
+              hideAlert()
+              setEditPanel({ show: false, paymentMethod: null })
+            },
+            onCancel: () => {
+              setEditPanel({ show: false, paymentMethod: null })
+            },
+          }),
+        )
+        return
+      }
+
+      if (errorCode === "PaymentMethodInvalidFieldValue") {
+        showAlert(
+          createPaymentMethodInvalidFieldValueAlertConfig(t, {
+            fieldValue: resolvePaymentMethodAccountFieldValue(fields, t),
+            onEdit: () => hideAlert(),
+            onCancel: () => {
+              hideAlert()
+              setEditPanel({ show: false, paymentMethod: null })
+            },
+          }),
+        )
+        return
+      }
+
+      if (errorCode === "PaymentMethodNotFound") {
+        showAlert({
+          title: t("paymentMethod.notFound"),
+          description: t("paymentMethod.notFoundDescription"),
+          confirmText: t("paymentMethod.addPaymentMethod"),
+          cancelText: t("common.cancel"),
+          type: "warning",
+          onConfirm: () => setEditPanel({ show: false, paymentMethod: null }),
+          onCancel: () => setEditPanel({ show: false, paymentMethod: null }),
+          onClose: () => setEditPanel({ show: false, paymentMethod: null }),
+        })
+        return
+      }
+
+      const { title, description } = (typeof errorCode === 'string' ? errorMessages[errorCode] : undefined) ?? {
+        title: t("profile.cannotUpdatePaymentMethod"),
+        description: t("profile.unableToUpdatePaymentMethod"),
+      }
+
+      showAlert({
+        title,
+        description,
+        confirmText: t("common.ok"),
+        type: "warning",
+      })
     }
   }
 
-  const handleDeletePaymentMethod = (id: string, name: string) => {
-    setDeleteConfirmModal({
-      show: true,
-      methodId: id,
-      methodName: name,
+  const handleDeletePaymentMethod = (id: string) => {
+    showDeleteDialog({
+      title: t("profile.deletePaymentMethodTitle"),
+      description: t("profile.deletePaymentMethodDescription"),
+      cancelText: t("common.no"),
+      confirmText: t("common.yes") + ", " + t("common.delete").toLowerCase(),
+      confirmTestId: "profile-btn-confirm-delete-payment",
+      cancelTestId: "profile-btn-cancel-delete-payment",
+      onConfirm: () => {
+        confirmDeletePaymentMethod(id)
+      },
     })
   }
 
-  const confirmDeletePaymentMethod = async () => {
+  const confirmDeletePaymentMethod = async (id: string) => {
     try {
-      setIsDeleting(true)
-      const result = await ProfileAPI.PaymentMethods.deletePaymentMethod(deleteConfirmModal.methodId)
+      await deletePaymentMethod.mutateAsync(id)
 
-      if (result.success) {
-        setDeleteConfirmModal({ show: false, methodId: "", methodName: "" })
-
-        setNotification({
-          show: true,
-          message: "Payment method deleted.",
-        })
-
-        fetchPaymentMethods()
-      } else {
-        setStatusModal({
-          show: true,
-          type: "error",
-          title: "Failed to delete payment method",
-          message: (result.errors && result.errors[0]?.message) || "An error occurred. Please try again.",
-        })
-      }
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "An error occurred. Please try again.")
-
-      setStatusModal({
-        show: true,
-        type: "error",
-        title: "Failed to delete payment method",
-        message: error instanceof Error ? error.message : "An error occurred. Please try again.",
+      toast({
+        description: (
+          <div className="flex items-center gap-2">
+            <Image src="/icons/tick.svg" alt={t("common.success")} width={24} height={24} className="text-white" />
+            <span>{t("profile.paymentMethodDeleted")}</span>
+          </div>
+        ),
+        className: TOAST_SUCCESS_CLASS,
+        duration: 2500,
       })
-    } finally {
-      setIsDeleting(false)
+    } catch (caught) {
+      const error = caught as PaymentMethodError
+      if (isPaymentMethodElevationCancelled(error)) return
+      let errorMessage = t("profile.unableToDeletePaymentMethod")
+
+      if (error.errors && error.errors.length > 0) {
+        const errorCode = error.errors[0].code
+
+        if (errorCode === "PaymentMethodInUseByOrder") {
+          errorMessage = t("profile.paymentMethodLinkedToOrder")
+        } else if (errorCode === "PaymentMethodInUseByAdvert") {
+          errorMessage = t("profile.paymentMethodLinkedToAd")
+        } else if (error.errors[0].message) {
+          errorMessage = error.errors[0].message
+        }
+      }
+
+      const primaryRoute = getPaymentMethodInUseRoute(error.errors?.[0]?.code)
+
+      showAlert({
+        title: t("profile.cannotDeletePaymentMethod"),
+        description: errorMessage,
+        confirmText: primaryRoute === "/ads"
+          ? t("myAds.manageAds")
+          : primaryRoute === "/orders"
+            ? t("orders.title")
+            : t("orderDetails.gotIt"),
+        cancelText: primaryRoute ? t("common.cancel") : undefined,
+        type: "error",
+        onConfirm: primaryRoute ? () => router.push(primaryRoute) : undefined,
+      })
     }
-  }
-
-  const cancelDeletePaymentMethod = () => {
-    setDeleteConfirmModal({ show: false, methodId: "", methodName: "" })
-  }
-
-  const closeStatusModal = () => {
-    setStatusModal((prev) => ({ ...prev, show: false }))
   }
 
   const bankTransfers = paymentMethods.filter((method) => method.category === "bank_transfer")
   const eWallets = paymentMethods.filter((method) => method.category === "e_wallet")
 
   const getBankIcon = () => (
-    <div className="w-10 h-10 flex items-center justify-center text-success">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path
-          d="M2 10H22V18C22 18.5304 21.7893 19.0391 21.4142 19.4142C21.0391 19.7893 20.5304 20 20 20H4C3.46957 20 2.96086 19.7893 2.58579 19.4142C2.21071 19.0391 2 18.5304 2 18V10ZM12 3L22 8H2L12 3Z"
-          fill="currentColor"
-        />
-      </svg>
+    <div className="w-10 h-10 flex items-center justify-center">
+      <Image src="/icons/bank-transfer-icon.png" alt={t("common.bank")} width={24} height={24} />
     </div>
   )
 
   const getEWalletIcon = () => (
-    <div className="w-10 h-10 flex items-center justify-center text-blue">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path
-          d="M19 6H5C3.89543 6 3 6.89543 3 8V16C3 17.1046 3.89543 18 5 18H19C20.1046 18 21 17.1046 21 16V8C21 6.89543 20.1046 6 19 6Z"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M16 13C16.5523 13 17 12.5523 17 12C17 11.4477 16.5523 11 16 11C15.4477 11 15 11.4477 15 12C15 12.5523 15.4477 13 16 13Z"
-          fill="currentColor"
-        />
-      </svg>
+    <div className="w-10 h-10 flex items-center justify-center">
+      <Image src="/icons/ewallet-icon-new.png" alt={t("common.eWallet")} width={24} height={24} />
     </div>
   )
+
+  if (!userId) {
+    return (
+      <EmptyState
+        className="h-full md:h-auto"
+        title={t("profile.noPaymentMethodsYet")}
+        description={t("profile.startAddingPaymentMethods")}
+        redirectToAds={false}
+        onAddPaymentMethod={onAddPaymentMethod}
+      />
+    )
+  }
 
   if (isLoading) {
     return (
       <div className="space-y-6">
         <div className="space-y-2">
           <CustomShimmer className="h-6 w-40" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
             <CustomShimmer className="h-24 w-full" />
             <CustomShimmer className="h-24 w-full" />
           </div>
@@ -295,7 +367,7 @@ export default function PaymentMethodsTab() {
 
         <div className="space-y-2">
           <CustomShimmer className="h-6 w-40" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
             <CustomShimmer className="h-24 w-full" />
             <CustomShimmer className="h-24 w-full" />
             <CustomShimmer className="h-24 w-full" />
@@ -307,67 +379,73 @@ export default function PaymentMethodsTab() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-8">
-        <p className="text-red-500 mb-4">{error}</p>
-        <Button
-          onClick={fetchPaymentMethods}
-          variant="primary"
-          className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded"
-        >
-          Try again
-        </Button>
-      </div>
+      <EmptyState
+        className="h-full md:h-auto"
+        title={t("errors.loadPaymentMethodsFailedTitle")}
+        description={t("errors.loadFailedDescription")}
+        actionLabel={t("errors.retry")}
+        onAction={() => refetch()}
+      />
+    )
+  }
+
+  if (bankTransfers.length == 0 && eWallets.length == 0) {
+    return (
+      <EmptyState
+        className="h-full md:h-auto"
+        title={t("profile.noPaymentMethodsYet")}
+        description={t("profile.startAddingPaymentMethods")}
+        redirectToAds={false}
+        onAddPaymentMethod={onAddPaymentMethod}
+      />
     )
   }
 
   return (
-    <div>
-      {notification.show && (
-        <CustomNotificationBanner
-          message={notification.message}
-          onClose={() => setNotification({ show: false, message: "" })}
-        />
-      )}
-
-      <div className="mb-8 mt-6">
-        <h3 className="text-xl font-bold mb-4">Bank transfer</h3>
-        {bankTransfers.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div dir={dir}>
+      {bankTransfers.length > 0 && (
+        <div className="mb-4">
+          <h3 className={PAYMENT_METHOD_SECTION_TITLE}>{t("paymentMethod.bankTransfers")}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {bankTransfers.map((method) => (
-              <Card key={method.id} variant="default" className="overflow-hidden">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
+              <Card
+                key={method.id}
+                data-testid={`profile-card-payment-${method.id}`}
+                variant="default"
+                className="overflow-hidden shadow-none border-0 border-b rounded-none"
+              >
+                <CardContent className="p-2">
+                  <div className={PAYMENT_METHOD_ROW}>
+                    <div className={PAYMENT_METHOD_INFO}>
                       {getBankIcon()}
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-lg">Bank Transfer</div>
-                        <StatusIndicator variant="neutral" size="sm" className="truncate">
-                          {method.details?.account?.value
-                            ? maskAccountNumber(method.details.account.value)
-                            : `ID: ${method.id}`}
-                        </StatusIndicator>
+                      <div className={PAYMENT_METHOD_TEXT}>
+                        <div className="text-neutral-10">{method.details.bank_name.value}</div>
+                        <div className="text-neutral-7 tracking-wide text-xs">
+                          {maskAccountNumber(method.details.account.value)}
+                        </div>
                       </div>
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="p-1 h-auto w-auto flex-shrink-0 ml-2">
-                          <MoreVertical className="h-5 w-5 text-gray-500" />
+                        <Button data-testid={`profile-btn-edit-payment-${method.id}`} variant="ghost" size="sm" className="!rounded-full !p-1 !min-w-0 !h-auto !bg-transparent hover:!bg-black/10 flex-shrink-0">
+                          <Image src="/icons/vertical.svg" alt={t("common.options")} width={24} height={24} />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-[160px]">
+                      <DropdownMenuContent side={menuSide} align="center" className="w-[160px]">
                         <DropdownMenuItem
-                          className="flex items-center gap-2 text-gray-700 focus:text-gray-700"
+                          className="flex items-center gap-2 text-gray-700 focus-visible:text-gray-700 px-[16px] py-[8px] cursor-pointer"
                           onSelect={() => handleEditPaymentMethod(method)}
                         >
-                          <Edit className="h-4 w-4" />
-                          Edit
+                          <Image src="/icons/edit-pencil-icon.png" alt={t("common.edit")} width={24} height={24} />
+                          {t("profile.edit")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          className="flex items-center gap-2 text-destructive focus:text-destructive"
-                          onSelect={() => handleDeletePaymentMethod(method.id, method.name)}
+                          data-testid={`profile-btn-delete-payment-${method.id}`}
+                          className="flex items-center gap-2 text-destructive focus-visible:text-destructive px-[16px] py-[8px]"
+                          onSelect={() => handleDeletePaymentMethod(method.id)}
                         >
-                          <Trash className="h-4 w-4" />
-                          Delete
+                          <Image src="/icons/delete-trash-icon.png" alt={t("common.delete")} width={24} height={24} />
+                          {t("profile.delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -376,48 +454,51 @@ export default function PaymentMethodsTab() {
               </Card>
             ))}
           </div>
-        ) : (
-          <p className="text-gray-500 italic">No bank transfers are added at the moment</p>
-        )}
-      </div>
-
-      <div className="mb-8">
-        <h3 className="text-xl font-bold mb-4">E-wallets</h3>
-        {eWallets.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        </div>
+      )}
+      {eWallets.length > 0 && (
+        <div>
+          <h3 className={PAYMENT_METHOD_SECTION_TITLE}>{t("paymentMethod.eWallets")}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {eWallets.map((method) => (
-              <Card key={method.id} variant="default" className="overflow-hidden">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
+              <Card
+                key={method.id}
+                data-testid={`profile-card-payment-${method.id}`}
+                variant="default"
+                className="overflow-hidden shadow-none border-0 border-b rounded-none"
+              >
+                <CardContent className="p-2">
+                  <div className={PAYMENT_METHOD_ROW}>
+                    <div className={PAYMENT_METHOD_INFO}>
                       {getEWalletIcon()}
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-lg">{method.name}</div>
-                        <StatusIndicator variant="neutral" size="sm" className="truncate">
+                      <div className={PAYMENT_METHOD_TEXT}>
+                        <div className="text-neutral-10">{method.name}</div>
+                        <div className="text-neutral-7 text-xs">
                           {method.details?.account?.value || `ID: ${method.id}`}
-                        </StatusIndicator>
+                        </div>
                       </div>
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="p-1 h-auto w-auto flex-shrink-0 ml-2">
-                          <MoreVertical className="h-5 w-5 text-gray-500" />
+                        <Button data-testid={`profile-btn-edit-payment-${method.id}`} variant="ghost" size="sm" className="!rounded-full !p-1 !min-w-0 !h-auto !bg-transparent hover:!bg-black/10 flex-shrink-0">
+                          <Image src="/icons/vertical.svg" alt={t("common.options")} width={24} height={24} />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-[160px]">
+                      <DropdownMenuContent side={menuSide} align="center" className="w-[160px]">
                         <DropdownMenuItem
-                          className="flex items-center gap-2 text-gray-700 focus:text-gray-700"
+                          className="flex items-center gap-2 text-gray-700 focus-visible:text-gray-700 px-[16px] py-[8px]"
                           onSelect={() => handleEditPaymentMethod(method)}
                         >
-                          <Edit className="h-4 w-4" />
-                          Edit
+                          <Image src="/icons/edit-pencil-icon.png" alt={t("common.edit")} width={24} height={24} />
+                          {t("profile.edit")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          className="flex items-center gap-2 text-destructive focus:text-destructive"
-                          onSelect={() => handleDeletePaymentMethod(method.id, method.name)}
+                          data-testid={`profile-btn-delete-payment-${method.id}`}
+                          className="flex items-center gap-2 text-destructive focus-visible:text-destructive px-[16px] py-[8px]"
+                          onSelect={() => handleDeletePaymentMethod(method.id)}
                         >
-                          <Trash className="h-4 w-4" />
-                          Delete
+                          <Image src="/icons/delete-trash-icon.png" alt={t("common.delete")} width={24} height={24} />
+                          {t("profile.delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -426,44 +507,22 @@ export default function PaymentMethodsTab() {
               </Card>
             ))}
           </div>
-        ) : (
-          <p className="text-gray-500 italic">No e-wallets are added at the moment</p>
-        )}
-      </div>
-
-      <DeleteConfirmationDialog
-        open={deleteConfirmModal.show}
-        title="Delete payment method?"
-        description={`Are you sure you want to delete ${deleteConfirmModal.methodName}? You will not be able to restore it.`}
-        isDeleting={isDeleting}
-        onConfirm={confirmDeletePaymentMethod}
-        onCancel={cancelDeletePaymentMethod}
-      />
-
-      {editPanel.show &&
-        editPanel.paymentMethod &&
-        (editPanel.paymentMethod.type === "bank_transfer" ? (
-          <BankTransferEditPanel
-            paymentMethod={editPanel.paymentMethod}
-            onClose={() => setEditPanel({ show: false, paymentMethod: null })}
-            onSave={handleSavePaymentMethod}
-            isLoading={isEditing}
-          />
-        ) : (
-          <EditPaymentMethodPanel
-            paymentMethod={editPanel.paymentMethod}
-            onClose={() => setEditPanel({ show: false, paymentMethod: null })}
-            onSave={handleSavePaymentMethod}
-            isLoading={isEditing}
-          />
-        ))}
-
-      {statusModal.show && (
-        <CustomStatusModal
-          type={statusModal.type}
-          title={statusModal.title}
-          message={statusModal.message}
-          onClose={closeStatusModal}
+        </div>
+      )}
+      {hasNextPage && (
+        <div ref={sentinelRef} className="h-1 w-full" data-testid="profile-payment-methods-sentinel" />
+      )}
+      {isFetchingNextPage && (
+        <div className="flex justify-center py-4">
+          <Spinner size="md" />
+        </div>
+      )}
+      {editPanel.show && editPanel.paymentMethod && (
+        <EditPaymentMethodPanel
+          paymentMethod={editPanel.paymentMethod}
+          onClose={() => setEditPanel({ show: false, paymentMethod: null })}
+          onSave={handleSavePaymentMethod}
+          isLoading={updatePaymentMethod.isPending}
         />
       )}
     </div>

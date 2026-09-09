@@ -1,77 +1,74 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
-import { X } from "lucide-react"
+import type * as React from "react"
+import { useCallback, useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
+import { StandaloneSearchRegularIcon } from "@deriv/quill-icons/Standalone"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import Image from "next/image"
-import { getPaymentMethods } from "@/services/api/api-buy-sell"
+import { usePaymentMethods } from "@/hooks/use-api-queries"
+import {
+  getPaymentMethodFieldMaxLength,
+  getPaymentMethodFieldValidationIssue,
+  isValidPaymentMethodKey,
+  paymentMethodFieldNameFromKey,
+  PAYMENT_METHOD_INSTRUCTIONS_MAX_LENGTH,
+  requiresNumericAccountField,
+  sanitizeMpesaAccountInput,
+} from "@/lib/payment-method-validation"
+import { getPaymentMethodFieldValidationMessageKey } from "@/lib/payment-method-field-validation-messages"
 import { getPaymentMethodFields, getPaymentMethodIcon, type AvailablePaymentMethod } from "@/lib/utils"
+import { PanelWrapper } from "@/components/ui/panel-wrapper"
+import EmptyState from "@/components/empty-state"
+import { useTranslations } from "@/lib/i18n/use-translations"
 
 interface AddPaymentMethodPanelProps {
-  onClose: () => void
   onAdd: (method: string, fields: Record<string, string>) => void
   isLoading: boolean
+  allowedPaymentMethods?: string[]
+  onMethodSelect?: (method: string) => void
+  onBack?: () => void
+  selectedMethod?: string
+  onClose?: () => void
 }
 
-interface PanelWrapperProps {
-  onClose: () => void
-  children: React.ReactNode
-}
-
-function PanelWrapper({ onClose, children }: PanelWrapperProps) {
-  return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl flex flex-col">
-      <div className="p-6 border-b relative">
-        <h2 className="text-xl font-semibold">Add payment method</h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 h-10 w-10 rounded-full"
-        >
-          <X className="h-5 w-5" />
-        </Button>
-      </div>
-      {children}
-    </div>
-  )
-}
-
-export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: AddPaymentMethodPanelProps) {
-  const [selectedMethod, setSelectedMethod] = useState<string>("")
+export default function AddPaymentMethodPanel({
+  onAdd,
+  isLoading,
+  allowedPaymentMethods,
+  onMethodSelect,
+  onBack,
+  selectedMethod: selectedMethodProp,
+  onClose,
+}: AddPaymentMethodPanelProps) {
+  const [selectedMethodState, setSelectedMethodState] = useState<string>("")
+  const selectedMethod = selectedMethodProp || selectedMethodState
+  const [showMethodDetails, setShowMethodDetails] = useState(!!selectedMethodProp)
   const [details, setDetails] = useState<Record<string, string>>({})
   const [instructions, setInstructions] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
-  const [charCount, setCharCount] = useState(0)
   const [availablePaymentMethods, setAvailablePaymentMethods] = useState<AvailablePaymentMethod[]>([])
-  const [isLoadingMethods, setIsLoadingMethods] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const { t } = useTranslations()
+  const { data: paymentMethods, isLoading: isLoadingMethods } = usePaymentMethods()
 
   useEffect(() => {
-    const fetchAvailablePaymentMethods = async () => {
-      try {
-        setIsLoadingMethods(true)
+    if (paymentMethods && Array.isArray(paymentMethods)) {
+      let methods = paymentMethods
 
-        const response = await getPaymentMethods()
-
-        if (response && response.data && Array.isArray(response.data)) {
-          setAvailablePaymentMethods(response.data)
-        } else if (Array.isArray(response)) {
-          setAvailablePaymentMethods(response)
-        }
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setIsLoadingMethods(false)
+      if (allowedPaymentMethods && allowedPaymentMethods.length > 0) {
+        methods = methods.filter((method) =>
+          allowedPaymentMethods.some((allowed) => method.method.toLowerCase() === allowed.toLowerCase()),
+        )
       }
-    }
 
-    fetchAvailablePaymentMethods()
-  }, [])
+      setAvailablePaymentMethods(methods)
+    }
+  }, [paymentMethods, allowedPaymentMethods])
 
   useEffect(() => {
     setDetails({})
@@ -80,39 +77,130 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
   }, [selectedMethod])
 
   useEffect(() => {
-    setCharCount(instructions.length)
-  }, [instructions])
+    return () => {
+      setShowMethodDetails(false)
+      setSelectedMethodState("")
+      setDetails({})
+      setErrors({})
+      setTouched({})
+      setInstructions("")
+      setSearchQuery("")
+    }
+  }, [])
 
   const selectedMethodFields = getPaymentMethodFields(selectedMethod, availablePaymentMethods)
+
+  const handleMethodSelect = (paymentMethod: AvailablePaymentMethod) => {
+    if (onMethodSelect) {
+      onMethodSelect(paymentMethod.method)
+    } else {
+      setSelectedMethodState(paymentMethod.method)
+      setShowMethodDetails(true)
+    }
+  }
+
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setSearchQuery(value)
+  }, [])
+
+  const handleBackToMethodList = () => {
+    setShowMethodDetails(false)
+    setSelectedMethodState("")
+    setDetails({})
+    setErrors({})
+    setTouched({})
+    setInstructions("")
+    setSearchQuery("")
+    onBack?.()
+  }
+
+  const getFieldValidationError = (method: string, fieldName: string, value: string): string | null => {
+    const trimmed = value.trim()
+    if (!trimmed) return null
+
+    const field = paymentMethodFieldNameFromKey(fieldName)
+    if (!field) return null
+
+    const issue = getPaymentMethodFieldValidationIssue(method, fieldName, value)
+    if (!issue) return null
+
+    return t(getPaymentMethodFieldValidationMessageKey(field, issue))
+  }
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
     if (!selectedMethod) {
-      newErrors.method = "Please select a payment method"
+      newErrors.method = t("paymentMethod.pleaseSelectPaymentMethod")
+    } else if (!isValidPaymentMethodKey(selectedMethod)) {
+      newErrors.method = t("paymentMethod.pleaseSelectPaymentMethod")
     }
 
     selectedMethodFields.forEach((field) => {
-      if (!details[field.name]?.trim() && field.required) {
-        newErrors[field.name] = `${field.label} is required`
+      const value = details[field.name]?.trim() ?? ""
+
+      if (!value && field.required) {
+        newErrors[field.name] = t("profile.fieldRequired", { field: field.label })
+        return
+      }
+
+      const fieldError = getFieldValidationError(selectedMethod, field.name, value)
+      if (fieldError) {
+        newErrors[field.name] = fieldError
       }
     })
+
+    const instructionsError = getFieldValidationError(selectedMethod, "instructions", instructions)
+    if (instructionsError) {
+      newErrors.instructions = instructionsError
+    }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const handleInputChange = (name: string, value: string) => {
-    setDetails((prev) => ({ ...prev, [name]: value }))
+    const nextValue = requiresNumericAccountField(selectedMethod, name)
+      ? sanitizeMpesaAccountInput(value)
+      : value
+
+    setDetails((prev) => ({ ...prev, [name]: nextValue }))
     setTouched((prev) => ({ ...prev, [name]: true }))
 
-    if (errors[name]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[name]
-        return newErrors
-      })
+    const fieldError = getFieldValidationError(selectedMethod, name, nextValue)
+    if (fieldError) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: fieldError,
+      }))
+      return
     }
+
+    setErrors((prev) => {
+      const newErrors = { ...prev }
+      delete newErrors[name]
+      return newErrors
+    })
+  }
+
+  const handleInstructionsChange = (value: string) => {
+    setInstructions(value)
+
+    const fieldError = getFieldValidationError(selectedMethod, "instructions", value)
+    if (fieldError) {
+      setErrors((prev) => ({
+        ...prev,
+        instructions: fieldError,
+      }))
+      return
+    }
+
+    setErrors((prev) => {
+      const newErrors = { ...prev }
+      delete newErrors.instructions
+      return newErrors
+    })
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -128,7 +216,6 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
 
     if (validateForm()) {
       const fieldValues = { ...details }
-
       fieldValues.instructions = instructions.trim() || "-"
 
       if (selectedMethod === "bank_transfer") {
@@ -143,6 +230,8 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
   const isFormValid = () => {
     if (!selectedMethod) return false
 
+    if (Object.keys(errors).length > 0) return false
+
     return selectedMethodFields.every((field) => {
       if (field.required) {
         return details[field.name]?.trim()
@@ -152,109 +241,205 @@ export default function AddPaymentMethodPanel({ onClose, onAdd, isLoading }: Add
   }
 
   if (isLoadingMethods) {
+    if (onClose) {
+      return (
+        <PanelWrapper onClose={onClose}>
+          <div className="flex items-center justify-center py-8">
+            <div className="text-gray-500">{t("paymentMethod.loadingPaymentMethods")}</div>
+          </div>
+        </PanelWrapper>
+      )
+    }
     return (
-      <PanelWrapper onClose={onClose}>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-gray-500">Loading payment methods...</div>
-        </div>
-      </PanelWrapper>
+      <div className="flex items-center justify-center py-8">
+        <div className="text-gray-500">{t("paymentMethod.loadingPaymentMethods")}</div>
+      </div>
     )
   }
 
   if (availablePaymentMethods.length === 0 && !isLoadingMethods) {
+    if (onClose) {
+      return (
+        <PanelWrapper onClose={onClose}>
+          <div className="flex items-center justify-center py-8">
+            <div className="text-gray-500">{t("paymentMethod.noPaymentMethodsAvailable")}</div>
+          </div>
+        </PanelWrapper>
+      )
+    }
     return (
-      <PanelWrapper onClose={onClose}>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-gray-500">No payment methods available</div>
+      <div className="flex items-center justify-center py-8">
+        <div className="text-gray-500">{t("paymentMethod.noPaymentMethodsAvailable")}</div>
+      </div>
+    )
+  }
+
+  if (!showMethodDetails && !selectedMethodProp) {
+    const filteredPaymentMethods = availablePaymentMethods.filter((method) =>
+      method.display_name.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
+
+    const methodSelectionContent = (
+      <div className="flex h-full min-h-0 w-full flex-col">
+        <h2 className="shrink-0 p-4 pb-0 text-start text-2xl font-bold">
+          {t("paymentMethod.selectPaymentMethod")}
+        </h2>
+        <div className="shrink-0 p-4 pb-2">
+          <div className="flex items-center gap-2 rounded-lg bg-black/[0.04] px-3 h-10">
+            <StandaloneSearchRegularIcon iconSize="xs" className="shrink-0 text-neutral-400" aria-hidden />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder={t("paymentMethod.search")}
+              autoComplete="off"
+              autoFocus
+              className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-neutral-400"
+              data-testid="add-payment-method-input-search"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSearchQuery("")}
+                className="hover:!bg-transparent !p-0 !h-auto !w-auto !min-w-0"
+                aria-label={t("common.clearSearch")}
+              >
+                <Image src="/icons/clear-search-icon.png" alt="" aria-hidden width={20} height={20} />
+              </Button>
+            )}
+          </div>
         </div>
+        <div className="min-h-0 flex-1 overflow-y-auto p-4 pt-2 pb-8">
+          {filteredPaymentMethods.length > 0 ? (
+            <div className="space-y-3">
+              {filteredPaymentMethods.map((paymentMethod) => (
+                <Button
+                  key={paymentMethod.method}
+                  type="button"
+                  variant="ghost"
+                  size="lg"
+                  onClick={() => handleMethodSelect(paymentMethod)}
+                  className="w-full p-4 rounded-none !justify-start !h-auto border-b border-grayscale-500 hover:!bg-transparent"
+                >
+                  <span className="flex flex-row items-center gap-3">
+                    <Image
+                      src={getPaymentMethodIcon(paymentMethod.type) || "/placeholder.svg"}
+                      alt=""
+                      aria-hidden
+                      width={24}
+                      height={24}
+                      className="shrink-0"
+                    />
+                    <span className="text-sm font-normal text-slate-1200">{paymentMethod.display_name}</span>
+                  </span>
+                </Button>
+              ))}
+            </div>
+          ) : (
+            <div className="flex h-full min-h-[160px] items-center justify-center">
+              <EmptyState
+                title={t("paymentMethod.paymentMethodUnavailable")}
+                description={t("paymentMethod.searchDifferent")}
+                redirectToAds={false}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    )
+
+    if (onClose) {
+      return <PanelWrapper onClose={onClose}>{methodSelectionContent}</PanelWrapper>
+    }
+
+    return <div className="flex h-full min-h-0 w-full flex-col">{methodSelectionContent}</div>
+  }
+
+  const formContent = (
+    <div className="flex flex-col flex-1 min-h-0">
+      <div className="flex items-center gap-4 p-4 pb-0 shrink-0">
+        <h2 className="text-2xl font-bold text-start">{t("paymentMethod.addPaymentDetails")}</h2>
+      </div>
+      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto min-h-0">
+        <div className="p-4 space-y-4">
+          {selectedMethodFields.length > 0 && (
+            <div className="space-y-4">
+              {selectedMethodFields.map((field) => {
+                const fieldError =
+                  (touched[field.name] || details[field.name]) && errors[field.name]
+                    ? errors[field.name]
+                    : undefined
+
+                return (
+                <div key={field.name}>
+                  <Input
+                    id={field.name}
+                    type={
+                      requiresNumericAccountField(selectedMethod, field.name) ? "tel" : field.type
+                    }
+                    inputMode={
+                      requiresNumericAccountField(selectedMethod, field.name) ? "numeric" : undefined
+                    }
+                    value={details[field.name] || ""}
+                    onChange={(e) => handleInputChange(field.name, e.target.value)}
+                    label={`${t("profile.enterField", { field: field.label.toLowerCase() })}`}
+                    required={field.required}
+                    variant="floating"
+                    maxLength={getPaymentMethodFieldMaxLength(field.name)}
+                    error={Boolean(fieldError)}
+                  />
+                  {fieldError && (
+                    <p className="mt-1 text-xs text-error-text text-start">{fieldError}</p>
+                  )}
+                </div>
+              )})}
+            </div>
+          )}
+
+          <div>
+            <Textarea
+              id="instructions"
+              value={instructions}
+              onChange={(e) => handleInstructionsChange(e.target.value)}
+              label={t("paymentMethod.enterInstructions")}
+              className="min-h-[120px] resize-none"
+              maxLength={PAYMENT_METHOD_INSTRUCTIONS_MAX_LENGTH}
+              variant="floating"
+              error={Boolean(errors.instructions)}
+            />
+            {errors.instructions && <p className="mt-1 text-xs text-error-text text-start">{errors.instructions}</p>}
+            <div className="flex justify-end rtl:justify-start mt-1 text-xs text-slate-1200">
+              {instructions.length}/{PAYMENT_METHOD_INSTRUCTIONS_MAX_LENGTH}
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <div className="mt-auto shrink-0 bg-white p-4 flex justify-end rtl:justify-start">
+        <Button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isLoading || !selectedMethod || !isFormValid()}
+          className="w-full md:w-auto"
+        >
+          {isLoading ? (
+            <Spinner size="xs" />
+          ) : (
+            t("common.add")
+          )}
+        </Button>
+      </div>
+    </div>
+  )
+
+  if (onClose) {
+    return (
+      <PanelWrapper onBack={!selectedMethodProp ? handleBackToMethodList : undefined} onClose={onClose}>
+        {formContent}
       </PanelWrapper>
     )
   }
 
-  return (
-    <PanelWrapper onClose={onClose}>
-      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
-        <div className="p-6 space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-500 mb-3">Choose your payment method</label>
-            <div className="space-y-3">
-              {availablePaymentMethods.map((paymentMethod) => (
-                <Button
-                  key={paymentMethod.method}
-                  type="button"
-                  variant="outline"
-                  onClick={() => setSelectedMethod(paymentMethod.method)}
-                  className={`w-full p-4 justify-start gap-3 h-auto rounded-lg border ${selectedMethod === paymentMethod.method
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300"
-                    }`}
-                >
-                  <Image
-                    src={getPaymentMethodIcon(paymentMethod.type) || "/placeholder.svg"}
-                    alt={paymentMethod.display_name}
-                    width={20}
-                    height={20}
-                    className="w-5 h-5"
-                  />
-                  <span className="font-medium">{paymentMethod.display_name}</span>
-                </Button>
-              ))}
-            </div>
-            {errors.method && <p className="mt-2 text-xs text-red-500">{errors.method}</p>}
-          </div>
-
-          {selectedMethodFields.length > 0 && (
-            <div className="space-y-4">
-              {selectedMethodFields.map((field) => (
-                <div key={field.name}>
-                  <label htmlFor={field.name} className="block text-sm font-medium text-gray-500 mb-2">
-                    {field.label}
-                    {field.required && <span className="text-red-500 ml-1">*</span>}
-                  </label>
-                  <Input
-                    id={field.name}
-                    type={field.type}
-                    value={details[field.name] || ""}
-                    onChange={(e) => handleInputChange(field.name, e.target.value)}
-                    placeholder={`Enter ${field.label.toLowerCase()}`}
-                  />
-                  {touched[field.name] && errors[field.name] && (
-                    <p className="mt-1 text-xs text-red-500">{errors[field.name]}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {selectedMethod && (
-            <div>
-              <label htmlFor="instructions" className="block text-sm font-medium text-gray-500 mb-2">
-                Instructions
-              </label>
-              <Textarea
-                id="instructions"
-                value={instructions}
-                onChange={(e) => setInstructions(e.target.value)}
-                placeholder="Enter your instructions"
-                className="min-h-[120px] resize-none"
-                maxLength={300}
-              />
-              <div className="flex justify-end mt-1 text-xs text-gray-500">{charCount}/300</div>
-            </div>
-          )}
-        </div>
-      </form>
-
-      <div className="p-6 border-t">
-        <Button
-          type="submit"
-          onClick={handleSubmit}
-          disabled={isLoading || !selectedMethod || !isFormValid()}
-          size="sm"
-        >
-          {isLoading ? "Adding..." : "Add"}
-        </Button>
-      </div>
-    </PanelWrapper>
-  )
+  return <div className="flex h-[calc(100%-60px)] w-full min-h-0 flex-col">{formContent}</div>
 }

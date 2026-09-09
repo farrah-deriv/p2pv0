@@ -5,6 +5,11 @@
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-rgb: 255, 255, 255;
+  --component-segmentedControl-bg-single-body: rgba(255, 255, 255, 0.04);
+  --component-segmentedControl-bg-single-selected: rgba(255, 255, 255, 0.16);
+  /* @deriv-com/quill-ui-v2's Snackbar positioning CSS reads this token but the
+     package never defines it, so top/bottom offsets fall back to 0 without it. */
+  --quill-semantic-spacing-16: 1rem;
 }
 
 body {
@@ -14,13 +19,93 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Quill's Snackbar action button has no underline prop — the connection-lost
+   banner's "Refresh" CTA needs one, so it's targeted via the banner's own testid. */
+[data-testid="connection-lost-banner"] .quill-actionButton-ZWtBp {
+  text-decoration: underline;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
 @layer utilities {
+  .animate-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+
+  .animate-shimmer-dark {
+    background: linear-gradient(90deg, #2a2f3d 25%, #363c4e 50%, #2a2f3d 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+
+  .bg-share-card-gradient {
+    background: linear-gradient(172deg, var(--brand-red) 73%, rgba(0, 0, 0, 0.04) 27%);
+  }
+
   .text-balance {
     text-wrap: balance;
   }
 
+  .wrap-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
   .w-1\/7 {
     width: 14.285%;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-custom {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    .scrollbar-custom {
+      scrollbar-width: thin;
+      scrollbar-color: #00000014 transparent;
+    }
+
+    .scrollbar-custom::-webkit-scrollbar {
+      display: block;
+      width: 4px;
+      height: 8px;
+    }
+
+    .scrollbar-custom::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .scrollbar-custom::-webkit-scrollbar-thumb {
+      background-color: #00000014;
+      border-radius: 96px;
+    }
+
+    .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+      background-color: #0000001f;
+    }
   }
 }
 
@@ -32,8 +117,14 @@ body {
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 191.06 100% 50%;
+    --primary: 357 100% 63%;
+    --primary-hover: 355 43% 47%;
     --primary-foreground: 0 0% 98%;
+    --brand-red: #FF444F;
+    --brand-red-hover: #BF333B;
+    --brand-red-24: rgba(255, 68, 79, 0.24);
+    --color-slate-1200: #181C25;
+    --color-neutral-600: #333333;
     --secondary: 164.31 100% 38.24%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
@@ -68,8 +159,9 @@ body {
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: #00cccc;
-    --primary-foreground: 0 0% 9%;
+    --primary: 357 100% 63%;
+    --primary-hover: 355 43% 47%;
+    --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 14.9%;
@@ -113,4 +205,52 @@ body {
 
 .shadow-dropdown {
   box-shadow: 0px 16px 24px 4px rgba(0, 0, 0, 0.02), 0px 16px 24px 4px rgba(0, 0, 0, 0.04);
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Quill's slideIn keyframe uses translateY only, which fights the top-center
+   translateX(-50%). Override with a keyframe that preserves X centering. */
+@keyframes snackbar-slide-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+[class*="quill-snackbar"] {
+  animation: snackbar-slide-in 0.2s ease-out !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-shimmer {
+    animation: none;
+    background: #f0f0f0;
+  }
+
+  .animate-shimmer-dark {
+    animation: none;
+    background: #2a2f3d;
+  }
 }

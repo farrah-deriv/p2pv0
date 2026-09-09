@@ -1,53 +1,83 @@
 "use client"
 
 import type React from "react"
-import { AlertTriangle } from "lucide-react"
+import { useState } from "react"
 import { cn } from "@/lib/utils"
 
 interface RateInputProps {
+  currency: string
   value: string
   onChange: (value: string) => void
   onBlur?: () => void
   step?: number
   min?: number
   error?: boolean
+  /** Localized floating label. Callers must supply a translated string. */
+  label: string
 }
 
-export function RateInput({ value, onChange, onBlur, step, min, error = false }: RateInputProps) {
+export function RateInput({
+   currency,
+  value,
+  onChange,
+  onBlur,
+  step,
+  min,
+  error = false,
+  label,
+}: RateInputProps) {
+  const [isFocused, setIsFocused] = useState(false)
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9.]/g, "")
-    onChange(value)
+    const newValue = e.target.value.replace(/[^0-9.]/g, "")
+    onChange(newValue)
   }
 
+  const showFloating = isFocused || value.length > 0
+
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col relative">
       <div
         className={cn(
           "flex rounded-lg overflow-hidden border transition-colors duration-200",
-          error ? "border-red-500" : "border-gray-200",
+          error ? "border-error" : "border-gray-200"
         )}
-        style={{ borderWidth: "1px" }}
       >
         <div className="flex-1 relative">
           <input
             type="number"
             value={value}
             onChange={handleChange}
-            onBlur={onBlur}
+            onBlur={() => {
+              setIsFocused(false)
+              onBlur?.()
+            }}
+            onFocus={() => setIsFocused(true)}
+            onWheel={(e) => e.currentTarget.blur()}
             step={step}
             min={min}
-            placeholder="0.00"
-            className="w-full p-4 border-0 focus:ring-0 focus:outline-none text-gray-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            placeholder=""
+            // Match MinimumTierSelector floating field: pt-6 pb-2 keeps label→value gap.
+            className="w-full h-[56px] px-4 pt-6 pb-2 border-0 focus:ring-0 focus:outline-none text-base font-normal text-start text-gray-900 leading-5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             aria-invalid={error}
+            data-testid="ad-form-input-rate"
           />
-          {error && (
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
-            </div>
-          )}
+
+          <label
+            className={cn(
+              "absolute start-[14px] pointer-events-none transition-all duration-200 font-normal",
+              showFloating
+                ? "text-[12px] top-2 bg-white px-1"
+                : "text-base top-1/2 -translate-y-1/2",
+              error ? "text-error" : "text-black/70",
+            )}
+          >
+            {label}
+          </label>
         </div>
-        <div className="flex items-center justify-center bg-gray-50 px-4 text-gray-500 min-w-[80px] text-center">
-          IDR
+
+        <div className="flex items-center justify-center px-4 text-neutral-600 min-w-[80px] text-center">
+        {currency}
         </div>
       </div>
     </div>

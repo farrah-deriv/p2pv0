@@ -1,8 +1,8 @@
-// Export all API services for easier imports
+import * as AdsAPI from "./api-my-ads"
 import * as AuthAPI from "./api-auth"
 import * as BuySellAPI from "./api-buy-sell"
 import * as OrdersAPI from "./api-orders"
 import * as ProfileAPI from "./api-profile"
-import { AdsAPI } from "@/app/ads/api/api-ads"
+import * as IntercomAPI from "./api-intercom"
 
-export { AuthAPI, BuySellAPI, OrdersAPI, AdsAPI, ProfileAPI }
+export { AdsAPI, AuthAPI, BuySellAPI, OrdersAPI, ProfileAPI }

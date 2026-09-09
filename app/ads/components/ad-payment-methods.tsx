@@ -1,166 +1,298 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { API, AUTH } from "@/lib/local-variables"
+import { useState, useMemo, useCallback, useRef } from "react"
+import { useStablePaymentMethodOrder } from "@/hooks/use-stable-payment-method-order"
 import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Spinner } from "@/components/ui/spinner"
 import { CustomShimmer } from "@/app/profile/components/ui/custom-shimmer"
+import AddPaymentMethodPanel from "@/app/profile/components/add-payment-method-panel"
+import { getPaymentMethodColour } from "@/lib/utils"
+import { getPaymentMethodSelectionLines } from "@/lib/payment-methods/payment-method-selection-utils"
+import Image from "next/image"
+import { useAdvertAlertDialog } from "@/app/ads/hooks/use-advert-alert-dialog"
+import { usePaymentSelection } from "./payment-selection-context"
+import {
+  flattenUserPaymentMethodsPages,
+  useAddPaymentMethod,
+  isPaymentMethodElevationCancelled,
+  useUserPaymentMethods,
+  type PaymentMethodError,
+} from "@/hooks/use-api-queries"
+import { useLoadMoreOnScroll } from "@/hooks/use-load-more-on-scroll"
+import { useTranslations } from "@/lib/i18n/use-translations"
+import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
+import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
+import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
+import {
+  isPaymentMethodIdSelected,
+  isUserPaymentMethodSelectionDisabled,
+  normalizePaymentMethodId,
+} from "@/lib/payment-methods/payment-method-selection-utils"
 
 interface PaymentMethod {
-    id: number
-    method: string
-    type: string
-    display_name: string
-    fields: Record<string, any>
-    created_at?: number
-    is_default?: boolean
+  id: number
+  method: string
+  type: string
+  display_name: string
+  fields: Record<string, unknown>
+  created_at?: number
+  is_default?: boolean
 }
 
 const AdPaymentMethods = () => {
-    const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
-    const [selectedMethods, setSelectedMethods] = useState<number[]>([])
-    const [isLoading, setIsLoading] = useState(true)
+  const { selectedPaymentMethodIds, togglePaymentMethod } = usePaymentSelection()
+  const { hideAlert, showAlert } = useAdvertAlertDialog()
+  const { t } = useTranslations()
+  const [showAddPaymentPanel, setShowAddPaymentPanel] = useState(false)
 
-    useEffect(() => {
-        const fetchPaymentMethods = async () => {
-            try {
-                const url = `${API.baseUrl}${API.endpoints.userPaymentMethods}`
-                const headers = {
-                    ...AUTH.getAuthHeader(),
-                    "Content-Type": "application/json",
-                }
+  // Use React Query hooks
+  const addPaymentMethod = useAddPaymentMethod()
+  const {
+    data: paymentMethodsResponse,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useUserPaymentMethods(true)
+  const handleLoadMore = useCallback(() => {
+    void fetchNextPage()
+  }, [fetchNextPage])
+  const { sentinelRef } = useLoadMoreOnScroll(!!hasNextPage, handleLoadMore, isFetchingNextPage)
+  const horizontalListRef = useRef<HTMLDivElement | null>(null)
 
-                const response = await fetch(url, {
-                    headers,
-                    cache: "no-store",
-                })
+  // Transform API response to PaymentMethod format
+  const paymentMethods = useMemo(
+    () => flattenUserPaymentMethodsPages(paymentMethodsResponse) as PaymentMethod[],
+    [paymentMethodsResponse],
+  )
 
-                if (response.ok) {
-                    const data = await response.json()
-                    setPaymentMethods(data.data || [])
-                }
-            } catch (error) {
-                console.log(error);
-                // Silently fail - just show empty state
-            } finally {
-                setIsLoading(false)
-            }
-        }
+  // Session key frozen on mount / step entry — stable order, no pin-to-top.
+  const [orderPinIds] = useState(selectedPaymentMethodIds)
+  const getMethodId = useCallback(
+    (method: PaymentMethod) => normalizePaymentMethodId(method.id),
+    [],
+  )
+  const sortedPaymentMethods = useStablePaymentMethodOrder(
+    paymentMethods,
+    orderPinIds,
+    getMethodId,
+    true,
+  )
 
-        fetchPaymentMethods()
-    }, [])
-
-    useEffect(() => {
-        ; (window as any).adPaymentMethodIds = selectedMethods
-    }, [selectedMethods])
-
-    const handleCheckboxChange = (methodId: number, checked: boolean) => {
-        if (checked && selectedMethods.length >= 3) {
-            return
-        }
-
-        const newSelection = checked ? [...selectedMethods, methodId] : selectedMethods.filter((id) => id !== methodId)
-        setSelectedMethods(newSelection)
+  const handleCheckboxChange = (methodId: number, checked: boolean) => {
+    if (
+      checked &&
+      isUserPaymentMethodSelectionDisabled(paymentMethods, selectedPaymentMethodIds, methodId)
+    ) {
+      return
     }
 
-    const getMethodDisplayDetails = (method: PaymentMethod) => {
-        if (method.type === "bank") {
-            const account = method.fields.account?.value || ""
-            const bankName = method.fields.bank_name?.value || "Bank Transfer"
-            const maskedAccount = account ? account.slice(0, 6) + "****" + account.slice(-4) : "****"
+    togglePaymentMethod(normalizePaymentMethodId(methodId))
+  }
 
-            return {
-                primary: maskedAccount,
-                secondary: bankName,
-            }
-        } else {
-            const account = method.fields.account?.value || ""
-            const displayValue = account || method.display_name
-
-            return {
-                primary: displayValue,
-                secondary: method.display_name,
-            }
-        }
-    }
-
-    const getMethodIcon = (method: PaymentMethod) => {
-        if (method.type === "bank") {
-            return <div className="w-3 h-3 rounded-full bg-green-500"></div>
-        } else {
-            return <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-        }
-    }
-
-    const getCategoryDisplayName = (type: string) => {
-        switch (type) {
-            case "bank":
-                return "Bank transfer"
-            case "ewallet":
-                return "eWallet"
-            default:
-                return "Other"
-        }
-    }
-
-    if (isLoading) {
-        return (
-            <div className="space-y-4">
-                <div className="space-y-2">
-                    <CustomShimmer className="h-6 w-48" />
-                    <CustomShimmer className="h-4 w-64" />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <CustomShimmer className="h-24 w-full" />
-                    <CustomShimmer className="h-24 w-full" />
-                    <CustomShimmer className="h-24 w-full" />
-                </div>
-            </div>
+  const handleAddPaymentMethod = async (method: string, fields: Record<string, string>) => {
+    try {
+      const result = await addPaymentMethod.mutateAsync({ method, fields })
+      const created = result.data as PaymentMethod | undefined
+      if (
+        created &&
+        !isPaymentMethodIdSelected(selectedPaymentMethodIds, created.id) &&
+        !isUserPaymentMethodSelectionDisabled(
+          [...paymentMethods, created],
+          selectedPaymentMethodIds,
+          created.id,
         )
+      ) {
+        togglePaymentMethod(normalizePaymentMethodId(created.id))
+      }
+      setShowAddPaymentPanel(false)
+      // Newly added methods sort to the selected/top group after refetch; reset scroll.
+      requestAnimationFrame(() => {
+        horizontalListRef.current?.scrollTo({ left: 0, behavior: "smooth" })
+      })
+    } catch (err) {
+      const error = err as PaymentMethodError
+      if (isPaymentMethodElevationCancelled(error)) return
+      const errorCode = error?.errors?.[0]?.code
+
+      if (errorCode === "PaymentMethodDuplicate") {
+        showAlert(
+          createPaymentMethodDuplicateAlertConfig(t, {
+            onManage: () => {
+              setShowAddPaymentPanel(false)
+            },
+            onCancel: () => {
+              setShowAddPaymentPanel(false)
+            },
+          }),
+        )
+        return
+      }
+
+      if (errorCode === "PaymentMethodInvalidFieldValue") {
+        showAlert(
+          createPaymentMethodInvalidFieldValueAlertConfig(t, {
+            fieldValue: resolvePaymentMethodAccountFieldValue(fields, t),
+            onEdit: () => hideAlert(),
+            onCancel: () => {
+              hideAlert()
+              setShowAddPaymentPanel(false)
+            },
+          }),
+        )
+        return
+      }
+
+      if (errorCode === "PaymentMethodNotFound") {
+        showAlert({
+          title: t("paymentMethod.notFound"),
+          description: t("paymentMethod.notFoundDescription"),
+          confirmText: t("paymentMethod.addPaymentMethod"),
+          cancelText: t("common.cancel"),
+          type: "warning",
+          onConfirm: () => setShowAddPaymentPanel(false),
+          onCancel: () => setShowAddPaymentPanel(false),
+          onClose: () => setShowAddPaymentPanel(false),
+        })
+        return
+      }
+
+      const errorMessages: Record<string, { title: string; description: string }> = {
+        PaymentMethodInvalid: { title: t("paymentMethod.invalidMethod"), description: t("paymentMethod.invalidMethodDescription") },
+        PaymentMethodInvalidField: { title: t("paymentMethod.invalidField"), description: t("paymentMethod.invalidFieldDescription") },
+        PaymentMethodRequiredField: { title: t("paymentMethod.requiredField"), description: t("paymentMethod.requiredFieldDescription") },
+      }
+
+      const { title, description } = (typeof errorCode === "string" ? errorMessages[errorCode] : undefined) ?? {
+        title: t("paymentMethod.unableToAdd"),
+        description: t("paymentMethod.addError"),
+      }
+
+      showAlert({
+        title,
+        description,
+        confirmText: t("common.ok"),
+        type: "warning",
+      })
     }
+  }
 
+  const handleShowAddPaymentMethod = () => {
+    setShowAddPaymentPanel(true)
+  }
+
+  if (isLoading) {
     return (
-        <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-2">Select payment method</h3>
-            <p className="text-gray-600 mb-4">You can select up to 3 payment methods</p>
-
-            <div className="md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
-                <div className="flex gap-4 overflow-x-auto pb-2 md:contents">
-                    {paymentMethods.map((method) => {
-                        const isSelected = selectedMethods.includes(method.id)
-                        const displayDetails = getMethodDisplayDetails(method)
-
-                        return (
-                            <Card
-                                key={method.id}
-                                className="cursor-pointer transition-all duration-200 bg-gray-100 border-0 hover:shadow-md flex-shrink-0 w-64 md:w-auto"
-                            >
-                                <CardContent className="p-4">
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div className="flex items-center gap-2">
-                                            {getMethodIcon(method)}
-                                            <span className="font-medium text-gray-700">{getCategoryDisplayName(method.type)}</span>
-                                        </div>
-                                        <Checkbox
-                                            checked={isSelected}
-                                            onCheckedChange={(checked) => handleCheckboxChange(method.id, !!checked)}
-                                            className={`border-0 transition-colors ${isSelected ? "bg-cyan-500 text-white" : "bg-white"}`}
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <div className="font-medium text-gray-900">{displayDetails.primary}</div>
-                                        <div className="text-sm text-gray-500">{displayDetails.secondary}</div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )
-                    })}
-                </div>
-            </div>
-
-            {paymentMethods.length === 0 && <p className="text-gray-500 italic">No payment methods are added yet</p>}
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <CustomShimmer className="h-6 w-48" />
+          <CustomShimmer className="h-4 w-64" />
         </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <CustomShimmer className="h-24 w-full" />
+          <CustomShimmer className="h-24 w-full" />
+          <CustomShimmer className="h-24 w-full" />
+        </div>
+      </div>
     )
+  }
+
+  return (
+    <>
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-2">{t("paymentMethod.selectPaymentMethod")}</h3>
+        <p className="text-neutral-7 mb-4">{t("paymentMethod.selectUpTo3")}</p>
+
+        <div className="md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
+          <div
+            ref={horizontalListRef}
+            className="flex gap-4 overflow-x-auto pb-2 md:contents"
+          >
+            {sortedPaymentMethods.map((method) => {
+              const isSelected = isPaymentMethodIdSelected(selectedPaymentMethodIds, method.id)
+              const lines = getPaymentMethodSelectionLines(method, t)
+              const isDisabled = isUserPaymentMethodSelectionDisabled(
+                paymentMethods,
+                selectedPaymentMethodIds,
+                method.id,
+              )
+
+              return (
+                <Card
+                  key={method.id}
+                  className={`cursor-pointer transition-all duration-200 flex-shrink-0 w-64 md:w-auto ${
+                    isSelected ? "border-2 rounded-lg border-black" : "border-0"
+                  } ${
+                    isDisabled ? "bg-grayscale-700 opacity-50 cursor-not-allowed" : "bg-grayscale-300"
+                  } hover:shadow-md`}
+                  onClick={() => !isDisabled && handleCheckboxChange(method.id, !isSelected)}
+                >
+                  <CardContent className="ps-6 pe-6 py-4 cursor-pointer">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex min-w-0 flex-1 items-center gap-4">
+                        <div className={`${getPaymentMethodColour(method.type)} shrink-0 rounded-full h-2 w-2`} />
+                        <div className="min-w-0 flex flex-col gap-0.5">
+                          <span className="truncate text-base leading-6 font-normal text-neutral-10">{lines.title}</span>
+                          {lines.subtitle ? (
+                            <span className="truncate text-xs leading-4 text-grayscale-text-muted">{lines.subtitle}</span>
+                          ) : null}
+                        </div>
+                      </div>
+                      <div onClick={(e) => e.stopPropagation()} className="pointer-events-auto shrink-0">
+                        <Checkbox
+                          checked={isSelected}
+                          disabled={isDisabled}
+                          className="rounded-[2px]"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+
+            <Card
+              className="cursor-pointer transition-all duration-200 hover:shadow-md flex-shrink-0 w-64 md:w-auto border border-grayscale-400 bg-white"
+              onClick={handleShowAddPaymentMethod}
+            >
+              <CardContent className="p-4 h-full flex items-center justify-center">
+                <div className="text-center">
+                  <Image
+                    src="/icons/plus_icon.png"
+                    alt={t("paymentMethod.addPaymentMethod")}
+                    width={14}
+                    height={24}
+                    className="mx-auto mb-2"
+                  />
+                  <p className="text-sm text-neutral-10">{t("paymentMethod.addPaymentMethod")}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {hasNextPage && (
+          <div ref={sentinelRef} className="h-1 w-full" data-testid="ad-payment-methods-sentinel" />
+        )}
+        {isFetchingNextPage && (
+          <div className="flex justify-center py-2">
+            <Spinner size="md" />
+          </div>
+        )}
+
+        {paymentMethods.length === 0 && <p className="text-grayscale-text-muted italic">{t("paymentMethod.noPaymentMethodsAddedYet")}</p>}
+      </div>
+
+      {showAddPaymentPanel && (
+        <AddPaymentMethodPanel
+          onAdd={handleAddPaymentMethod}
+          isLoading={addPaymentMethod.isPending}
+          onClose={() => setShowAddPaymentPanel(false)}
+        />
+      )}
+    </>
+  )
 }
 
 export default AdPaymentMethods

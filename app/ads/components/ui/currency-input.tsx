@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { AlertTriangle } from "lucide-react"
+import { useState } from "react"
 import { cn } from "@/lib/utils"
 
 interface CurrencyInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -23,23 +23,25 @@ export function CurrencyInput({
   error = false,
   ...props
 }: CurrencyInputProps) {
-  // Combine the isEditMode prop with any existing disabled prop
+  const [isFocused, setIsFocused] = useState(false)
+
   const isDisabled = isEditMode || disabled
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Only process changes if not in edit mode
     if (!isEditMode) {
       if (onChange) onChange(e)
       if (onValueChange) onValueChange(e.target.value)
     }
   }
 
+  const showFloating = isFocused || (value && value.toString().length > 0)
+
   return (
     <div className="flex flex-col">
       <div
         className={cn(
           "flex rounded-lg overflow-hidden border transition-colors duration-200",
-          error ? "border-red-500" : isDisabled ? "border-gray-100 bg-gray-50" : "border-gray-200",
+          error ? "border-error" : isDisabled ? "border-gray-100 bg-gray-50" : "border-gray-200",
         )}
         style={{ borderWidth: "1px" }}
       >
@@ -48,9 +50,13 @@ export function CurrencyInput({
             type="number"
             value={value}
             onChange={handleChange}
-            placeholder={placeholder}
+            onBlur={() => setIsFocused(false)}
+            onFocus={() => setIsFocused(true)}
+            onWheel={(e) => e.currentTarget.blur()}
+            placeholder=""
+            // Match MinimumTierSelector floating field: pt-6 pb-2 keeps label→value gap.
             className={cn(
-              "w-full p-4 border-0 focus:ring-0 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
+              "h-[56px] w-full px-4 pt-6 pb-2 border-0 focus:ring-0 focus:outline-none text-base font-normal text-start leading-5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
               isDisabled ? "bg-gray-50 text-gray-500 cursor-not-allowed" : "text-gray-900",
             )}
             disabled={isDisabled}
@@ -59,13 +65,20 @@ export function CurrencyInput({
             aria-invalid={error}
             {...props}
           />
-          {error && (
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center justify-center">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
-            </div>
-          )}
+
+          <label
+            className={cn(
+              "absolute start-[14px] pointer-events-none transition-all duration-200 font-normal",
+              showFloating
+                ? "text-[12px] top-2 px-1"
+                : "text-base top-1/2 -translate-y-1/2",
+              error ? "text-error" : "text-black/70",
+            )}
+          >
+            {placeholder}
+          </label>
         </div>
-        <div className="flex items-center justify-center bg-gray-50 px-4 text-gray-500 min-w-[80px] text-center">
+        <div className="flex items-center justify-center px-4 text-neutral-600 min-w-[80px] text-center">
           {currency}
         </div>
       </div>

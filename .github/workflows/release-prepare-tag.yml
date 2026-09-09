@@ -1,0 +1,374 @@
+# This is the executable, deterministic form of p2p-v0's
+# .claude/skills/release-prepare-tag/SKILL.md. A repository skill is prompt
+# guidance and cannot itself be called through GitHub's API; keeping the
+# mutation logic here makes workflow_dispatch auditable and lets Lexi correlate
+# a concrete Actions run. Update this workflow whenever that skill's release
+# contract changes.
+#
+# Unlike the Home variant, every Slack-correlation input is optional. A release
+# manager can run this from the Actions UI with no inputs at all on the day it
+# merges; Lexi supplies the four inputs when it dispatches so it can correlate
+# the run and gate the later QA handoff on the same requester. Nothing here is
+# feature-flagged and nothing waits on the orchestrator.
+name: Prepare P2P production tag
+run-name: p2p-release-${{ inputs.request_id || github.actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      request_id:
+        description: Stable Slack-thread correlation key (Lexi only; leave blank for a manual run)
+        required: false
+        type: string
+      requester_slack_id:
+        description: Original Slack requester; persisted for the later QA approval gate
+        required: false
+        type: string
+      requester_channel_id:
+        description: Originating Slack channel
+        required: false
+        type: string
+      requester_thread_ts:
+        description: Originating Slack thread timestamp
+        required: false
+        type: string
+
+concurrency:
+  # A second manifest cannot be prepared while the first draft tag is still
+  # unpushed. Serializing all P2P preparations also closes the same-tag race.
+  group: p2p-release-prepare
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main with production tags
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Prepare tracking issue and draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUEST_ID: ${{ inputs.request_id }}
+          REQUESTER_SLACK_ID: ${{ inputs.requester_slack_id }}
+          REQUESTER_CHANNEL_ID: ${{ inputs.requester_channel_id }}
+          REQUESTER_THREAD_TS: ${{ inputs.requester_thread_ts }}
+        run: |
+          set -euo pipefail
+
+          cat > /tmp/p2p-release-result.txt <<EOF
+          P2P release preparation stopped before a tracking issue and draft release were created.
+          Check the failed workflow step before retrying.
+          EOF
+          printf '%s' HANDBACK > /tmp/p2p-release-status
+
+          # Every Slack field is optional so a human can run this unattended,
+          # but a value that IS supplied must be well-formed — a malformed
+          # requester id would silently disable the later approval gate.
+          if [ -n "$REQUEST_ID" ]; then
+            case "$REQUEST_ID" in
+              *[!A-Za-z0-9._-]*) echo "::error::Invalid request_id"; exit 1 ;;
+            esac
+          fi
+          if [ -n "$REQUESTER_SLACK_ID" ]; then
+            [[ "$REQUESTER_SLACK_ID" =~ ^U[A-Z0-9]+$ ]] \
+              || { echo "::error::Invalid requester_slack_id"; exit 1; }
+          fi
+          if [ -n "$REQUESTER_CHANNEL_ID" ]; then
+            [[ "$REQUESTER_CHANNEL_ID" =~ ^C[A-Z0-9]+$ ]] \
+              || { echo "::error::Invalid requester_channel_id"; exit 1; }
+          fi
+          if [ -n "$REQUESTER_THREAD_TS" ]; then
+            [[ "$REQUESTER_THREAD_TS" =~ ^[0-9]+\.[0-9]+$ ]] \
+              || { echo "::error::Invalid requester_thread_ts"; exit 1; }
+          fi
+
+          git fetch --tags --force
+          # Strictly 8 digits: this repo carries a malformed historical tag
+          # (production_v202505012_1) that would otherwise sort to the top and
+          # be mistaken for the live floor.
+          LAST_TAG=$(git tag -l 'production_v[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]_*' \
+            | grep -E '^production_v[0-9]{8}_[0-9]+$' \
+            | sort -t_ -k2,2 -k3,3n \
+            | tail -1 || true)
+          if [ -z "$LAST_TAG" ]; then
+            echo "::error::No production_vYYYYMMDD_N tag exists; refusing to guess a release floor."
+            exit 1
+          fi
+          echo "Currently live tag: $LAST_TAG"
+
+          # Search every issue page so an older Slack request cannot fall out of
+          # a fixed-size window and create duplicate release artifacts. Skipped
+          # for manual runs, which have no correlation key — those are still
+          # protected by the draft-already-exists guard below.
+          EXISTING=""
+          if [ -n "$REQUEST_ID" ]; then
+            EXISTING=$(gh api --paginate \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "/repos/${GITHUB_REPOSITORY}/issues?state=all&per_page=100" \
+              | jq -sc --arg marker "lexi-p2p-release-request: ${REQUEST_ID}" \
+                '[.[][] | select(.pull_request == null) | select((.body // "") | contains($marker))] | first // empty')
+          fi
+          if [ -n "$EXISTING" ]; then
+            TRACKING_ISSUE_URL=$(jq -r '.html_url' <<<"$EXISTING")
+            TRACKING_ISSUE_NUM=$(jq -r '.number' <<<"$EXISTING")
+            NEW_TAG=$(jq -r '.title' <<<"$EXISTING" | grep -oE 'production_v[0-9]{8}_[0-9]+' | head -1 || true)
+            if [ -z "$NEW_TAG" ]; then
+              echo "::error::Existing tracking issue has no valid production tag in its title."
+              exit 1
+            fi
+          else
+            TODAY=$(date -u +%Y%m%d)
+            LAST_N=$(git tag -l "production_v${TODAY}_*" | sed "s/production_v${TODAY}_//" | grep -E '^[0-9]+$' | sort -n | tail -1 || true)
+            NEXT_N=$(( ${LAST_N:-"-1"} + 1 ))
+            NEW_TAG="production_v${TODAY}_${NEXT_N}"
+
+            # A draft reserves this tag even though it is not in git. Never attach
+            # a second regression manifest to somebody else's active release.
+            if gh release view "$NEW_TAG" >/dev/null 2>&1; then
+              cat > /tmp/p2p-release-result.txt <<EOF
+          P2P release preparation was not started because draft release ${NEW_TAG} already exists.
+          Finish or remove that draft through the documented release process, then retry.
+          EOF
+              exit 1
+            fi
+          fi
+          echo "Proposed tag: $NEW_TAG"
+
+          LAST_TAG_TS=$(git log -1 --format=%cI "$LAST_TAG")
+          gh pr list --base main --state merged --limit 500 \
+            --search "merged:>${LAST_TAG_TS}" \
+            --json number,title,author,mergedAt,body > /tmp/merged-prs.json
+
+          PR_LINES=$(jq -r 'sort_by(.number) | .[] | "- #\(.number) — \(.title)  (@\(.author.login // "unknown"))"' /tmp/merged-prs.json)
+          if [ -z "$PR_LINES" ]; then
+            echo "::error::No merged PRs found after ${LAST_TAG}; refusing to create an empty release manifest."
+            exit 1
+          fi
+
+          ISSUE_NUMBERS=$(jq -r '.[].body // ""' /tmp/merged-prs.json \
+            | grep -ioE '(closes|fixes|resolves|close|fix|resolve)[[:space:]:_]+(#[0-9]+|https://github\.com/[^/]+/[^/]+/issues/[0-9]+)' \
+            | grep -oE '#[0-9]+|/issues/[0-9]+' \
+            | grep -oE '[0-9]+' \
+            | sort -un || true)
+          ISSUE_LINES=$(while read -r number; do [ -n "$number" ] && printf -- '- #%s\n' "$number"; done <<<"$ISSUE_NUMBERS")
+
+          create_draft_release() {
+            cat > /tmp/release-notes.md <<EOF
+          ## [TAG] P2P Production - \`${NEW_TAG}\`
+
+          **Regression tracking issue:** #${TRACKING_ISSUE_NUM}
+
+          ### Changes on staging since \`${LAST_TAG}\`
+
+          ${PR_LINES}
+
+          ### Fixed issues
+
+          ${ISSUE_LINES:-_None detected automatically._}
+
+          ---
+
+          **Regression status:** In progress — see #${TRACKING_ISSUE_NUM}
+
+          Once regression passes, push the tag to trigger the production deploy:
+          \`\`\`bash
+          git tag ${NEW_TAG} && git push origin ${NEW_TAG}
+          \`\`\`
+          EOF
+
+            gh release create "$NEW_TAG" --draft \
+              --title "[TAG] P2P Production - ${NEW_TAG}" \
+              --notes-file /tmp/release-notes.md \
+              --target main
+          }
+
+          if [ -n "$EXISTING" ]; then
+            if ! RELEASE_URL=$(gh release view "$NEW_TAG" --json url -q '.url'); then
+              echo "::warning::Tracking issue exists but its draft release is missing; recreating it."
+              create_draft_release
+              RELEASE_URL=$(gh release view "$NEW_TAG" --json url -q '.url')
+            fi
+            cat > /tmp/p2p-release-result.txt <<EOF
+          P2P release preparation already completed for this request.
+          Proposed tag: ${NEW_TAG}
+          Tracking issue: ${TRACKING_ISSUE_URL}
+          Draft release: ${RELEASE_URL}
+
+          Please review these links. When you are ready for QA handoff, reply with an explicit go-ahead.
+          EOF
+            printf '%s' SHIPPED > /tmp/p2p-release-status
+            exit 0
+          fi
+
+          # The checklist has ONE source of truth, in priority order:
+          #   1. .github/ISSUE_TEMPLATE/regression-checklist.md, if QA ever wants
+          #      a template they can edit independently of the skill.
+          #   2. The skill's own checklist, parsed out of SKILL.md. This is the
+          #      normal path. Duplicating the list here instead would silently
+          #      drift the moment somebody edits the skill — which is exactly
+          #      what happened between #1499 and #1502.
+          #   3. The inline default below, only so a manifest can never be
+          #      created with no checklist at all.
+          TEMPLATE=.github/ISSUE_TEMPLATE/regression-checklist.md
+          SKILL=.claude/skills/release-prepare-tag/SKILL.md
+          CHECKLIST=""
+          if [ -f "$TEMPLATE" ]; then
+            CHECKLIST=$(awk '/^---$/{n++; if(n==2){found=1; next}} found' "$TEMPLATE" | sed '/./,$!d')
+            echo "Checklist source: $TEMPLATE"
+          elif [ -f "$SKILL" ]; then
+            # Lifts the CHECKLIST="..." heredoc-free assignment out of the
+            # skill's Step 7 fallback and unescapes its backticks.
+            CHECKLIST=$(awk '
+              /^[[:space:]]*CHECKLIST="## P2P Regression Checklist/ {
+                sub(/^[[:space:]]*CHECKLIST="/, ""); print; found=1; next
+              }
+              found { if (/"[[:space:]]*$/) { sub(/"[[:space:]]*$/, ""); print; exit } print }
+            ' "$SKILL" | sed 's/\\`/`/g')
+            if [ -n "$CHECKLIST" ]; then
+              echo "Checklist source: $SKILL"
+            else
+              echo "::warning::Could not parse the checklist out of ${SKILL}; using this workflow's inline default. Re-sync them."
+            fi
+          fi
+          if [ -z "$CHECKLIST" ]; then
+            # Via a file, NOT `$(cat <<'EOF' ... )`. bash re-parses the body of a
+            # command substitution, so an apostrophe inside a nested quoted
+            # heredoc ("Advertiser's profile") reads as an unmatched quote and
+            # kills the whole script at parse time, on every run.
+            cat > /tmp/checklist-default.md <<'CHECKLIST_EOF'
+          ## P2P Regression Checklist
+
+          - [ ] Trigger Playwright Test Automation
+            - [ ] Go to Playwright workflow on GitHub Actions and run against `staging`
+            - [ ] Verify test results pass without infrastructure/timeout errors
+          - [ ] Markets / Buy & Sell
+            - [ ] Verify Buy/Sell ad listings load correctly
+            - [ ] Test filters (currency, payment method, sort)
+          - [ ] Order
+            - [ ] Buy order flow (create -> pay -> complete)
+            - [ ] Sell order flow (create -> confirm payment -> complete)
+            - [ ] Cancel order flow
+            - [ ] Dispute order flow & proof upload
+          - [ ] My Ads
+            - [ ] Create buy/sell ad (all steps)
+            - [ ] Edit / share / activate / deactivate ad
+          - [ ] Profile
+            - [ ] Payment methods (add, edit, delete)
+            - [ ] Advertiser's profile
+          - [ ] Wallets & Transfers
+            - [ ] Transfer between wallets
+            - [ ] Balance update after transaction
+          CHECKLIST_EOF
+            CHECKLIST=$(cat /tmp/checklist-default.md)
+            echo "Checklist source: this workflow's inline default"
+          fi
+
+          {
+            printf '%s\n\n' "$CHECKLIST"
+            cat <<EOF
+          ---
+
+          ## Regression manifest for \`${NEW_TAG}\`
+
+          > **Status:** Regression in progress — do not push the production tag until QA signs off.
+
+          ### Pull requests included in this release
+
+          Changes merged to \`main\` since \`${LAST_TAG}\` (live on staging):
+
+          ${PR_LINES}
+
+          ### Fixed issues
+
+          ${ISSUE_LINES:-_No issues with Closes/Fixes references found in the PR bodies above._}
+
+          ---
+
+          Once regression passes, follow \`.claude/skills/release-publish-tag\`:
+          1. Push the tag: \`git tag ${NEW_TAG} && git push origin ${NEW_TAG}\`
+          2. Publish the draft GitHub Release.
+          3. Close this issue.
+          EOF
+            # Written only when Lexi dispatched this run. The requester marker is
+            # what authorizes the later same-requester QA handoff, so a manual
+            # run deliberately produces no marker and no Slack approval path.
+            if [ -n "$REQUEST_ID" ]; then
+              printf '\n<!-- lexi-p2p-release-request: %s -->\n' "$REQUEST_ID"
+            fi
+            if [ -n "$REQUESTER_SLACK_ID" ]; then
+              printf '<!-- lexi-p2p-release-requester: %s -->\n' "$REQUESTER_SLACK_ID"
+            fi
+            if [ -n "$REQUESTER_CHANNEL_ID" ] && [ -n "$REQUESTER_THREAD_TS" ]; then
+              printf '<!-- lexi-p2p-release-origin: %s:%s -->\n' "$REQUESTER_CHANNEL_ID" "$REQUESTER_THREAD_TS"
+            fi
+          } > /tmp/tracking-issue.md
+
+          TRACKING_ISSUE_URL=$(gh issue create \
+            --title "[TAG] P2P Production - ${NEW_TAG}" \
+            --body-file /tmp/tracking-issue.md)
+          TRACKING_ISSUE_NUM=${TRACKING_ISSUE_URL##*/}
+
+          create_draft_release
+          RELEASE_URL=$(gh release view "$NEW_TAG" --json url -q '.url')
+
+          cat > /tmp/p2p-release-result.txt <<EOF
+          P2P release preparation completed.
+          Proposed tag: ${NEW_TAG}
+          Tracking issue: ${TRACKING_ISSUE_URL}
+          Draft release: ${RELEASE_URL}
+
+          The production tag is NOT pushed, so build-and-deploy-prod.yml cannot fire yet.
+          Please review these links. When you are ready for QA handoff, reply with an explicit go-ahead.
+          EOF
+          printf '%s' SHIPPED > /tmp/p2p-release-status
+          echo "TRACKING_ISSUE_URL=${TRACKING_ISSUE_URL}" >> "$GITHUB_ENV"
+
+      # Deliberately a separate, non-fatal step. Org Projects v2 writes need
+      # permissions GITHUB_TOKEN does not carry, and a board that cannot be
+      # updated must never destroy an otherwise valid regression manifest.
+      - name: Add tracking issue to the P2P project board
+        if: env.TRACKING_ISSUE_URL != ''
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TRACKING_ISSUE_URL: ${{ env.TRACKING_ISSUE_URL }}
+        run: |
+          set -euo pipefail
+          if ! gh project item-add 12 --owner deriv-com --url "$TRACKING_ISSUE_URL"; then
+            echo "::warning::Could not add ${TRACKING_ISSUE_URL} to https://github.com/orgs/deriv-com/projects/12 — GITHUB_TOKEN has no org project scope. Add it manually, or give this workflow a token with the project scope."
+            exit 1
+          fi
+          echo "Added ${TRACKING_ISSUE_URL} to project 12. Its Status is left at the board default; set it manually."
+
+      # Lexi parses this fence to relay the outcome to the originating Slack
+      # thread. The marker name is shared with direct-fix.yml on purpose — it is
+      # the orchestrator's one result contract, not a per-workflow convention.
+      - name: Publish Lexi result
+        if: always()
+        run: |
+          set -euo pipefail
+          STATUS=$(cat /tmp/p2p-release-status 2>/dev/null || printf HANDBACK)
+          if [ ! -f /tmp/p2p-release-result.txt ]; then
+            printf '%s\n' 'P2P release preparation failed before producing a result. Inspect this run before retrying.' > /tmp/p2p-release-result.txt
+          fi
+          echo "===== DIRECT_FIX_RESULT: ${STATUS} ====="
+          cat /tmp/p2p-release-result.txt
+          echo "===== END_DIRECT_FIX_RESULT ====="
+
+      - name: Upload result artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2p-release-result-${{ github.run_id }}
+          path: /tmp/p2p-release-result.txt
+          retention-days: 14

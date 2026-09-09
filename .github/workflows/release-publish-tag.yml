@@ -1,0 +1,423 @@
+# This is the executable, deterministic form of p2p-v0's
+# .claude/skills/release-publish-tag/SKILL.md — the counterpart to
+# release-prepare-tag.yml. A repository skill is prompt guidance and cannot be
+# called through GitHub's API; keeping the mutation logic here makes
+# workflow_dispatch auditable and lets Lexi correlate a concrete Actions run.
+# Update this workflow whenever that skill's release contract changes.
+#
+# WHY THE APP TOKEN IS NOT OPTIONAL
+#
+# `build-and-deploy-prod.yml` triggers on `push: tags: production_v*` and has no
+# workflow_dispatch. A push made with the automatic GITHUB_TOKEN does not
+# trigger workflows, so pushing the tag with `github.token` would publish the
+# release and silently never deploy — the worst available failure mode. A GitHub
+# App installation token is a different credential and does cascade, so every
+# git write here uses the Lexi App token that direct-fix.yml already mints in
+# this repository.
+#
+# Like the prepare variant, every Slack-correlation input is optional so a
+# release manager can run this from the Actions UI. Lexi supplies them when it
+# dispatches, so it can correlate the run and prove the caller is the same
+# person who asked for the tag.
+name: Publish P2P production tag
+run-name: p2p-publish-${{ inputs.request_id || github.actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      new_tag:
+        description: Exact tag to publish, e.g. production_v20260908_0
+        required: true
+        type: string
+      tracking_issue:
+        description: Regression tracking issue number, e.g. 1544
+        required: true
+        type: string
+      request_id:
+        description: Stable Slack-thread correlation key (Lexi only; leave blank for a manual run)
+        required: false
+        type: string
+      requester_slack_id:
+        description: Original Slack requester
+        required: false
+        type: string
+      requester_channel_id:
+        description: Originating Slack channel
+        required: false
+        type: string
+      requester_thread_ts:
+        description: Originating Slack thread timestamp
+        required: false
+        type: string
+
+concurrency:
+  # Never two production tags in flight. Unlike prepare, a second run here
+  # would push a second tag and start a second production deploy.
+  group: p2p-release-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # Must exceed build-and-deploy-prod.yml's own 30-minute timeout, because
+    # this job watches that deploy to completion before closing the tracker.
+    timeout-minutes: 50
+    steps:
+      # The "GH APP BUG TRIAGE" app, same secrets direct-fix.yml uses. Minted
+      # first so a credential failure costs nothing.
+      - name: Mint Lexi App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.LEXI_GITHUB_APP_ID }}
+          private-key: ${{ secrets.LEXI_GITHUB_APP_PRIVATE_KEY }}
+
+      - name: Checkout main with production tags
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          # Persisted so `git push` below carries the App token, not
+          # GITHUB_TOKEN. This is what makes the production deploy fire.
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Validate inputs and reserve the tag
+        id: validate
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          NEW_TAG: ${{ inputs.new_tag }}
+          TRACKING_ISSUE: ${{ inputs.tracking_issue }}
+          REQUEST_ID: ${{ inputs.request_id }}
+          REQUESTER_SLACK_ID: ${{ inputs.requester_slack_id }}
+          REQUESTER_CHANNEL_ID: ${{ inputs.requester_channel_id }}
+          REQUESTER_THREAD_TS: ${{ inputs.requester_thread_ts }}
+        run: |
+          set -euo pipefail
+
+          # Every later step is `if: always()`-guarded off this file, so seed it
+          # with the failure story before anything can fail.
+          cat > /tmp/p2p-publish-result.txt <<EOF
+          P2P release publication stopped before the production tag was pushed.
+          Nothing was deployed and the draft release is untouched.
+          Check the failed workflow step before retrying.
+          EOF
+          printf '%s' HANDBACK > /tmp/p2p-publish-status
+
+          # Strictly 8 digits, matching release-prepare-tag. This repo carries a
+          # malformed historical tag (production_v202505012_1); a loose pattern
+          # would accept its shape and deploy something nobody manifested.
+          if ! printf '%s' "$NEW_TAG" | grep -Eq '^production_v[0-9]{8}_[0-9]+$'; then
+            cat > /tmp/p2p-publish-result.txt <<EOF
+          Refused: '${NEW_TAG}' is not a P2P production tag.
+          Expected production_vYYYYMMDD_N, exactly as release-prepare-tag proposed it.
+          EOF
+            exit 1
+          fi
+          if ! printf '%s' "$TRACKING_ISSUE" | grep -Eq '^[0-9]+$'; then
+            cat > /tmp/p2p-publish-result.txt <<EOF
+          Refused: tracking_issue '${TRACKING_ISSUE}' is not an issue number.
+          EOF
+            exit 1
+          fi
+
+          # A supplied Slack field must be well-formed; a malformed one would
+          # misattribute a production deploy in the audit trail.
+          if [ -n "$REQUEST_ID" ]; then
+            case "$REQUEST_ID" in
+              *[!A-Za-z0-9._-]*) echo "::error::Invalid request_id"; exit 1 ;;
+            esac
+          fi
+          if [ -n "$REQUESTER_SLACK_ID" ]; then
+            printf '%s' "$REQUESTER_SLACK_ID" | grep -Eq '^U[A-Z0-9]+$' \
+              || { echo "::error::Invalid requester_slack_id"; exit 1; }
+          fi
+          if [ -n "$REQUESTER_CHANNEL_ID" ]; then
+            printf '%s' "$REQUESTER_CHANNEL_ID" | grep -Eq '^C[A-Z0-9]+$' \
+              || { echo "::error::Invalid requester_channel_id"; exit 1; }
+          fi
+          if [ -n "$REQUESTER_THREAD_TS" ]; then
+            printf '%s' "$REQUESTER_THREAD_TS" | grep -Eq '^[0-9]+\.[0-9]+$' \
+              || { echo "::error::Invalid requester_thread_ts"; exit 1; }
+          fi
+
+          git fetch --tags --force
+
+          # The draft is the manifest QA signed off on. No draft means either the
+          # tag was already published or it was never prepared — both are
+          # refusals, not something to paper over by creating a release here.
+          if ! RELEASE_JSON=$(gh release view "$NEW_TAG" --json isDraft,url,createdAt 2>/dev/null); then
+            cat > /tmp/p2p-publish-result.txt <<EOF
+          Refused: no GitHub Release exists for ${NEW_TAG}.
+          Run release-prepare-tag first, or check the exact tag name.
+          EOF
+            exit 1
+          fi
+          IS_DRAFT=$(jq -r '.isDraft' <<<"$RELEASE_JSON")
+          RELEASE_URL=$(jq -r '.url' <<<"$RELEASE_JSON")
+          RELEASE_CREATED_AT=$(jq -r '.createdAt' <<<"$RELEASE_JSON")
+          if [ "$IS_DRAFT" != "true" ]; then
+            cat > /tmp/p2p-publish-result.txt <<EOF
+          Nothing to do: release ${NEW_TAG} is already published.
+          ${RELEASE_URL}
+          EOF
+            printf '%s' SHIPPED > /tmp/p2p-publish-status
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Never move a production tag. If it already points somewhere, the only
+          # safe outcomes are "same commit, carry on" or "stop".
+          TARGET_SHA=$(git rev-parse HEAD)
+          if git rev-parse -q --verify "refs/tags/${NEW_TAG}" >/dev/null; then
+            EXISTING_SHA=$(git rev-list -n1 "$NEW_TAG")
+            if [ "$EXISTING_SHA" != "$TARGET_SHA" ]; then
+              cat > /tmp/p2p-publish-result.txt <<EOF
+          Refused: tag ${NEW_TAG} already exists at ${EXISTING_SHA}, but main is now at ${TARGET_SHA}.
+          A production tag is never moved or force-pushed. Cut a new tag with release-prepare-tag instead.
+          EOF
+              exit 1
+            fi
+            echo "Tag ${NEW_TAG} already points at ${TARGET_SHA}; will publish the draft only."
+            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
+          fi
+
+          # The draft was written against main as it stood during preparation.
+          # Anything merged since is about to ship untested. This does not block
+          # — the human asked for this tag — but it must be impossible to miss.
+          DRIFT=$(git log --oneline --since="$RELEASE_CREATED_AT" HEAD | wc -l | tr -d ' ')
+          echo "drift=${DRIFT}" >> "$GITHUB_OUTPUT"
+          echo "target_sha=${TARGET_SHA}" >> "$GITHUB_OUTPUT"
+          echo "release_url=${RELEASE_URL}" >> "$GITHUB_OUTPUT"
+          echo "Target commit: ${TARGET_SHA}"
+          echo "Commits merged since the draft was prepared: ${DRIFT}"
+
+      - name: Push the production tag
+        if: steps.validate.outputs.already_published != 'true'
+        env:
+          NEW_TAG: ${{ inputs.new_tag }}
+          TAG_EXISTS: ${{ steps.validate.outputs.tag_exists }}
+        run: |
+          set -euo pipefail
+          if [ "$TAG_EXISTS" = "true" ]; then
+            echo "Tag already present locally and remotely at the target commit; nothing to push."
+            exit 0
+          fi
+          git tag "$NEW_TAG"
+          # Carries the App token from the checkout, so build-and-deploy-prod.yml
+          # fires. With GITHUB_TOKEN this push would deploy nothing.
+          git push origin "refs/tags/${NEW_TAG}"
+          echo "Pushed ${NEW_TAG}; build-and-deploy-prod.yml should now be starting."
+
+      - name: Publish the draft release
+        if: steps.validate.outputs.already_published != 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          NEW_TAG: ${{ inputs.new_tag }}
+        run: |
+          set -euo pipefail
+          gh release edit "$NEW_TAG" --draft=false
+          echo "Published release ${NEW_TAG}."
+
+      - name: Watch the production deploy
+        id: deploy
+        if: steps.validate.outputs.already_published != 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          NEW_TAG: ${{ inputs.new_tag }}
+        run: |
+          set -euo pipefail
+          COMMIT_SHA=$(git rev-list -n1 "$NEW_TAG")
+          RUN_ID=""
+          for attempt in 1 2 3 4 5 6 7 8; do
+            RUN_ID=$(gh run list --workflow=build-and-deploy-prod.yml --commit "$COMMIT_SHA" \
+              --limit 1 --json databaseId -q '.[0].databaseId' 2>/dev/null || true)
+            [ -n "$RUN_ID" ] && break
+            echo "Waiting for build-and-deploy-prod.yml to register (${attempt}/8)..."
+            sleep 15
+          done
+
+          if [ -z "$RUN_ID" ]; then
+            # The tag is pushed and the release published; only the deploy
+            # correlation failed. Report it rather than claiming a deploy.
+            echo "deploy=unknown" >> "$GITHUB_OUTPUT"
+            echo "::warning::Could not find a build-and-deploy-prod.yml run for ${COMMIT_SHA}."
+            exit 0
+          fi
+
+          echo "deploy_run_url=$(gh run view "$RUN_ID" --json url -q '.url')" >> "$GITHUB_OUTPUT"
+          if gh run watch "$RUN_ID" --exit-status; then
+            echo "deploy=success" >> "$GITHUB_OUTPUT"
+          else
+            echo "deploy=failed" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Unlike Home, whose release.yml closes its own tracker, P2P's deploy
+      # workflow does not touch the issue — so publication closes it, and only
+      # on a green deploy.
+      - name: Close the tracking issue
+        if: steps.validate.outputs.already_published != 'true' && steps.deploy.outputs.deploy == 'success'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          NEW_TAG: ${{ inputs.new_tag }}
+          TRACKING_ISSUE: ${{ inputs.tracking_issue }}
+        run: |
+          set -euo pipefail
+          STATE=$(gh issue view "$TRACKING_ISSUE" --json state -q '.state' 2>/dev/null || printf UNKNOWN)
+          if [ "$STATE" = "OPEN" ]; then
+            gh issue close "$TRACKING_ISSUE" \
+              --comment "Regression passed. Tag \`${NEW_TAG}\` pushed and the production deploy completed successfully."
+            echo "Closed #${TRACKING_ISSUE}."
+          else
+            echo "Tracking issue #${TRACKING_ISSUE} is ${STATE}; leaving it alone."
+          fi
+
+      # Non-fatal by design, exactly like prepare's project-board step: a
+      # checklist that could not be filed must never invalidate a completed
+      # production deploy.
+      - name: Create the post-release sanity issue
+        id: post_release
+        if: steps.validate.outputs.already_published != 'true' && steps.deploy.outputs.deploy == 'success'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          NEW_TAG: ${{ inputs.new_tag }}
+          TRACKING_ISSUE: ${{ inputs.tracking_issue }}
+        run: |
+          set -euo pipefail
+
+          # Template first if QA ever adds one, so they can edit it without
+          # touching this workflow. p2p-v0 has none today.
+          POST_TEMPLATE=.github/ISSUE_TEMPLATE/post-release-checklist.md
+          if [ -f "$POST_TEMPLATE" ]; then
+            awk '/^---$/{n++; if(n==2){found=1; next}} found' "$POST_TEMPLATE" | sed '/./,$!d' > /tmp/post-checklist.md
+            echo "Checklist source: $POST_TEMPLATE"
+          else
+            # Written to a file, NOT via $(cat <<'EOF' ...). bash re-parses the
+            # body of a command substitution, so the apostrophe in
+            # "Advertiser's profile" would read as an unmatched quote and kill
+            # this script at parse time, on every run. Same trap the prepare
+            # workflow documents.
+            cat > /tmp/post-checklist.md <<'CHECKLIST_EOF'
+          ## Post-Release Sanity Checklist (P2P)
+
+          > **Objective:** Ensure Deriv P2P is functioning as expected in production after the release.
+
+          - [ ] Confirm release tag version on production:
+            - [ ] Check `/app-info.json` returns the correct version
+          - [ ] Ensure no new console errors:
+            - [ ] Navigate through Markets, My Ads, Orders, and Profile
+            - [ ] Check the browser console for errors or uncaught exceptions
+          - [ ] Core flow sanity checks:
+            - [ ] **Markets:** ad list rendering, buy/sell toggles, filters, floating rates
+            - [ ] **My Ads:** active ad status, rate updates
+            - [ ] **Orders:** active orders list, order details navigation
+            - [ ] **Wallets & Transfers:** balance display, transfer modal
+            - [ ] **Payment Methods:** payment methods list displays correctly
+          - [ ] Post-release concluded — all checks above completed and the release is stable.
+          CHECKLIST_EOF
+            echo "Checklist source: this workflow's inline default"
+          fi
+
+          {
+            cat /tmp/post-checklist.md
+            printf '\n---\n\n'
+            printf '**Release:** `%s`\n' "$NEW_TAG"
+            printf '**Regression tracking issue:** #%s\n' "$TRACKING_ISSUE"
+          } > /tmp/post-release-issue.md
+
+          POST_ISSUE_URL=$(gh issue create \
+            --title "[POST-RELEASE] P2P Production - ${NEW_TAG}" \
+            --body-file /tmp/post-release-issue.md)
+          echo "post_issue_url=${POST_ISSUE_URL}" >> "$GITHUB_OUTPUT"
+          echo "Post-release issue: ${POST_ISSUE_URL}"
+
+          # sub_issues wants the database id, not the issue number.
+          POST_ISSUE_NUM=${POST_ISSUE_URL##*/}
+          POST_ISSUE_DB_ID=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${POST_ISSUE_NUM}" --jq '.id' 2>/dev/null || true)
+          if [ -z "$POST_ISSUE_DB_ID" ]; then
+            echo "::warning::Could not resolve the database id for #${POST_ISSUE_NUM}; link it as a sub-issue manually."
+          elif gh api "repos/${GITHUB_REPOSITORY}/issues/${TRACKING_ISSUE}/sub_issues" \
+                 --method POST -F sub_issue_id="$POST_ISSUE_DB_ID" >/dev/null 2>&1; then
+            echo "Linked #${POST_ISSUE_NUM} as a sub-issue of #${TRACKING_ISSUE}."
+          else
+            echo "::warning::Could not auto-link #${POST_ISSUE_NUM} as a sub-issue; add it via the GitHub UI."
+          fi
+
+      - name: Compose the Lexi result
+        if: always() && steps.validate.outputs.already_published != 'true'
+        env:
+          NEW_TAG: ${{ inputs.new_tag }}
+          TRACKING_ISSUE: ${{ inputs.tracking_issue }}
+          RELEASE_URL: ${{ steps.validate.outputs.release_url }}
+          TARGET_SHA: ${{ steps.validate.outputs.target_sha }}
+          DRIFT: ${{ steps.validate.outputs.drift }}
+          DEPLOY: ${{ steps.deploy.outputs.deploy }}
+          DEPLOY_RUN_URL: ${{ steps.deploy.outputs.deploy_run_url }}
+          POST_ISSUE_URL: ${{ steps.post_release.outputs.post_issue_url }}
+        run: |
+          set -euo pipefail
+          # A validation refusal already wrote its own story and left status
+          # HANDBACK; do not overwrite it.
+          if [ "$(cat /tmp/p2p-publish-status 2>/dev/null || true)" = "HANDBACK" ] && [ -z "${DEPLOY:-}" ]; then
+            exit 0
+          fi
+
+          {
+            case "${DEPLOY:-unknown}" in
+              success)
+                printf 'P2P production release %s is live.\n' "$NEW_TAG"
+                ;;
+              failed)
+                printf 'P2P tag %s was pushed and the release published, but the production deploy FAILED.\n' "$NEW_TAG"
+                printf 'Tracking issue #%s was left open deliberately. Investigate before retrying.\n' "$TRACKING_ISSUE"
+                ;;
+              *)
+                printf 'P2P tag %s was pushed and the release published, but the deploy run could not be correlated.\n' "$NEW_TAG"
+                printf 'Verify the deploy manually before treating this release as live.\n'
+                ;;
+            esac
+            printf '\nTag: %s (commit %s)\n' "$NEW_TAG" "${TARGET_SHA:-unknown}"
+            [ -n "${RELEASE_URL:-}" ] && printf 'Release: %s\n' "$RELEASE_URL"
+            [ -n "${DEPLOY_RUN_URL:-}" ] && printf 'Deploy run: %s\n' "$DEPLOY_RUN_URL"
+            printf 'Tracking issue: #%s\n' "$TRACKING_ISSUE"
+            [ -n "${POST_ISSUE_URL:-}" ] && printf 'Post-release checklist: %s\n' "$POST_ISSUE_URL"
+            if [ "${DEPLOY:-}" = "success" ] && [ -z "${POST_ISSUE_URL:-}" ]; then
+              printf 'Post-release checklist: NOT created — file it manually.\n'
+            fi
+            if [ -n "${DRIFT:-}" ] && [ "${DRIFT:-0}" -gt 0 ]; then
+              printf '\nWARNING: %s commit(s) landed on main after this draft was prepared, so the shipped tag contains changes the regression manifest does not list. Confirm that was intended.\n' "$DRIFT"
+            fi
+          } > /tmp/p2p-publish-result.txt
+
+          if [ "${DEPLOY:-unknown}" = "success" ]; then
+            printf '%s' SHIPPED > /tmp/p2p-publish-status
+          else
+            printf '%s' HANDBACK > /tmp/p2p-publish-status
+          fi
+
+      # Lexi parses this fence to relay the outcome to the originating Slack
+      # thread. The marker name is shared with direct-fix.yml on purpose — it is
+      # the orchestrator's one result contract, not a per-workflow convention.
+      - name: Publish Lexi result
+        if: always()
+        run: |
+          set -euo pipefail
+          STATUS=$(cat /tmp/p2p-publish-status 2>/dev/null || printf HANDBACK)
+          if [ ! -f /tmp/p2p-publish-result.txt ]; then
+            printf '%s\n' 'P2P release publication failed before producing a result. Inspect this run before retrying.' > /tmp/p2p-publish-result.txt
+          fi
+          echo "===== DIRECT_FIX_RESULT: ${STATUS} ====="
+          cat /tmp/p2p-publish-result.txt
+          echo "===== END_DIRECT_FIX_RESULT ====="
+
+      - name: Upload result artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2p-publish-result-${{ github.run_id }}
+          path: /tmp/p2p-publish-result.txt
+          retention-days: 14

@@ -2,11 +2,22 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
-import { X } from "lucide-react"
+import { useState, useEffect, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import { PanelWrapper } from "@/components/ui/panel-wrapper"
+import { Spinner } from "@/components/ui/spinner"
+import { useTranslations } from "@/lib/i18n/use-translations"
+import {
+  getPaymentMethodFieldMaxLength,
+  getPaymentMethodFieldValidationIssue,
+  paymentMethodFieldNameFromKey,
+  PAYMENT_METHOD_INSTRUCTIONS_MAX_LENGTH,
+  requiresNumericAccountField,
+  sanitizeMpesaAccountInput,
+} from "@/lib/payment-method-validation"
+import { getPaymentMethodFieldValidationMessageKey } from "@/lib/payment-method-field-validation-messages"
 
 interface EditPaymentMethodPanelProps {
   onClose: () => void
@@ -27,61 +38,108 @@ interface EditPaymentMethodPanelProps {
   }
 }
 
-interface PanelWrapperProps {
-  onClose: () => void
-  children: React.ReactNode
-}
-
-function PanelWrapper({ onClose, children }: PanelWrapperProps) {
-  return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl flex flex-col">
-      <div className="p-6 border-b relative">
-        <h2 className="text-xl font-semibold">Edit payment method</h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 h-10 w-10 rounded-full"
-        >
-          <X className="h-5 w-5" />
-        </Button>
-      </div>
-      {children}
-    </div>
-  )
-}
-
 export default function EditPaymentMethodPanel({
   onClose,
   onSave,
   isLoading,
   paymentMethod,
 }: EditPaymentMethodPanelProps) {
+  const { t } = useTranslations()
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const getFieldValidationError = useCallback(
+    (method: string, fieldName: string, value: string): string | null => {
+      const trimmed = value.trim()
+      if (!trimmed) return null
+
+      const field = paymentMethodFieldNameFromKey(fieldName)
+      if (!field) return null
+
+      const issue = getPaymentMethodFieldValidationIssue(method, fieldName, value)
+      if (!issue) return null
+
+      return t(getPaymentMethodFieldValidationMessageKey(field, issue))
+    },
+    [t],
+  )
 
   useEffect(() => {
     if (!paymentMethod?.details) return
 
-    setFieldValues(
-      Object.fromEntries(
-        Object.entries(paymentMethod.details).map(([fieldName, fieldConfig]) => [fieldName, fieldConfig.value || ""]),
-      ),
+    const initialValues = Object.fromEntries(
+      Object.entries(paymentMethod.details).map(([fieldName, fieldConfig]) => [fieldName, fieldConfig.value || ""]),
     )
-  }, [paymentMethod])
+
+    setFieldValues(initialValues)
+
+    const initialErrors: Record<string, string> = {}
+    Object.entries(paymentMethod.details).forEach(([fieldName, fieldConfig]) => {
+      const value = initialValues[fieldName] ?? ""
+      if (!value.trim() && fieldConfig.required) return
+
+      const fieldError = getFieldValidationError(paymentMethod.type, fieldName, value)
+      if (fieldError) {
+        initialErrors[fieldName] = fieldError
+      }
+    })
+    setErrors(initialErrors)
+  }, [paymentMethod, getFieldValidationError])
 
   const handleInputChange = (fieldName: string, value: string) => {
-    setFieldValues((prev) => ({ ...prev, [fieldName]: value }))
+    const nextValue = requiresNumericAccountField(paymentMethod.type, fieldName)
+      ? sanitizeMpesaAccountInput(value)
+      : value
+
+    setFieldValues((prev) => ({ ...prev, [fieldName]: nextValue }))
+
+    const fieldError = getFieldValidationError(paymentMethod.type, fieldName, nextValue)
+    if (fieldError) {
+      setErrors((prev) => ({
+        ...prev,
+        [fieldName]: fieldError,
+      }))
+      return
+    }
+
+    setErrors((prev) => {
+      const newErrors = { ...prev }
+      delete newErrors[fieldName]
+      return newErrors
+    })
+  }
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+
+    Object.entries(paymentMethod.details).forEach(([fieldName, fieldConfig]) => {
+      const value = fieldValues[fieldName]?.trim() ?? ""
+
+      if (!value && fieldConfig.required) {
+        newErrors[fieldName] = t("profile.fieldRequired", { field: fieldConfig.display_name })
+        return
+      }
+
+      const fieldError = getFieldValidationError(paymentMethod.type, fieldName, value)
+      if (fieldError) {
+        newErrors[fieldName] = fieldError
+      }
+    })
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (isFormValid()) {
+    if (validateForm() && isFormValid()) {
       onSave(paymentMethod.id, fieldValues)
     }
   }
 
   const getFieldType = (fieldName: string): string => {
+    if (requiresNumericAccountField(paymentMethod.type, fieldName)) return "tel"
     if (fieldName.includes("phone")) return "tel"
     if (fieldName.includes("email")) return "email"
     return "text"
@@ -89,6 +147,8 @@ export default function EditPaymentMethodPanel({
 
   const isFormValid = (): boolean => {
     if (!paymentMethod?.details) return false
+
+    if (Object.keys(errors).length > 0) return false
 
     return Object.entries(paymentMethod.details)
       .filter(([, fieldConfig]) => fieldConfig.required)
@@ -102,7 +162,7 @@ export default function EditPaymentMethodPanel({
     return (
       <PanelWrapper onClose={onClose}>
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-gray-500">Loading...</div>
+          <div className="text-gray-500">{t("profile.loading")}</div>
         </div>
       </PanelWrapper>
     )
@@ -110,56 +170,69 @@ export default function EditPaymentMethodPanel({
 
   return (
     <PanelWrapper onClose={onClose}>
-      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
-        <div className="p-6 space-y-6">
-          <div className="text-lg font-medium">{paymentMethod.name}</div>
-
-          <div className="space-y-4">
+      <div className="flex flex-col flex-1 min-h-0">
+        <h2 className="shrink-0 p-4 pb-0 text-start text-2xl font-bold">{t("profile.editPaymentDetails")}</h2>
+        <form onSubmit={handleSubmit} className="min-h-0 flex-1 overflow-y-auto">
+          <div className="space-y-4 p-4">
             {Object.entries(paymentMethod.details).map(([fieldName, fieldConfig]) => (
               <div key={fieldName}>
-                <label htmlFor={fieldName} className="block text-sm font-medium text-gray-500 mb-2">
-                  {fieldConfig.display_name}
-                  {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
-                </label>
                 {fieldName === "instructions" ? (
                   <div>
                     <Textarea
                       id={fieldName}
                       value={fieldValues[fieldName] || ""}
                       onChange={(e) => handleInputChange(fieldName, e.target.value)}
-                      placeholder={`Enter ${fieldConfig.display_name.toLowerCase()}`}
+                      label={t("profile.enterField", { field: fieldConfig.display_name.toLowerCase() })}
                       className="min-h-[120px] resize-none"
-                      maxLength={300}
+                      maxLength={PAYMENT_METHOD_INSTRUCTIONS_MAX_LENGTH}
+                      variant="floating"
+                      error={Boolean(errors[fieldName])}
                     />
-                    <div className="flex justify-end mt-1 text-xs text-gray-500">
-                      {(fieldValues[fieldName] || "").length}/300
+                    {errors[fieldName] && <p className="mt-1 text-xs text-error-text text-start">{errors[fieldName]}</p>}
+                    <div className="flex justify-end mt-1 text-xs text-slate-1200 rtl:justify-start">
+                      {(fieldValues[fieldName] || "").length}/{PAYMENT_METHOD_INSTRUCTIONS_MAX_LENGTH}
                     </div>
                   </div>
                 ) : (
-                  <Input
-                    id={fieldName}
-                    type={getFieldType(fieldName)}
-                    value={fieldValues[fieldName] || ""}
-                    onChange={(e) => handleInputChange(fieldName, e.target.value)}
-                    placeholder={`Enter ${fieldConfig.display_name.toLowerCase()}`}
-                  />
+                  <div>
+                    <Input
+                      id={fieldName}
+                      type={getFieldType(fieldName)}
+                      inputMode={
+                        requiresNumericAccountField(paymentMethod.type, fieldName)
+                          ? "numeric"
+                          : undefined
+                      }
+                      value={fieldValues[fieldName] || ""}
+                      onChange={(e) => handleInputChange(fieldName, e.target.value)}
+                      label={t("profile.enterField", { field: fieldConfig.display_name.toLowerCase() })}
+                      required={fieldConfig.required}
+                      variant="floating"
+                      maxLength={getPaymentMethodFieldMaxLength(fieldName)}
+                      error={Boolean(errors[fieldName])}
+                    />
+                    {errors[fieldName] && <p className="mt-1 text-xs text-error-text text-start">{errors[fieldName]}</p>}
+                  </div>
                 )}
               </div>
             ))}
           </div>
-        </div>
-      </form>
+        </form>
 
-      <div className="p-6 border-t">
-        <Button
-          type="button"
-          onClick={handleSubmit}
-          disabled={isLoading || !isFormValid()}
-          size="sm"
-          className="w-full"
-        >
-          {isLoading ? "Saving..." : "Save details"}
-        </Button>
+        <div className="mt-auto flex shrink-0 justify-end bg-white p-4 rtl:justify-start">
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isLoading || !isFormValid()}
+            className="w-full md:w-auto"
+          >
+            {isLoading ? (
+              <Spinner size="xs" />
+            ) : (
+              t("profile.saveChanges")
+            )}
+          </Button>
+        </div>
       </div>
     </PanelWrapper>
   )

@@ -1,8 +1,10 @@
 "use client"
 
-import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { Order } from "@/services/api/api-orders"
+import { OrderDetails } from "@/components/order-details"
+import { StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
+import { useTranslations } from "@/lib/i18n/use-translations"
 
 interface OrderDetailsSidebarProps {
   isOpen: boolean
@@ -11,68 +13,20 @@ interface OrderDetailsSidebarProps {
 }
 
 export default function OrderDetailsSidebar({ isOpen, onClose, order }: OrderDetailsSidebarProps) {
-  if (!isOpen) return null
+  const { t } = useTranslations()
 
+  if (!isOpen) return
   return (
     <div className="fixed inset-0 bg-black/50 flex justify-end z-50">
       <div className="bg-white w-full max-w-md h-full flex flex-col">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-lg font-bold">Order details</h2>
-          <Button onClick={onClose} variant="ghost">
-            <X className="h-5 w-5" />
+        <div className="flex items-center justify-between px-4 py-3 border-b">
+          <h2 className="text-xl font-bold">{t("orderDetails.title")}</h2>
+          <Button onClick={onClose} variant="icon-muted" aria-label={t("common.close")}>
+            <StandaloneXmarkRegularIcon width={24} height={24} aria-hidden />
           </Button>
         </div>
         <div className="flex-1 overflow-auto p-4">
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-sm text-slate-500 mb-1">Order ID</h3>
-              <p className="font-medium">{order.id}</p>
-            </div>
-
-            <div>
-              <h3 className="text-sm text-slate-500 mb-1">Exchange rate</h3>
-              <p className="font-medium">
-                {order.advert?.account_currency} 1.00 = {order.advert?.payment_currency}{" "}
-                {order.exchange_rate || "N/A"}
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-sm text-slate-500 mb-1">{order.type === "buy" ? "You buy" : "You sell"}</h3>
-              <p className="font-medium">
-                {order.advert?.account_currency}{" "}
-                {typeof order.amount === "object" && order.amount.value
-                  ? Number(order.amount.value)
-                  : typeof order.amount === "number"
-                    ? order.amount
-                    : Number(order.amount)}
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-sm text-slate-500 mb-1">{order.type === "buy" ? "You pay" : "You receive"}</h3>
-              <p className="font-medium">
-                {order.advert?.payment_currency}{" "}
-                {typeof order.price === "object" && order.price.value
-                  ? Number(order.price.value)
-                  : typeof order.price === "number"
-                    ? order.price
-                    : Number(order.price)}
-              </p>
-            </div>
-
-            <div>
-              {order.type === "buy" ?
-                <h3 className="text-sm text-slate-500 mb-1">Seller</h3> :
-                <h3 className="text-sm text-slate-500 mb-1">Buyer</h3>}
-              <p className="font-medium">{order.advert?.user?.nickname}</p>
-            </div>
-
-            <div>
-              <h3 className="text-sm text-slate-500 mb-1">Status</h3>
-              <p className="font-medium">{order.status}</p>
-            </div>
-          </div>
+          <OrderDetails order={order} />
         </div>
       </div>
     </div>

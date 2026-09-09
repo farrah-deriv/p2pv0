@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "node16",
+    "moduleResolution": "node16"
+  },
+  "include": [
+    "**/*.ts"
+  ],
+  "exclude": [
+    "e2e-tests-core",
+    "playwright-report",
+    "test-results"
+  ]
+}

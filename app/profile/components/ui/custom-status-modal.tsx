@@ -1,6 +1,7 @@
 "use client"
 import { AlertDialog, AlertDialogContent } from "@/components/ui/alert-dialog"
-import { CheckCircle, AlertCircle, X } from "lucide-react"
+import { StandaloneCircleCheckFillIcon, StandaloneCircleExclamationRegularIcon, StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
+import { Button } from "@/components/ui/button"
 
 interface StatusModalProps {
   type: "success" | "error" | "warning"
@@ -21,19 +22,20 @@ export default function StatusModal({ type, title, message, subMessage, onClose 
                 } rounded-full p-2 flex items-center justify-center`}
             >
               {type === "success" ? (
-                <CheckCircle className="h-8 w-8 text-success-icon" />
+                <StandaloneCircleCheckFillIcon iconSize="md" className="text-success-icon" />
               ) : (
-                <AlertCircle className="h-8 w-8 text-warning-icon" />
+                <StandaloneCircleExclamationRegularIcon iconSize="md" className="text-warning-icon" />
               )}
             </div>
 
-            <button
+            <Button
+              variant="icon-muted"
               onClick={onClose}
-              className="absolute top-6 right-6 text-slate-400 hover:text-slate-600"
+              className="absolute top-6 right-6 !p-1 !h-auto"
               aria-label="Close"
             >
-              <X className="h-5 w-5" />
-            </button>
+              <StandaloneXmarkRegularIcon iconSize="sm" />
+            </Button>
           </div>
 
           <div className="mb-12">
@@ -42,12 +44,9 @@ export default function StatusModal({ type, title, message, subMessage, onClose 
             {subMessage && <p className="text-slate-500 mt-4">{subMessage}</p>}
           </div>
 
-          <button
-            onClick={onClose}
-            className="w-full h-10 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-          >
+          <Button onClick={onClose} className="w-full">
             OK
-          </button>
+          </Button>
         </div>
       </AlertDialogContent>
     </AlertDialog>

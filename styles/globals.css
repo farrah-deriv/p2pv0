@@ -2,13 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: 255, 255, 255;
+  --component-segmentedControl-bg-single-body: rgba(255, 255, 255, 0.04);
+  --component-segmentedControl-bg-single-selected: rgba(255, 255, 255, 0.16);
+}
+
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .w-1\/7 {
+    width: 14.285%;
+     }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -20,15 +42,16 @@ body {
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
+    --primary: 356.47 100% 63.33%;
+    --primary-hover: 355.98 74.9% 53.14%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
+    --secondary: 164.31 100% 38.24%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
     --accent: 0 0% 96.1%;
     --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 343 100% 44%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
@@ -48,6 +71,7 @@ body {
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+  
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -55,7 +79,7 @@ body {
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
+    --primary: #00cccc;
     --primary-foreground: 0 0% 9%;
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
@@ -67,7 +91,7 @@ body {
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 14.9%;
     --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+    --ring: 355 100% 63%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -88,7 +112,96 @@ body {
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-background text-foreground;
+  } 
+}
+
+@keyframes wave {
+  0%, 100% {
+    height: 18px;
+    opacity: 0.6;
+  }
+  50% {
+    height: 32px; 
+    opacity: 1;
+  }
+}
+
+.animate-wave {
+  animation: wave 1.2s ease-in-out infinite;
+}
+
+.animate-wave:nth-child(1) { animation-delay: 0s; }
+.animate-wave:nth-child(2) { animation-delay: 0.1s; }
+.animate-wave:nth-child(3) { animation-delay: 0.2s; }
+.animate-wave:nth-child(4) { animation-delay: 0.3s; }
+.animate-wave:nth-child(5) { animation-delay: 0.4s; }
+
+.filter-to-primary {
+  filter: invert(67%) sepia(87%) saturate(1231%) hue-rotate(152deg) brightness(103%) contrast(103%);
+}
+
+.shadow-dropdown {
+  box-shadow: 0px 16px 24px 4px rgba(0, 0, 0, 0.02), 0px 16px 24px 4px rgba(0, 0, 0, 0.04);
+}
+
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Novu notification popover — must escape overflow:hidden ancestors (orders,
+   profile, ads pages all have h-screen overflow-hidden content divs which cause
+   Floating UI to flip the popover upward, hiding it behind the header).
+   position:fixed removes it from any clipping context; z-index ensures it
+   paints above the header (z-20 = 20) on all pages.
+
+   The popover portals into the nearest `.novu` / `novu-root-{id}` ancestor, which on
+   desktop sits inside the sidebar's `relative z-20` stacking context. A fixed element
+   still participates in its DOM ancestors' stacking context, so the popover's own
+   z-index is trapped there and can paint behind content in a higher sibling context.
+   The `.novu` root must stay in-flow (it hosts the bell trigger), so we give it a
+   relative position + a high z-index to lift the whole subtree — including the trapped
+   fixed popover — above the markets content, while staying below app modals (z-50).
+
+   Inner option dropdowns (filter, preferences, snooze date picker) render as
+   nv-dropdownContent with Floating UI strategy "absolute" and no z-index of their own.
+   The main popover (nv-popoverContent) is overflow:hidden + z-9999 here, which clips
+   the absolute inner dropdown and paints it behind the popover. Lift them above the
+   popover content and make them fixed so they escape the popover's overflow clipping. */
+.novu {
+  position: relative;
+  z-index: 40;
+}
+
+[data-novu-popover-root],
+.nv-popoverContent {
+  position: fixed !important;
+  z-index: 9999 !important;
+}
+
+.nv-dropdownContent {
+  position: fixed !important;
+  z-index: 10000 !important;
+}
+
+.novu-popover-content {
+  max-width: 500px;
+}
+
+@media (max-width: 500px) {
+  .novu-popover-content {
+    width: 80vw;
+    height: 80vh;
+    max-width: none;
   }
 }

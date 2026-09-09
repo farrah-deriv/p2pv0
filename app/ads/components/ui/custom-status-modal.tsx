@@ -1,6 +1,6 @@
 "use client"
 import { AlertDialog, AlertDialogContent } from "@/components/ui/alert-dialog"
-import { CheckCircle, AlertCircle, X } from "lucide-react"
+import { StandaloneCircleCheckFillIcon, StandaloneCircleExclamationRegularIcon, StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
 import { Button } from "@/components/ui/button" // Import Button for style override
 
 interface CustomStatusModalProps {
@@ -41,38 +41,29 @@ export default function CustomStatusModal({
           <div className="flex justify-center mb-12">
             <div
               className={`${
-                type === "success" ? "bg-[#EDFAF3]" : "bg-[#FFF8E7]"
+                type === "success" ? "bg-success-bg" : "bg-warning-bg"
               } rounded-[80px] p-2 flex items-center justify-center w-[56px] h-[56px]`}
             >
               {type === "success" ? (
-                <CheckCircle className="h-8 w-8 text-[#008832]" />
+                <StandaloneCircleCheckFillIcon iconSize="md" className="text-success-icon" />
               ) : (
-                <AlertCircle className="h-8 w-8 text-[#F59E0B]" />
+                <StandaloneCircleExclamationRegularIcon iconSize="md" className="text-warning-icon" />
               )}
             </div>
 
-            <button
+            <Button
+              variant="icon-muted"
               onClick={onClose}
-              className="absolute top-6 right-6 text-black hover:text-gray-700"
+              className="absolute top-6 right-6 !p-1 !h-auto"
               aria-label="Close"
             >
-              <X className="h-5 w-5" />
-            </button>
+              <StandaloneXmarkRegularIcon iconSize="sm" />
+            </Button>
           </div>
 
           {/* Content section - left aligned */}
           <div className="mb-12">
-            <h2
-              className="font-bold mb-6"
-              style={{
-                fontSize: "20px",
-                lineHeight: "100%",
-                letterSpacing: "0%",
-                fontWeight: 700,
-              }}
-            >
-              {title}
-            </h2>
+            <h2 className="mb-6 text-2xl font-extrabold leading-none tracking-normal">{title}</h2>
 
             {type === "success" && (
               <>
@@ -134,7 +125,7 @@ export default function CustomStatusModal({
           {/* Button at the bottom - using Button component with style override */}
           <Button
             onClick={onClose}
-            className="w-full h-14 bg-[#00D2FF] hover:bg-[#00BFEA] text-black rounded-full font-bold"
+            className="w-full h-14 !bg-blue-200 hover:!bg-cyan-hover text-black !rounded-full font-bold"
           >
             {actionButtonText}
           </Button>

@@ -1,0 +1,484 @@
+# Claude Rules — Playwright (p2p-v0)
+
+**Last Updated**: 2026-06-26
+**Scope**: `playwright/` directory — applies to all Claude interactions in this folder
+
+> These rules are Playwright-specific and stack on top of the root `CLAUDE.md`.
+
+---
+
+## [CRITICAL] Skills — Load Before Writing Tests
+
+### Any task involving Playwright test files (`playwright/tests/`, `playwright/pages/`, `playwright/fixtures/`, `playwright/utils/`)
+
+**Before doing ANYTHING else** — before reading files, exploring the app, or writing any code — you MUST load the appropriate skill:
+
+**If the task involves implementing gaps from `coverage.md` or generating tests from `flow.md` / `catalog.md`:**
+```
+use_skill("flow-to-playwright")
+```
+
+**If the task involves writing, editing, moving, or reviewing general Playwright tests (not from flow docs):**
+```
+use_skill("playwright")
+```
+
+**If the task involves generating `flow.md` / `catalog.md` / `coverage.md` from source code for any module:**
+```
+use_skill("src-to-flow-p2p")
+```
+
+**Do not read files, explore the app, or write any test code until the skill is loaded.**
+Loading the skill at the end — after writing or editing tests — defeats the purpose; violations will be introduced and must be fixed retroactively.
+
+---
+
+## Skills Directory
+
+All custom skills live under `playwright/e2e-tests-core/skills/`. When a skill is referenced via `use_skill(...)`, read the corresponding `SKILL.md` before proceeding:
+
+| Skill name | Path |
+|---|---|
+| `playwright` | `playwright/e2e-tests-core/skills/playwright/SKILL.md` |
+| `flow-to-playwright` | `playwright/e2e-tests-core/skills/flow-to-playwright/SKILL.md` |
+| `src-to-flow-p2p` | `playwright/e2e-tests-core/skills/src-to-flow-p2p/SKILL.md` |
+| `gap-to-playwright` | `playwright/e2e-tests-core/skills/gap-to-playwright/SKILL.md` |
+| `qa-mailisk-api` | `playwright/e2e-tests-core/skills/qa-mailisk-api/SKILL.md` |
+| `qa-github-issues` | `playwright/e2e-tests-core/skills/qa-github-issues/SKILL.md` |
+| `qa-pr-review` | `playwright/e2e-tests-core/skills/qa-pr-review/SKILL.md` |
+
+---
+
+## [CRITICAL] Project Structure
+
+- All Playwright files live under `playwright/` — **NEVER** at the project root
+- **Tests**: `playwright/tests/[feature]/[name].spec.ts`
+- **Pages**: `playwright/pages/[Name]Page.ts`
+- **Utils**: `playwright/utils/` — import from `../utils` (barrel export via `index.ts`)
+- **Fixtures**: `playwright/fixtures/fixtures.ts` — **always import `test` from here, NEVER from `@playwright/test`**
+- **Flows (docs)**: `playwright/flows/[feature]/` — catalog, coverage, flow per feature
+- **Config**: `playwright.config.ts` at project root
+- **Output**: `playwright/test-results/` (gitignored)
+- **Env files**: `playwright/.env.staging` and `playwright/.env.production` (gitignored)
+
+### [CRITICAL] Test Folder Naming — Must Mirror `app/` Structure
+
+When creating a **new test folder** under `playwright/tests/`, the folder name **MUST mirror the corresponding route segment in `app/`**.
+
+| `app/` route | `playwright/tests/` folder |
+|---|---|
+| `app/` (root, markets) | `playwright/tests/market/` |
+| `app/ads/` | `playwright/tests/ads/` |
+| `app/advertiser/` | `playwright/tests/advertiser/` |
+| `app/orders/` | `playwright/tests/orders/` |
+| `app/profile/` | `playwright/tests/profile/` |
+| `app/wallet/` | `playwright/tests/wallet/` |
+| `app/login/` | `playwright/tests/auth/` |
+
+---
+
+## [CRITICAL] Auth Flow
+
+p2p-v0 uses **Ory Kratos login**:
+
+1. `gotoLoginPage()` — navigates to `LOGIN_URL` (`https://staging-home.deriv.com/dashboard/login`)
+2. External login page — `LoginPage` — enter email + submit
+3. `/enter-password` — handled inside `LoginPage` — enter password + submit
+4. Redirects to `BASE_URL` (`/`) — `MarketPage` (P2P Markets home)
+
+`PasswordPage` is an internal POM used only by `LoginPage` — never instantiate it directly in tests. Both login steps are encapsulated in `LoginPage`.
+
+**For full login in tests**: use `loginPage.login()` — handles both steps automatically.
+**Entry point**: always call `loginPage.gotoLoginPage()` — never call `page.goto('/login')` directly in tests.
+**Required env var**: `LOGIN_URL` must be set in `playwright/.env.staging` (falls back to `BASE_URL` if unset).
+
+**WebAuthn suppression:** fixtures call `addInitScript` to suppress `navigator.credentials.get` — required because Ory Kratos triggers WebAuthn on some environments.
+
+---
+
+## [CRITICAL] Locators
+
+- Use fallback chains: `data-testid` → `getByRole()` → `getByPlaceholder()` → `getByLabel()` → CSS
+- Define locators as **getter methods** in Page Objects — **never inline in tests**
+- Never use brittle nth-child or deeply nested CSS selectors
+- Use `.or()` chains to cover both desktop and mobile layouts
+
+> **p2p-v0 has broad `data-testid` coverage.** Always try `getByTestId` first. Fall back to `getByRole` / i18n text fallbacks only when no testid exists for the element.
+
+### Resolving i18n text for locators
+
+Button and heading text is always a translation key in TSX (e.g. `{t('createAd')}`), never a hardcoded string. Before writing any `getByRole` or `getByText` locator, resolve the key to its English value via `lib/i18n/translations/en.json`:
+
+```typescript
+// t('createAd') → "Create ad"  (from lib/i18n/translations/en.json)
+page.getByRole("button", { name: "Create ad" })
+```
+
+When a value contains a runtime parameter (e.g. `"No ads available for {currency}"`), use partial matching:
+
+```typescript
+page.getByText("No ads available for", { exact: false })
+```
+
+Never write `getByRole('button', { name: t('createAd') })` — the locator must use the resolved English string.
+
+### ❌ Anti-pattern — inline locators in test files
+
+```typescript
+// ❌ WRONG
+await page.getByTestId("some-btn").click();
+
+// ✅ CORRECT — via Page Object getter
+await marketPage.buySellButton.click();
+```
+
+**Rule**: If a `page.getByTestId(...)`, `page.locator(...)`, or `page.getByRole(...)` call appears directly in a test file, it is a violation. Move it to the appropriate Page Object getter.
+
+---
+
+## [CRITICAL] Assertions
+
+- Every assertion **MUST** include a descriptive message:
+  ```typescript
+  await expect(element, "Buy/Sell button should be visible on market page").toBeVisible();
+  ```
+- **Never** write bare assertions without a message — they are forbidden
+- Use semantic assertion methods (`toBeVisible`, `toHaveText`, `toHaveURL`, etc.)
+
+---
+
+## [CRITICAL] Credentials & Security
+
+- **Never hardcode credentials or fallback values** — use `process.env` and fail-fast
+- If `TEST_EMAIL` or `TEST_PASSWORD` is missing, throw a descriptive error
+- Never use `eval()`, `Function()`, or `innerHTML` with user-controlled data
+- All test emails **must** use `@webapps.mailisk.net` domain by default
+- Use `@mobileapps.mailisk.net` **only** when explicitly required for mobile-app scenarios
+- **Playwright env files live in `playwright/`** — NOT at the project root:
+  - `playwright/.env.staging` — staging credentials (gitignored)
+  - `playwright/.env.production` — production credentials (gitignored)
+- **Root `.env*` files are for the p2p-v0 Next.js app** — do NOT use them for Playwright tests
+- Run: `TEST_ENV=staging npx playwright test` (defaults to staging if `TEST_ENV` is not set)
+
+---
+
+## [CRITICAL] Env File Encryption & Decryption
+
+Plaintext env files are **gitignored**. Encrypted `.enc` versions are committed so CI can decrypt them.
+
+**Script** (lives in `playwright/e2e-tests-core/scripts/`):
+- `env-cipher.sh <encrypt|decrypt> <staging|production>` — encrypts `playwright/.env.<env>` → `playwright/.env.<env>.enc` or decrypts the reverse
+
+**Passphrase resolution:**
+1. If `ENV_ENCRYPTION_KEY` is set → use it silently
+2. If not set → show a `read -s` prompt
+3. Passphrase passed to OpenSSL via `-pass env:ENV_ENCRYPTION_KEY` (key never appears in process arguments)
+
+**Local usage:**
+```bash
+ENV_ENCRYPTION_KEY="your-key" ./playwright/e2e-tests-core/scripts/env-cipher.sh encrypt staging
+ENV_ENCRYPTION_KEY="your-key" ./playwright/e2e-tests-core/scripts/env-cipher.sh decrypt staging
+```
+
+**CI (GitHub Actions):** set `ENV_ENCRYPTION_KEY` as a repository secret:
+```yaml
+- name: Decrypt Playwright env files
+  env:
+    ENV_ENCRYPTION_KEY: ${{ secrets.ENV_ENCRYPTION_KEY }}
+  run: ./playwright/e2e-tests-core/scripts/env-cipher.sh decrypt staging
+```
+
+**Critical pitfalls:**
+- ❌ Never encrypt using OpenSSL's own interactive prompt — files encrypted that way cannot be decrypted programmatically
+- ❌ Never run `ENV_ENCRYPTION_KEY=$SOME_VAR ./script.sh` when `$SOME_VAR` is unset — empty string → OpenSSL prompt
+- ❌ Never encrypt the `.enc` file (double-encryption corrupts it)
+- ❌ Never commit plaintext `playwright/.env.*` files
+
+---
+
+## [CRITICAL] Fixtures & Page Objects
+
+- Always use global fixtures from `playwright/fixtures/fixtures.ts` — never manually instantiate page objects in tests
+- Page Object files must group methods by exactly **three** sections in this order: **Locators → Actions → Verifications**
+  - **LOCATORS** — all getter properties (top)
+  - **ACTIONS** — navigation, clicks, fills, and any other user interactions (middle)
+  - **VERIFICATIONS** — all `verify*` / assertion-only methods (bottom)
+- To add a new page object: create in `playwright/pages/`, register in `playwright/fixtures/fixtures.ts`, then use via fixture
+
+---
+
+## [CRITICAL] One Page Object Per Route — Never Mix Page Locators
+
+- **Every distinct route gets its own Page Object** — locators for `/ads/create` belong in `AdsPage`, not `MarketPage`
+- Ask yourself: *"Does this locator belong to the page navigated TO, or the navigation shell?"*
+  - Content on the **destination page** → create/use the destination's Page Object (e.g. `AdsPage`, `OrdersPage`, `ProfilePage`)
+  - Nav elements that persist across all routes → the relevant navigation fixture
+- Never add locators from page B into the Page Object of page A just because the test navigates there from A
+- When a test navigates to a new route and asserts on that route's content, destructure the matching page fixture in the test signature
+
+---
+
+## [CRITICAL] Page Object First Approach
+
+- **Always create or update a Page Object before writing a test** — never put locators or interactions directly in test files
+- Every UI interaction in a test must go through a Page Object method or getter
+- If a page object does not exist for the page under test, create it first in `playwright/pages/` and register it in `playwright/fixtures/fixtures.ts` before writing the test
+
+**Checklist before writing any test interaction:**
+1. Does the Page Object already expose a getter for this element? → use it
+2. If not → add the getter to the Page Object, then reference it in the test
+3. Never bypass steps 1 and 2 by writing the locator inline in the test
+
+---
+
+## [CRITICAL] Always Explore Pages with Playwright MCP Before Creating Page Objects
+
+**Never assume the structure, flow, or locators of any page.** Before writing or updating a Page Object, you MUST:
+
+1. **Use Playwright MCP to navigate to the page** and take a live snapshot to see the actual DOM structure, roles, and accessible names.
+2. **Explore the full user flow** — many flows span multiple screens.
+3. **Ask the user for context** when a page is behind authentication or requires setup data.
+4. **Document what you find** — note the actual button labels, input placeholders, test IDs, and URL patterns before writing any locator.
+5. **Never guess locators** — if you cannot navigate to the page, ask the user for a screenshot or DOM snapshot.
+
+---
+
+## [CRITICAL] Test Tags
+
+Every `test.describe()` MUST have at least one `@feature-area` tag:
+
+```typescript
+// ✅ CORRECT
+test.describe("Buy/Sell flow", { tag: ["@market", "@smoke"] }, () => { ... });
+
+// ❌ WRONG — never put tags in titles
+test.describe("Buy/Sell flow @market @smoke", () => { ... });
+```
+
+Feature-area tags and viewport tags (`@desktop`, `@mobile`) go on `test.describe()` **only**.
+
+Execution tags (`@production`, `@staging`) may be placed on an individual `test()` when only that specific case needs a narrower execution scope — for example, when splitting into two `describe` blocks would require duplicating a `beforeAll` setup. In all other cases, prefer placing execution tags on `test.describe()`.
+
+```typescript
+// ✅ OK — scoping a single test without duplicating beforeAll
+test('VERIFY happy path on production', { tag: '@production' }, async ({ ... }) => { ... });
+```
+
+**Feature area tags**: `@market`, `@auth`, `@ads`, `@advertiser`, `@orders`, `@profile`, `@wallet`
+
+**Execution tags**: `@smoke` (critical path), `@production` (safe to run on prod — read-only, no mutations), `@staging` (requires staging env — Mailisk, fresh accounts), `@desktop`, `@mobile`
+
+---
+
+## [CRITICAL] Test Quality
+
+- Test names must start with **`VERIFY`** (uppercase): `'VERIFY buy ad appears in market list'`
+- Tests must be **fully independent** — no shared mutable state between tests
+- **Never use `waitForTimeout()`** — use `expect(...).toBeVisible()` or `waitForLoadState()`
+- **Never set `timeout` in `test.describe.configure()`** — only `mode` is allowed
+- **Every new test must be verified as passing** before the task is considered complete
+
+---
+
+## [CRITICAL] Environment Variable Validation — Always Use `beforeAll`, Never Top-Level Throws
+
+- **Never throw at the top level of a spec file** to validate environment variables
+- **Always move env var validation into `test.beforeAll()`** inside `test.describe()`
+- Declare env var variables with `let VAR: string = undefined!` inside the `test.describe()` closure
+- Assign them in `test.beforeAll()` after validation with a descriptive error message
+
+```typescript
+// ✅ CORRECT
+test.describe("Ads flow", { tag: ["@ads"] }, () => {
+  let TEST_EMAIL: string = undefined!;
+
+  test.beforeAll(() => {
+    const email = process.env.TEST_EMAIL;
+    if (!email) throw new Error("TEST_EMAIL not set in playwright/.env.staging");
+    TEST_EMAIL = email;
+  });
+});
+```
+
+### Exception — `loginHelpers.login` and `loginPage.login` validate credentials internally
+
+Both `loginHelpers.login()` and `loginPage.login()` validate `TEST_EMAIL` and `TEST_PASSWORD` internally and throw actionable errors if they are missing.
+
+**Do NOT add a `beforeAll` guard for `TEST_EMAIL` or `TEST_PASSWORD`** when the only consumer is the login helper — they are already validated with clear error messages.
+
+Only use `beforeAll` for env vars consumed outside the login helpers (e.g. custom API endpoints, Mailisk keys).
+
+---
+
+## [CRITICAL] Autonomous Failure Resolution & Justification
+
+When a test fails, you must act as a **Quality Engineer**:
+
+1. **Investigation First**: Use Playwright MCP to inspect the DOM. Compare actual UI vs. test intent.
+2. **Logic Gate**:
+   - UI contradicts requirements → **Application Bug** — fix the app
+   - UI changed intentionally → **Test Maintenance** — update locators
+   - Timeout/network error → **Infrastructure/Flake** — stabilize the test
+3. **Mandatory Justification**: Every fix must be preceded by a `🔍 FAILURE ANALYSIS` block.
+4. **No Forbidden Shortcuts**: No deletion, commenting out, or weakening assertions to make tests pass.
+
+---
+
+## [CRITICAL] Page Load Verification — Always Confirm New Page Is Loaded
+
+After **every** page state change (navigation, form submit, tab switch, dialog close), confirm the new page is loaded with a **positive element assertion** — never rely on URL change alone:
+
+```typescript
+// ✅ Wait for a landmark element on the new page
+await expect(marketPage.buyTab, "Buy tab should be visible after login").toBeVisible();
+
+// ❌ Wrong — URL change alone does not confirm the page rendered
+await page.waitForURL("/");
+```
+
+---
+
+## [CRITICAL] Navigation
+
+- Use sidebar/nav link clicks for in-app navigation — **NEVER** hardcode URL paths like `/ads/create` in the middle of a flow
+- `page.goto()` is acceptable only for the **initial entry point** (e.g. login page, root market page)
+- Always navigate by clicking the actual UI element (nav tab, button, link) that a real user would click
+
+---
+
+## [CRITICAL] Test Data (DataFactory)
+
+- Always use `DataFactory` from `../utils` (re-exported via the barrel from `e2e-tests-core/utils`)
+- Prefer `generateEmailWithPrefix('context')` over `generateEmail()` for traceability
+- **Store generated data in variables** — never call `DataFactory` twice for the same value
+- **Email local part must NEVER exceed 64 characters** (RFC 5321 hard limit)
+
+---
+
+## [CRITICAL] Change Impact — Full Reference Check
+
+- **Any change** (utility, page object, function signature, import path) **MUST be propagated to all references** before the task is complete
+- Search the entire `playwright/` directory for every usage of the changed symbol and update them all
+- After updating, verify `npx tsc --noEmit` passes
+
+---
+
+## [CRITICAL] Mobile Responsive Strategy
+
+- p2p-v0 uses two Playwright projects: `chromium` (desktop, 1280×720) and `chromium-mobile` (Pixel 7, 412×915)
+- **Single describe block per spec** — runs under both desktop and mobile projects automatically
+- Detect in tests: `testInfo.project.name.includes("mobile")`
+- Detect in POMs: use the `isMobileViewport` fixture (`true` when viewport width < 1024px)
+- Use `.or()` chains to cover both layouts in a single locator
+- Never add `(Desktop)` / `(Mobile)` suffixes to test names — the project prefix handles this
+
+---
+
+## [CRITICAL] TypeScript Best Practices
+
+- Always use **strict TypeScript** — no `any` types unless absolutely unavoidable with a comment
+- Use **explicit return types** on all functions and methods
+- Use **interfaces** for object shapes
+- Use `readonly` for Page Object `page` properties
+- Prefer `const` over `let`; never use `var`
+- Use **optional chaining** (`?.`) and **nullish coalescing** (`??`)
+- Never use non-null assertion (`!`) without a comment explaining why it is safe
+
+---
+
+## [CRITICAL] JSDoc & Code Comments
+
+- All **classes** must have a JSDoc comment with a usage `@example`
+- All **public methods** must have JSDoc with `@param` and `@returns`
+- Comments must explain **why**, not just **what**
+- Test files: brief comment at the top of each `test.describe` block
+
+---
+
+## [CRITICAL] Scope — Never Modify Files Outside `playwright/`
+
+- **Never modify any file outside the `playwright/` folder** (e.g., `app/`, `components/`, `public/`, config files at the project root)
+- If a change outside `playwright/` appears necessary (e.g., adding a `data-testid` to a source component), **STOP — ask the user for confirmation first**
+- Tests must adapt to the app's existing DOM — use the locator fallback chain rather than modifying the app to accommodate tests
+
+---
+
+## [CRITICAL] Keep `.clinerules` and `CLAUDE.md` in Sync
+
+- **`playwright/.clinerules` and `playwright/CLAUDE.md` are the two authoritative rule files** — they must always contain identical rules
+- **Any rule added, updated, or removed in one file MUST be immediately reflected in the other**
+
+---
+
+## [Should] Utilities
+
+- Only add utilities that are **actually used** — no speculative or "just in case" functions
+- A utility belongs in `playwright/utils/` only if it is used in 2+ places
+
+---
+
+## [Should] Tracing & Debugging
+
+- `trace: 'retain-on-failure'` is the default in `playwright.config.ts` — do not override it in spec files
+- When debugging locally, run with `--trace on` to capture a full trace regardless of outcome
+
+---
+
+## Project Structure
+
+```
+playwright/
+├── CLAUDE.md                # This file — Claude-specific rules
+├── .clinerules              # Cline-specific rules (must mirror CLAUDE.md)
+├── fixtures/
+│   └── fixtures.ts          # Global Playwright fixtures — always import from here
+├── pages/                   # Page Objects — one file per page/flow
+│   ├── LoginPage.ts
+│   ├── MarketPage.ts
+│   ├── AdsPage.ts
+│   ├── AdvertiserPage.ts
+│   ├── OrdersPage.ts
+│   ├── OrderDetailPage.ts
+│   ├── ProfilePage.ts
+│   └── WalletPage.ts
+├── tests/                   # Test specs organised by feature area
+│   ├── auth/
+│   ├── market/
+│   ├── ads/
+│   ├── advertiser/
+│   ├── orders/
+│   ├── profile/
+│   └── wallet/
+├── flows/                   # Journey documentation (catalog, coverage, flow per feature)
+│   ├── _conventions/        # Templates and reference docs
+│   ├── _index.md            # Master tracking file
+│   ├── auth/
+│   ├── market/
+│   ├── ads/
+│   ├── advertiser/
+│   ├── orders/
+│   ├── profile/
+│   └── wallet/
+├── utils/
+│   └── index.ts             # Barrel export — import all utils from here
+├── test-data/               # Files for upload tests
+├── test-results/            # Output: screenshots, traces, report (gitignored)
+├── .env.staging             # Staging credentials (gitignored)
+├── .env.staging.enc         # Encrypted staging credentials (committed)
+├── .env.production          # Production credentials (gitignored)
+└── .env.production.enc      # Encrypted production credentials (committed)
+```
+
+---
+
+## Key Conventions
+
+| Convention | Rule |
+|---|---|
+| Default email domain | `@webapps.mailisk.net` |
+| Mobile email domain | `@mobileapps.mailisk.net` (explicit only) |
+| OTP regex | `/\b(\d{6})\b/` |
+| Env var for Mailisk | `MAILISK_API_KEY` |
+| Login flow | Ory Kratos 2-step: `LOGIN_URL` → `/enter-password` → `BASE_URL` `/` (all in `LoginPage`) |
+| Full login shortcut | `loginPage.login()` or `loginHelpers.login(page)` |
+| Run tests | `TEST_ENV=staging npx playwright test` |

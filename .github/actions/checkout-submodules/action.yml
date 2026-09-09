@@ -1,0 +1,33 @@
+name: Checkout submodules
+description: >-
+  Mint a short-lived GitHub App installation token and fetch the private
+  deriv-com/e2e-tests-core submodule.
+  Requires the repository to already be checked out. The token is read-only
+  and expires automatically, so there is nothing to rotate.
+
+inputs:
+  app-id:
+    description: GitHub App client ID (secrets.CLIENT_ID_GHAPP)
+    required: true
+  private-key:
+    description: GitHub App private key PEM (secrets.PRIVATE_KEY_GHAPP)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Mint token for deriv-com
+      id: dc-token
+      uses: actions/create-github-app-token@v1
+      with:
+        app-id: ${{ inputs.app-id }}
+        private-key: ${{ inputs.private-key }}
+        owner: deriv-com
+        repositories: e2e-tests-core
+        permission-contents: read
+
+    - name: Checkout submodules
+      shell: bash
+      run: |
+        git config --global url."https://x-access-token:${{ steps.dc-token.outputs.token }}@github.com/deriv-com/".insteadOf "https://github.com/deriv-com/"
+        git submodule update --init --recursive

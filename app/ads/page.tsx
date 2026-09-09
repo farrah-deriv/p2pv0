@@ -1,235 +1,366 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useEffect, useState, useRef, useCallback, useMemo } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import MyAdsTable from "./components/my-ads-table"
-import MyAdsHeader from "./components/my-ads-header"
-import { getUserAdverts } from "./api/api-ads"
-import { USER } from "@/lib/local-variables"
-import { Plus } from "lucide-react"
-import type { MyAd, SuccessData } from "./types"
-import MobileMyAdsList from "./components/mobile-my-ads-list"
+import EmptyState from "@/components/empty-state"
+import { queryKeys, useUserAdverts, useHideMyAds } from "@/hooks/use-api-queries"
+import { useQueryClient } from "@tanstack/react-query"
+import Image from "next/image"
+import type { MyAd } from "./types"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
-import { StatusBanner } from "@/components/ui/status-banner"
-
-// Update imports to use the new component locations
-import StatusModal from "./components/ui/status-modal"
+import { Spinner } from "@/components/ui/spinner"
+import { HeaderSegmentedControl } from "@/components/header-segmented-control"
 import StatusBottomSheet from "./components/ui/status-bottom-sheet"
+import { useAdvertAlertDialog } from "@/app/ads/hooks/use-advert-alert-dialog"
+import { Switch } from "@/components/ui/switch"
+import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
+import { useUserDataStore } from "@/stores/user-data-store"
+import { useTranslations } from "@/lib/i18n/use-translations"
+import { TemporaryBanAlert } from "@/components/temporary-ban-alert"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
+import { useTrackers } from "@/analytics/useTrackers"
+import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
+import { MY_ADS_TAB_QUERY, parseMyAdsTab, type MyAdsTab } from "@/lib/ads/my-ads-tab"
+
+interface StatusData {
+  success: "create" | "update"
+  type: string
+  id: string
+  showStatusModal: boolean
+}
 
 export default function AdsPage() {
-  const [ads, setAds] = useState<MyAd[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [successModal, setSuccessModal] = useState<{
-    show: boolean
-    type: string
-    id: string
-  }>({
-    show: false,
-    type: "",
-    id: "",
-  })
+  const { t } = useTranslations()
+  const { track } = useTrackers()
+  const queryClient = useQueryClient()
   const [showDeletedBanner, setShowDeletedBanner] = useState(false)
-  const [showUpdatedBanner, setShowUpdatedBanner] = useState(false)
+  const [statusData, setStatusData] = useState<StatusData | null>(null)
+  const [activeTab, setActiveTab] = useState<MyAdsTab>("active")
+  const { userData, userId } = useUserDataStore()
+  const tempBanUntil = userData?.temp_ban_until
+  const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
+  const [hiddenAdverts, setHiddenAdverts] = useState(false)
+  const [isHideAdsInfoOpen, setIsHideAdsInfoOpen] = useState(false)
+  const advertDialog = useAdvertAlertDialog()
+  const { showAlert } = advertDialog
+  const { runGatedAction, openKycIfUnverified } = useKycOverlay({
+    route: "ads",
+    dialog: advertDialog,
+  })
+  const kycPopupHandledRef = useRef(false)
+
   const isMobile = useIsMobile()
   const router = useRouter()
+  const searchParams = useSearchParams()
 
-  // Add error modal state
-  const [errorModal, setErrorModal] = useState({
-    show: false,
-    title: "Error",
-    message: "",
-  })
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
-  const fetchAds = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      console.log(`Fetching adverts for user ID: ${USER.id}`)
-      const userAdverts = await getUserAdverts()
-      console.log("User adverts response:", userAdverts)
-      setAds(userAdverts)
-    } catch (err) {
-      console.error("Error fetching ads:", err)
-      setError("Failed to load ads. Please try again later.")
-      setAds([])
+  // Use the React Query hook
+  const isActiveTab = activeTab === "active"
+  const { data, isLoading: loading, isFetching, isFetchingNextPage, fetchNextPage, hasNextPage, error: queryError, refetch } = useUserAdverts(isActiveTab, !!userId)
+  const userAdverts = useMemo(() => data?.pages.flat() ?? [], [data?.pages])
 
-      // Show error modal
-      setErrorModal({
-        show: true,
-        title: "Error Loading Ads",
-        message: err instanceof Error ? err.message : "Failed to load ads. Please try again later.",
+  // Infinite scroll: fetch next page when sentinel comes into view
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    const scrollContainer = scrollContainerRef.current
+    if (!sentinel || !hasNextPage || !scrollContainer) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isFetchingNextPage) {
+          fetchNextPage()
+        }
+      },
+      { threshold: 0, rootMargin: "100px", root: scrollContainer },
+    )
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+
+  useEffect(() => {
+    const shouldShowKyc = searchParams.get("show_kyc_popup") === "true"
+    // Verified users must never auto-open KYC. Main strips the param for
+    // brand-new / fully verified users, but a just-verified returning user
+    // can still land here with the param while status is already approved.
+    if (shouldShowKyc && !kycPopupHandledRef.current) {
+      kycPopupHandledRef.current = true
+      void openKycIfUnverified()
+    }
+
+    const tabFromUrl = parseMyAdsTab(searchParams.get(MY_ADS_TAB_QUERY))
+    if (tabFromUrl) {
+      setActiveTab(tabFromUrl)
+    }
+  }, [searchParams, openKycIfUnverified])
+
+  const handleCreateAd = () => {
+    if (isMaintenanceActive) return
+    track("ek_create_ad_my_ads")
+    runGatedAction(() => router.push("/ads/create"))
+  }
+
+  const handleTabChange = (tabValue: string) => {
+    setActiveTab(tabValue as MyAdsTab)
+  }
+
+  const refetchCurrentTab = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.ads.allUserAdverts() })
+    await refetch()
+  }, [queryClient, refetch])
+
+  useEffect(() => {
+    if (userData?.adverts_are_listed !== undefined) {
+      setHiddenAdverts(!userData.adverts_are_listed)
+    }
+  }, [userData?.adverts_are_listed])
+
+  useEffect(() => {
+    const success = searchParams.get("success")
+    const type = searchParams.get("type")
+    const id = searchParams.get("id")
+    const showStatusModal = searchParams.get("showStatusModal")
+
+    if (!success || !type || !id || showStatusModal !== "true") {
+      return
+    }
+
+    if ((success === "create" || success === "update") && !isMobile) {
+      const adTypeDisplay = type.toUpperCase()
+      const createDescription = t("myAds.adCreatedMessage", { type: adTypeDisplay, id })
+      const updateDescription = t("myAds.adUpdatedMessage", { type: adTypeDisplay, id })
+
+      showAlert({
+        title: success === "create" ? t("myAds.adCreated") : t("myAds.adUpdated"),
+        description: success === "create" ? createDescription : updateDescription,
+        confirmText: t("common.ok"),
+        type: "success",
       })
-    } finally {
-      setLoading(false)
+    }
+
+    if (success === "create" || success === "update") {
+      setStatusData({
+        success,
+        type,
+        id,
+        showStatusModal: true,
+      })
+
+      queryClient.invalidateQueries({ queryKey: queryKeys.ads.allUserAdverts() })
+      refetch()
+    }
+  }, [searchParams, showAlert, isMobile, t, refetch, queryClient])
+
+  const handleAdUpdated = (status?: string) => {
+    if (status === "deleted") {
+      setShowDeletedBanner(true)
+      setTimeout(() => setShowDeletedBanner(false), 3000)
     }
   }
 
-  const handleAdUpdated = (status?: string) => {
-    console.log("Ad updated (deleted or status changed), refreshing list...")
-    fetchAds()
-
-    if (status === "deleted") {
-      setShowDeletedBanner(true)
-      setTimeout(() => {
-        setShowDeletedBanner(false)
-      }, 3000)
-    }
+  const handleCloseStatusModal = () => {
+    setStatusData((prev) => (prev ? { ...prev, showStatusModal: false } : null))
   }
 
   useEffect(() => {
-    const checkForSuccessData = () => {
-      try {
-        const creationDataStr = localStorage.getItem("adCreationSuccess")
-        if (creationDataStr) {
-          const successData = JSON.parse(creationDataStr) as SuccessData
-          setSuccessModal({
-            show: true,
-            type: successData.type,
-            id: successData.id,
-          })
-          localStorage.removeItem("adCreationSuccess")
-        }
+    track("ek_open_my_ads")
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-        const updateDataStr = localStorage.getItem("adUpdateSuccess")
-        if (updateDataStr) {
-          setShowUpdatedBanner(true)
-          setTimeout(() => {
-            setShowUpdatedBanner(false)
-          }, 3000)
-          localStorage.removeItem("adUpdateSuccess")
-        }
-      } catch (err) {
-        console.error("Error checking for success data:", err)
-      }
+  const hideMyAdsMutation = useHideMyAds()
+
+  const handleHideMyAds = async (value: boolean) => {
+    track("ek_toggle_hide_my_ads_my_ads")
+    const previousValue = hiddenAdverts
+    setHiddenAdverts(value)
+
+    try {
+      await hideMyAdsMutation.mutateAsync(value)
+      // Update the user store with the new value after successful API call
+      useUserDataStore.getState().updateUserData({ adverts_are_listed: !value })
+      await refetchCurrentTab()
+    } catch (error) {
+      console.error("Failed to hide/show ads:", error)
+      setHiddenAdverts(previousValue)
+
+      showAlert({
+        title: value ? t("myAds.unableToHideAds") : t("myAds.unableToShowAds"),
+        description: value ? t("myAds.hideAdsError") : t("myAds.showAdsError"),
+        confirmText: t("common.ok"),
+        type: "warning",
+      })
     }
-
-    fetchAds().then(() => {
-      checkForSuccessData()
-    })
-  }, [])
-
-  const handleCloseSuccessModal = () => {
-    setSuccessModal((prev) => ({ ...prev, show: false }))
   }
 
-  const handleCloseErrorModal = () => {
-    setErrorModal((prev) => ({ ...prev, show: false }))
+  const getHideMyAdsComponent = () => {
+    const hasAds = userAdverts.length > 0
+
+    // Only render if there are ads
+    if (!hasAds) {
+      return null
+    }
+
+    return (
+      <div className="flex items-center justify-self-end self-end flex-shrink-0">
+        <Switch
+          id="hide-ads"
+          checked={hiddenAdverts}
+          onCheckedChange={handleHideMyAds}
+          className="data-[state=checked]:bg-completed-icon"
+          disabled={!!tempBanUntil}
+          data-testid="ads-switch-hide-ads"
+        />
+        <label htmlFor="hide-ads" className="text-sm text-grayscale-600 cursor-pointer ms-2 whitespace-nowrap">
+          {t("myAds.hideMyAds")}
+        </label>
+        {isMobile ? (
+          <Button
+            type="button"
+            variant="icon-muted"
+            size="sm"
+            data-testid="ads-btn-hide-ads-info"
+            className="!bg-transparent hover:!bg-transparent"
+            onClick={() => setIsHideAdsInfoOpen(true)}
+          >
+            <Image
+              src="/icons/info-circle.svg"
+              alt={t("common.info")}
+              width={20}
+              height={20}
+            />
+          </Button>
+        ) : (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button type="button" variant="icon-muted" size="sm" data-testid="ads-btn-hide-ads-info" className="!bg-transparent hover:!bg-transparent">
+                  <Image
+                    src="/icons/info-circle.svg"
+                    alt={t("common.info")}
+                    width={20}
+                    height={20}
+                  />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-white">{t("myAds.hideMyAdsTooltip")}</p>
+                <TooltipArrow className="fill-black" />
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
+    )
   }
 
   return (
-    <div className="flex flex-col h-screen">
-
-
-      {showDeletedBanner && (
-        <StatusBanner variant="success" message="Ad deleted" onClose={() => setShowDeletedBanner(false)} />
-      )}
-
-      {showUpdatedBanner && (
-        <StatusBanner variant="success" message="Ad updated successfully" onClose={() => setShowUpdatedBanner(false)} />
-      )}
-
-      <div className="flex-none container mx-auto pr-4">
-        <MyAdsHeader hasAds={ads.length > 0} />
-        {/* Only show button here on desktop */}
-        {ads.length > 0 && !isMobile && (
-          <Button
-            onClick={() => router.push("/ads/create")}
-            variant="cyan"
-            size="pill"
-            className="font-extrabold text-base leading-4 tracking-[0%] text-center mb-6"
-          >
-            <Plus className="h-5 w-5" />
-            Create ad
-          </Button>
-        )}
-      </div>
-
-      {/* Floating button for mobile view */}
-      {ads.length > 0 && isMobile && (
-        <div className="fixed bottom-20 right-4 z-10">
-          <Button
-            onClick={() => router.push("/ads/create")}
-            variant="cyan"
-            size="pill"
-            className="font-extrabold text-base leading-4 tracking-[0%] text-center shadow-lg"
-          >
-            <Plus className="h-5 w-5" />
-            Create ad
-          </Button>
-        </div>
-      )}
-
-      {/* Content area with fixed table header and scrollable body */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden container mx-auto p-0">
-        {loading ? (
-          <div className="text-center py-8">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
-            <p className="mt-2 text-gray-600">Loading your ads...</p>
+    <>
+      <div className="flex flex-col h-full min-h-0 md:h-screen overflow-hidden bg-white px-3">
+        <div className="flex-none container mx-auto">
+          <div className="relative z-10 w-[calc(100%+24px)] md:w-full min-h-[80px] flex min-w-0 flex-wrap items-center justify-start gap-4 bg-slate-1200 px-6 pb-6 pt-8 md:p-6 rounded-b-3xl md:rounded-3xl text-white -mx-3 mb-4 md:mx-0 md:mt-0">
+            <HeaderSegmentedControl
+              value={activeTab}
+              onValueChange={handleTabChange}
+              width={184}
+              className="shrink-0"
+              segments={[
+                { value: "active", label: t("myAds.tabActive"), testId: "ads-tab-active" },
+                { value: "inactive", label: t("myAds.tabInactive"), testId: "ads-tab-inactive" },
+              ]}
+            />
           </div>
-        ) : error ? (
-          <div className="text-center py-8 text-red-500">{error}</div>
-        ) : isMobile ? (
-          <MobileMyAdsList
-            ads={ads.map((ad) => ({
-              id: ad.id,
-              type: ad.type,
-              rate: ad.rate,
-              limits: `${ad.limits.currency} ${ad.limits.min} - ${ad.limits.max}`,
-              available: ad.available,
-              paymentMethods: ad.paymentMethods,
-              status: ad.status,
-              description: ad.description || "",
-            }))}
-            onAdDeleted={handleAdUpdated}
+          {tempBanUntil && !isMaintenanceActive && (
+            <div data-testid="ads-alert-temp-ban">
+              <TemporaryBanAlert tempBanUntil={tempBanUntil} />
+            </div>
+          )}
+          {isActiveTab && (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              {!isMaintenanceActive && userAdverts.length > 0 && (
+                <Button
+                  onClick={handleCreateAd}
+                  size="sm"
+                  className="font-bold text-base leading-4 tracking-[0%] text-center whitespace-nowrap"
+                  disabled={!!tempBanUntil}
+                  data-testid="ads-btn-create"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <Image src="/icons/plus-white.png" alt="" height={16} width={10} />
+                    {t("myAds.createAd")}
+                  </span>
+                </Button>
+              )}
+              {getHideMyAdsComponent()}
+            </div>
+          )}
+        </div>
+
+        <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-y-none scrollbar-hide container mx-auto p-0 md:p-0" data-testid="ads-table-container">
+          {queryError ? (
+            <div className="h-full flex items-center md:items-start justify-center md:pt-16" data-testid="ads-error-state">
+              <EmptyState
+                title={t("errors.loadMyAdsFailedTitle")}
+                description={t("errors.loadFailedDescription")}
+                actionLabel={t("errors.retry")}
+                onAction={() => refetch()}
+              />
+            </div>
+          ) : (
+            <MyAdsTable
+              ads={isMaintenanceActive ? [] : userAdverts}
+              onAdDeleted={handleAdUpdated}
+              onAdsChanged={refetchCurrentTab}
+              hiddenAdverts={hiddenAdverts}
+              isActiveTab={isActiveTab}
+              isLoading={isMaintenanceActive ? false : loading}
+              isFetching={isMaintenanceActive ? false : isFetching}
+            />
+          )}
+          {isFetchingNextPage && (
+            <div className="flex justify-center py-4">
+              <Spinner size="md" />
+            </div>
+          )}
+          <div ref={sentinelRef} className="h-1" data-testid="ads-sentinel-load-more" />
+        </div>
+
+        {statusData && statusData.showStatusModal && !loading && !queryError && isMobile && (
+          <div data-testid="ads-modal-create-success">
+          <StatusBottomSheet
+            isOpen
+            onClose={handleCloseStatusModal}
+            type="success"
+            title={statusData.success === "create" ? t("myAds.adCreated") : t("myAds.adUpdated")}
+            message={
+              statusData.success === "create"
+                ? t("myAds.adCreatedMessage", { type: statusData.type.toUpperCase(), id: statusData.id })
+                : t("myAds.adUpdatedMessage", { type: statusData.type.toUpperCase(), id: statusData.id })
+            }
+            adType={statusData.type}
+            adId={statusData.id}
+            isUpdate={statusData.success === "update"}
           />
-        ) : (
-          <MyAdsTable
-            ads={ads.map((ad) => ({
-              id: ad.id,
-              type: ad.type,
-              rate: ad.rate,
-              limits: `${ad.limits.currency} ${ad.limits.min} - ${ad.limits.max}`,
-              available: ad.available,
-              paymentMethods: ad.paymentMethods,
-              status: ad.status,
-              description: ad.description || "", // Make sure to include the description
-            }))}
-            onAdDeleted={handleAdUpdated}
-          />
+          </div>
         )}
       </div>
 
-      {successModal.show && !isMobile && (
-        <StatusModal
-          type="success"
-          title="Ad created"
-          message="You've successfully created Ad. If your ad doesn't receive an order within 3 days, it will be deactivated."
-          onClose={handleCloseSuccessModal}
-        />
-      )}
-
-      {successModal.show && isMobile && (
-        <StatusBottomSheet
-          isOpen={successModal.show}
-          onClose={handleCloseSuccessModal}
-          type="success"
-          title="Ad created"
-          message="If your ad doesn't receive an order within 3 days, it will be deactivated."
-          adType={successModal.type}
-          adId={successModal.id}
-        />
-      )}
-
-      {errorModal.show && (
-        <StatusModal
-          type="error"
-          title={errorModal.title}
-          message={errorModal.message}
-          onClose={handleCloseErrorModal}
-        />
-      )}
-    </div>
+      <Drawer open={isHideAdsInfoOpen} onOpenChange={setIsHideAdsInfoOpen}>
+        <DrawerContent className="rounded-t-2xl">
+          <DrawerHeader className="px-4 pb-2 pt-3 text-start">
+            <div className="text-xl font-extrabold text-slate-1200">{t("myAds.hideMyAds")}</div>
+            {/* Visually hidden title for a11y */}
+            <DrawerTitle className="sr-only">{t("myAds.hideMyAds")}</DrawerTitle>
+          </DrawerHeader>
+          <div className="px-4 pb-6 text-start">
+            <p className="text-base text-grayscale-600 whitespace-pre-line">
+              {t("myAds.hideMyAdsTooltip")}
+            </p>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    </>
   )
 }

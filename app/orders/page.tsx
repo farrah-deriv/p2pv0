@@ -1,319 +1,464 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import type React from "react"
+
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
-import { AlertCircle, Clock } from "lucide-react"
+import { useUserDataStore } from "@/stores/user-data-store"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { OrdersAPI } from "@/services/api"
 import type { Order } from "@/services/api/api-orders"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Card, CardContent } from "@/components/ui/card"
+import { formatAppDate } from "@/lib/format-date"
+import { formatAmount, formatStatus, getStatusBadgeStyle } from "@/lib/utils"
+import { RatingSidebar } from "@/components/rating-filter/rating-sidebar"
+import { useTimeRemaining } from "@/hooks/use-time-remaining"
+import { useIsMobile } from "@/hooks/use-mobile"
+import OrderChat from "@/components/order-chat"
+import { useWebSocketContext } from "@/contexts/websocket-context"
+import EmptyState from "@/components/empty-state"
+import { useOrdersFilterStore } from "@/stores/orders-filter-store"
+import { useChatVisibilityStore } from "@/stores/chat-visibility-store"
+import { HeaderSegmentedControl } from "@/components/header-segmented-control"
+import { DateFilter } from "./components/date-filter"
+import { format, startOfDay, endOfDay } from "date-fns"
+import { TemporaryBanAlert } from "@/components/temporary-ban-alert"
+import { useTranslations } from "@/lib/i18n/use-translations"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useOrders } from "@/hooks/use-api-queries"
+import { useTrackers } from "@/analytics/useTrackers"
+import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
+import { shouldDisableChatAttachments } from "@/lib/orders/order-chat-gating"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
+
+function TimeRemainingDisplay({ expiresAt, testId }: { expiresAt: string; testId?: string }) {
+  const timeRemaining = useTimeRemaining(expiresAt)
+  const pad = (n: number) => String(n).padStart(2, "0")
+
+  if (timeRemaining.hours && timeRemaining.minutes && timeRemaining.seconds) return null
+
+  return (
+    <div className="text-xs bg-grayscale-500 text-grayscale-600 rounded-sm w-fit py-[4px] px-[8px]" data-testid={testId}>
+      {`${pad(timeRemaining.hours)}:${pad(timeRemaining.minutes)}:${pad(timeRemaining.seconds)}`}
+    </div>
+  )
+}
 
 export default function OrdersPage() {
+  const { t, locale } = useTranslations()
+  const { track } = useTrackers()
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<"active" | "past">("active")
-  const [orders, setOrders] = useState<Order[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const { openKycIfUnverified } = useKycOverlay({ route: "orders" })
+  const { activeTab, setActiveTab, dateFilter, customDateRange, setDateFilter, setCustomDateRange } =
+    useOrdersFilterStore()
+  const { setIsChatVisible } = useChatVisibilityStore()
+  const [isRatingSidebarOpen, setIsRatingSidebarOpen] = useState(false)
+  const [selectedOrderId, setSelectedOrderId] = useState(null)
+  const [showChat, setShowChat] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [showKycPopup, setShowKycPopup] = useState(false)
+  const isMobile = useIsMobile()
+  const { isConnected, acquireOrdersChannel, releaseOrdersChannel } = useWebSocketContext()
+  const { userData, userId } = useUserDataStore()
+  const tempBanUntil = userData?.temp_ban_until
+  const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
+  const observerTarget = useRef<HTMLDivElement>(null)
+  const scrollContainer = useRef<HTMLDivElement>(null)
+  const kycPopupHandledRef = useRef(false)
+
+  // Build filters for useOrders hook
+  const filters = useMemo(() => ({
+    is_open: activeTab === "active",
+    ...(activeTab === "past" &&
+      dateFilter !== "all" &&
+      customDateRange.from && {
+      date_from: format(startOfDay(customDateRange.from), "yyyy-MM-dd"),
+      date_to: customDateRange.to
+        ? format(endOfDay(customDateRange.to), "yyyy-MM-dd")
+        : format(endOfDay(customDateRange.from), "yyyy-MM-dd"),
+    }),
+  }), [activeTab, dateFilter, customDateRange])
+
+  const { data: ordersData, isLoading, isError, refetch, hasNextPage, fetchNextPage, isFetchingNextPage } = useOrders(filters)
+  const orders = useMemo(() => {
+    if (!ordersData?.pages || ordersData.pages.length === 0) return []
+    return ordersData.pages.flatMap(page => {
+      if (Array.isArray(page)) return page
+      if (page?.data && Array.isArray(page.data)) return page.data
+      return []
+    }) ?? []
+  }, [ordersData])
+  
+  // Check if there are any past orders available (used for DateFilter visibility)
+  const hasPastOrders = activeTab === "past" ? (orders?.length ?? 0) > 0 || (dateFilter !== "all" && customDateRange.from) : false
 
   useEffect(() => {
-    fetchOrders()
-  }, [activeTab])
+    track("ek_open_orders")
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchOrders = async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      // Determine filters based on active tab
-      const filters: {
-        is_open?: boolean
-      } = {}
-
-      if (activeTab === "active") {
-        filters.is_open = true
-      } else if (activeTab === "past") {
-        filters.is_open = false
-      }
-      // For past orders, we'll fetch with is_open: false and still filter client-side
-
-      const orders = await OrdersAPI.getOrders(filters)
-
-      // Ensure data is an array before filtering
-      const ordersArray = Array.isArray(orders.data) ? orders.data : []
-      setOrders(ordersArray)
-    } catch (err) {
-      console.error("Error fetching orders:", err)
-      setError("Failed to load orders. Please try again.")
-      setOrders([])
-    } finally {
-      setIsLoading(false)
+  // Chat opened from the list sets isChatVisible(true) to hide the mobile
+  // header/footer. Reset it when leaving the orders page so the header isn't
+  // left hidden after navigating away (e.g. via the footer nav).
+  useEffect(() => {
+    return () => {
+      setIsChatVisible(false)
     }
-  }
+  }, [setIsChatVisible])
 
-  // Function to format date as DD MMM YYYY
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
+  useEffect(() => {
+    const shouldShowKyc = searchParams.get("show_kyc_popup") === "true"
+    if (!shouldShowKyc || kycPopupHandledRef.current) return
+    kycPopupHandledRef.current = true
+    void openKycIfUnverified().then((overlay) => {
+      if (overlay === "kyc") setShowKycPopup(true)
     })
-  }
+  }, [searchParams, openKycIfUnverified])
 
-  // Function to get status badge style
-  const getStatusBadgeStyle = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "bg-green-100 text-green-800"
-      case "cancelled":
-        return "bg-slate-100 text-slate-800"
-      case "disputed":
-        return "bg-yellow-100 text-yellow-800"
-      case "timed_out":
-        return "bg-slate-100 text-slate-800"
-      default:
-        return "bg-blue-100 text-blue-800"
-    }
-  }
+  // Observe last item for infinite scroll
+  useEffect(() => {
+    const sentinel = observerTarget.current
+    const container = scrollContainer.current
+    if (!sentinel || !hasNextPage || !container) return
 
-  // Function to navigate to order details
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isFetchingNextPage) {
+          fetchNextPage()
+        }
+      },
+      { threshold: 0, rootMargin: "100px", root: container },
+    )
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+
+
+  const formatDate = (dateString: string) => formatAppDate(new Date(dateString), locale)
+
   const navigateToOrderDetails = (orderId: string) => {
     router.push(`/orders/${orderId}`)
   }
 
-  // Mobile card view for orders
-  const MobileOrderCards = () => (
-    <div className="space-y-4">
-      {orders.map((order) => {
-        const orderType = order.type
-        const orderTypeColor = orderType === "buy" ? "text-green-500" : "text-red-500"
-        const statusText = order.status
-        const statusStyle = getStatusBadgeStyle(order.status)
+  const handleRateClick = (e: React.MouseEvent, order: Order) => {
+    e.stopPropagation()
+    track("ek_rate_order_orders")
+    setIsRatingSidebarOpen(true)
+    setSelectedOrderId(order.id)
+    setSelectedOrder(order)
+  }
 
-        return (
-          <Card
-            key={order.id}
-            className="cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => navigateToOrderDetails(order.id)}
-          >
-            <CardContent className="p-4">
-              <div className="flex justify-between items-center mb-4">
-                <span className={`px-3 py-1 rounded-full text-xs ${statusStyle}`}>{statusText}</span>
-                <div className="flex items-center text-slate-500">
-                  <Clock className="h-4 w-4 mr-1" />
-                  <span className="text-xs">00:59:59</span>
-                </div>
-              </div>
+  const handleRatingSidebarClose = () => {
+    setIsRatingSidebarOpen(false)
+    setSelectedOrderId(null)
+  }
 
-              <div className="mb-2">
-                <span className={`text-base font-medium ${orderTypeColor}`}>{orderType}</span>
-                <span className="text-base font-medium"> {order.advert.payment_currency} </span>
-                <span className="text-base font-medium">
-                  {typeof order.amount === "object" && order.amount.value
-                    ? Number(order.amount.value).toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })
-                    : typeof order.amount === "number"
-                      ? order.amount.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })
-                      : Number(order.amount).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                </span>
-              </div>
+  const handleRatingSubmit = () => {
+    setIsRatingSidebarOpen(false)
+    setSelectedOrderId(null)
+    refetch()
+  }
 
-              <div className="flex justify-between items-center">
-                <div className="text-xs text-slate-500">ID: {order.id}</div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      navigateToOrderDetails(order.id)
-                    }}
-                    className="text-slate-500 hover:text-slate-700"
-                    variant="ghost"
-                  >
-                    <Image
-                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-9Nwf9GLJPQ6HUQ8qsdDIBqeJZRacom.png"
-                      alt="Chat"
-                      width={20}
-                      height={20}
-                    />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )
-      })}
+  const getOrderType = (order) => {
+    if (order.type === "buy") {
+      if (order.user.id == userId) return <span className="text-secondary text-base">{t("common.buy")}</span>
+      else return <span className="text-destructive text-base">{t("common.sell")}</span>
+    } else {
+      if (order.user.id == userId) return <span className="text-destructive text-base">{t("common.sell")}</span>
+      else return <span className="text-secondary text-base">{t("common.buy")}</span>
+    }
+  }
+
+  const getRecommendLabel = () => {
+    if (selectedOrder?.type === "sell") {
+      if (selectedOrder?.advert.user.id == userId) return t("orders.seller")
+      return t("orders.buyer")
+    } else {
+      if (selectedOrder?.advert.user.id == userId) return t("orders.buyer")
+      return t("orders.seller")
+    }
+  }
+
+  const getPayReceiveLabel = (order) => {
+    let label = ""
+    if (order.type === "buy") {
+      if (order.user.id == userId) label = t("orders.youPay")
+      else label = t("orders.youReceive")
+    } else {
+      if (order.user.id == userId) label = t("orders.youReceive")
+      else label = t("orders.youPay")
+    }
+
+    return label
+  }
+
+  const handleChatClick = (e: React.MouseEvent, order: Order) => {
+    e.stopPropagation()
+    track("ek_chat_orders")
+    if (isMobile) {
+      setSelectedOrder(order)
+      setShowChat(true)
+      setIsChatVisible(true)
+    } else {
+      navigateToOrderDetails(order.id)
+    }
+  }
+
+  useEffect(() => {
+    if (!isConnected || !isMobile || !showChat || !selectedOrder) return
+    acquireOrdersChannel(Number(selectedOrder.id))
+    return () => releaseOrdersChannel()
+  }, [isConnected, isMobile, showChat, selectedOrder?.id])
+
+  const handleTabChange = (tabValue: string) => {
+    if (tabValue === "active") track("ek_active_tab_orders")
+    else track("ek_past_tab_orders")
+    setActiveTab(tabValue)
+  }
+
+  const OrdersLoadingSkeleton = () => (
+    <div className="grid grid-cols-[1fr] md:grid-cols-[1fr_1fr] gap-4 bg-white" data-testid="orders-skeleton">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="border rounded-lg p-4">
+          <Skeleton className="h-[160px] w-full rounded-lg bg-grayscale-500" />
+        </div>
+      ))}
     </div>
   )
 
-  // Desktop table view for orders
-  const DesktopOrderTable = () => (
-    <div className="overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="py-4 px-4 text-slate-600 font-normal">Order ID</TableHead>
-            {activeTab === "past" && <TableHead className="py-4 px-4 text-slate-600 font-normal">Date</TableHead>}
-            <TableHead className="py-4 px-4 text-slate-600 font-normal">Counterparty</TableHead>
-            <TableHead className="py-4 px-4 text-slate-600 font-normal">Status</TableHead>
-            <TableHead className="py-4 px-4 text-slate-600 font-normal">Send</TableHead>
-            <TableHead className="py-4 px-4 text-slate-600 font-normal">Receive</TableHead>
-            {activeTab === "past" && <TableHead className="py-4 px-4 text-slate-600 font-normal">Rating</TableHead>}
-            <TableHead className="py-4 px-4 text-slate-600 font-normal"></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {orders.map((order) => (
-            <TableRow key={order.id} className="cursor-pointer" onClick={() => navigateToOrderDetails(order.id)}>
-              <TableCell className="py-4 px-4">
-                <div className="flex items-center">
-                  <span className={order.type === "sell" ? "text-green-600 font-medium" : "font-medium"}>
-                    {order.type === "buy" ? "Buy" : "Sell"}
-                  </span>
-                  <span className="ml-1">{order.id}</span>
-                </div>
-              </TableCell>
-              {activeTab === "past" && (
-                <TableCell className="py-4 px-4">{order.created_at ? formatDate(order.created_at) : ""}</TableCell>
-              )}
-              <TableCell className="py-4 px-4">
-                {order.advert.user.nickname}
-              </TableCell>
-              <TableCell className="py-4 px-4">
-                <span className={`px-3 py-1 rounded-full text-xs ${getStatusBadgeStyle(order.status)}`}>
-                  {order.status}
-                </span>
-              </TableCell>
-              <TableCell className="py-4 px-4">
-                {order.advert.payment_currency}{" "}
-                {typeof order.amount === "object" && order.amount.value
-                  ? Number(order.amount.value).toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })
-                  : typeof order.amount === "number"
-                    ? order.amount.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })
-                    : Number(order.amount).toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-              </TableCell>
-              <TableCell className="py-4 px-4">
-                {order.advert.account_currency}{" "}
-                {typeof order.price === "object" && order.price.value
-                  ? Number(order.price.value).toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })
-                  : typeof order.price === "number"
-                    ? order.price.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })
-                    : Number(order.price).toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-              </TableCell>
-              {activeTab === "past" && (
-                <TableCell className="py-4 px-4">
-                  {order.rating > 0 && (
-                    <div className="flex">
-                      <Image src="/icons/star-icon.png" alt="Chat" width={20} height={20} className="mr-1" />
-                      {order.rating}
-                    </div>
-                  )}
-                </TableCell>
-              )}
-              <TableCell className="py-4 px-4">
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    navigateToOrderDetails(order.id)
-                  }}
-                  className="text-slate-500 hover:text-slate-700"
-                  variant="ghost"
-                >
-                  <Image
-                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-9Nwf9GLJPQ6HUQ8qsdDIBqeJZRacom.png"
-                    alt="Chat"
-                    width={20}
-                    height={20}
-                  />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  )
+  if (isMobile && showChat && selectedOrder) {
+    const counterpartyName =
+      selectedOrder?.advert.user.id == userId ? selectedOrder?.user?.nickname : selectedOrder?.advert?.user?.nickname
+    const counterpartyInitial = counterpartyName.charAt(0).toUpperCase()
+    const isClosed = ["cancelled", "completed", "refunded"].includes(selectedOrder?.status)
+    const counterpartyOnlineStatus =
+      selectedOrder?.advert.user.id == userId ? selectedOrder?.user?.is_online : selectedOrder?.advert?.user?.is_online
+    const counterpartyLastOnlineAt =
+      selectedOrder?.advert.user.id == userId
+        ? selectedOrder?.user?.last_online_at
+        : selectedOrder?.advert?.user?.last_online_at
+
+    return (
+      <div className="flex flex-col flex-1 min-h-0 h-full w-full">
+        <OrderChat
+          orderId={selectedOrder.id}
+          order={selectedOrder}
+          counterpartyName={counterpartyName}
+          counterpartyInitial={counterpartyInitial}
+          isClosed={isClosed}
+          isAttachmentUploadDisabled={shouldDisableChatAttachments(selectedOrder, userId)}
+          counterpartyOnlineStatus={counterpartyOnlineStatus}
+          counterpartyLastOnlineAt={counterpartyLastOnlineAt}
+          onNavigateToOrderDetails={() => {
+            router.push(`/orders/${selectedOrder.id}`)
+          }}
+        />
+      </div>
+    )
+  }
 
   return (
-    <div className="flex flex-col h-full px-4">
-      <div className="flex-shrink-0">
-
-        <div className="mb-6">
-          <Tabs defaultValue={activeTab} onValueChange={(value) => setActiveTab(value as "active" | "past")}>
-            <TabsList>
-              <TabsTrigger value="active">Active orders</TabsTrigger>
-              <TabsTrigger value="past">Past orders</TabsTrigger>
-            </TabsList>
-          </Tabs>
+    <>
+      {showKycPopup && <span data-testid="orders-alert-kyc" aria-hidden="true" className="hidden" />}
+      <div className="flex flex-col flex-1 min-h-0 h-full md:h-screen px-3 overflow-hidden">
+        <div className="flex flex-col flex-shrink-0">
+          <div className="relative z-10 w-[calc(100%+24px)] md:w-full min-h-[80px] flex flex-row flex-wrap items-center gap-x-4 gap-y-2 md:gap-x-6 bg-slate-1200 px-6 pb-6 pt-8 md:p-6 rounded-b-3xl md:rounded-3xl justify-between -mx-3 mb-0 md:m-0">
+            <HeaderSegmentedControl
+              value={activeTab}
+              onValueChange={handleTabChange}
+              width={168}
+              className="shrink-0"
+              segments={[
+                { value: "active", label: t("orders.active"), testId: "orders-tab-active" },
+                { value: "past", label: t("orders.past"), testId: "orders-tab-past" },
+              ]}
+            />
+          </div>
+          {tempBanUntil && !isMaintenanceActive && (
+            <div className="mt-4" data-testid="orders-alert-temp-ban">
+              <TemporaryBanAlert tempBanUntil={tempBanUntil} />
+            </div>
+          )}
+          {activeTab === "past" && !isLoading && hasPastOrders && (
+            <div className="my-4 self-end rtl:self-start" data-testid="orders-select-date-filter">
+              <DateFilter
+                customRange={customDateRange}
+                onValueChange={(val) => {
+                  track("ek_date_filter_orders")
+                  setDateFilter(val)
+                }}
+                onCustomRangeChange={setCustomDateRange}
+              />
+            </div>
+          )}
         </div>
-      </div>
 
-      {/* Content - Scrollable area */}
-      <div className="flex-1 overflow-y-auto pb-4">
-        {isLoading ? (
-          <div className="text-center py-12">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-r-transparent"></div>
-            <p className="mt-2 text-slate-600">Loading orders...</p>
-          </div>
-        ) : error ? (
-          <div className="text-center py-12">
-            <p>{error}</p>
-            <Button onClick={fetchOrders} className="mt-4 text-white">
-              Try Again
-            </Button>
-          </div>
-        ) : orders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-              <AlertCircle className="h-6 w-6 text-slate-400" />
+        <div ref={scrollContainer} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pt-4">
+          {isMaintenanceActive ? (
+            <div className="h-full flex items-center md:items-start justify-center md:pt-16" data-testid="orders-empty-state">
+              {activeTab === "active" ? (
+                <EmptyState title={t("orders.noActiveOrders")} description={t("orders.noActiveOrdersDescription")} />
+              ) : (
+                <EmptyState title={t("orders.noPastOrders")} description={t("orders.noPastOrdersDescription")} />
+              )}
             </div>
-            <h2 className="text-xl font-medium text-slate-900 mb-2">No orders found</h2>
-            <p className="text-slate-500">Start by placing your first order.</p>
-            <Button size="sm" onClick={() => router.push("/")} className="mt-8">
-              Browse Ads
-            </Button>
-          </div>
-        ) : (
-          <>
-            {/* Mobile view (cards) */}
-            <div className="md:hidden">
-              <MobileOrderCards />
+          ) : isLoading ? (
+            <OrdersLoadingSkeleton />
+          ) : isError ? (
+            <div className="h-full flex items-center md:items-start justify-center md:pt-16" data-testid="orders-error-state">
+              <EmptyState
+                title={t("errors.loadOrdersFailedTitle")}
+                description={t("errors.loadFailedDescription")}
+                actionLabel={t("errors.retry")}
+                onAction={() => refetch()}
+              />
             </div>
+          ) : orders.length === 0 ? (
+            <div className="h-full flex items-center md:items-start justify-center md:pt-16" data-testid="orders-empty-state">
+              {activeTab === "active" ? (
+                <EmptyState title={t("orders.noActiveOrders")} description={t("orders.noActiveOrdersDescription")} redirectToAds={true} redirectToMarket={true} />
+              ) : (
+                <EmptyState title={t("orders.noPastOrders")} description={t("orders.noPastOrdersDescription")} />
+              )}
+            </div>
+          ) : (
+            <>
+              <Table>
+                <TableHeader className="hidden border-b sticky top-0 bg-white shadow-sm">
+                  <TableRow>
+                    {activeTab === "past" && (
+                      <TableHead className="py-4 px-4 text-slate-600 font-normal">{t("orders.date")}</TableHead>
+                    )}
+                    <TableHead className="py-4 px-4 text-slate-600 font-normal">{t("orders.orderId")}</TableHead>
+                    <TableHead className="py-4 px-4 text-slate-600 font-normal">{t("orders.amount")}</TableHead>
+                    <TableHead className="py-4 px-4 text-slate-600 font-normal">{t("orders.status")}</TableHead>
+                    {activeTab === "active" && (
+                      <TableHead className="py-4 px-4 text-slate-600 font-normal">{t("orders.time")}</TableHead>
+                    )}
+                    {activeTab === "past" && (
+                      <TableHead className="py-4 px-4 text-slate-600 font-normal">{t("orders.rating")}</TableHead>
+                    )}
+                    <TableHead className="py-4 px-4 text-slate-600 font-normal"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody className="lg:[&_tr:last-child]:border-1 grid grid-cols-[1fr] md:grid-cols-[1fr_1fr] gap-4 bg-white font-normal text-sm">
+                  {orders.map((order) => {
+                    const isBuyer = getPayReceiveLabel(order) === t("orders.youPay")
 
-            {/* Desktop view (table) */}
-            <div className="hidden md:block">
-              <DesktopOrderTable />
-            </div>
-          </>
-        )}
+                    return (
+                      <TableRow
+                        className="grid grid-cols-[2fr_1fr] border rounded-lg cursor-pointer gap-2 py-4"
+                        key={order.id}
+                        data-testid={`orders-row-${order.id}`}
+                        onClick={() => {
+                          track("ek_order_item_orders", {
+                            section_name: activeTab === "active" ? "active_orders" : "past_orders",
+                          })
+                          navigateToOrderDetails(order.id)
+                        }}
+                      >
+                        {activeTab === "past" && (
+                          <TableCell className="py-0 px-4 align-top text-slate-600 text-xs row-start-4 col-span-full">
+                            {order.created_at ? formatDate(order.created_at) : ""}
+                          </TableCell>
+                        )}
+                        <TableCell className="py-0 px-4 align-top row-start-2 col-span-full">
+                          <div>
+                            <div className="flex flex-row justify-between">
+                              <div className="font-bold">
+                                {getOrderType(order)}
+                                <span className="text-base">
+                                  {` ${formatAmount(order.amount)} ${order.advert.account_currency}`}
+                                </span>
+                              </div>
+                              <div className="mt-[4px] text-slate-600 text-xs">
+                                {t("orders.id")}: {order.id}
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-0 px-4 align-top text-xs row-start-3">
+                          <div className="flex flex-row-reverse justify-end gap-[4px]">
+                            <div>
+                              {formatAmount(order.payment_amount)} {order.payment_currency}
+                            </div>
+                            <div className="text-slate-600 text-xs">{getPayReceiveLabel(order)}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-0 px-4 align-top row-start-1">
+                          <div
+                            className={`w-fit px-[12px] py-[8px] rounded-[6px] text-xs ${getStatusBadgeStyle(order.status, isBuyer)}`}
+                            data-testid={`orders-badge-status-${order.id}`}
+                          >
+                            {formatStatus(false, order.status, isBuyer, t)}
+                          </div>
+                        </TableCell>
+                        {activeTab === "active" && (
+                          <TableCell className="py-0 px-4 align-top row-start-1 col-start-2 justify-self-end">
+                            {(order.status === "pending_payment" || order.status === "pending_release") && (
+                              <TimeRemainingDisplay expiresAt={order.expires_at} testId={`orders-text-time-remaining-${order.id}`} />
+                            )}
+                          </TableCell>
+                        )}
+                        {activeTab === "past" && (
+                          <TableCell className="py-0 px-4 align-top row-start-1 flex justify-end items-center">
+                            {order.rating > 0 && (
+                              <div className="flex">
+                                <Image src="/icons/star-icon.png" alt={t("common.rating")} width={20} height={20} className="me-1" />
+                                {Number(order.rating).toFixed(1)}
+                              </div>
+                            )}
+                            {order.is_reviewable > 0 && !order.disputed_at && (
+                              <Button variant="black" size="xs" onClick={(e) => handleRateClick(e, order)} data-testid={`orders-btn-rate-${order.id}`}>
+                                {t("orders.rate")}
+                              </Button>
+                            )}
+                          </TableCell>
+                        )}
+                        <TableCell className="py-0 px-4 align-top row-start-5 col-span-full">
+                          <div className="flex flex-row items-center justify-between">
+                            <div className="text-xs">
+                              {order.advert.user.id == userId ? order.user.nickname : order.advert.user.nickname}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                onClick={(e) => {
+                                  handleChatClick(e, order)
+                                }}
+                                className="!rounded-full !p-1 !min-w-0 !h-auto !bg-transparent text-slate-500 hover:!bg-black/10 z-auto"
+                                variant="ghost"
+                                size="sm"
+                                data-testid={`orders-btn-chat-${order.id}`}
+                              >
+                                <Image src="/icons/chat-icon.png" alt={t("common.chat")} width={20} height={20} />
+                              </Button>
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+              <div ref={observerTarget} className="h-1" />
+              {isFetchingNextPage && (
+                <div className="flex justify-center py-4">
+                  <Spinner size="md" />
+                </div>
+              )}
+            </>
+          )}
+        </div>
+        <RatingSidebar
+          isOpen={isRatingSidebarOpen}
+          onClose={handleRatingSidebarClose}
+          orderId={selectedOrderId}
+          onSubmit={handleRatingSubmit}
+          recommendLabel={t("orders.wouldYouRecommend", { role: getRecommendLabel() })}
+        />
       </div>
-    </div>
+    </>
   )
 }

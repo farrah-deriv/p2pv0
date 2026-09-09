@@ -1,318 +1,666 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { MoreVertical, Pencil, Copy, Share2, Power, Trash2, Search } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import Image from "next/image"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import EmptyState from "@/components/empty-state"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { deleteAd, updateAd } from "../api/api-ads"
+import { AdsAPI } from "@/services/api"
 import type { Ad } from "../types"
 import { cn } from "@/lib/utils"
-import { DeleteConfirmationDialog } from "./ui/delete-confirmation-dialog"
-import StatusModal from "./ui/status-modal"
+import { formatPaymentMethodName, getPaymentMethodColourByName, IS_CLOSED_GROUP_ENABLED } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
+import { useAdvertAlertDialog } from "@/app/ads/hooks/use-advert-alert-dialog"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { AdActionsMenu } from "./ad-actions-menu"
+import ShareAdPage from "./share-ad-page"
+import { isRtlLocale } from "@/lib/i18n/config"
+import { useTranslations } from "@/lib/i18n/use-translations"
+import { useLanguageStore } from "@/stores/language-store"
+import { VisibilityStatusDialog } from "./visibility-status-dialog"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useUserDataStore } from "@/stores/user-data-store"
+import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
+import { useKycOverlay } from "@/hooks/use-kyc-overlay"
+import { useDeleteAd, useToggleAdActiveStatus } from "@/hooks/use-api-queries"
+import { useTrackers } from "@/analytics/useTrackers"
+import { editAdPath } from "@/lib/ads/my-ads-tab"
+import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 interface MyAdsTableProps {
   ads: Ad[]
+  hiddenAdverts: boolean
+  isLoading: boolean
+  isFetching?: boolean
+  isActiveTab: boolean
   onAdDeleted?: (status?: string) => void
+  onAdsChanged?: () => Promise<void> | void
 }
 
-export default function MyAdsTable({ ads, onAdDeleted }: MyAdsTableProps) {
-  const router = useRouter()
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [isTogglingStatus, setIsTogglingStatus] = useState(false)
-  const [errorModal, setErrorModal] = useState({
-    show: false,
-    title: "",
-    message: "",
-  })
-  const [deleteConfirmModal, setDeleteConfirmModal] = useState({
-    show: false,
-    adId: "",
-  })
 
-  const formatLimits = (limits: Ad["limits"]) => {
-    if (typeof limits === "string") {
-      return limits
+export default function MyAdsTable({
+  ads,
+  hiddenAdverts,
+  isLoading,
+  isFetching = false,
+  isActiveTab,
+  onAdDeleted,
+  onAdsChanged,
+}: MyAdsTableProps) {
+  const { t } = useTranslations()
+  const locale = useLanguageStore((state) => state.locale)
+  const dropdownMenuAlign = isRtlLocale(locale) ? "start" : "end"
+  const { track } = useTrackers()
+  const router = useRouter()
+  const { toast } = useToast()
+  const advertDialog = useAdvertAlertDialog()
+  const { showDeleteDialog, showAlert } = advertDialog
+  const isMobile = useIsMobile()
+  const { userId, userData, onboardingStatus, verificationStatus } = useUserDataStore()
+  const tempBanUntil = userData?.temp_ban_until
+  const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
+  const isPoiExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poi_status !== "approved"
+  const isPoaExpired = process.env.NEXT_PUBLIC_IS_KYC_MANDATORY == "1" && userId && onboardingStatus?.kyc?.poa_status !== "approved"
+  // Hard-blocks Edit/Delete only (no sheet) for an existing ad when KYC is
+  // unverified, mirroring mobile — Toggle-status/Share stay clickable.
+  const isKycUnverified = Boolean(isPoiExpired || isPoaExpired)
+  const { runGatedAction } = useKycOverlay({ route: "ads", dialog: advertDialog })
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [selectedAd, setSelectedAd] = useState<Ad | null>(null)
+  const [showShareView, setShowShareView] = useState(false)
+  const [adToShare, setAdToShare] = useState<Ad | null>(null)
+  const [visibilityDialogOpen, setVisibilityDialogOpen] = useState(false)
+  const [selectedVisibilityReasons, setSelectedVisibilityReasons] = useState<string[]>([])
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
+
+  // React Query mutations for delete and toggle status
+  const deleteAdMutation = useDeleteAd()
+  const toggleStatusMutation = useToggleAdActiveStatus()
+
+  // Sort ads: active first, then by created_at descending
+  const sortedAds = useMemo(() => {
+    return [...ads].sort((a, b) => {
+      const activeA = a.is_active ? 1 : 0
+      const activeB = b.is_active ? 1 : 0
+      if (activeB !== activeA) return activeB - activeA
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0
+      return dateB - dateA
+    })
+  }, [ads])
+
+
+  const formatLimits = (ad: Ad) => {
+    if (ad.minimum_order_amount && ad.maximum_order_amount) {
+      return `${ad.minimum_order_amount} - ${ad.maximum_order_amount} USD`
     }
-    return `${limits.currency} ${limits.min} - ${limits.max}`
+
+    if (typeof ad.limits === "string") {
+      return ad.limits
+    }
+    if (ad.limits && typeof ad.limits === "object") {
+      return `${ad.limits.min} - ${ad.limits.max} ${ad.limits.currency}`
+    }
+    return "N/A"
+  }
+
+  const getAvailableAmount = (ad: Ad) => {
+    if (
+      ad.available_amount !== undefined &&
+      ad.open_order_amount !== undefined &&
+      ad.completed_order_amount !== undefined
+    ) {
+      const available = Number.parseFloat(ad.available_amount) || 0
+      const openOrder = Number.parseFloat(ad.open_order_amount) || 0
+      const completed = Number.parseFloat(ad.completed_order_amount) || 0
+      const total = available + openOrder + completed
+
+      return {
+        current: available,
+        total: total,
+        percentage: total > 0 ? (available / total) * 100 : 0,
+      }
+    }
+
+    if (ad.available) {
+      const current = Number.parseFloat(ad.available.current) || 0
+      const total = Number.parseFloat(ad.available.total) || 0
+      return {
+        current: current,
+        total: total,
+        percentage: total > 0 ? (current / total) * 100 : 0,
+      }
+    }
+
+    return { current: 0, total: 0, percentage: 0 }
   }
 
   const formatPaymentMethods = (methods: string[]) => {
     if (!methods || methods.length === 0) return "None"
-    return methods.join(", ")
-  }
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Active":
-        return <Badge variant="success-light">Active</Badge>
-      case "Inactive":
-        return <Badge variant="error-light">Inactive</Badge>
-      default:
-        return <Badge variant="error-light">Inactive</Badge>
-    }
-  }
-
-  const handleEdit = (ad: Ad) => {
-    localStorage.setItem(
-      "editAdData",
-      JSON.stringify({
-        ...ad,
-        description: ad.description || "",
-      }),
-    )
-    router.push(`/ads/create?mode=edit&id=${ad.id}`)
-  }
-
-  const handleCopy = (adId: string) => {
-    console.log("Copy ad:", adId)
-  }
-
-  const handleShare = (adId: string) => {
-    console.log("Share ad:", adId)
-  }
-
-  const handleToggleStatus = async (ad: Ad) => {
-    try {
-      setIsTogglingStatus(true)
-
-      let minAmount = 0
-      let maxAmount = 0
-
-      if (typeof ad.limits === "string") {
-        const limitsMatch = ad.limits.match(/([A-Z]+) (\d+\.\d+) - (\d+\.\d+)/)
-        minAmount = limitsMatch ? Number.parseFloat(limitsMatch[2]) : 0
-        maxAmount = limitsMatch ? Number.parseFloat(limitsMatch[3]) : 0
-      } else {
-        minAmount = ad.limits.min
-        maxAmount = ad.limits.max
-      }
-
-      let rateValue = 0
-      if (ad.rate && ad.rate.value) {
-        const rateMatch = ad.rate.value.match(/([A-Z]+)\s+(\d+(?:\.\d+)?)/)
-        if (rateMatch && rateMatch[2]) {
-          rateValue = Number.parseFloat(rateMatch[2])
-        }
-      }
-
-      const isListed = ad.status !== "Active"
-
-      const updateResult = await updateAd(ad.id, {
-        is_active: isListed,
-        minimum_order_amount: minAmount,
-        maximum_order_amount: maxAmount,
-        available_amount: ad.available.current,
-        exchange_rate: rateValue,
-        exchange_rate_type: "fixed",
-        order_expiry_period: 15,
-        description: ad.description || "",
-        payment_method_names: ad.type === "Buy" ? ad.paymentMethods : [],
-      })
-
-      if (updateResult.errors && updateResult.errors.length > 0) {
-        const errorMessage =
-          updateResult.errors[0].message ||
-          `Failed to ${ad.status === "Active" ? "deactivate" : "activate"} ad. Please try again.`
-        throw new Error(errorMessage)
-      }
-
-      if (onAdDeleted) {
-        onAdDeleted()
-      }
-    } catch (error) {
-      console.error("Failed to toggle status:", error)
-
-      setErrorModal({
-        show: true,
-        title: `Failed to ${ad.status === "Active" ? "Deactivate" : "Activate"} Ad`,
-        message:
-          error instanceof Error
-            ? error.message
-            : `Failed to ${ad.status === "Active" ? "deactivate" : "activate"} ad. Please try again.`,
-      })
-    } finally {
-      setIsTogglingStatus(false)
-    }
-  }
-
-  const handleDelete = (adId: string) => {
-    setDeleteConfirmModal({
-      show: true,
-      adId: adId,
-    })
-  }
-
-  const confirmDelete = async () => {
-    try {
-      setIsDeleting(true)
-      const result = await deleteAd(deleteConfirmModal.adId)
-
-      if (result.errors && result.errors.length > 0) {
-        const errorMessage = result.errors[0].message || "Failed to delete ad. Please try again."
-        throw new Error(errorMessage)
-      }
-
-      if (onAdDeleted) {
-        onAdDeleted("deleted")
-      }
-
-      setDeleteConfirmModal({ show: false, adId: "" })
-    } catch (error) {
-      console.error("Failed to delete ad:", error)
-
-      setErrorModal({
-        show: true,
-        title: "Failed to Delete Ad",
-        message: error instanceof Error ? error.message : "Failed to delete ad. Please try again.",
-      })
-    } finally {
-      setIsDeleting(false)
-    }
-  }
-
-  const cancelDelete = () => {
-    setDeleteConfirmModal({ show: false, adId: "" })
-  }
-
-  const handleCloseErrorModal = () => {
-    setErrorModal({
-      show: false,
-      title: "",
-      message: "",
-    })
-  }
-
-  if (ads.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16">
-        <div className="bg-gray-100 rounded-full p-6 mb-6">
-          <Search className="h-12 w-12 text-gray-400" />
-        </div>
-        <h2 className="text-xl font-semibold mb-2">You have no ads</h2>
-        <p className="text-gray-600 mb-6 text-center max-w-md">
-          Looking to buy or sell USD? You can post your own ad for others to respond.
-        </p>
-        <Button onClick={() => router.push("/ads/create")} variant="cyan" size="pill">
-          Create ad
-        </Button>
+      <div className="flex flex-row lg:flex-col flex-wrap gap-2 h-full">
+        {methods.map((method, index) => (
+          <div key={index} className="flex items-center">
+            <span className={`w-2 h-2 rounded-full me-2 ${getPaymentMethodColourByName(method)}`}></span>
+            <span className="text-xs font-normal leading-5 text-gray-900">{formatPaymentMethodName(method, t)}</span>
+          </div>
+        ))}
       </div>
     )
   }
 
-  return (
-    <>
+  const getStatusBadge = (isActive: boolean) => {
+    if (isActive) {
+      return <Badge variant="active">{t("myAds.active")}</Badge>
+    }
+    return <Badge variant="error">{t("myAds.inactive")}</Badge>
+  }
+
+  const handleShare = (ad: Ad) => {
+    track("ek_share_ad_manage_ad_sheet")
+    setDrawerOpen(false)
+    setOpenDropdownId(null)
+    setAdToShare(ad)
+    setShowShareView(true)
+  }
+
+  const handleCloseShareView = () => {
+    setShowShareView(false)
+    setAdToShare(null)
+  }
+
+  const handleEdit = (ad: Ad) => {
+    track("ek_edit_ad_manage_ad_sheet")
+    setDrawerOpen(false)
+    setOpenDropdownId(null)
+    router.push(editAdPath(ad.id, isActiveTab ? "active" : "inactive"))
+  }
+
+  const handleToggleStatus = async (ad: Ad) => {
+    const isActive = ad.is_active !== undefined ? ad.is_active : ad.status === "Active"
+    const isListed = !isActive
+    track("ek_toggle_ad_status_manage_ad_sheet", { ad_status_action: isListed ? "activate" : "deactivate" })
+    setDrawerOpen(false)
+    setOpenDropdownId(null)
+
+    try {
+      await toggleStatusMutation.mutateAsync({ id: ad.id, isActive: isListed })
+      await onAdsChanged?.()
+
+      const message = isListed ? t("myAds.adActivated") : t("myAds.adDeactivated")
+      toast({
+        description: (
+          <div className="flex items-center gap-2">
+            <Image src="/icons/tick.svg" alt={t("common.success")} width={24} height={24} className="text-white" />
+            <span>{message}</span>
+          </div>
+        ),
+        className: TOAST_SUCCESS_CLASS,
+        duration: 2500,
+      })
+    } catch (error: any) {
+      if (error?.errors?.length > 0) {
+        const firstError = error.errors[0]
+
+        if (firstError.code === "AdvertPaymentMethodIDsRequired") {
+          showAlert({
+            title: t("adForm.paymentMethodIDsRequiredTitle"),
+            description: t("adForm.paymentMethodIDsRequiredActivateMessage"),
+            confirmText: t("adForm.addPaymentMethod"),
+            type: "error",
+            onConfirm: () => {
+              router.push(editAdPath(ad.id, isActiveTab ? "active" : "inactive"))
+            },
+          })
+          return
+        }
+
+        const errorCodeMap: Record<string, string> = {
+          AdvertActiveCountExceeded: t("adForm.adLimitReachedMessage"),
+          AdvertExchangeRateDuplicate: t("adForm.duplicateRateMessage"),
+          InvalidExchangeRate: t("adForm.invalidExchangeRateMessage"),
+        }
+
+        const errorMessage = errorCodeMap[firstError.code] || t("myAds.updateAdError")
+
+        showAlert({
+          title: t("myAds.unableToUpdateAd"),
+          description: errorMessage,
+          confirmText: t("common.ok"),
+          type: "warning",
+        })
+      } else {
+        showAlert({
+          title: t("myAds.unableToUpdateAd"),
+          description: t("myAds.updateAdError"),
+          confirmText: t("common.ok"),
+          type: "warning",
+        })
+      }
+    }
+  }
+
+  const handleDelete = (adId: string) => {
+    track("ek_delete_ad_manage_ad_sheet")
+    setDrawerOpen(false)
+    setOpenDropdownId(null)
+    showDeleteDialog({
+      title: t("myAds.deleteAdTitle"),
+      description: t("myAds.deleteAdDescription"),
+      confirmText: t("common.delete"),
+      cancelText: t("common.cancel"),
+      onCancel: () => {
+        track("ek_cancel_delete_delete_ad_sheet")
+      },
+      onConfirm: () => {
+        track("ek_confirm_delete_delete_ad_sheet")
+        deleteAdMutation.mutate(adId, {
+          onSuccess: () => {
+            onAdDeleted?.("deleted")
+            void onAdsChanged?.()
+            toast({
+              description: (
+                <div className="flex items-center gap-2">
+                  <Image src="/icons/tick.svg" alt={t("common.success")} width={24} height={24} className="text-white" />
+                  <span>{t("myAds.adDeleted")}</span>
+                </div>
+              ),
+              className: TOAST_SUCCESS_CLASS,
+              duration: 2500,
+            })
+          },
+          onError: (error: any) => {
+            let title = t("myAds.unableToDeleteAd")
+            let description = t("myAds.deleteAdError")
+            let confirmText = t("common.ok")
+
+            if (error?.errors?.length > 0) {
+              const hasOpenOrdersError = error.errors.some(
+                (err: any) => err.code === "AdvertDeleteOpenOrders"
+              )
+              if (hasOpenOrdersError) {
+                title = t("myAds.deleteAdOpenOrdersTitle")
+                description = t("myAds.deleteAdOpenOrders")
+                confirmText = t("common.gotIt")
+              }
+            }
+
+            setTimeout(() => {
+              showAlert({
+                title,
+                description,
+                confirmText,
+                type: "warning",
+              })
+            }, 500)
+          },
+        })
+      },
+    })
+  }
+
+  const handleOpenDrawer = (ad: Ad) => {
+    track("ek_manage_ad_my_ads")
+    runGatedAction(() => {
+      setSelectedAd(ad)
+      setDrawerOpen(true)
+    })
+  }
+
+  const handleVisibilityStatusClick = (ad: Ad) => {
+    track("ek_ad_visibility_warning_my_ads")
+    if (ad.visibility_status && ad.visibility_status.length > 0) {
+      setSelectedVisibilityReasons(ad.visibility_status)
+      setSelectedAd(ad)
+      setVisibilityDialogOpen(true)
+    }
+  }
+
+  if (isLoading) {
+    return (
       <div className="w-full">
         <Table>
-          <TableHeader>
-            <TableRow className="border-b">
-              <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
-                Ad ID
+          <TableHeader className="hidden lg:table-header-group border-b sticky top-0 bg-white z-[1]">
+            <TableRow className="text-xs">
+              <TableHead className="text-start py-4 lg:ps-0 pe-4 text-slate-600 font-normal">
+                {t("myAds.adType")}
               </TableHead>
-              <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
-                Rate (USD 1)
+              <TableHead className="text-start py-4 px-4 text-slate-600 font-normal">
+                {t("myAds.availableAmount")}
               </TableHead>
-              <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
-                Limits
+              <TableHead className="text-start py-4 px-4 text-slate-600 font-normal">
+                {t("myAds.paymentMethods")}
               </TableHead>
-              <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
-                Available amount
-              </TableHead>
-              <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
-                Payment methods
-              </TableHead>
-              <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal">
-                Status
-              </TableHead>
-              <TableHead className="text-left py-4 text-slate-600 font-normal text-sm leading-5 tracking-normal"></TableHead>
+              <TableHead className="text-start py-4 px-4 text-slate-600 font-normal">{t("myAds.status")}</TableHead>
+              <TableHead className="text-start py-4 ps-4 lg:pe-0 text-slate-600 font-normal"></TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {ads.map((ad, index) => (
-              <TableRow key={index} className={cn("border-b", ad.status === "Inactive" ? "opacity-60" : "")}>
-                <TableCell className="py-4">
-                  <div>
-                    <span className={cn("font-medium", ad.type === "Buy" ? "text-buy" : "text-sell")}>{ad.type}</span>
-                    <span className="text-gray-900"> {ad.id}</span>
+          <TableBody className="bg-white lg:divide-y lg:divide-slate-200 font-normal text-sm">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <TableRow
+                key={index}
+                className="grid grid-cols-[2fr_1fr] lg:flex flex-col border-b lg:table-row lg:border-x-[0] lg:border-t-[0] lg:mb-[0] py-3 lg:p-0"
+              >
+                <TableCell className="p-2 lg:ps-0 lg:pe-4 lg:py-4 align-top row-start-2 col-start-1 col-end-4">
+                  <div className="space-y-2">
+                    <Skeleton className="h-6 w-24 bg-grayscale-500" />
+                    <Skeleton className="h-4 w-32 bg-grayscale-500" />
+                    <Skeleton className="h-4 w-28 bg-grayscale-500" />
                   </div>
                 </TableCell>
-                <TableCell className="py-4">
-                  <div className="font-medium">{ad.rate.value}</div>
-                </TableCell>
-                <TableCell className="py-4">{formatLimits(ad.limits)}</TableCell>
-                <TableCell className="py-4">
-                  <div className="mb-1">
-                    {ad.available.currency} {ad.available.current || 0} /{" "}
-                    {ad.available.total || 0}
-                  </div>
-                  <div className="h-2 bg-gray-200 rounded-full w-full max-w-[180px] overflow-hidden">
-                    <div
-                      className={`h-full bg-black rounded-full w-[${ad.available.total > 0 ? Math.min(((ad.available.current || 0) / ad.available.total) * 100, 100) : 0}%]`}
-                    ></div>
+                <TableCell className="p-2 lg:p-4 align-top row-start-3 col-start-1 col-end-4">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-32 bg-grayscale-500" />
+                    <Skeleton className="h-2 w-full lg:w-[200px] rounded-full bg-grayscale-500" />
+                    <Skeleton className="h-4 w-28 bg-grayscale-500" />
                   </div>
                 </TableCell>
-                <TableCell className="py-4">{formatPaymentMethods(ad.paymentMethods)}</TableCell>
-                <TableCell className="py-4">{getStatusBadge(ad.status)}</TableCell>
-                <TableCell className="py-4 text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="p-1 hover:bg-gray-100 rounded-full">
-                        <MoreVertical className="h-5 w-5 text-gray-500" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[160px]">
-                      <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleEdit(ad)}>
-                        <Pencil className="h-4 w-4" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="flex items-center gap-2"
-                        onSelect={() => handleToggleStatus(ad)}
-                        disabled={isTogglingStatus}
-                      >
-                        <Power className="h-4 w-4" />
-                        {isTogglingStatus ? "Updating..." : ad.status === "Active" ? "Deactivate" : "Activate"}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleCopy(ad.id)}>
-                        <Copy className="h-4 w-4" />
-                        Copy
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleShare(ad.id)}>
-                        <Share2 className="h-4 w-4" />
-                        Share
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center gap-2" onSelect={() => handleDelete(ad.id)}>
-                        <Trash2 className="h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                <TableCell className="p-2 lg:p-4 align-top row-start-4 col-span-full">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24 bg-grayscale-500" />
+                    <Skeleton className="h-4 w-28 bg-grayscale-500" />
+                  </div>
+                </TableCell>
+
+                <TableCell className="p-2 lg:p-4 align-top row-start-1 col-span-full">
+                  <Skeleton className="h-6 w-16 rounded-full bg-grayscale-500" />
+                </TableCell>
+
+                <TableCell className="p-2 lg:ps-4 lg:pe-0 lg:py-4 align-top row-start-1">
+                  <div className="flex items-end justify-end">
+                    <Skeleton className="h-8 w-8 rounded-full bg-grayscale-500" />
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
+    )
+  }
 
-      <DeleteConfirmationDialog
-        open={deleteConfirmModal.show}
-        title="Delete ad?"
-        description="You will not be able to restore it."
-        isDeleting={isDeleting}
-        onConfirm={confirmDelete}
-        onCancel={cancelDelete}
-      />
-
-      {errorModal.show && (
-        <StatusModal
-          type="error"
-          title={errorModal.title}
-          message={errorModal.message}
-          onClose={handleCloseErrorModal}
+  if (ads.length === 0) {
+    return (
+      <div className="h-full flex items-center md:items-start justify-center md:pt-16" data-testid="ads-empty-state">
+        <EmptyState
+          title={isActiveTab ? t("myAds.noAdsTitle") : t("myAds.noInactiveAdsTitle")}
+          description={isActiveTab ? t("myAds.noAdsDescription") : t("myAds.noInactiveAdsDescription")}
+          redirectToAds={isActiveTab}
+          route="ads"
         />
-      )}
+      </div>
+    )
+  }
+
+  if (showShareView && adToShare) {
+    return <ShareAdPage ad={adToShare} onClose={handleCloseShareView} />
+  }
+
+  return (
+    <>
+      <div className="w-full">
+        <Table>
+          <TableHeader className="hidden lg:table-header-group border-b sticky top-0 bg-white z-[1]">
+            <TableRow className="text-xs">
+              <TableHead className="text-start py-4 lg:ps-0 pe-4 text-slate-600 font-normal">
+                {t("myAds.adType")}
+              </TableHead>
+              <TableHead className="text-start py-4 px-4 text-slate-600 font-normal">
+                {t("myAds.availableAmount")}
+              </TableHead>
+              <TableHead className="text-start py-4 px-4 text-slate-600 font-normal">
+                {t("myAds.paymentMethods")}
+              </TableHead>
+              <TableHead className="text-start py-4 px-4 text-slate-600 font-normal">{t("myAds.status")}</TableHead>
+              <TableHead className="text-start py-4 ps-4 lg:pe-0 text-slate-600 font-normal"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className="bg-white lg:divide-y lg:divide-slate-200 font-normal text-sm">
+            {sortedAds.map((ad, index) => {
+              const availableData = getAvailableAmount(ad)
+              const isActive = ad.is_active !== undefined ? ad.is_active : ad.status === "Active"
+              const adType = ad.type || "Buy"
+              const rate = ad.effective_rate_display
+              const exchangeRate = `${ad.exchange_rate}%`
+              const exchangeRateType = ad.exchange_rate_type
+              const paymentMethods = ad.payment_methods || ad.paymentMethods || []
+              const hasVisibilityStatus = ad.visibility_status && ad.visibility_status.length > 0
+
+              return (
+                <TableRow
+                  key={index}
+                  data-testid={`ads-row-${ad.id}`}
+                  className={cn(
+                    "grid grid-cols-[2fr_1fr] lg:flex flex-col border-b lg:table-row lg:border-x-[0] lg:border-t-[0] lg:mb-[0] py-3 lg:p-0 text-slate-1200 gap-2",
+                  )}
+                >
+                  <TableCell
+                    className={cn(
+                      "px-2 py-0 lg:ps-0 lg:pe-4 lg:py-4 align-top row-start-2 col-start-1 col-end-4 whitespace-nowrap",
+                      !isActive || hiddenAdverts ? "opacity-60" : "",
+                    )}
+                  >
+                    <div className="flex justify-between md:block">
+                      <div className="mb-1 flex justify-normal ">
+                        <span
+                          className={cn(
+                            "font-bold text-base leading-6",
+                            adType.toLowerCase() === "buy" ? "text-buy" : "text-sell",
+                          )}
+                        >
+                          {adType.toLowerCase() === "buy" ? t("common.buy") : t("common.sell")}
+                        </span>
+                        <span className="text-base font-bold leading-6 ms-1">
+                          {" "}
+                          {ad.account_currency}
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between md:justify-normal gap-1">
+                          <span className="text-xs leading-5 text-slate-500">
+                            {t("myAds.adId")}:
+                          </span>
+                          <span className="text-xs leading-5 text-slate-500">{ad.id}</span>
+                        </div>
+                        {!isMobile && (
+                          <div className="flex items-center justify-between md:justify-normal gap-1">
+                            <span className="text-xs leading-5">
+                              {t("myAds.rate")}:
+                            </span>
+                            <span className="text-xs font-bold leading-5">{rate} {ad.payment_currency}</span>
+                            {exchangeRateType == "float" && ad.exchange_rate != 0 && (
+                              <span className="text-xs text-grayscale-600 rounded-sm bg-grayscale-500 p-1 ms-1">
+                                {exchangeRate}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell
+                    className={cn(
+                      "px-2 py-0 lg:p-4 align-top row-start-3 col-start-1 col-end-4 text-xs whitespace-nowrap",
+                      !isActive || hiddenAdverts ? "opacity-60" : "",
+                    )}
+                  >
+                    <div className="mb-2">
+                      {availableData.current.toFixed(2)} / {availableData.total.toFixed(2)} USD
+                    </div>
+                    <div className="h-2 bg-slate-1700 rounded-full w-full lg:w-[200px] overflow-hidden mb-2">
+                      <div
+                        className="h-full bg-neutral-10 rounded-full"
+                        style={{ width: `${Math.min(availableData.percentage, 100)}%` }}
+                      ></div>
+                    </div>
+                    {isMobile && (
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="text-xs leading-5">{t("myAds.rate")}:</span>
+                        <div>
+                          <span className="text-xs leading-5 text-gray-900 font-bold">{rate} {ad.payment_currency}</span>
+                          {exchangeRateType == "float" && ad.exchange_rate != 0 && (
+                            <span className="text-xs text-grayscale-600 rounded-sm bg-grayscale-500 p-1 ms-2">
+                              {exchangeRate}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between md:justify-normal gap-1">
+                      <span className="text-xs leading-5">{t("myAds.limit")}:</span>
+                      <span className="text-xs leading-5 overflow-hidden text-ellipsis">{formatLimits(ad)}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell
+                    className={cn(
+                      "px-2 py-0 lg:p-4 align-top row-start-4 col-span-full whitespace-nowrap",
+                      !isActive || hiddenAdverts ? "opacity-60" : "",
+                    )}
+                  >
+                    {formatPaymentMethods(paymentMethods)}
+                  </TableCell>
+                  <TableCell className="p-2 lg:p-4 align-middle row-start-1 col-span-full whitespace-nowrap flex items-center gap-1">
+                    <span data-testid={`ads-badge-status-${ad.id}`} className="inline-flex items-center">
+                      {getStatusBadge(isActive)}
+                    </span>
+                    {IS_CLOSED_GROUP_ENABLED && ad.is_private && (
+                      <Image
+                        src="/icons/closed-group.svg"
+                        alt={t("common.closedGroup")}
+                        width={24}
+                        height={24}
+                        className="block size-6 shrink-0"
+                      />
+                    )}
+                    {hasVisibilityStatus && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        // size=sm defaults to h-32px — overrides so icon matches badge height
+                        className="!size-8 !h-8 !w-8 !min-h-0 !min-w-0 !p-1 !rounded-full !bg-transparent hover:!bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        onClick={() => handleVisibilityStatusClick(ad)}
+                      >
+                        <Image
+                          src="/icons/ad-warning.svg"
+                          alt={t("common.visibilityStatus")}
+                          width={24}
+                          height={24}
+                          className="block size-6"
+                        />
+                      </Button>
+                    )}
+                  </TableCell>
+                  <TableCell className="p-0 lg:ps-4 lg:pe-0 lg:py-4 align-middle row-start-1 whitespace-nowrap">
+                    <div className="flex h-full items-center justify-end">
+                      {isMobile ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="!size-8 !h-8 !w-8 !min-h-0 !min-w-0 !p-1 !rounded-full !bg-transparent hover:!bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          onClick={() => handleOpenDrawer(ad)}
+                          disabled={!!tempBanUntil || isMaintenanceActive}
+                        >
+                          <Image
+                            src="/icons/vertical.svg"
+                            alt={t("common.options")}
+                            width={24}
+                            height={24}
+                            className="block size-6"
+                          />
+                        </Button>
+                      ) : (
+                        <>
+                          {!userId || !verificationStatus?.phone_verified ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="!size-8 !h-8 !w-8 !min-h-0 !min-w-0 !p-1 !rounded-full !bg-transparent hover:!bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                              onClick={() => handleOpenDrawer(ad)}
+                              disabled={!!tempBanUntil || isMaintenanceActive}
+                            >
+                              <Image
+                                src="/icons/vertical.svg"
+                                alt={t("common.options")}
+                                width={24}
+                                height={24}
+                                className="block size-6"
+                              />
+                            </Button>
+                          ) : (
+                            <DropdownMenu open={openDropdownId === ad.id} onOpenChange={(open) => setOpenDropdownId(open ? ad.id : null)}>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="!size-8 !h-8 !w-8 !min-h-0 !min-w-0 !p-1 !rounded-full !bg-transparent hover:!bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                  disabled={!!tempBanUntil || isMaintenanceActive}
+                                >
+                                  <Image
+                                    src="/icons/vertical.svg"
+                                    alt={t("common.options")}
+                                    width={24}
+                                    height={24}
+                                    className="block size-6"
+                                  />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align={dropdownMenuAlign} className="w-48 flex flex-col p-1">
+                                <AdActionsMenu
+                                  ad={ad}
+                                  isKycUnverified={isKycUnverified}
+                                  onEdit={handleEdit}
+                                  onToggleStatus={handleToggleStatus}
+                                  onDelete={handleDelete}
+                                  onShare={handleShare}
+                                />
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
+      </div>
+
+      <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <DrawerContent>
+          <DrawerHeader className="px-4 pb-4 pt-3">
+            <DrawerTitle className="text-xl font-extrabold">{t("myAds.manageAds")}</DrawerTitle>
+          </DrawerHeader>
+          <div className="flex flex-col">
+            {selectedAd && (
+              <AdActionsMenu
+                ad={selectedAd}
+                variant="drawer"
+                isKycUnverified={isKycUnverified}
+                onEdit={handleEdit}
+                onToggleStatus={handleToggleStatus}
+                onDelete={handleDelete}
+                onShare={handleShare}
+              />
+            )}
+          </div>
+        </DrawerContent>
+      </Drawer>
+
+      <VisibilityStatusDialog
+        id={selectedAd?.id ?? ""}
+        open={visibilityDialogOpen}
+        onOpenChange={setVisibilityDialogOpen}
+        reasons={selectedVisibilityReasons}
+        ad={selectedAd}
+        fromTab={isActiveTab ? "active" : "inactive"}
+        onActivateAd={() => selectedAd && handleToggleStatus(selectedAd)}
+      />
     </>
   )
 }

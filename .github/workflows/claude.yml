@@ -1,0 +1,80 @@
+
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  review:
+    runs-on:
+      group: github_claude_code_reviewer
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      actions: read
+      checks: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Claude Code Review
+        uses: anthropics/claude-code-action@edd85d61533cbba7b57ed0ca4af1750b1fdfd3c4
+        env:
+          ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
+          ANTHROPIC_AUTH_TOKEN: ${{ secrets.LITELLM_API_KEY }}
+          CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1"
+          CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS: "1"
+          DISABLE_NON_ESSENTIAL_MODEL_CALLS: "1"
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          allowed_bots: "*"
+          track_progress: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          show_full_output: true
+          claude_args: "--model claude-sonnet-4-6"
+          prompt: |
+            Review this pull request as a Next.js and TypeScript expert for the Deriv P2P Web App.
+
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Please review this pull request with a focus on:
+            - Correctness, regressions, and edge cases
+            - Code quality & readability (React + TypeScript best practices)
+            - Performance (render cost, memoization, effects)
+            - Security (XSS, auth flows, secrets)
+            - Tests (coverage for new logic)
+
+            KEY INSTANT-REJECT CRITERIA:
+            - Hardcoded user-facing strings instead of t('namespace.key') via useTranslations
+            - New string added to en.json but NOT added to all other locale files (bn, de, es, fr, it, ko, pl, pt, ru, sw, vi)
+            - Hardcoded colors (hex literals, CSS color names) instead of Tailwind design tokens from tailwind.config.ts
+            - Raw HTML <button>, <input>, <dialog>, or custom modals when a components/ui/ Radix primitive exists
+            - Direct fetch/axios calls bypassing services/api/ layer
+            - Duplicating server state in Zustand instead of React Query
+            - Touching pnpm-lock.yaml or pnpm-workspace.yaml without a corresponding package.json change
+            - Secrets or credentials committed in any form
+
+            ALSO REVIEW FOR:
+            - React Query: queryKey uniqueness, staleTime set appropriately, mutations invalidate relevant queries
+            - Zustand: selector functions used (not full store subscriptions) to minimise re-renders
+            - WebSocket: subscriptions filter on data.options.channel before reading payload; useEffect cleanup disposes subscriptions
+            - Forms: react-hook-form + Zod schema; no uncontrolled inputs; error messages use t() keys
+            - Auth (Ory Kratos): GET flow → POST with flowId pattern; session token via X-Session-Token header
+            - Routing: useRouter/usePathname/useSearchParams from next/navigation (not window.location); router.replace() to clean deep-link params after consuming
+            - TypeScript: no 'any'; explicit return types on exported functions; discriminated unions for state
+            - Accessibility: interactive controls have aria-* attributes; decorative icons have alt='' + aria-hidden='true'
+            - Performance: useMemo/useCallback only where measurably needed; avoid inline object/array literals as props that cause unnecessary re-renders
+            - Tests: new logic has a corresponding test in __tests__/ mirroring the source path
+
+            RESPONSE FORMAT — group findings by severity:
+            🚫 REJECT — instant-reject violations (must fix before merge)
+            ⚠️ WARNING — should fix (quality/maintainability)
+            💡 SUGGESTION — nice to have
+
+            For each issue: filename:line_number → what is wrong → what to do instead.

@@ -4,6 +4,12 @@ on:
     push:
         branches:
             - 'main'
+        paths-ignore:
+            - 'playwright/**'
+            - 'playwright.config.ts'
+
+permissions:
+    contents: read
 
 concurrency:
     group: cloudflare-pages-build-staging
@@ -18,42 +24,89 @@ jobs:
             - name: Checkout to main branch
               uses: actions/checkout@v4
 
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v2
+              with:
+                version: 9
+                run_install: false
+
             - name: Setup node
               uses: actions/setup-node@v4
               with:
                   node-version: 20.x
-                  cache: 'npm'
-
-            - name: Get cached dependencies
-              id: cache-npm
-              uses: actions/cache@v4
-              with:
-                  path: node_modules
-                  key: npm-${{ hashFiles('./package-lock.json') }}
+                  cache: 'pnpm'
 
             - name: Install dependencies
-              if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
-              run: npm ci
-              shell: bash
+              run: pnpm install
+
+            # Must run BEFORE next build / next-on-pages so the file is copied from
+            # public/ into the static output and registered in the worker's static
+            # asset manifest. Writing it after postbuild leaves it invisible to the
+            # worker, which then 404s /app-info.json as an unknown Next route.
+            - name: Generate app-info.json
+              uses: "deriv-com/shared-actions/.github/actions/generate_app_info@master"
+              with:
+                version: ${{ github.sha }}
+                output_dir: public
 
             - name: Build
-              run: npm run build
+              run: pnpm run build && pnpm run postbuild
               env:
                 NEXT_PUBLIC_BASE_URL: ${{ vars.NEXT_PUBLIC_BASE_URL }}
                 NEXT_PUBLIC_CORE_URL: ${{ vars.NEXT_PUBLIC_CORE_URL }}
+                NEXT_PUBLIC_CORE_ME_URL: ${{ vars.NEXT_PUBLIC_CORE_ME_URL }}
+                NEXT_PUBLIC_CORE_BE_URL: ${{ vars.NEXT_PUBLIC_CORE_BE_URL }}
                 NEXT_PUBLIC_SOCKET_URL: ${{ vars.NEXT_PUBLIC_SOCKET_URL }}
+                NEXT_PUBLIC_SOCKET_ME_URL: ${{ vars.NEXT_PUBLIC_SOCKET_ME_URL }}
+                NEXT_PUBLIC_SOCKET_BE_URL: ${{ vars.NEXT_PUBLIC_SOCKET_BE_URL }}
                 NEXT_PUBLIC_CASHIER_URL: ${{ vars.NEXT_PUBLIC_CASHIER_URL }}
+                NEXT_PUBLIC_DATADOG_APPLICATION_ID: ${{ vars.NEXT_PUBLIC_DATADOG_APPLICATION_ID }}
+                NEXT_PUBLIC_DATADOG_CLIENT_TOKEN: ${{ vars.NEXT_PUBLIC_DATADOG_CLIENT_TOKEN }}
+                NEXT_PUBLIC_DATADOG_ENV: ${{ vars.NEXT_PUBLIC_DATADOG_ENV }}
+                NEXT_PUBLIC_DATADOG_SERVICE: ${{ vars.NEXT_PUBLIC_DATADOG_SERVICE }}
+                NEXT_PUBLIC_DATADOG_SESSION_REPLAY_SAMPLE_RATE: ${{ vars.NEXT_PUBLIC_DATADOG_SESSION_REPLAY_SAMPLE_RATE }}
+                NEXT_PUBLIC_DATADOG_SESSION_SAMPLE_RATE: ${{ vars.NEXT_PUBLIC_DATADOG_SESSION_SAMPLE_RATE }}
+                NEXT_PUBLIC_DATADOG_VERSION: ${{ vars.NEXT_PUBLIC_DATADOG_VERSION }}
                 NEXT_PUBLIC_DATA_SOURCE: ${{ vars.NEXT_PUBLIC_DATA_SOURCE }}
                 NEXT_PUBLIC_BRANCH: ${{ vars.NEXT_PUBLIC_BRANCH }}
                 NEXT_PUBLIC_NOTIFICATION_APPLICATION_ID: ${{ vars.NEXT_PUBLIC_NOTIFICATION_APPLICATION_ID }}
                 NEXT_PUBLIC_NOTIFICATION_URL: ${{ vars.NEXT_PUBLIC_NOTIFICATION_URL }}
+                NEXT_PUBLIC_IS_ORY_ENABLED: ${{ vars.NEXT_PUBLIC_IS_ORY_ENABLED }}
+                NEXT_PUBLIC_ORY_URL: ${{ vars.NEXT_PUBLIC_ORY_URL }}
+                NEXT_PUBLIC_ORY_ME_URL: ${{ vars.NEXT_PUBLIC_ORY_ME_URL }}
+                NEXT_PUBLIC_ORY_BE_URL: ${{ vars.NEXT_PUBLIC_ORY_BE_URL }}
+                NEXT_PUBLIC_POSTHOG_KEY: ${{ vars.NEXT_PUBLIC_POSTHOG_KEY }}
+                NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
+                NEXT_PUBLIC_POSTHOG_ME_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_ME_HOST }}
+                NEXT_PUBLIC_POSTHOG_BE_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_BE_HOST }}
+                NEXT_PUBLIC_FLOATING_RATE_ENABLED: ${{ vars.NEXT_PUBLIC_FLOATING_RATE_ENABLED }}
+                NEXT_PUBLIC_INTERCOM_APP_ID: ${{ vars.NEXT_PUBLIC_INTERCOM_APP_ID }}
+                NEXT_PUBLIC_IS_CLOSED_GROUP_ENABLED: ${{ vars.NEXT_PUBLIC_IS_CLOSED_GROUP_ENABLED }}
+                NEXT_PUBLIC_IS_AD_CONDITIONS_ENABLED: ${{ vars.NEXT_PUBLIC_IS_AD_CONDITIONS_ENABLED }}
+                NEXT_PUBLIC_IS_TRANSFER_FEE_DISPLAY_ENABLED: ${{ vars.NEXT_PUBLIC_IS_TRANSFER_FEE_DISPLAY_ENABLED }}
+                NEXT_PUBLIC_CLIENT_URL: ${{ vars.NEXT_PUBLIC_CLIENT_URL }}
+                NEXT_PUBLIC_IS_KYC_MANDATORY: ${{ vars.NEXT_PUBLIC_IS_KYC_MANDATORY }}
+                NEXT_PUBLIC_RELEASE_TAG: ${{ vars.NEXT_PUBLIC_RELEASE_TAG }}
+                # Must match generate_app_info `version` above so analytics
+                # event_metadata.app_version correlates with /app-info.json.
+                NEXT_PUBLIC_APP_VERSION: ${{ github.sha }}
+                NEXT_PUBLIC_P2P_WHATS_NEW_ENABLED: ${{ vars.NEXT_PUBLIC_P2P_WHATS_NEW_ENABLED }}
+                NEXT_PUBLIC_P2P_WHATS_COMING_TAG: ${{ vars.NEXT_PUBLIC_P2P_WHATS_COMING_TAG }}
+                NEXT_PUBLIC_P2P_SYSTEM_MAINTENANCE_ENABLED: ${{ vars.NEXT_PUBLIC_P2P_SYSTEM_MAINTENANCE_ENABLED }}
+                NEXT_PUBLIC_P2P_ORDER_CHAT_MODERATION_ENABLED: ${{ vars.NEXT_PUBLIC_P2P_ORDER_CHAT_MODERATION_ENABLED }}
+                NEXT_PUBLIC_IS_PAYMENT_METHOD_SESSION_ELEVATION_ENABLED: ${{ vars.NEXT_PUBLIC_IS_PAYMENT_METHOD_SESSION_ELEVATION_ENABLED }}
+                NEXT_PUBLIC_NODE_ENV: staging
                 NODE_ENV: staging
 
-            - name: Run tests for Eslint
-              run: npm run lint
+            - name: Replace placeholders in wrangler.toml
+              run: |
+                sed -i "s/PROJECT_NAME/${{ secrets.CLOUDFLARE_PROJECT_NAME }}/g" wrangler.toml
+              shell: bash
 
-            - name: List output folder contents for debugging
-              run: ls -lR ./out 
+            - name: Verify app-info.json in output
+              run: |
+                ls -l .vercel/output/static/app-info.json
+                cat .vercel/output/static/app-info.json
 
             - name: Publish to Cloudflare Pages
               uses: "deriv-com/shared-actions/.github/actions/publish_to_pages_branch@master"
@@ -62,6 +115,6 @@ jobs:
                 CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                 project_name: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
                 branch_name: staging
-                output_dir: out
+                output_dir: .vercel/output/static
                 directory: dist
-                cname_url: staging-p2p.champion.trade
+                cname_url: staging-dp2p.deriv.com

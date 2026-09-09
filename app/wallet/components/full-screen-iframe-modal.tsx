@@ -1,11 +1,14 @@
 "use client"
 
-import { X } from "lucide-react"
+import { StandaloneXmarkRegularIcon } from "@deriv/quill-icons/Standalone"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { Button } from "@/components/ui/button"
-import { WALLETS } from "@/lib/local-variables"
+import { Spinner } from "@/components/ui/spinner"
+import { useUserDataStore } from "@/stores/user-data-store"
+import { getCoreUrl } from "@/lib/get-core-url"
+import { useTranslations } from "@/lib/i18n/use-translations"
 
 interface IframeResponse {
   status: string
@@ -19,10 +22,21 @@ interface FullScreenIframeModalProps {
   isOpen: boolean
   onClose: () => void
   operation?: "DEPOSIT" | "WITHDRAW"
+  currency?: string
 }
 
-export default function FullScreenIframeModal({ isOpen, onClose, operation = "DEPOSIT" }: FullScreenIframeModalProps) {
+export default function FullScreenIframeModal({
+  isOpen,
+  onClose,
+  operation = "DEPOSIT",
+  currency = "USD",
+}: FullScreenIframeModalProps) {
+  const { t } = useTranslations()
   const router = useRouter()
+  const userData = useUserDataStore((state) => state.userData)
+  const walletId = userData?.wallet_id
+  const brandClientId = useUserDataStore((state) => state.brandClientId)
+  const brand = useUserDataStore((state) => state.brand)
   const [iframeUrl, setIframeUrl] = useState<string>("")
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [iframeLoaded, setIframeLoaded] = useState<boolean>(false)
@@ -42,19 +56,26 @@ export default function FullScreenIframeModal({ isOpen, onClose, operation = "DE
       setIframeLoaded(false)
       setError(null)
 
-      const requestParams = {
-        ...WALLETS.defaultParams,
-        operation: operation === "DEPOSIT" ? "DEPOSIT" : "PAYOUT",
-      }
-
       try {
-        const response = await fetch(WALLETS.cashierUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Branch": "staging",
-          },
-          body: JSON.stringify(requestParams),
+        const cashierUrl = `${getCoreUrl()}/v1/cashier/url`
+        const apiOperation = operation === "WITHDRAW" ? "PAYOUT" : operation
+        const params = new URLSearchParams({
+          wallet_id: walletId || "",
+          operation: apiOperation,
+          currency,
+        })
+
+        if (brandClientId) {
+          params.append("user_id", brandClientId)
+        }
+
+        if (brand) {
+          params.append("brand_id", brand)
+        }
+
+        const response = await fetch(`${cashierUrl}?${params.toString()}`, {
+          method: "GET",
+          credentials: "include",
         })
 
         if (!response.ok) {
@@ -77,7 +98,7 @@ export default function FullScreenIframeModal({ isOpen, onClose, operation = "DE
     }
 
     fetchIframeUrl()
-  }, [isOpen, operation])
+  }, [isOpen, operation, currency, walletId, brandClientId, brand])
 
   const handleIframeLoad = () => {
     setIframeLoaded(true)
@@ -90,20 +111,20 @@ export default function FullScreenIframeModal({ isOpen, onClose, operation = "DE
 
   if (!isOpen || !mounted) return null
 
-  const title = operation === "DEPOSIT" ? "Deposit to P2P" : "Withdraw from P2P"
+  const title = operation === "DEPOSIT" ? t("wallet.depositToP2p") : t("wallet.withdrawFromP2p")
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] bg-background flex flex-col">
       <div className="flex h-16 px-4 py-1 justify-between items-center border-b border-border bg-background z-10">
         <h1 className="text-lg font-bold text-black leading-7">{title}</h1>
         <Button
-          variant="ghost"
+          variant="icon-muted"
           size="icon"
           onClick={handleClose}
-          className="flex w-8 h-8 items-center justify-center rounded-full aspect-square overflow-hidden flex-shrink-0 min-w-[2rem] min-h-[2rem] max-w-[2rem] max-h-[2rem] bg-[#EFF3F5] hover:bg-[#EFF3F5] p-0"
-          aria-label="Close"
+          className="flex w-8 h-8 items-center justify-center rounded-full aspect-square overflow-hidden flex-shrink-0 min-w-[2rem] min-h-[2rem] max-w-[2rem] max-h-[2rem] bg-grayscale-700 hover:bg-grayscale-700 p-0"
+          aria-label={t("common.close")}
         >
-          <X className="h-4 w-4" />
+          <StandaloneXmarkRegularIcon iconSize="xs" />
         </Button>
       </div>
 
@@ -111,8 +132,8 @@ export default function FullScreenIframeModal({ isOpen, onClose, operation = "DE
         {(!iframeLoaded || isLoading) && (
           <div className="absolute inset-0 flex items-center justify-center bg-background z-10">
             <div className="flex flex-col items-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
-              <p className="text-muted-foreground">Loading...</p>
+              <Spinner size="lg" className="mb-4" />
+              <p className="text-muted-foreground">{t("common.loading")}</p>
             </div>
           </div>
         )}
@@ -120,14 +141,14 @@ export default function FullScreenIframeModal({ isOpen, onClose, operation = "DE
         {error && (
           <div className="flex items-center justify-center h-full">
             <div className="text-destructive text-center p-4">
-              <p className="text-lg font-semibold">Error loading page</p>
+              <p className="text-lg font-semibold">{t("common.errorLoadingPage")}</p>
               <p className="mt-2">{error}</p>
               <Button
                 variant="default"
                 onClick={() => window.location.reload()}
                 className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
               >
-                Try Again
+                {t("wallet.tryAgain")}
               </Button>
             </div>
           </div>

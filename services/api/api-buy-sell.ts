@@ -1,4 +1,9 @@
+import { z } from "zod"
 import { API, AUTH } from "@/lib/local-variables"
+import { p2pFetch } from "./p2p-fetch"
+import { useUserDataStore } from "@/stores/user-data-store"
+import { parseArrayWithItemIsolation, reportedNumber, reportedString } from "@/lib/api/schema-coercion"
+import { schemaReporter } from "@/lib/api/schema-reporter"
 
 // Define the Advertisement interface directly in this file
 export interface Advertisement {
@@ -9,6 +14,18 @@ export interface Advertisement {
     is_favourite: boolean
     created_at: number
     rating_average?: number
+    is_online?: boolean
+    last_online_at?: number | null
+    rating_average_lifetime?: number
+    order_count_lifetime?: number
+    completion_average_30day?: number
+    completion_rate_all_30day?: number
+    trade_band?: string
+    completion_rate_buy_30day?: number | null
+    completion_rate_sell_30day?: number | null
+    order_count_buy_30day?: number
+    order_count_sell_30day?: number
+    blocked_by_count?: number
   }
   account_currency: string
   actual_maximum_order_amount: string
@@ -22,22 +39,31 @@ export interface Advertisement {
   minimum_order_amount: string
   order_expiry_period: number
   payment_currency: string
+  payment_currency_name?: string
   payment_method_names: string[]
   payment_methods: string[]
   type: string
   user_rating_average?: number
+  effective_rate?: number
+  effective_rate_display?: number
+  is_private?: boolean
+  version?: number
 }
 
 // Define the SearchParams interface
 export interface SearchParams {
   type?: string
   currency?: string
-  paymentMethod?: string
+  account_currency?: string
+  paymentMethod?: string[]
   amount?: number
   nickname?: string
   sortBy?: string
   following?: boolean
-  favourites_only?: number // Add this parameter for filtering by favourites
+  favourites_only?: number
+  page?: number
+  per_page?: number
+  is_private?: boolean
 }
 
 // Define the PaymentMethod interface
@@ -47,34 +73,115 @@ export interface PaymentMethod {
   method: string
 }
 
+const ADVERTS_ENDPOINT = "p2p/v1/adverts"
+
+// Validates only the advert's money/decimal fields — rating/completion-rate
+// fields on `user` stay out of scope, matching the mobile pass. `.passthrough()`
+// keeps every other field (id, user, account_currency, ...) untouched.
+const advertMoneyFieldsSchema = z
+  .object({
+    exchange_rate: reportedNumber({
+      endpoint: ADVERTS_ENDPOINT,
+      field: "data[].exchange_rate",
+      reporter: schemaReporter,
+    }),
+    effective_rate: reportedNumber({
+      endpoint: ADVERTS_ENDPOINT,
+      field: "data[].effective_rate",
+      reporter: schemaReporter,
+    })
+      .nullable()
+      .optional(),
+    effective_rate_display: reportedNumber({
+      endpoint: ADVERTS_ENDPOINT,
+      field: "data[].effective_rate_display",
+      reporter: schemaReporter,
+    })
+      .nullable()
+      .optional(),
+    // These four caused a live incident: required here but apparently null/
+    // absent for some real adverts, so every item in a query (e.g. Markets
+    // filtered to IDR) was getting rejected -> "all items rejected" ->
+    // SchemaMismatchError for the whole list. `minimum_order_amount`/
+    // `maximum_order_amount`/`actual_maximum_order_amount` already render
+    // with `|| "N/A"` fallbacks in market.orderLimits, and `available_amount`
+    // isn't read anywhere in Markets' UI at all (only in My Ads) — none of
+    // these are worth failing the whole list over. `exchange_rate` stays
+    // required: `order-sidebar.tsx` does unguarded `current.exchange_rate / 100`.
+    minimum_order_amount: reportedString({
+      endpoint: ADVERTS_ENDPOINT,
+      field: "data[].minimum_order_amount",
+      reporter: schemaReporter,
+    })
+      .nullable()
+      .optional(),
+    maximum_order_amount: reportedString({
+      endpoint: ADVERTS_ENDPOINT,
+      field: "data[].maximum_order_amount",
+      reporter: schemaReporter,
+    })
+      .nullable()
+      .optional(),
+    actual_maximum_order_amount: reportedString({
+      endpoint: ADVERTS_ENDPOINT,
+      field: "data[].actual_maximum_order_amount",
+      reporter: schemaReporter,
+    })
+      .nullable()
+      .optional(),
+    available_amount: reportedNumber({
+      endpoint: ADVERTS_ENDPOINT,
+      field: "data[].available_amount",
+      reporter: schemaReporter,
+    })
+      .nullable()
+      .optional(),
+  })
+  .passthrough()
+
 /**
  * Get all available advertisements
  */
-export async function getAdvertisements(params?: SearchParams): Promise<Advertisement[]> {
+export async function getAdvertisements(params?: SearchParams, signal?: AbortSignal): Promise<Advertisement[]> {
   try {
     const queryParams = new URLSearchParams()
-
     if (params) {
       if (params.type) queryParams.append("advert_type", params.type)
       if (params.currency) queryParams.append("payment_currency", params.currency)
-      if (params.paymentMethod) queryParams.append("paymentMethod", params.paymentMethod)
+      if (params.account_currency) queryParams.append("account_currency", params.account_currency)
+      if (params.paymentMethod) {
+        if (params.paymentMethod.length === 0) {
+          queryParams.append("payment_methods", JSON.stringify([]))
+        } else {
+          params.paymentMethod.forEach((method) => {
+            queryParams.append("payment_methods[]", method)
+          })
+        }
+      }
       if (params.amount) queryParams.append("amount", params.amount.toString())
       if (params.nickname) queryParams.append("nickname", params.nickname)
       if (params.sortBy) queryParams.append("sort_by", params.sortBy)
       if (params.favourites_only) queryParams.append("favourites_only", params.favourites_only.toString())
+      if (params.is_private) queryParams.append("private_only", params.is_private.toString())
+      if (params.page !== undefined) queryParams.append("page", params.page.toString())
+      if (params.per_page !== undefined) queryParams.append("per_page", params.per_page.toString())
     }
 
+    const auth_country_code = useUserDataStore.getState().residenceCountry
+    if (auth_country_code) queryParams.append("auth_country_code", auth_country_code)
+
     const queryString = queryParams.toString() ? `?${queryParams.toString()}` : ""
+
     const url = `${API.baseUrl}${API.endpoints.ads}${queryString}`
-    const headers = {
-      ...AUTH.getAuthHeader(),
-      "Content-Type": "application/json",
-    }
-    const response = await fetch(url, { headers })
+    const headers = AUTH.getAuthHeader()
+    const response = await p2pFetch(url, {
+      headers,
+      credentials: "include",
+      signal,
+    })
 
     if (!response.ok) {
       console.error("Error Response:", response.status, response.statusText)
-      console.groupEnd()
       throw new Error(`Error fetching advertisements: ${response.statusText}`)
     }
 
@@ -83,35 +190,24 @@ export async function getAdvertisements(params?: SearchParams): Promise<Advertis
 
     try {
       data = JSON.parse(responseText)
-      console.log("Response Body (parsed):", data)
     } catch (e) {
-      console.warn("⚠️ Could not parse response as JSON:", e)
-      console.log("Response Body (raw):", responseText)
       data = { data: [] }
     }
 
-    // Check if the response has a data property that is an array
-    if (data && data.data && Array.isArray(data.data)) {
-      console.log("✅ Successfully fetched advertisements")
-      console.groupEnd()
-      return data.data
-    } else if (Array.isArray(data)) {
-      console.log("✅ Successfully fetched advertisements")
-      console.groupEnd()
-      return data
-    } else {
-      console.warn("⚠️ API response is not in the expected format")
-      console.log("Returning empty array")
-      console.groupEnd()
-      return []
-    }
+    const rawItems: unknown[] =
+      data && data.data && Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : []
+
+    // zod's `.passthrough()` preserves every field at runtime (id, user,
+    // account_currency, ...) beyond the money fields it validates/coerces —
+    // `z.infer` just doesn't reflect passthrough keys in its type, hence the cast.
+    return parseArrayWithItemIsolation(advertMoneyFieldsSchema, rawItems, {
+      endpoint: ADVERTS_ENDPOINT,
+      field: "data",
+      reporter: schemaReporter,
+    }) as unknown as Advertisement[]
   } catch (error) {
-    console.group("💥 Get Advertisements Exception")
-    console.error("Error:", error)
-    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-    console.groupEnd()
-    // Return empty array on error to prevent map errors
-    return []
+    console.error("Error fetching advertisements:", error)
+    throw error
   }
 }
 
@@ -122,15 +218,14 @@ export async function getAdvertiserById(id: string | number): Promise<any> {
   try {
     // First try to get user data from the users endpoint
     const url = `${API.baseUrl}${API.endpoints.advertisers}/${id}`
-    const headers = {
-      ...AUTH.getAuthHeader(),
-      "Content-Type": "application/json",
-    }
-    const response = await fetch(url, { headers })
+    const headers = AUTH.getAuthHeader()
+    const response = await p2pFetch(url, {
+      headers,
+      credentials: "include",
+    })
 
     if (!response.ok) {
       console.warn(`Error Response: ${response.status} ${response.statusText}`)
-      console.log("Falling back to getting advertiser data from ads...")
       console.groupEnd()
 
       // If the user endpoint fails, try to get user data from their ads
@@ -142,22 +237,14 @@ export async function getAdvertiserById(id: string | number): Promise<any> {
 
     try {
       data = JSON.parse(responseText)
-      console.log("Response Body (parsed):", data)
     } catch (e) {
       console.warn("⚠️ Could not parse response as JSON:", e)
-      console.log("Response Body (raw):", responseText)
       data = {}
     }
 
-    console.log("✅ Successfully fetched advertiser details")
-    console.groupEnd()
-
     return data
   } catch (error) {
-    console.group("💥 Get Advertiser By ID Exception")
     console.error("Error:", error)
-    console.error("Stack:", error instanceof Error ? error.stack : "No stack trace available")
-    console.groupEnd()
 
     // Return a mock profile as a fallback
     return createMockAdvertiser(id)
@@ -180,9 +267,9 @@ async function getAdvertiserFromAds(advertiserId: string | number): Promise<any>
       return {
         id: user.id,
         nickname: user.nickname || "Unknown",
-        is_online: true,
+        is_online: user.is_online,
         joined_date: `Joined ${Math.floor((Date.now() / 1000 - user.created_at) / (60 * 60 * 24))} days ago`,
-        rating: user.user_rating_average || 0,
+        rating: user.rating_average || 0,
         rating_count: 0,
         completion_rate: 100,
         orders_count: 0,
@@ -244,11 +331,14 @@ function createMockAdvertiser(id: string | number): any {
 /**
  * Get advertiser ads by advertiser ID
  */
-export async function getAdvertiserAds(advertiserId: string | number): Promise<Advertisement[]> {
+export async function getAdvertiserAds(advertiserId: string | number, page?: number, perPage?: number): Promise<Advertisement[]> {
   try {
     const queryParams = new URLSearchParams({
       user_id: advertiserId.toString(),
+      account_currency: "USD",
     })
+    if (page !== undefined) queryParams.append("page", page.toString())
+    if (perPage !== undefined) queryParams.append("per_page", perPage.toString())
 
     const url = `${API.baseUrl}${API.endpoints.ads}?${queryParams.toString()}`
     const headers = {
@@ -256,7 +346,10 @@ export async function getAdvertiserAds(advertiserId: string | number): Promise<A
       "Content-Type": "application/json",
     }
 
-    const response = await fetch(url, { headers })
+    const response = await p2pFetch(url, {
+      headers,
+      credentials: "include",
+    })
 
     if (!response.ok) {
       throw new Error(`Error fetching advertiser ads: ${response.statusText}`)
@@ -266,7 +359,7 @@ export async function getAdvertiserAds(advertiserId: string | number): Promise<A
     let data
 
     try {
-      data = JSON.parse(responseText)
+      data = responseText ? JSON.parse(responseText) : {}
     } catch (e) {
       data = { data: [] }
     }
@@ -286,9 +379,11 @@ export async function getAdvertiserAds(advertiserId: string | number): Promise<A
 export async function toggleFavouriteAdvertiser(
   advertiserId: number,
   isFavourite: boolean,
-): Promise<{ success: boolean; message: string }> {
+): Promise<{ success: boolean; message: string; code?: string }> {
   try {
-    const url = `${API.baseUrl}${API.endpoints.userFavourites}`
+    const url = isFavourite
+      ? `${API.baseUrl}${API.endpoints.userFavourites}`
+      : `${API.baseUrl}${API.endpoints.userFavourites}/${advertiserId}`
     const method = isFavourite ? "POST" : "DELETE"
 
     const headers = {
@@ -302,16 +397,27 @@ export async function toggleFavouriteAdvertiser(
       },
     })
 
-    const response = await fetch(url, {
+    const response = await p2pFetch(url, {
       method,
+      credentials: "include",
       headers,
-      body,
+      ...(isFavourite && { body }),
     })
 
     if (!response.ok) {
+      const errorText = await response.text()
+      let errorData: any
+      try {
+        errorData = errorText ? JSON.parse(errorText) : {}
+      } catch (e) {
+        errorData = {}
+      }
+      const code = errorData?.errors?.[0]?.code
+
       return {
         success: false,
         message: `Failed to ${isFavourite ? "follow" : "unfollow"} advertiser: ${response.statusText}`,
+        code,
       }
     }
 
@@ -347,7 +453,9 @@ export async function toggleBlockAdvertiser(
   isBlocked: boolean,
 ): Promise<{ success: boolean; message: string }> {
   try {
-    const url = `${API.baseUrl}${API.endpoints.userBlocks}`
+    const url = isBlocked
+      ? `${API.baseUrl}${API.endpoints.userBlocks}`
+      : `${API.baseUrl}${API.endpoints.userBlocks}/${advertiserId}`
     const method = isBlocked ? "POST" : "DELETE"
 
     const headers = {
@@ -361,10 +469,11 @@ export async function toggleBlockAdvertiser(
       },
     })
 
-    const response = await fetch(url, {
+    const response = await p2pFetch(url, {
       method,
+      credentials: "include",
       headers,
-      body,
+      ...(isBlocked && { body }),
     })
 
     if (!response.ok) {
@@ -403,12 +512,12 @@ export async function toggleBlockAdvertiser(
 export async function getPaymentMethods(): Promise<PaymentMethod[]> {
   try {
     const url = `${API.baseUrl}${API.endpoints.availablePaymentMethods}`
-    const headers = {
-      ...AUTH.getAuthHeader(),
-      "Content-Type": "application/json",
-    }
+    const headers = AUTH.getAuthHeader()
 
-    const response = await fetch(url, { headers })
+    const response = await p2pFetch(url, {
+      headers,
+      credentials: "include",
+    })
 
     if (!response.ok) {
       console.error("Error Response:", response.status, response.statusText)
@@ -428,11 +537,10 @@ export async function getPaymentMethods(): Promise<PaymentMethod[]> {
       return data.data
     } else if (Array.isArray(data)) {
       return data
-    } else
-      return []
-  }
-  catch (error) {
+    } else return []
+  } catch (error) {
     // Return empty array on error to prevent map errors
     return []
   }
 }
+

@@ -5,12 +5,17 @@ const config: Config = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./lib/utils.ts",
     "*.{js,ts,jsx,tsx,mdx}",
   ],
+  safelist: ["bg-paymentMethod-bank", "bg-paymentMethod-ewallet", "!w-[880px]", "!max-w-[880px]", "!w-[min(880px,95vw)]"],
   theme: {
     extend: {
       opacity: {
         24: "0.24",
+        48: "0.48",
+        96: "0.96",
+        72: "0.72",
       },
       colors: {
         border: "hsl(var(--border))",
@@ -18,9 +23,16 @@ const config: Config = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        brand: {
+          red: "#FF444F",
+          "red-hover": "#BF333B",
+          dark: "#0E0E0E",
+          coral: "#FF6444",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          hover: "hsl(var(--primary-hover))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -46,16 +58,21 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Custom colors
         success: {
           light: "rgba(0, 136, 50, 0.08)",
           DEFAULT: "#267d36",
           icon: "#008832",
           bg: "#edfaf3",
+          text: "#007A22",
+          "bg-secondary": "#E6FFF9",
+          "text-secondary": "#00C390",
+          "text-secondary-hover": "#00AE7A",
         },
         error: {
           light: "rgba(230, 25, 14, 0.08)",
           DEFAULT: "#c40000",
+          text: "#C40000",
+          "bg-secondary": "#FFE6E6",
         },
         buy: {
           DEFAULT: "#29823b",
@@ -65,21 +82,50 @@ const config: Config = {
         },
         warning: {
           bg: "#fff8e7",
+          "bg-dark": "#2d2417",
           icon: "#f59e0b",
         },
         cyan: {
           hover: "#00bfea",
         },
         neutral: {
+          50: "#f1f3f5",
+          600: "#333333",
           7: "#6a7178",
           10: "#101213",
         },
         blue: {
           light: "rgba(55, 124, 252, 0.1)",
           DEFAULT: "#377cfc",
+          50: "#E5F5FC",
+          100: "#017AAD",
+          200: "#00D0FF",
+          800: "#0777C4",
         },
         grayscale: {
           DEFAULT: "100%",
+          100: "#181C25B8",
+          200: "#00000014",
+          300: "#F8F9FA",
+          400: "#CED4DA",
+          500: "#0000000a",
+          600: "#000000b8",
+          700: "#EFF3F5",
+          800: "#00000029",
+          "text-muted": "#0000007A",
+          "text-placeholder": "#0000003D",
+        },
+        yellow: {
+          50: "#A66C00",
+          100: "#FFF7E6",
+        },
+        orange: {
+          50: "#ff9c1314",
+          100: "#C47D00",
+        },
+        green: {
+          50: "#EAF3EB",
+          100: "#00883214",
         },
         slate: {
           50: "#f8fafc",
@@ -98,15 +144,14 @@ const config: Config = {
           1200: "#181C25",
           1300: "#11141B",
           1400: "#000000",
+          1500: "#F5F5F5",
+          1600: "#333333",
+          1700: "#EBECEF",
         },
+
         teal: {
           700: "#00CCCC",
         },
-        // Add the custom gray color
-        "custom-gray": {
-          DEFAULT: "#F5F5F5",
-        },
-        // Additional colors for status indicators
         info: {
           light: "rgba(55, 124, 252, 0.1)",
           DEFAULT: "#377cfc",
@@ -118,6 +163,7 @@ const config: Config = {
           DEFAULT: "#f59e0b",
           icon: "#f59e0b",
           bg: "#fff8e7",
+          "text-secondary": "#FF9C13",
         },
         completed: {
           light: "rgba(0, 136, 50, 0.08)",
@@ -138,13 +184,29 @@ const config: Config = {
           bg: "#fee2e2",
         },
         "default-button-text": "#002A33",
+
+        paymentMethod: {
+          bank: "#74B816",
+          ewallet: "#1A79CB",
+        },
+        red: {
+          withdraw: "#E6190E",
+          50: "#e6190e14",
+        },
+        "notification-badge": "#FF444F",
+        "header-icon": "rgba(255,255,255,0.04)",
+        "onboarding-gradient": {
+          "dark-red": "#6A0000",
+          "medium-red": "#E12E3A",
+          "light-red-desktop": "#FF9BA3",
+          "light-red-mobile": "#FFBFC2",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
-      // Add custom font sizes
       fontSize: {
         xs: ["0.75rem", { lineHeight: "1rem" }],
         sm: ["0.875rem", { lineHeight: "1.25rem" }],
@@ -154,15 +216,15 @@ const config: Config = {
         "2xl": ["1.5rem", { lineHeight: "2rem" }],
         "3xl": ["1.875rem", { lineHeight: "2.25rem" }],
         "4xl": ["2.25rem", { lineHeight: "2.5rem" }],
+        "xl-bold": ["1.125rem", { fontWeight: "700" }],
+        "2xl-bold": ["1.5rem", { lineHeight: "2rem", fontWeight: "800" }],
       },
-      // Add custom spacing
       spacing: {
         0.5: "0.125rem",
         1.5: "0.375rem",
         2.5: "0.625rem",
         3.5: "0.875rem",
       },
-      // Add custom box shadows
       boxShadow: {
         sm: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
         DEFAULT: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
@@ -173,7 +235,6 @@ const config: Config = {
         inner: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)",
         none: "none",
       },
-      // Add custom animations
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
@@ -183,14 +244,20 @@ const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% center" },
+          "100%": { backgroundPosition: "200% center" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        shimmer: "shimmer 1.4s ease-in-out infinite",
+        "shimmer-dark": "shimmer 1.4s ease-in-out infinite",
       },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 }
 
 export default config

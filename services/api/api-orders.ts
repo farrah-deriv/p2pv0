@@ -1,10 +1,48 @@
+import { z } from "zod"
 import { API, AUTH } from "@/lib/local-variables"
+import { p2pFetch } from "./p2p-fetch"
+import { parseArrayWithItemIsolation, parseWithSchema, reportedNumber, reportedString } from "@/lib/api/schema-coercion"
+import { schemaReporter } from "@/lib/api/schema-reporter"
+
+export class OrderChatSendError extends Error {
+  readonly code: string
+  readonly tags: string[]
+
+  constructor(code: string, tags: string[] = []) {
+    super(code)
+    this.name = "OrderChatSendError"
+    this.code = code
+    this.tags = tags
+  }
+}
+
+function extractP2PApiError(data: unknown, fallbackCode: string): { code: string; tags: string[] } {
+  if (!data || typeof data !== "object") {
+    return { code: fallbackCode, tags: [] }
+  }
+
+  const body = data as {
+    code?: unknown
+    detail?: { tags?: unknown }
+    errors?: Array<{ code?: unknown; detail?: { tags?: unknown } }>
+  }
+
+  const code =
+    (typeof body.errors?.[0]?.code === "string" && body.errors[0].code) ||
+    (typeof body.code === "string" && body.code) ||
+    fallbackCode
+
+  const rawTags = body.errors?.[0]?.detail?.tags ?? body.detail?.tags
+  const tags = Array.isArray(rawTags) ? rawTags.map(String) : []
+
+  return { code, tags }
+}
 
 // Type definitions
 export interface Order {
   id: string
-  type: "Buy" | "Sell"
-  status: "Pending" | "Completed" | "Cancelled" | "Disputed"
+  type: "buy" | "sell"
+  status: "pending_payment" | "pending_release" | "timed_out" | "completed" | "cancelled" | "disputed" | "refunded" | "Pending" | "Completed" | "Cancelled" | "Disputed"
   amount: Value
   rate: {
     value: string
@@ -14,7 +52,15 @@ export interface Order {
     user: {
       id: number
       nickname: string
+      is_online?: boolean
+      last_online_at?: number
     }
+  }
+  user: {
+    id: number
+    nickname: string
+    is_online?: boolean
+    last_online_at?: number
   }
   price: Value
   paymentMethod: string
@@ -23,15 +69,20 @@ export interface Order {
   completed_at?: string
   cancelled_at?: string
   payment_currency: string
+  payment_amount: string
   is_reviewable: boolean
   rating: number
+  counterparty_name?: string
+  disputed_at?: string
+  has_buyer_submitted_pot?: boolean
 }
 
 export interface OrderFilters {
   status?: "Pending" | "Completed" | "Cancelled" | "Disputed"
   type?: "Buy" | "Sell"
-  period?: "today" | "week" | "month" | "all"
   is_open?: boolean
+  date_from?: string
+  date_to?: string
 }
 
 export interface Value {
@@ -54,16 +105,52 @@ export interface ChatMessage {
   isRead: boolean
 }
 
-export async function getOrders(filters?: OrderFilters): Promise<Order[]> {
+const ORDERS_ENDPOINT = "p2p/v1/orders"
+
+// Validates only the order's money fields — same 3-field split mobile used
+// (amount, rate/exchange_rate, payment_amount). `.passthrough()` at every
+// level keeps status/user/advert/etc. untouched.
+// Confirmed against the real `/p2p/v1/orders` response (the declared `Order`/
+// `Value` TS interfaces claiming `amount`/`price`/`rate` are nested
+// `{value, currency}` objects are stale — nothing in the app actually reads
+// `.amount.value`/`.rate.value`/`.price.value`; real consumers read flat
+// `order.amount` (formatAmount, a string) and `order.exchange_rate` (a
+// number, order-details.tsx). All fields optional/nullable here since the
+// mismatch above means "required" assumptions can't be trusted without
+// further confirmation — this must never reject a whole order over a field
+// no one actually depends on.
+const orderMoneyFieldsSchema = z
+  .object({
+    amount: reportedString({ endpoint: ORDERS_ENDPOINT, field: "amount", reporter: schemaReporter })
+      .nullable()
+      .optional(),
+    exchange_rate: reportedNumber({ endpoint: ORDERS_ENDPOINT, field: "exchange_rate", reporter: schemaReporter })
+      .nullable()
+      .optional(),
+    payment_amount: reportedString({
+      endpoint: ORDERS_ENDPOINT,
+      field: "payment_amount",
+      reporter: schemaReporter,
+    })
+      .nullable()
+      .optional(),
+  })
+  .passthrough()
+
+export async function getOrders(filters?: OrderFilters, page?: number, perPage?: number): Promise<Order[]> {
   try {
     const queryParams = new URLSearchParams()
 
     if (filters) {
       if (filters.status) queryParams.append("status", filters.status)
       if (filters.type) queryParams.append("type", filters.type)
-      if (filters.period) queryParams.append("period", filters.period)
       if (filters.is_open !== undefined) queryParams.append("is_open", filters.is_open.toString())
+      if (filters.date_from) queryParams.append("date_from", filters.date_from)
+      if (filters.date_to) queryParams.append("date_to", filters.date_to)
     }
+
+    if (page !== undefined) queryParams.append("page", page.toString())
+    if (perPage !== undefined) queryParams.append("per_page", perPage.toString())
 
     const queryString = queryParams.toString() ? `?${queryParams.toString()}` : ""
     const url = `${API.baseUrl}${API.endpoints.orders}${queryString}`
@@ -72,7 +159,14 @@ export async function getOrders(filters?: OrderFilters): Promise<Order[]> {
       "Content-Type": "application/json",
     }
 
-    const response = await fetch(url, { headers })
+    const response = await p2pFetch(url, {
+      headers,
+      credentials: "include",
+    })
+
+    if (response.status === 403) {
+      return []
+    }
 
     if (!response.ok) {
       throw new Error(`Error fetching orders: ${response.statusText}`)
@@ -87,7 +181,23 @@ export async function getOrders(filters?: OrderFilters): Promise<Order[]> {
       data = []
     }
 
-    return data
+    // The real response is `{"errors": [], "meta": {...}, "data": [...]}` —
+    // NOT a bare array. Checking `Array.isArray(data)` directly (as this used
+    // to) is false for that shape, so it silently fell through to `[]`
+    // regardless of how many real orders existed — a regression introduced
+    // by this fix itself, confirmed against a real `/orders?is_open=true`
+    // response. Handle both shapes defensively, matching how
+    // `app/orders/page.tsx`'s flatMap already tolerates either.
+    const rawOrders: unknown[] = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.data)
+        ? data.data
+        : []
+    return parseArrayWithItemIsolation(orderMoneyFieldsSchema, rawOrders, {
+      endpoint: ORDERS_ENDPOINT,
+      field: "(root)",
+      reporter: schemaReporter,
+    }) as unknown as Order[]
   } catch (error) {
     throw error
   }
@@ -101,22 +211,39 @@ export async function getOrderById(id: string): Promise<Order> {
       "Content-Type": "application/json",
     }
 
-    const response = await fetch(url, { headers })
-
-    if (!response.ok) {
-      throw new Error(`Error fetching order: ${response.statusText}`)
-    }
+    const response = await p2pFetch(url, {
+      headers,
+      credentials: "include",
+    })
 
     const responseText = await response.text()
-    let data
+    let data: any = null
 
     try {
-      data = JSON.parse(responseText)
-    } catch (e) {
-      data = {}
+      data = responseText ? JSON.parse(responseText) : null
+    } catch {
+      data = null
     }
 
-    return data
+    if (!response.ok) {
+      const errorCode = data?.errors?.[0]?.code || response.statusText || "UnknownError"
+      throw new Error(errorCode)
+    }
+
+    // The caller (`app/orders/[id]/page.tsx`) does `order.data` — this
+    // function returns the `{errors, meta, data: {...order}}` wrapper as-is,
+    // it doesn't unwrap it. Validating `data` directly (as this used to)
+    // validated the wrapper's own top level, where amount/exchange_rate/
+    // payment_amount don't exist — harmless (passthrough kept `data.data`
+    // untouched) but meant the coercion telemetry never actually ran against
+    // real order fields. Validate the nested order object instead.
+    if (data?.data && typeof data.data === "object") {
+      data.data = parseWithSchema(orderMoneyFieldsSchema, data.data, {
+        endpoint: ORDERS_ENDPOINT,
+        reporter: schemaReporter,
+      })
+    }
+    return data as Order
   } catch (error) {
     throw error
   }
@@ -130,25 +257,27 @@ export async function markPaymentAsSent(orderId: string): Promise<{ success: boo
       "Content-Type": "application/json",
     }
 
-    const response = await fetch(url, {
+    const response = await p2pFetch(url, {
       method: "POST",
+      credentials: "include",
       headers,
     })
 
-    if (!response.ok) {
-      throw new Error(`Error marking payment as sent: ${response.statusText}`)
-    }
-
     const responseText = await response.text()
-    let data
+    let data: any = null
 
     try {
-      data = JSON.parse(responseText)
-    } catch (e) {
-      data = { success: true }
+      data = responseText ? JSON.parse(responseText) : null
+    } catch {
+      data = null
     }
 
-    return data
+    if (!response.ok) {
+      const errorCode = data?.errors?.[0]?.code || response.statusText || "UnknownError"
+      throw new Error(errorCode)
+    }
+
+    return data ?? { success: true }
   } catch (error) {
     throw error
   }
@@ -162,25 +291,27 @@ export async function releasePayment(orderId: string): Promise<{ success: boolea
       "Content-Type": "application/json",
     }
 
-    const response = await fetch(url, {
+    const response = await p2pFetch(url, {
       method: "POST",
+      credentials: "include",
       headers,
     })
 
-    if (!response.ok) {
-      throw new Error(`Error releasing payment: ${response.statusText}`)
-    }
-
     const responseText = await response.text()
-    let data
+    let data: any = null
 
     try {
-      data = JSON.parse(responseText)
-    } catch (e) {
-      data = { success: true }
+      data = responseText ? JSON.parse(responseText) : null
+    } catch {
+      data = null
     }
 
-    return data
+    if (!response.ok) {
+      const errorCode = data?.errors?.[0]?.code || response.statusText || "UnknownError"
+      throw new Error(errorCode)
+    }
+
+    return data ?? { success: true }
   } catch (error) {
     throw error
   }
@@ -194,22 +325,24 @@ export async function cancelOrder(orderId: string): Promise<{ success: boolean }
       "Content-Type": "application/json",
     }
 
-    const response = await fetch(url, {
+    const response = await p2pFetch(url, {
       method: "POST",
+      credentials: "include",
       headers,
     })
 
-    if (!response.ok) {
-      throw new Error(`Error cancelling order: ${response.statusText}`)
-    }
-
     const responseText = await response.text()
-    let data
+    let data: any = null
 
     try {
-      data = JSON.parse(responseText)
-    } catch (e) {
-      data = { success: true }
+      data = responseText ? JSON.parse(responseText) : null
+    } catch {
+      data = null
+    }
+
+    if (!response.ok) {
+      const errorCode = data?.errors?.[0]?.code || response.statusText || "UnknownError"
+      throw new Error(errorCode)
     }
 
     return { success: true }
@@ -225,34 +358,40 @@ export async function disputeOrder(orderId: string, reason: string): Promise<{ s
       ...AUTH.getAuthHeader(),
       "Content-Type": "application/json",
     }
-    const body = JSON.stringify({ reason })
+    const body = JSON.stringify({
+      data: {
+        reason,
+      },
+    })
 
-    const response = await fetch(url, {
+    const response = await p2pFetch(url, {
       method: "POST",
+      credentials: "include",
       headers,
       body,
     })
 
-    if (!response.ok) {
-      throw new Error(`Error disputing order: ${response.statusText}`)
-    }
-
     const responseText = await response.text()
-    let data
+    let data: any = null
 
     try {
-      data = JSON.parse(responseText)
-    } catch (e) {
-      data = { success: true }
+      data = responseText ? JSON.parse(responseText) : null
+    } catch {
+      data = null
     }
 
-    return data
+    if (!response.ok) {
+      const errorCode = data?.errors?.[0]?.code || response.statusText || "UnknownError"
+      throw new Error(errorCode)
+    }
+
+    return data ?? { success: true }
   } catch (error) {
     throw error
   }
 }
 
-export async function createOrder(advertId: number, amount: number, paymentMethodIds: []): Promise<Order> {
+export async function createOrder(advertId: number, exchangeRate: number, amount: number, paymentMethodIds: string[], advertVersion?: number): Promise<Order> {
   try {
     const url = `${API.baseUrl}${API.endpoints.orders}`
     const headers = {
@@ -264,19 +403,18 @@ export async function createOrder(advertId: number, amount: number, paymentMetho
       data: {
         advert_id: advertId,
         amount: amount,
+        ...(exchangeRate != null && { exchange_rate: exchangeRate }),
         ...(paymentMethodIds.length > 0 && { payment_method_ids: paymentMethodIds }),
+        ...(advertVersion !== undefined && { advert_version: advertVersion }),
       },
     })
 
-    const response = await fetch(url, {
+    const response = await p2pFetch(url, {
       method: "POST",
+      credentials: "include",
       headers,
       body,
     })
-
-    if (!response.ok) {
-      throw new Error(`Error creating order: ${response.statusText}`)
-    }
 
     const responseText = await response.text()
     let data
@@ -301,25 +439,27 @@ export async function payOrder(orderId: string): Promise<{ success: boolean }> {
       "Content-Type": "application/json",
     }
 
-    const response = await fetch(url, {
+    const response = await p2pFetch(url, {
       method: "POST",
+      credentials: "include",
       headers,
     })
 
-    if (!response.ok) {
-      throw new Error(`Error paying for order: ${response.statusText}`)
-    }
-
     const responseText = await response.text()
-    let data
+    let data: any = null
 
     try {
-      data = JSON.parse(responseText)
-    } catch (e) {
-      data = { success: true }
+      data = responseText ? JSON.parse(responseText) : null
+    } catch {
+      data = null
     }
 
-    return data
+    if (!response.ok) {
+      const errorCode = data?.errors?.[0]?.code || response.statusText || "UnknownError"
+      throw new Error(errorCode)
+    }
+
+    return data ?? { success: true }
   } catch (error) {
     throw error
   }
@@ -342,15 +482,51 @@ export async function reviewOrder(
       },
     })
 
-    const response = await fetch(url, {
+    const response = await p2pFetch(url, {
       method: "POST",
+      credentials: "include",
       headers,
       body,
     })
 
-    if (!response.ok) {
-      throw new Error(`Error reviewing order: ${response.statusText}`)
+    const responseText = await response.text()
+    let data: any = null
+
+    try {
+      data = responseText ? JSON.parse(responseText) : null
+    } catch {
+      data = null
     }
+
+    if (!response.ok) {
+      const errorCode = data?.errors?.[0]?.code || response.statusText || "UnknownError"
+      throw new Error(errorCode)
+    }
+
+    return data ?? { success: true, errors: [] }
+  } catch (error) {
+    throw error
+  }
+}
+
+export async function completeOrder(orderId: string, otpValue: string | null): Promise<{ success: boolean; errors?: any[] }> {
+  try {
+    const url = `${API.baseUrl}${API.endpoints.orders}/${orderId}/complete`
+    const headers = {
+      ...AUTH.getAuthHeader(),
+      "Content-Type": "application/json",
+    }
+
+    const response = await p2pFetch(url, {
+      method: "POST",
+      credentials: "include",
+      headers,
+      body: JSON.stringify({
+        data: {
+          verification_code: otpValue,
+        },
+      }),
+    })
 
     const responseText = await response.text()
     let data
@@ -367,42 +543,11 @@ export async function reviewOrder(
   }
 }
 
-export async function completeOrder(orderId: string): Promise<{ success: boolean }> {
-  try {
-    const url = `${API.baseUrl}${API.endpoints.orders}/${orderId}/complete`
-    const headers = {
-      ...AUTH.getAuthHeader(),
-      "Content-Type": "application/json",
-    }
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers,
-    })
-
-    if (!response.ok) {
-      throw new Error(`Error completing order: ${response.statusText}`)
-    }
-
-    const responseText = await response.text()
-    let data
-
-    try {
-      data = JSON.parse(responseText)
-    } catch (e) {
-      data = { success: true }
-    }
-
-    return data
-  } catch (error) {
-    throw error
-  }
-}
-
 export async function sendChatMessage(
   orderId: string,
   message: string,
   attachment?: string | null,
+  isPOT?: boolean,
 ): Promise<{ success: boolean; message: ChatMessage }> {
   try {
     const url = `${API.baseUrl}${API.endpoints.orders}/${orderId}/chat`
@@ -415,6 +560,9 @@ export async function sendChatMessage(
     if (attachment) {
       body = JSON.stringify({
         attachment,
+        data: {
+          is_proof_of_transfer: isPOT,
+        },
       })
     } else {
       body = JSON.stringify({
@@ -424,31 +572,33 @@ export async function sendChatMessage(
       })
     }
 
-    const response = await fetch(url, {
+    const response = await p2pFetch(url, {
       method: "POST",
+      credentials: "include",
       headers,
       body,
     })
 
-    if (!response.ok) {
-      throw new Error(`Error sending message: ${response.statusText}`)
-    }
-
     const responseText = await response.text()
-    let data
+    let data: any = null
 
     try {
-      data = JSON.parse(responseText)
-    } catch (e) {
-      data = { success: true, message: { content: message, time: new Date().toISOString() } }
+      data = responseText ? JSON.parse(responseText) : null
+    } catch {
+      data = null
+    }
+
+    if (!response.ok) {
+      const { code, tags } = extractP2PApiError(data, response.statusText || "UnknownError")
+      throw new OrderChatSendError(code, tags)
     }
 
     const time = new Date().toISOString()
 
     return {
       success: true,
-      message: data.data ||
-        data.message || {
+      message: data?.data ||
+        data?.message || {
         id: Date.now().toString(),
         orderId,
         senderId: 0,
@@ -457,6 +607,35 @@ export async function sendChatMessage(
         isRead: false,
       },
     }
+  } catch (error) {
+    throw error
+  }
+}
+
+export async function requestOrderCompletionOtp(orderId: string): Promise<{ success: boolean; message?: string }> {
+  try {
+    const url = `${API.baseUrl}${API.endpoints.orders}/${orderId}/verification_code`
+    const headers = {
+      ...AUTH.getAuthHeader(),
+      "Content-Type": "application/json",
+    }
+
+    const response = await p2pFetch(url, {
+      method: "POST",
+      credentials: "include",
+      headers,
+    })
+
+    const responseText = await response.text()
+    let data
+
+    try {
+      data = JSON.parse(responseText)
+    } catch (e) {
+      data = { success: true }
+    }
+
+    return data
   } catch (error) {
     throw error
   }
@@ -474,6 +653,7 @@ export const OrdersAPI = {
   reviewOrder,
   sendChatMessage,
   completeOrder,
+  requestOrderCompletionOtp,
 
   getOrderByIdMock: async (orderId: string): Promise<Order> => {
     await new Promise((resolve) => setTimeout(resolve, 500))
@@ -494,15 +674,23 @@ export const OrdersAPI = {
         user: {
           id: 123,
           nickname: "Mariana_Rueda",
+          is_online: true,
+          last_online_at: Date.now(),
         },
+      },
+      user: {
+        id: 0,
+        nickname: "Buyer",
+        is_online: false,
+        last_online_at: Date.now(),
       },
       price: {
         value: "1450000",
         currency: "IDR",
       },
       paymentMethod: "Bank Transfer",
-      createdAt: new Date().toISOString(),
-      expiresAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      expires_at: new Date().toISOString(),
       payment_currency: "IDR",
       is_reviewable: true,
       rating: 0,

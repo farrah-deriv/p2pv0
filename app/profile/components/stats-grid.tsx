@@ -1,93 +1,212 @@
-import { Info } from "lucide-react"
+"use client"
+
+import Image from "next/image"
+import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { useTranslations } from "@/lib/i18n/use-translations"
+import { parseDurationMinutes } from "@/lib/format-duration"
 
 interface StatCardProps {
+  tab: string
   title: string
   value: string | number
-  hasInfo?: boolean
+  tooltipKey?: string
 }
 
-function StatCard({ title, value, hasInfo = false }: StatCardProps) {
+function StatCard({ title, value, tooltipKey }: StatCardProps) {
+  const { t } = useTranslations()
   return (
-    <div className="py-6">
-      <div className="text-slate-500 mb-2 font-normal text-sm leading-5 tracking-normal">
+    <div className="flex flex-row-reverse justify-between md:border-none md:flex-col md:h-20 pt-6 pb-2">
+      <div className="font-bold text-black text-base leading-6 tracking-normal">{value}</div>
+      <div className="flex items-center text-slate-500 mb-2 font-normal text-xs leading-5 tracking-normal">
         {title}
-        {hasInfo && <Info className="inline-block h-3 w-3 ml-1 text-slate-400" />}
-      </div>
-      <div className="font-bold text-black text-base leading-6 tracking-normal">
-        {value !== undefined && value !== null ? value : "N/A"}
+        {tooltipKey && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Image
+                src="/icons/info-circle.svg"
+                alt={t("common.info")}
+                width={24}
+                height={24}
+                className="ms-1 cursor-pointer flex-shrink-0"
+              />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-white">{t(tooltipKey)}</p>
+              <TooltipArrow className="fill-black" />
+            </TooltipContent>
+          </Tooltip>
+        )}
       </div>
     </div>
   )
 }
 
-interface StatsGridProps {
-  stats:
-  | {
-    buyCompletion: { rate: string; period: string }
-    sellCompletion: { rate: string; period: string }
-    avgPayTime: { time: string; period: string }
-    avgReleaseTime: { time: string; period: string }
-    tradePartners: number
-    totalOrders30d: number
-    totalOrdersLifetime: number
-    tradeVolume30d: { amount: string; currency: string; period: string }
-    tradeVolumeLifetime: { amount: string; currency: string }
+interface StatsData {
+  statistics_30day?: {
+    completion_rate_buy?: number
+    completion_count_buy?: number
+    completion_rate_sell?: number
+    completion_count_sell?: number
+    completion_count_all?: number
+    buy_time_average?: number
+    release_time_average?: number
+    completion_amount_all?: string
   }
-  | null
-  | undefined
+  statistics_lifetime?: {
+    completion_rate_buy?: number
+    completion_count_buy?: number
+    completion_rate_sell?: number
+    completion_count_sell?: number
+    completion_count_all?: number
+    buy_time_average?: number
+    release_time_average?: number
+    completion_amount_all?: string
+    partner_count?: number
+  }
 }
 
-export default function StatsGrid({ stats }: StatsGridProps) {
-  const defaultStats = {
-    buyCompletion: { rate: "N/A", period: "(30d)" },
-    sellCompletion: { rate: "N/A", period: "(30d)" },
-    avgPayTime: { time: "N/A", period: "(30d)" },
-    avgReleaseTime: { time: "N/A", period: "(30d)" },
-    tradePartners: 0,
-    totalOrders30d: 0,
-    totalOrdersLifetime: 0,
-    tradeVolume30d: { amount: "0.00", currency: "USD", period: "(30d)" },
-    tradeVolumeLifetime: { amount: "0.00", currency: "USD" },
+export default function StatsGrid({ stats }: { stats: StatsData | null }) {
+  const { t } = useTranslations()
+
+  const formatAmount = (amount: string | number) => {
+    return Number.parseFloat(String(amount)).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
   }
 
-  const displayStats = stats || defaultStats
+  const formatTimeInMinutes = (minutes: number | null | undefined) => {
+    const parts = parseDurationMinutes(minutes)
+    switch (parts.kind) {
+      case "invalid": return "-"
+      case "zero": return `0 ${t("profile.mins")}`
+      case "minutes": return `${parts.value} ${t("profile.mins")}`
+      case "hours": return parts.m === 0 ? t("profile.hoursOnly", { hours: parts.h }) : t("profile.hoursMinutes", { hours: parts.h, minutes: parts.m })
+      case "days": return parts.h === 0 ? t("profile.daysOnly", { days: parts.d }) : t("profile.daysHours", { days: parts.d, hours: parts.h })
+    }
+  }
 
   return (
-    <div className="bg-custom-gray rounded-lg px-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 border-b border-slate-200">
-        <StatCard
-          title={`Buy completion ${displayStats.buyCompletion.period}`}
-          value={displayStats.buyCompletion.rate}
-        />
-        <StatCard
-          title={`Sell completion ${displayStats.sellCompletion.period}`}
-          value={displayStats.sellCompletion.rate}
-        />
-        <StatCard title="Trade partners" value={displayStats.tradePartners} hasInfo={true} />
+    <TooltipProvider>
+      <div className="bg-transparent rounded-lg px-2 md:px-0">
+        <div>
+          <Tabs defaultValue="last30days">
+            <TabsList className="w-full md:w-auto">
+              <TabsTrigger value="last30days" className="flex-1 md:flex-none md:w-32">{t("profile.last30Days")}</TabsTrigger>
+              <TabsTrigger value="lifetime" className="flex-1 md:flex-none md:w-32">{t("profile.lifetime")}</TabsTrigger>
+            </TabsList>
+            <TabsContent value="last30days" className="mt-0 rounded-lg px-0 md:px-0   bg-transparent">
+              <div className="flex flex-col divide-y divide-black/[0.08]">
+                <div className="flex flex-col divide-y divide-black/[0.08] md:divide-y-0 md:grid md:grid-cols-4">
+                  <StatCard
+                    tab="last30days"
+                    title={t("profile.sellCompletion")}
+                    value={
+                      stats?.statistics_30day?.completion_rate_sell
+                        ? `${stats.statistics_30day.completion_rate_sell}% (${stats.statistics_30day.completion_count_sell})`
+                        : "-"
+                    }
+                  />
+                  <StatCard
+                    tab="last30days"
+                    title={t("profile.buyCompletion")}
+                    value={
+                      stats?.statistics_30day?.completion_rate_buy
+                        ? `${stats.statistics_30day.completion_rate_buy}% (${stats.statistics_30day.completion_count_buy})`
+                        : "-"
+                    }
+                  />
+                  <StatCard
+                    tab="last30days"
+                    title={t("profile.totalOrders")}
+                    value={stats?.statistics_30day?.completion_count_all ?? "0"}
+                  />
+                  <StatCard
+                    tab="last30days"
+                    title={t("profile.avgPayTime")}
+                    value={formatTimeInMinutes(stats?.statistics_30day?.buy_time_average)}
+                  />
+                </div>
+                <div className="flex flex-col divide-y divide-black/[0.08] md:divide-y-0 md:grid md:grid-cols-4">
+                  <StatCard
+                    tab="last30days"
+                    title={t("profile.avgReleaseTime")}
+                    value={formatTimeInMinutes(stats?.statistics_30day?.release_time_average)}
+                  />
+                  <StatCard
+                    tab="last30days"
+                    title={t("profile.tradeVolume")}
+                    tooltipKey="profile.tradeVolume30DaysTooltip"
+                    value={
+                      stats?.statistics_30day?.completion_amount_all && Number(stats.statistics_30day.completion_amount_all) > 0
+                        ? `${formatAmount(stats.statistics_30day.completion_amount_all)} USD`
+                        : "0.00 USD"
+                    }
+                  />
+                </div>
+              </div>
+            </TabsContent>
+            <TabsContent value="lifetime" className="mt-0 rounded-lg px-0 md:px-0  bg-transparent">
+              <div className="flex flex-col divide-y divide-black/[0.08]">
+                <div className="flex flex-col divide-y divide-black/[0.08] md:divide-y-0 md:grid md:grid-cols-4">
+                  <StatCard
+                    tab="lifetime"
+                    title={t("profile.sellCompletion")}
+                    value={
+                      stats?.statistics_lifetime?.completion_rate_sell
+                        ? `${stats.statistics_lifetime.completion_rate_sell}% (${stats.statistics_lifetime.completion_count_sell})`
+                        : "-"
+                    }
+                  />
+                  <StatCard
+                    tab="lifetime"
+                    title={t("profile.buyCompletion")}
+                    value={
+                      stats?.statistics_lifetime?.completion_rate_buy
+                        ? `${stats.statistics_lifetime.completion_rate_buy}% (${stats.statistics_lifetime.completion_count_buy})`
+                        : "-"
+                    }
+                  />
+                  <StatCard
+                    tab="lifetime"
+                    title={t("profile.totalOrders")}
+                    value={stats?.statistics_lifetime?.completion_count_all ?? "0"}
+                  />
+                  <StatCard
+                    tab="lifetime"
+                    title={t("profile.avgPayTime")}
+                    value={formatTimeInMinutes(stats?.statistics_lifetime?.buy_time_average)}
+                  />
+                </div>
+                <div className="flex flex-col divide-y divide-black/[0.08] md:divide-y-0 md:grid md:grid-cols-4">
+                  <StatCard
+                    tab="lifetime"
+                    title={t("profile.avgReleaseTime")}
+                    value={formatTimeInMinutes(stats?.statistics_lifetime?.release_time_average)}
+                  />
+                  <StatCard
+                    tab="lifetime"
+                    title={t("profile.tradePartners")}
+                    tooltipKey="profile.tradePartnersTooltip"
+                    value={stats?.statistics_lifetime?.partner_count ?? "0"}
+                  />
+                  <StatCard
+                    tab="lifetime"
+                    title={t("profile.tradeVolume")}
+                    tooltipKey="profile.tradeVolumeLifetimeTooltip"
+                    value={
+                      stats?.statistics_lifetime?.completion_amount_all && Number(stats.statistics_lifetime.completion_amount_all) > 0
+                        ? `${formatAmount(stats.statistics_lifetime.completion_amount_all)} USD`
+                        : "0.00 USD"
+                    }
+                  />
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 border-b border-slate-200">
-        <StatCard
-          title={`Trade volume ${displayStats.tradeVolume30d.period}`}
-          value={`${displayStats.tradeVolume30d.currency} ${displayStats.tradeVolume30d.amount}`}
-          hasInfo={true}
-        />
-        <StatCard
-          title="Trade volume (Lifetime)"
-          value={`${displayStats.tradeVolumeLifetime.currency} ${displayStats.tradeVolumeLifetime.amount}`}
-          hasInfo={true}
-        />
-        <StatCard title={`Avg. pay time ${displayStats.avgPayTime.period}`} value={displayStats.avgPayTime.time} />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3">
-        <StatCard title={`Total orders ${displayStats.buyCompletion.period}`} value={displayStats.totalOrders30d} />
-        <StatCard title="Total orders (Lifetime)" value={displayStats.totalOrdersLifetime} />
-        <StatCard
-          title={`Avg. release time ${displayStats.avgReleaseTime.period}`}
-          value={displayStats.avgReleaseTime.time}
-        />
-      </div>
-    </div>
+    </TooltipProvider>
   )
 }
