@@ -362,7 +362,10 @@ export async function walletTransfer(params: {
     } catch {
       // JSON parse failed — fall through to a generic transport-level error.
     }
-    return { errors: [{ message: `wallet transfer failed: ${response.status}`, code: "transfer_failed" }] }
+    // No message here on purpose: "transfer_failed" is not a recognised
+    // rejection code, so the caller falls back to the translated generic
+    // message (wallet.transferErrorDuring) rather than a raw status string.
+    return { errors: [{ code: "transfer_failed" }] }
   }
 
   return await response.json()
