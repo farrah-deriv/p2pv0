@@ -32,7 +32,11 @@ export type WalletTransferResult = WalletTransferErrorResult | WalletTransferSuc
 export function isWalletTransferError(
   result: WalletTransferResult | null,
 ): result is WalletTransferErrorResult {
-  return !!result && Array.isArray((result as WalletTransferErrorResult).errors)
+  return (
+    !!result &&
+    Array.isArray((result as WalletTransferErrorResult).errors) &&
+    (result as WalletTransferErrorResult).errors.length > 0
+  )
 }
 
 export type { WalletTransactionsPageResult } from "@/lib/wallet-transactions-pagination"

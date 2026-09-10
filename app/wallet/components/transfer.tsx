@@ -136,7 +136,6 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
   const [externalReferenceId, setExternalReferenceId] = useState<string | null>(null)
   const [requestId, setRequestId] = useState<string | null>(null)
-  const [transferErrorMessage, setTransferErrorMessage] = useState<string | null>(null)
   const [transferRejectionCta, setTransferRejectionCta] = useState<WalletWithdrawalRejectionCta | null>(null)
   const [transferRejectionCode, setTransferRejectionCode] = useState<WalletWithdrawalRejectionCode | null>(null)
   const [transferRejectionAmounts, setTransferRejectionAmounts] = useState<WalletWithdrawalRejectionAmounts>({})
@@ -661,7 +660,6 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
   ) => {
     const rejectionInfo = errorObj ? getWalletTransferRejectionInfo(errorObj) : null
     const errorMessage = overrideMessage || rejectionInfo?.message || errorObj?.message || null
-    setTransferErrorMessage(errorMessage)
     // When the failure has no recognised rejection code, fall back to the
     // WITHDRAWAL_NOT_ALLOWED copy/CTA (contact support) instead of a generic
     // message, so users always get an actionable reason.
@@ -791,7 +789,6 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     setSelectedCurrency(null)
     setExternalReferenceId(null)
     setRequestId(null)
-    setTransferErrorMessage(null)
     setTransferRejectionCta(null)
 
     onClose()
