@@ -26,6 +26,7 @@ import WalletDisplay from "./wallet-display"
 import ChooseCurrencyStep from "./choose-currency-step"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { useTrackers } from "@/analytics/useTrackers"
 import { getWalletTransferRejectionInfo, type WalletTransferApiError, type WalletWithdrawalRejectionAmounts, type WalletWithdrawalRejectionCode, type WalletWithdrawalRejectionCta } from "@/lib/wallet-transfer"
 import type { Transaction } from "../types"
@@ -108,7 +109,7 @@ interface TransferFeeCalculation {
   feePercentage: number
 }
 
-type TransferStep = "chooseCurrency" | "enterAmount" | "success" | "unsuccessful"
+type TransferStep = "chooseCurrency" | "enterAmount" | "success"
 type WalletSelectorType = "from" | "to" | null
 type CurrencyToggleType = "source" | "destination"
 
@@ -116,6 +117,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
   const { t } = useTranslations()
   const { track } = useTrackers()
   const isMobile = useIsMobile()
+  const { showAlert } = useAlertDialog()
   const router = useRouter()
   const queryClient = getQueryClient()
   const { data: currenciesResponse, isLoading: isCurrenciesLoading } = useCurrencies()
@@ -136,9 +138,7 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
 
   const [externalReferenceId, setExternalReferenceId] = useState<string | null>(null)
   const [requestId, setRequestId] = useState<string | null>(null)
-  const [transferRejectionCta, setTransferRejectionCta] = useState<WalletWithdrawalRejectionCta | null>(null)
-  const [transferRejectionCode, setTransferRejectionCode] = useState<WalletWithdrawalRejectionCode | null>(null)
-  const [transferRejectionAmounts, setTransferRejectionAmounts] = useState<WalletWithdrawalRejectionAmounts>({})
+
 
   const [exchangeRateData, setExchangeRateData] = useState<ExchangeRateData | null>(null)
   const [selectedAmountCurrency, setSelectedAmountCurrency] = useState<"source" | "destination">("source")
@@ -215,7 +215,6 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     })
   }
   const toSuccess = () => setStep("success")
-  const toUnsuccessful = () => setStep("unsuccessful")
   const goBack = () => {
     if (step === "enterAmount") {
       // When the flow starts directly at enterAmount (TRANSFER via sidebar),
@@ -568,9 +567,9 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
   }, [transferAmount, sourceWalletData, destinationWalletData, t])
 
   useEffect(() => {
-    // Keep validate quote on success/unsuccessful — success copy uses
-    // destination.amount (You'll receive). Clearing here falls back to gross.
-    if (step === "success" || step === "unsuccessful") {
+    // Keep validate quote on success — success copy uses destination.amount
+    // (You'll receive). Clearing here falls back to gross.
+    if (step === "success") {
       setIsValidatePreviewLoading(false)
       return
     }
@@ -663,9 +662,9 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     // When the failure has no recognised rejection code, fall back to the
     // WITHDRAWAL_NOT_ALLOWED copy/CTA (contact support) instead of a generic
     // message, so users always get an actionable reason.
-    setTransferRejectionCta(rejectionInfo?.cta ?? "contact_us")
-    setTransferRejectionCode(rejectionInfo?.code ?? "WITHDRAWAL_NOT_ALLOWED")
-    setTransferRejectionAmounts(rejectionInfo?.amounts ?? {})
+    const cta = rejectionInfo?.cta ?? "contact_us"
+    const code = rejectionInfo?.code ?? "WITHDRAWAL_NOT_ALLOWED"
+    const amounts = rejectionInfo?.amounts ?? {}
     setShowDesktopConfirmPopup(false)
     setShowMobileConfirmSheet(false)
     setShowAmountReceiveInfoSheet(false)
@@ -674,7 +673,101 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
       error_code: overrideErrorCode ?? rejectionInfo?.code ?? "transfer_failed",
       error_message: errorMessage,
     })
-    toUnsuccessful()
+    showTransferErrorAlert(cta, code, amounts)
+  }
+
+  /**
+   * Surface a transfer failure as an alert dialog rather than a full-page step.
+   * Title/body come from the rejection code's i18n keys; the CTA layout mirrors
+   * the rejection cta (contact support, deposit, retry, etc.).
+   */
+  const showTransferErrorAlert = (
+    cta: WalletWithdrawalRejectionCta | null,
+    code: WalletWithdrawalRejectionCode | null,
+    rejectionAmounts: WalletWithdrawalRejectionAmounts,
+  ) => {
+    const filteredAmounts = Object.fromEntries(
+      Object.entries(rejectionAmounts).filter(([, v]) => v !== undefined),
+    ) as Record<string, string>
+    const codeSlug = (code ?? "WITHDRAWAL_NOT_ALLOWED").toLowerCase()
+    const title = t(`wallet.transfer_wr_err_${codeSlug}_title`)
+    const description = t(`wallet.transfer_wr_err_${codeSlug}_body`, filteredAmounts)
+
+    const base = {
+      title,
+      description,
+      testId: "transfer-error-alert",
+    }
+
+    // Single-button alerts use `cancelText`/`onCancel` so the lone button gets
+    // the primary styling. Two-button alerts set `type` to reveal the confirm
+    // (primary) button alongside the cancel (secondary) button. The provider's
+    // handleConfirm/handleCancel already close the dialog after the callback.
+    switch (cta) {
+      case "contact_us":
+        showAlert({
+          ...base,
+          cancelText: t("wallet.contactUs"),
+          cancelTestId: "transfer-error-btn-contact",
+          onCancel: handleOpenLiveChat,
+        })
+        return
+      case "got_it":
+        showAlert({
+          ...base,
+          cancelText: t("wallet.gotIt"),
+          cancelTestId: "transfer-error-btn-cancel",
+          onCancel: handleDoneClick,
+        })
+        return
+      case "deposit_now":
+        showAlert({
+          ...base,
+          cancelText: t("wallet.depositNow"),
+          cancelTestId: "transfer-error-btn-retry",
+          onCancel: handleDoneClick,
+        })
+        return
+      case "change_method":
+      case "make_changes":
+        showAlert({
+          ...base,
+          cancelText: t("wallet.tryAgain"),
+          cancelTestId: "transfer-error-btn-retry",
+          onCancel: handleDoneClick,
+        })
+        return
+      case "got_it_contact_us":
+        showAlert({
+          ...base,
+          type: "error",
+          confirmText: t("wallet.contactUs"),
+          confirmTestId: "transfer-error-btn-contact",
+          onConfirm: handleOpenLiveChat,
+          cancelText: t("wallet.gotIt"),
+          cancelTestId: "transfer-error-btn-cancel",
+          onCancel: handleDoneClick,
+        })
+        return
+      default:
+        // Generic failure: offer retry (back to amount entry) or dismiss.
+        showAlert({
+          ...base,
+          type: "error",
+          confirmText: t("wallet.tryAgain"),
+          confirmTestId: "transfer-error-btn-retry",
+          onConfirm: () => {
+            track("ek_try_again_transfer_unsuccessful")
+            toEnterAmount()
+          },
+          cancelText: t("wallet.notNow"),
+          cancelTestId: "transfer-error-btn-cancel",
+          onCancel: () => {
+            track("ek_not_now_transfer_unsuccessful")
+            handleDoneClick()
+          },
+        })
+    }
   }
 
   const handleTransferSuccess = (data: any) => {
@@ -789,7 +882,6 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
     setSelectedCurrency(null)
     setExternalReferenceId(null)
     setRequestId(null)
-    setTransferRejectionCta(null)
 
     onClose()
   }
@@ -2147,131 +2239,6 @@ export default function Transfer({ currencySelected, onClose, stepVal = "enterAm
             {t("wallet.gotIt")}
           </Button>
         </div>
-      </div>
-    )
-  }
-
-  const renderUnsuccessfulCtaDesktop = () => {
-    const primary = "w-[276px] h-12 px-7 flex justify-center items-center gap-2"
-    const secondaryLayout = "w-[276px] h-12 px-7 flex justify-center items-center gap-2 font-extrabold"
-
-    if (transferRejectionCta === "contact_us") {
-      return (
-        <div className="hidden md:flex justify-center mt-6">
-          <Button data-testid="transfer-error-btn-contact" onClick={handleOpenLiveChat} className={primary}>{t("wallet.contactUs")}</Button>
-        </div>
-      )
-    }
-    if (transferRejectionCta === "got_it") {
-      return (
-        <div className="hidden md:flex justify-center mt-6">
-          <Button data-testid="transfer-error-btn-cancel" onClick={handleDoneClick} className={primary}>{t("wallet.gotIt")}</Button>
-        </div>
-      )
-    }
-    if (transferRejectionCta === "deposit_now") {
-      return (
-        <div className="hidden md:flex justify-center mt-6">
-          <Button data-testid="transfer-error-btn-retry" onClick={handleDoneClick} className={primary}>{t("wallet.depositNow")}</Button>
-        </div>
-      )
-    }
-    if (transferRejectionCta === "change_method" || transferRejectionCta === "make_changes") {
-      return (
-        <div className="hidden md:flex justify-center mt-6">
-          <Button data-testid="transfer-error-btn-retry" onClick={handleDoneClick} className={primary}>{t("wallet.tryAgain")}</Button>
-        </div>
-      )
-    }
-    if (transferRejectionCta === "got_it_contact_us") {
-      return (
-        <div className="hidden md:flex gap-4 mt-6">
-          <Button data-testid="transfer-error-btn-cancel" variant="outline-white" onClick={handleDoneClick} className={secondaryLayout}>{t("wallet.gotIt")}</Button>
-          <Button data-testid="transfer-error-btn-contact" onClick={handleOpenLiveChat} className={primary}>{t("wallet.contactUs")}</Button>
-        </div>
-      )
-    }
-    return (
-      <div className="hidden md:flex gap-4 mt-6">
-        <Button data-testid="transfer-error-btn-cancel" variant="outline-white" onClick={() => { track("ek_not_now_transfer_unsuccessful"); handleDoneClick() }} className={secondaryLayout}>{t("wallet.notNow")}</Button>
-        <Button data-testid="transfer-error-btn-retry" onClick={() => { track("ek_try_again_transfer_unsuccessful"); toEnterAmount() }} className={primary}>{t("wallet.tryAgain")}</Button>
-      </div>
-    )
-  }
-
-  const renderUnsuccessfulCtaMobile = () => {
-    const primary = "w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2"
-    const secondaryLayout = "w-full h-12 min-w-24 min-h-12 max-h-12 px-7 flex justify-center items-center gap-2 font-extrabold"
-
-    if (transferRejectionCta === "contact_us") {
-      return (
-        <div className="block md:hidden w-full space-y-3">
-          <Button data-testid="transfer-error-btn-contact" onClick={handleOpenLiveChat} className={primary}>{t("wallet.contactUs")}</Button>
-        </div>
-      )
-    }
-    if (transferRejectionCta === "got_it") {
-      return (
-        <div className="block md:hidden w-full space-y-3">
-          <Button data-testid="transfer-error-btn-cancel" onClick={handleDoneClick} className={primary}>{t("wallet.gotIt")}</Button>
-        </div>
-      )
-    }
-    if (transferRejectionCta === "deposit_now") {
-      return (
-        <div className="block md:hidden w-full space-y-3">
-          <Button data-testid="transfer-error-btn-retry" onClick={handleDoneClick} className={primary}>{t("wallet.depositNow")}</Button>
-        </div>
-      )
-    }
-    if (transferRejectionCta === "change_method" || transferRejectionCta === "make_changes") {
-      return (
-        <div className="block md:hidden w-full space-y-3">
-          <Button data-testid="transfer-error-btn-retry" onClick={handleDoneClick} className={primary}>{t("wallet.tryAgain")}</Button>
-        </div>
-      )
-    }
-    if (transferRejectionCta === "got_it_contact_us") {
-      return (
-        <div className="block md:hidden w-full space-y-3">
-          <Button data-testid="transfer-error-btn-contact" onClick={handleOpenLiveChat} className={primary}>{t("wallet.contactUs")}</Button>
-          <Button data-testid="transfer-error-btn-cancel" variant="outline-white" onClick={handleDoneClick} className={secondaryLayout}>{t("wallet.gotIt")}</Button>
-        </div>
-      )
-    }
-    return (
-      <div className="block md:hidden w-full space-y-3">
-        <Button data-testid="transfer-error-btn-retry" onClick={() => { track("ek_try_again_transfer_unsuccessful"); toEnterAmount() }} className={primary}>{t("wallet.tryAgain")}</Button>
-        <Button data-testid="transfer-error-btn-cancel" variant="outline-white" onClick={() => { track("ek_not_now_transfer_unsuccessful"); handleDoneClick() }} className={secondaryLayout}>{t("wallet.notNow")}</Button>
-      </div>
-    )
-  }
-
-  if (step === "unsuccessful") {
-    const amounts = Object.fromEntries(
-      Object.entries(transferRejectionAmounts).filter(([, v]) => v !== undefined)
-    ) as Record<string, string>
-    const codeSlug = (transferRejectionCode ?? "WITHDRAWAL_NOT_ALLOWED").toLowerCase()
-    const title = t(`wallet.transfer_wr_err_${codeSlug}_title`)
-    const body = t(`wallet.transfer_wr_err_${codeSlug}_body`, amounts)
-
-    return (
-      <div
-        className="absolute inset-0 flex flex-col h-full p-6"
-        style={{
-          background:
-            "radial-gradient(108.21% 50% at 52.05% 0%, rgba(255, 68, 79, 0.24) 0%, rgba(255, 68, 79, 0.00) 100%), #181C25",
-        }}
-      >
-        <div className="flex-1 flex flex-col items-center justify-center text-center">
-          <div className="mb-6">
-            <Image src="/icons/failed-transfer.png" alt={t("common.unsuccessful")} width={256} height={256} />
-          </div>
-          <h1 className="text-white text-center text-2xl font-extrabold mb-4">{title}</h1>
-          <p className="text-white text-center text-base font-normal">{body}</p>
-          {renderUnsuccessfulCtaDesktop()}
-        </div>
-        {renderUnsuccessfulCtaMobile()}
       </div>
     )
   }
