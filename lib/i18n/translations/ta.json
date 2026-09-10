@@ -1421,7 +1421,6 @@
     "transactions": "பரிவர்த்தனைகள்",
     "transfer": "இடமாற்றம்",
     "transferAmount": "பரிமாற்றத் தொகை",
-    "transferErrorDuring": "உங்கள் பரிமாற்றத்தை எங்களால் செயல்படுத்த முடியவில்லை. மீண்டும் முயற்சிக்கவும்.",
     "transferFee": "பரிமாற்ற கட்டணம்",
     "transferRouteP2pToP2p": "P2P பணப்பை → P2P பணப்பை",
     "transferRouteP2pToWallet": "P2P பணப்பை → பணப்பை",

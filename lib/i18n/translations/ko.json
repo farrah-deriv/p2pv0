@@ -1470,7 +1470,6 @@
     "transactions": "거래",
     "transfer": "이체",
     "transferAmount": "이체 금액",
-    "transferErrorDuring": "이체를 처리할 수 없습니다. 다시 시도하세요.",
     "transferFee": "이체 수수료",
     "transferRouteP2pToP2p": "P2P 지갑 → P2P 지갑",
     "transferRouteP2pToWallet": "P2P 지갑 → 지갑",

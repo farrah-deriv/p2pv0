@@ -746,7 +746,6 @@
     "marketplaceDescription": "Trade directly with other users on the marketplace.",
     "marketplaceTitle": "Marketplace",
     "select": "Select",
-    "transferErrorDuring": "An error occurred during the transfer.",
     "transferRouteP2pToP2p": "P2P Wallet → P2P Wallet",
     "transferRouteP2pToWallet": "P2P Wallet → Wallet",
     "transferRouteWalletOnly": "Wallet → Wallet",

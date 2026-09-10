@@ -1453,7 +1453,6 @@
     "transactions": "Транзакции",
     "transfer": "Перевести",
     "transferAmount": "Сумма перевода",
-    "transferErrorDuring": "Мы не смогли обработать ваш перевод. Пожалуйста, попробуйте снова.",
     "transferFee": "Комиссия за перевод",
     "transferRouteP2pToP2p": "P2P Кошелек → P2P Кошелек",
     "transferRouteP2pToWallet": "P2P Кошелек → Кошелёк",

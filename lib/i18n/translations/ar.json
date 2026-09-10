@@ -1421,7 +1421,6 @@
     "transactions": "المعاملات",
     "transfer": "نقل",
     "transferAmount": "تحويل المبلغ",
-    "transferErrorDuring": "لم نتمكن من معالجة عملية النقل الخاصة بك. يرجى المحاولة مرة أخرى.",
     "transferFee": "رسوم التحويل",
     "transferRouteP2pToP2p": "محفظة P2P → محفظة P2P",
     "transferRouteP2pToWallet": "محفظة P2P → محفظة",

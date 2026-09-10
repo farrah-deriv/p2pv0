@@ -1431,7 +1431,6 @@
     "transactions": "লেনদেন",
     "transfer": "ট্রান্সফার",
     "transferAmount": "ট্রান্সফার পরিমাণ",
-    "transferErrorDuring": "আমরা আপনার ট্রান্সফার প্রক্রিয়া করতে পারিনি। অনুগ্রহ করে আবার চেষ্টা করুন।",
     "transferFee": "ট্রান্সফার ফি",
     "transferRouteP2pToP2p": "P2P ওয়ালেট → P2P ওয়ালেট",
     "transferRouteP2pToWallet": "P2P ওয়ালেট → ওয়ালেট",

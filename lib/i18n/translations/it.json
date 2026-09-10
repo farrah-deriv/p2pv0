@@ -1439,7 +1439,6 @@
     "transactions": "Transazioni",
     "transfer": "Trasferisci",
     "transferAmount": "Importo del trasferimento",
-    "transferErrorDuring": "Non siamo riusciti a elaborare il tuo trasferimento. Riprova.",
     "transferFee": "Commissione di trasferimento",
     "transferRouteP2pToP2p": "Portafoglio P2P → Portafoglio P2P",
     "transferRouteP2pToWallet": "Portafoglio P2P → Portafoglio",

@@ -1448,7 +1448,6 @@
     "transactions": "Transaktionen",
     "transfer": "Übertragen",
     "transferAmount": "Übertragungsbetrag",
-    "transferErrorDuring": "Wir konnten Ihre Übertragung nicht verarbeiten. Bitte versuchen Sie es erneut.",
     "transferFee": "Übertragungsgebühr",
     "transferRouteP2pToP2p": "P2P-Wallet → P2P-Wallet",
     "transferRouteP2pToWallet": "P2P-Wallet → Wallet",

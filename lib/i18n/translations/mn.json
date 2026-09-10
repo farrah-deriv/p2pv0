@@ -1421,7 +1421,6 @@
     "transactions": "Гүйлгээ",
     "transfer": "Дамжуулах",
     "transferAmount": "Шилжүүлгийн хэмжээ",
-    "transferErrorDuring": "Бид таны шилжүүлгийг боловсруулж чадсангүй. Дахин оролдоно уу.",
     "transferFee": "Шилжүүлгийн хураамж",
     "transferRouteP2pToP2p": "P2P түрийвч → P2P түрийвч",
     "transferRouteP2pToWallet": "P2P түрийвч → Түрийвч",
