@@ -71,6 +71,8 @@
     "insufficientBalanceTitle": "잔액 부족",
     "invalidExchangeRateMessage": "입력하신 환율이 잘못되었습니다.",
     "invalidOrderAmountMessage": "주문 금액 한도가 유효하지 않습니다.",
+    "advertOrderMinimumInvalidTitle": "최소 주문 금액 필요",
+    "advertOrderMinimumInvalidMessage": "이 광고의 최소 주문 금액이 0입니다. 광고를 활성화하려면 0보다 큰 금액을 입력하세요.",
     "invalidValuesMessage": "입력값을 확인해주세요.",
     "invalidValuesTitle": "잘못된 값",
     "joinedMoreThan": "가입 기간",

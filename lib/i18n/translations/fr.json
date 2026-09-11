@@ -71,6 +71,8 @@
     "insufficientBalanceTitle": "Solde insuffisant",
     "invalidExchangeRateMessage": "Le taux de change que vous avez fourni n'est pas valide.",
     "invalidOrderAmountMessage": "Les limites du montant de la commande ne sont pas valides.",
+    "advertOrderMinimumInvalidTitle": "Montant minimum de commande requis",
+    "advertOrderMinimumInvalidMessage": "Le montant minimum de commande de cette annonce est 0. Saisissez un montant supérieur à 0 pour l'activer.",
     "invalidValuesMessage": "Veuillez vérifier vos valeurs d'entrée.",
     "invalidValuesTitle": "Valeurs invalides",
     "joinedMoreThan": "Inscrit depuis plus de",

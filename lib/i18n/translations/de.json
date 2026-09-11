@@ -75,6 +75,8 @@
     "insufficientBalanceTitle": "Unzureichendes Guthaben",
     "invalidExchangeRateMessage": "Der von Ihnen angegebene Wechselkurs ist ungültig.",
     "invalidOrderAmountMessage": "Die Bestellmengenbegrenzungen sind ungültig.",
+    "advertOrderMinimumInvalidTitle": "Mindestbestellbetrag erforderlich",
+    "advertOrderMinimumInvalidMessage": "Der Mindestbestellbetrag dieser Anzeige ist 0. Geben Sie einen Betrag größer als 0 ein, um sie zu aktivieren.",
     "invalidValuesMessage": "Bitte überprüfen Sie Ihre Eingabewerte.",
     "invalidValuesTitle": "Ungültige Werte",
     "joinedMoreThan": "Beigetreten vor mehr als",

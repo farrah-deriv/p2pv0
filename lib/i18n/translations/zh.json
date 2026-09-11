@@ -71,6 +71,8 @@
     "insufficientBalanceTitle": "余额不足",
     "invalidExchangeRateMessage": "您提供的汇率无效。",
     "invalidOrderAmountMessage": "订单金额限制无效。",
+    "advertOrderMinimumInvalidTitle": "需要最低订单金额",
+    "advertOrderMinimumInvalidMessage": "此广告的最低订单金额为 0。请输入大于 0 的金额以激活它。",
     "invalidValuesMessage": "请检查您的输入值。",
     "invalidValuesTitle": "无效值",
     "joinedMoreThan": "加入时间超过",

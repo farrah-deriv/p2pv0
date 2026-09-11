@@ -75,6 +75,8 @@
     "insufficientBalanceTitle": "অপর্যাপ্ত ব্যালেন্স",
     "invalidExchangeRateMessage": "আপনার প্রদত্ত বিনিময় হারটি অবৈধ।",
     "invalidOrderAmountMessage": "অর্ডার পরিমাণের সীমা অবৈধ।",
+    "advertOrderMinimumInvalidTitle": "ন্যূনতম অর্ডার পরিমাণ প্রয়োজন",
+    "advertOrderMinimumInvalidMessage": "এই বিজ্ঞাপনের ন্যূনতম অর্ডার পরিমাণ 0। এটি সক্রিয় করতে 0-এর বেশি একটি পরিমাণ লিখুন।",
     "invalidValuesMessage": "অনুগ্রহ করে আপনার ইনপুট মান পরীক্ষা করুন।",
     "invalidValuesTitle": "অবৈধ মান",
     "joinedMoreThan": "এর বেশি সময় ধরে যোগ দিয়েছেন",

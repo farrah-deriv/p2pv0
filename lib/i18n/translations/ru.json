@@ -75,6 +75,8 @@
     "insufficientBalanceTitle": "Недостаточный баланс",
     "invalidExchangeRateMessage": "Указанный вами обменный курс недействителен.",
     "invalidOrderAmountMessage": "Ограничения суммы заказа недействительны.",
+    "advertOrderMinimumInvalidTitle": "Требуется минимальная сумма заказа",
+    "advertOrderMinimumInvalidMessage": "Минимальная сумма заказа для этого объявления равна 0. Введите сумму больше 0, чтобы активировать его.",
     "invalidValuesMessage": "Пожалуйста, проверьте введенные значения.",
     "invalidValuesTitle": "Недопустимые значения",
     "joinedMoreThan": "Зарегистрирован более",

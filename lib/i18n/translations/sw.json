@@ -71,6 +71,8 @@
     "insufficientBalanceTitle": "Usawa usiotosha",
     "invalidExchangeRateMessage": "Kiwango cha ubadilishaji ulichotoa ni batili.",
     "invalidOrderAmountMessage": "Vikomo vya kiasi cha agizo ni batili.",
+    "advertOrderMinimumInvalidTitle": "Kiasi cha chini cha agizo kinahitajika",
+    "advertOrderMinimumInvalidMessage": "Kiasi cha chini cha agizo cha tangazo hili ni 0. Weka kiasi kikubwa kuliko 0 ili kuliwezesha.",
     "invalidValuesMessage": "Tafadhali angalia maadili yako ya ingizo.",
     "invalidValuesTitle": "Thamani zisizo sahihi",
     "joinedMoreThan": "Alijiunga zaidi ya",

@@ -219,6 +219,19 @@ export default function MyAdsTable({
           return
         }
 
+        if (firstError.code === "AdvertOrderMinimumInvalid") {
+          showAlert({
+            title: t("adForm.advertOrderMinimumInvalidTitle"),
+            description: t("adForm.advertOrderMinimumInvalidMessage"),
+            confirmText: t("adForm.updateAd"),
+            type: "error",
+            onConfirm: () => {
+              router.push(editAdPath(ad.id, isActiveTab ? "active" : "inactive"))
+            },
+          })
+          return
+        }
+
         const errorCodeMap: Record<string, string> = {
           AdvertActiveCountExceeded: t("adForm.adLimitReachedMessage"),
           AdvertExchangeRateDuplicate: t("adForm.duplicateRateMessage"),

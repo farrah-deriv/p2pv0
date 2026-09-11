@@ -71,6 +71,8 @@
     "insufficientBalanceTitle": "போதுமான இருப்பு இல்லை",
     "invalidExchangeRateMessage": "நீங்கள் வழங்கிய மாற்று விகிதம் தவறானது.",
     "invalidOrderAmountMessage": "ஆர்டர் தொகை வரம்புகள் செல்லாது.",
+    "advertOrderMinimumInvalidTitle": "குறைந்தபட்ச ஆர்டர் தொகை தேவை",
+    "advertOrderMinimumInvalidMessage": "இந்த விளம்பரத்தின் குறைந்தபட்ச ஆர்டர் தொகை 0 ஆகும். அதைச் செயல்படுத்த 0 ஐ விட அதிகமான தொகையை உள்ளிடவும்.",
     "invalidValuesMessage": "உங்கள் உள்ளீட்டு மதிப்புகளைச் சரிபார்க்கவும்.",
     "invalidValuesTitle": "தவறான மதிப்புகள்",
     "joinedMoreThan": "இதற்கும் மேல் சேர்ந்தவர்",

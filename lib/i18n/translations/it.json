@@ -71,6 +71,8 @@
     "insufficientBalanceTitle": "Saldo insufficiente",
     "invalidExchangeRateMessage": "Il tasso di cambio fornito non è valido.",
     "invalidOrderAmountMessage": "I limiti dell'importo dell'ordine non sono validi.",
+    "advertOrderMinimumInvalidTitle": "Importo minimo dell'ordine richiesto",
+    "advertOrderMinimumInvalidMessage": "L'importo minimo dell'ordine di questo annuncio è 0. Inserisci un importo maggiore di 0 per attivarlo.",
     "invalidValuesMessage": "Controlla i tuoi valori di input.",
     "invalidValuesTitle": "Valori non validi",
     "joinedMoreThan": "Iscritto da più di",

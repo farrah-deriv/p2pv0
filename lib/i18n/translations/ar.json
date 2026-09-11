@@ -71,6 +71,8 @@
     "insufficientBalanceTitle": "رصيد غير كافٍ",
     "invalidExchangeRateMessage": "سعر الصرف الذي قدمته غير صالح.",
     "invalidOrderAmountMessage": "حدود مبلغ الطلب غير صالحة.",
+    "advertOrderMinimumInvalidTitle": "الحد الأدنى لمبلغ الطلب مطلوب",
+    "advertOrderMinimumInvalidMessage": "الحد الأدنى لمبلغ الطلب في هذا الإعلان هو 0. أدخل مبلغًا أكبر من 0 لتفعيله.",
     "invalidValuesMessage": "يرجى التحقق من قيم المدخلات.",
     "invalidValuesTitle": "قيم غير صالحة",
     "joinedMoreThan": "انضم منذ أكثر من",

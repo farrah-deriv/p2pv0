@@ -1113,6 +1113,8 @@
     "unknownErrorMessage": "An unknown error occurred",
     "invalidExchangeRateMessage": "The exchange rate you provided is invalid.",
     "invalidOrderAmountMessage": "The order amount limits are invalid.",
+    "advertOrderMinimumInvalidTitle": "Minimum order amount required",
+    "advertOrderMinimumInvalidMessage": "This ad's minimum order amount is 0. Enter an amount greater than 0 to activate it.",
     "genericErrorCodeMessage": "An error occurred ({code}). Please try again or contact support.",
     "genericProcessingErrorMessage": "There was an error processing your request. Please try again.",
     "cancelAdCreation": "Cancel ad creation?",

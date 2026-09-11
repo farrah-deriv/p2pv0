@@ -71,6 +71,8 @@
     "insufficientBalanceTitle": "餘額不足",
     "invalidExchangeRateMessage": "您提供的匯率無效。",
     "invalidOrderAmountMessage": "訂單金額限制無效。",
+    "advertOrderMinimumInvalidTitle": "需要最低訂單金額",
+    "advertOrderMinimumInvalidMessage": "此廣告的最低訂單金額為 0。請輸入大於 0 的金額以啟用它。",
     "invalidValuesMessage": "請檢查您的輸入值。",
     "invalidValuesTitle": "無效值",
     "joinedMoreThan": "加入時間超過",

@@ -71,6 +71,8 @@
     "insufficientBalanceTitle": "Saldo insuficiente",
     "invalidExchangeRateMessage": "El tipo de cambio que proporcionaste no es válido.",
     "invalidOrderAmountMessage": "Los límites de monto del pedido no son válidos.",
+    "advertOrderMinimumInvalidTitle": "Monto mínimo del pedido requerido",
+    "advertOrderMinimumInvalidMessage": "El monto mínimo del pedido de este anuncio es 0. Introduce un monto mayor que 0 para activarlo.",
     "invalidValuesMessage": "Por favor, verifica tus valores de entrada.",
     "invalidValuesTitle": "Valores inválidos",
     "joinedMoreThan": "Se unió hace más de",

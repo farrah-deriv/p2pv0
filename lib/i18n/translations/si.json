@@ -71,6 +71,8 @@
     "insufficientBalanceTitle": "ශේෂය ප්‍රමාණවත් නොවීම",
     "invalidExchangeRateMessage": "ඔබ ලබා දුන් විනිමය අනුපාතය වලංගු නොවේ.",
     "invalidOrderAmountMessage": "ඇණවුම් මුදල සීමාවන් වලංගු නොවේ.",
+    "advertOrderMinimumInvalidTitle": "අවම ඇණවුම් මුදල අවශ්‍යයි",
+    "advertOrderMinimumInvalidMessage": "මෙම දැන්වීමේ අවම ඇණවුම් මුදල 0 වේ. එය සක්‍රිය කිරීමට 0 ට වැඩි මුදලක් ඇතුළත් කරන්න.",
     "invalidValuesMessage": "කරුණාකර ඔබගේ ආදාන අගයන් පරීක්ෂා කරන්න.",
     "invalidValuesTitle": "වලංගු නොවන අගයන්",
     "joinedMoreThan": "එක් වූයේ වැඩි කාලයකට පෙර",

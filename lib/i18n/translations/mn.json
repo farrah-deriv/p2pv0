@@ -71,6 +71,8 @@
     "insufficientBalanceTitle": "Үлдэгдэл хангалтгүй",
     "invalidExchangeRateMessage": "Таны оруулсан ханш буруу байна.",
     "invalidOrderAmountMessage": "Захиалгын үнийн хязгаар хүчингүй байна.",
+    "advertOrderMinimumInvalidTitle": "Захиалгын доод дүн шаардлагатай",
+    "advertOrderMinimumInvalidMessage": "Энэ зарын захиалгын доод дүн 0 байна. Идэвхжүүлэхийн тулд 0-ээс их дүн оруулна уу.",
     "invalidValuesMessage": "Оруулсан утгуудаа шалгана уу.",
     "invalidValuesTitle": "Буруу утгууд",
     "joinedMoreThan": "Нэгдсэн хугацаа",

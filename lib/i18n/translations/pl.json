@@ -71,6 +71,8 @@
     "insufficientBalanceTitle": "Niewystarczająca równowaga",
     "invalidExchangeRateMessage": "Podany kurs wymiany jest nieprawidłowy.",
     "invalidOrderAmountMessage": "Limity kwot zamówień są nieprawidłowe.",
+    "advertOrderMinimumInvalidTitle": "Wymagana minimalna kwota zamówienia",
+    "advertOrderMinimumInvalidMessage": "Minimalna kwota zamówienia dla tego ogłoszenia wynosi 0. Wprowadź kwotę większą niż 0, aby je aktywować.",
     "invalidValuesMessage": "Sprawdź wprowadzone wartości.",
     "invalidValuesTitle": "Nieprawidłowe wartości",
     "joinedMoreThan": "Dołączył ponad",
