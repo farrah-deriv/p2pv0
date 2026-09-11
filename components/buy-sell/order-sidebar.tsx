@@ -24,6 +24,8 @@ import { useTranslations } from "@/lib/i18n/use-translations"
 import { ExchangeRateDisplay } from "@/components/exchange-rate-display"
 import { ALERT_INLINE_FLEX, ALERT_INLINE_TEXT } from "@/lib/rtl"
 import { useWebSocketContext, useChannelHeartbeat } from "@/contexts/websocket-context"
+import { getPermissions } from "@/services/api/api-auth"
+import { getP2PCooldownLocks, type P2PActionLock } from "@/lib/p2p-cooldown"
 import {
   flattenUserPaymentMethodsPages,
   useAddPaymentMethod,
@@ -420,6 +422,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
     isFetchingNextPage: isFetchingMorePaymentMethods,
   } = useUserPaymentMethods(isOpen)
   const queryClient = useQueryClient()
+
   // True while the picker entry point is deciding between the selection sheet
   // and the add-payment catalogue — see the resolver effect below.
   const [isResolvingPaymentEntry, setIsResolvingPaymentEntry] = useState(false)
@@ -828,10 +831,32 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
             getHomeUrl,
           })
 
+          // OrderUserTransactionTypeNotAllowed can mean a password/email/phone
+          // cooldown has started. The lock details aren't in the order error, so
+          // fetch permissions only now — when the error signals a lock exists —
+          // rather than eagerly on every sidebar open. orderType === "buy" is a
+          // buy advert, so the user is the SELLER (withdraw lock); otherwise the
+          // user is buying (deposit lock).
+          let cooldownLock: P2PActionLock | null = null
+          if (errorCode === "OrderUserTransactionTypeNotAllowed") {
+            try {
+              const permissions = await queryClient.fetchQuery({
+                queryKey: queryKeys.auth.permissions(),
+                queryFn: () => getPermissions(),
+              })
+              const locks = getP2PCooldownLocks(permissions?.context?.cooldowns)
+              cooldownLock = orderType === "buy" ? locks.sell : locks.buy
+            } catch {
+              // Fall back to the generic copy if the fetch fails.
+            }
+          }
+
           const err = mapOrderError(errorCode, t, {
             isBuyAdvert: orderType === "buy",
             accountCurrency: localAd.account_currency,
             paymentCurrency: localAd.payment_currency,
+            cooldownLock,
+            locale,
           })
 
           showAlert({

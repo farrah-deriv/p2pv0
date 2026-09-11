@@ -1,4 +1,6 @@
 import { OrderErrorAction, type OrderErrorMessage } from "./order-error-actions"
+import { getCooldownCopy, type P2PActionLock } from "@/lib/p2p-cooldown"
+import type { Locale } from "@/lib/i18n/config"
 
 type Translator = (key: string, params?: Record<string, string | number>) => string
 
@@ -6,6 +8,11 @@ export interface OrderErrorMapCtx {
   isBuyAdvert?: boolean
   accountCurrency?: string
   paymentCurrency?: string
+  /** Active cooldown lock for this order's action, when the block is a
+   *  password/email/phone-change cooldown. Drives the OrderUserTransactionTypeNotAllowed copy. */
+  cooldownLock?: P2PActionLock | null
+  /** Locale used to format the cooldown expiry date/time. */
+  locale?: Locale
 }
 
 export function mapOrderError(
@@ -182,7 +189,27 @@ export function mapOrderError(
         secondaryAction: OrderErrorAction.Dismiss,
       }
 
-    case "OrderUserTransactionTypeNotAllowed":
+    case "OrderUserTransactionTypeNotAllowed": {
+      // A password/email/phone-change cooldown surfaces here on order placement.
+      // When we have the active lock, show the cooldown copy (which action is
+      // blocked, and until when). isBuyAdvert === true means the user is the
+      // SELLER (blocked by a withdraw lock → "sell" copy); otherwise the user is
+      // buying (deposit lock → "buy" copy). Falls back to the generic message
+      // when the cooldown details aren't available.
+      if (ctx.cooldownLock) {
+        const { title, description } = getCooldownCopy(
+          ctx.isBuyAdvert ? "sell" : "buy",
+          ctx.cooldownLock,
+          t,
+          (ctx.locale ?? "en") as Locale,
+        )
+        return {
+          title,
+          message: description,
+          primaryCta: t("common.gotIt"),
+          primaryAction: OrderErrorAction.Dismiss,
+        }
+      }
       return {
         title: t("order.orderTypeNotAllowedTitle"),
         message: t("order.orderTypeNotAllowedMessage"),
@@ -191,6 +218,7 @@ export function mapOrderError(
         secondaryCta: t("order.maybeLater"),
         secondaryAction: OrderErrorAction.Dismiss,
       }
+    }
 
     case "OrderUserFundsInsufficient":
       return {

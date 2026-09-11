@@ -408,6 +408,15 @@
     "lostMessage": "قد يكون الاتصال غير مستقر.",
     "refreshCta": "تحديث"
   },
+  "cooldown": {
+    "sellUnavailableTitle": "البيع على P2P غير متاح مؤقتًا",
+    "sellUnavailableDescription": "لقد غيّرت {credential} الخاص بك مؤخرًا. لأمانك، يمكنك متابعة الشراء على P2P، لكن لا يمكنك البيع حتى {date}، {time}.",
+    "buyUnavailableTitle": "الشراء على P2P غير متاح مؤقتًا",
+    "buyUnavailableDescription": "لقد غيّرت {credential} الخاص بك مؤخرًا. لأمانك، يمكنك متابعة البيع على P2P، لكن لا يمكنك الشراء حتى {date}، {time}.",
+    "credentialPassword": "كلمة المرور",
+    "credentialEmail": "عنوان البريد الإلكتروني",
+    "credentialPhone": "رقم الهاتف"
+  },
   "emailRequired": {
     "addEmail": "إضافة بريد إلكتروني",
     "description": "تحتاج إلى عنوان بريد إلكتروني في حساب Deriv الخاص بك لشراء أو بيع على Deriv P2P.",

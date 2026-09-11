@@ -408,6 +408,15 @@
     "lostMessage": "Muunganisho unaweza kuwa hauna utulivu.",
     "refreshCta": "Onyesha upya"
   },
+  "cooldown": {
+    "sellUnavailableTitle": "Kuuza kwenye P2P hakupatikani kwa muda",
+    "sellUnavailableDescription": "Hivi karibuni ulibadilisha {credential} yako. Kwa usalama wako, unaweza kuendelea kununua kwenye P2P, lakini huwezi kuuza hadi {date}, {time}.",
+    "buyUnavailableTitle": "Kununua kwenye P2P hakupatikani kwa muda",
+    "buyUnavailableDescription": "Hivi karibuni ulibadilisha {credential} yako. Kwa usalama wako, unaweza kuendelea kuuza kwenye P2P, lakini huwezi kununua hadi {date}, {time}.",
+    "credentialPassword": "nenosiri",
+    "credentialEmail": "anwani ya barua pepe",
+    "credentialPhone": "namba ya simu"
+  },
   "emailRequired": {
     "addEmail": "Ongeza barua pepe",
     "description": "Unahitaji anwani ya barua pepe kwenye akaunti yako ya Deriv ili kununua au kuuza kwenye Deriv P2P.",

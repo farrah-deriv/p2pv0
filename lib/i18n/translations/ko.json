@@ -408,6 +408,15 @@
     "lostMessage": "연결이 불안정할 수 있습니다.",
     "refreshCta": "새로고침"
   },
+  "cooldown": {
+    "sellUnavailableTitle": "P2P 판매를 일시적으로 사용할 수 없습니다",
+    "sellUnavailableDescription": "최근 {credential}을(를) 변경했습니다. 보안을 위해 P2P에서 계속 구매할 수 있지만 {date} {time}까지는 판매할 수 없습니다.",
+    "buyUnavailableTitle": "P2P 구매를 일시적으로 사용할 수 없습니다",
+    "buyUnavailableDescription": "최근 {credential}을(를) 변경했습니다. 보안을 위해 P2P에서 계속 판매할 수 있지만 {date} {time}까지는 구매할 수 없습니다.",
+    "credentialPassword": "비밀번호",
+    "credentialEmail": "이메일 주소",
+    "credentialPhone": "전화번호"
+  },
   "emailRequired": {
     "addEmail": "이메일 추가",
     "description": "Deriv P2P에서 매수 또는 매도하려면 Deriv 계정에 이메일 주소가 필요합니다.",

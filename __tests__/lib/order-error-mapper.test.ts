@@ -161,6 +161,36 @@ describe("mapOrderError", () => {
       expect(result.primaryAction).toBe(OrderErrorAction.OpenLiveChat)
       expect(result.secondaryAction).toBe(OrderErrorAction.Dismiss)
     })
+
+    it("shows the sell cooldown copy for a seller (buy advert) when a cooldown lock is present", () => {
+      const result = mapOrderError("OrderUserTransactionTypeNotAllowed", t, {
+        isBuyAdvert: true,
+        cooldownLock: { expiresAt: "2026-09-12T06:18:52.052527+00:00", reason: "password" },
+        locale: "en",
+      })
+      expect(result.title).toBe("cooldown.sellUnavailableTitle")
+      expect(result.message).toContain("cooldown.sellUnavailableDescription")
+      expect(result.message).toContain("cooldown.credentialPassword")
+      expect(result.primaryAction).toBe(OrderErrorAction.Dismiss)
+      expect(result.secondaryAction).toBeUndefined()
+    })
+
+    it("shows the buy cooldown copy for a buyer (sell advert) when a cooldown lock is present", () => {
+      const result = mapOrderError("OrderUserTransactionTypeNotAllowed", t, {
+        isBuyAdvert: false,
+        cooldownLock: { expiresAt: "2026-09-12T06:18:52.052527+00:00", reason: "email" },
+        locale: "en",
+      })
+      expect(result.title).toBe("cooldown.buyUnavailableTitle")
+      expect(result.message).toContain("cooldown.buyUnavailableDescription")
+      expect(result.message).toContain("cooldown.credentialEmail")
+    })
+
+    it("falls back to the generic order-type copy when no cooldown lock is present", () => {
+      const result = mapOrderError("OrderUserTransactionTypeNotAllowed", t, { isBuyAdvert: true })
+      expect(result.title).toBe("order.orderTypeNotAllowedTitle")
+      expect(result.primaryAction).toBe(OrderErrorAction.OpenLiveChat)
+    })
   })
 
   // ─── User-state errors ───────────────────────────────────────────────────────
@@ -178,12 +208,12 @@ describe("mapOrderError", () => {
       expect(result.secondaryAction).toBe(OrderErrorAction.Dismiss)
     })
 
-    it("maps P2PDisabled to maintenance copy + OpenLiveChat", () => {
+    it("maps P2PDisabled to maintenance copy + GoToMarkets", () => {
       const result = mapOrderError("P2PDisabled", t)
       expect(result.title).toBe("maintenance.errorTitle")
       expect(result.message).toBe("maintenance.errorMessage")
-      expect(result.primaryAction).toBe(OrderErrorAction.OpenLiveChat)
-      expect(result.secondaryAction).toBe(OrderErrorAction.Dismiss)
+      expect(result.primaryAction).toBe(OrderErrorAction.GoToMarkets)
+      expect(result.secondaryAction).toBe(OrderErrorAction.OpenLiveChat)
     })
 
     it("maps OrderUserFundsInsufficient to Retry + OpenLiveChat", () => {

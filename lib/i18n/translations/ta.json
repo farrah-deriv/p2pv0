@@ -408,6 +408,15 @@
     "lostMessage": "இணைப்பு நிலையற்றதாக இருக்கலாம்.",
     "refreshCta": "புதுப்பி"
   },
+  "cooldown": {
+    "sellUnavailableTitle": "P2P இல் விற்பனை தற்காலிகமாக கிடைக்கவில்லை",
+    "sellUnavailableDescription": "நீங்கள் சமீபத்தில் உங்கள் {credential} ஐ மாற்றியுள்ளீர்கள். உங்கள் பாதுகாப்பிற்காக, நீங்கள் P2P இல் தொடர்ந்து வாங்கலாம், ஆனால் {date} {time} வரை விற்க முடியாது.",
+    "buyUnavailableTitle": "P2P இல் வாங்குதல் தற்காலிகமாக கிடைக்கவில்லை",
+    "buyUnavailableDescription": "நீங்கள் சமீபத்தில் உங்கள் {credential} ஐ மாற்றியுள்ளீர்கள். உங்கள் பாதுகாப்பிற்காக, நீங்கள் P2P இல் தொடர்ந்து விற்கலாம், ஆனால் {date} {time} வரை வாங்க முடியாது.",
+    "credentialPassword": "கடவுச்சொல்",
+    "credentialEmail": "மின்னஞ்சல் முகவரி",
+    "credentialPhone": "தொலைபேசி எண்"
+  },
   "emailRequired": {
     "addEmail": "மின்னஞ்சலைச் சேர்க்கவும்",
     "description": "Deriv P2P-இல் வாங்க அல்லது விற்க, உங்கள் Deriv கணக்கில் மின்னஞ்சல் முகவரி தேவை.",

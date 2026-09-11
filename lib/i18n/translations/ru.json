@@ -433,6 +433,15 @@
     "lostMessage": "Соединение может быть нестабильным.",
     "refreshCta": "Обновить"
   },
+  "cooldown": {
+    "sellUnavailableTitle": "Продажа на P2P временно недоступна",
+    "sellUnavailableDescription": "Вы недавно изменили {credential}. В целях безопасности вы можете продолжать покупать на P2P, но не сможете продавать до {date}, {time}.",
+    "buyUnavailableTitle": "Покупка на P2P временно недоступна",
+    "buyUnavailableDescription": "Вы недавно изменили {credential}. В целях безопасности вы можете продолжать продавать на P2P, но не сможете покупать до {date}, {time}.",
+    "credentialPassword": "пароль",
+    "credentialEmail": "адрес электронной почты",
+    "credentialPhone": "номер телефона"
+  },
   "emailRequired": {
     "addEmail": "Добавить электронную почту",
     "description": "Чтобы покупать или продавать на Deriv P2P, в вашем аккаунте Deriv нужен адрес электронной почты.",

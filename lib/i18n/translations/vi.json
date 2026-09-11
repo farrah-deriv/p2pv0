@@ -444,6 +444,15 @@
     "lostMessage": "Kết nối có thể không ổn định.",
     "refreshCta": "Làm mới"
   },
+  "cooldown": {
+    "sellUnavailableTitle": "Tạm thời không thể bán trên P2P",
+    "sellUnavailableDescription": "Gần đây bạn đã thay đổi {credential} của mình. Vì lý do bảo mật, bạn có thể tiếp tục mua trên P2P, nhưng không thể bán cho đến {date}, {time}.",
+    "buyUnavailableTitle": "Tạm thời không thể mua trên P2P",
+    "buyUnavailableDescription": "Gần đây bạn đã thay đổi {credential} của mình. Vì lý do bảo mật, bạn có thể tiếp tục bán trên P2P, nhưng không thể mua cho đến {date}, {time}.",
+    "credentialPassword": "mật khẩu",
+    "credentialEmail": "địa chỉ email",
+    "credentialPhone": "số điện thoại"
+  },
   "emailRequired": {
     "addEmail": "Thêm email",
     "description": "Bạn cần có địa chỉ email trên tài khoản Deriv để mua hoặc bán trên Deriv P2P.",

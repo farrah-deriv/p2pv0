@@ -61,6 +61,7 @@ export const queryKeys = {
     me: () => [...AUTH_KEYS, 'me'] as const,
     kycStatus: () => [...AUTH_KEYS, 'kyc-status'] as const,
     onboardingStatus: () => [...AUTH_KEYS, 'onboarding-status'] as const,
+    permissions: () => [...AUTH_KEYS, 'permissions'] as const,
     totalBalance: () => [...AUTH_KEYS, 'total-balance'] as const,
     userBalance: () => [...AUTH_KEYS, 'user-balance'] as const,
     settings: () => [...AUTH_KEYS, 'settings'] as const,

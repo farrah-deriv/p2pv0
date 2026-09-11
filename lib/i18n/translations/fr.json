@@ -409,6 +409,15 @@
     "lostMessage": "La connexion pourrait être instable.",
     "refreshCta": "Actualiser"
   },
+  "cooldown": {
+    "sellUnavailableTitle": "La vente sur P2P est temporairement indisponible",
+    "sellUnavailableDescription": "Vous avez récemment modifié votre {credential}. Pour votre sécurité, vous pouvez continuer à acheter sur P2P, mais vous ne pouvez pas vendre avant le {date} à {time}.",
+    "buyUnavailableTitle": "L'achat sur P2P est temporairement indisponible",
+    "buyUnavailableDescription": "Vous avez récemment modifié votre {credential}. Pour votre sécurité, vous pouvez continuer à vendre sur P2P, mais vous ne pouvez pas acheter avant le {date} à {time}.",
+    "credentialPassword": "mot de passe",
+    "credentialEmail": "adresse e-mail",
+    "credentialPhone": "numéro de téléphone"
+  },
   "emailRequired": {
     "addEmail": "Ajouter un e-mail",
     "description": "Vous avez besoin d'une adresse e-mail sur votre compte Deriv pour acheter ou vendre sur Deriv P2P.",

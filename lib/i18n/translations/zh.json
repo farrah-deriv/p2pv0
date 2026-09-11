@@ -408,6 +408,15 @@
     "lostMessage": "连接可能不稳定。",
     "refreshCta": "刷新"
   },
+  "cooldown": {
+    "sellUnavailableTitle": "P2P 卖出暂时不可用",
+    "sellUnavailableDescription": "您最近更改了{credential}。为了您的安全，您可以继续在 P2P 买入，但在 {date} {time} 之前无法卖出。",
+    "buyUnavailableTitle": "P2P 买入暂时不可用",
+    "buyUnavailableDescription": "您最近更改了{credential}。为了您的安全，您可以继续在 P2P 卖出，但在 {date} {time} 之前无法买入。",
+    "credentialPassword": "密码",
+    "credentialEmail": "电子邮件地址",
+    "credentialPhone": "电话号码"
+  },
   "emailRequired": {
     "addEmail": "添加邮箱",
     "description": "您需要在 Deriv 账户中添加电子邮件地址，才能在 Deriv P2P 上买卖。",

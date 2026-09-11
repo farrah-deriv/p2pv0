@@ -1324,6 +1324,15 @@
     "lostMessage": "Connection might be unstable.",
     "refreshCta": "Refresh"
   },
+  "cooldown": {
+    "sellUnavailableTitle": "P2P selling is temporarily unavailable",
+    "sellUnavailableDescription": "You recently changed your {credential}. For your security, you can continue buying on P2P, but you can’t sell until {date}, {time}.",
+    "buyUnavailableTitle": "P2P buying is temporarily unavailable",
+    "buyUnavailableDescription": "You recently changed your {credential}. For your security, you can continue selling on P2P, but you can’t buy until {date}, {time}.",
+    "credentialPassword": "password",
+    "credentialEmail": "email address",
+    "credentialPhone": "phone number"
+  },
   "presence": {
     "seenJustNow": "Seen just now",
     "seenMinutesAgo": "Seen {count} minute{plural} ago",

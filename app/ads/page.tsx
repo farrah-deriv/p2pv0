@@ -278,7 +278,7 @@ export default function AdsPage() {
             </div>
           )}
           {isActiveTab && (
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
               {!isMaintenanceActive && userAdverts.length > 0 && (
                 <Button
                   onClick={handleCreateAd}

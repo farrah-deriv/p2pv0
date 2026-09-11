@@ -408,6 +408,15 @@
     "lostMessage": "Холболт тогтворгүй байж магадгүй.",
     "refreshCta": "Сэргээх"
   },
+  "cooldown": {
+    "sellUnavailableTitle": "P2P дээр зарах боломжгүй байна",
+    "sellUnavailableDescription": "Та саяхан {credential}-аа өөрчилсөн байна. Аюулгүй байдлын үүднээс та P2P дээр худалдан авалт хийсээр байж болно, гэхдээ {date}-ны {time} хүртэл зарах боломжгүй.",
+    "buyUnavailableTitle": "P2P дээр худалдан авах боломжгүй байна",
+    "buyUnavailableDescription": "Та саяхан {credential}-аа өөрчилсөн байна. Аюулгүй байдлын үүднээс та P2P дээр зарсаар байж болно, гэхдээ {date}-ны {time} хүртэл худалдан авах боломжгүй.",
+    "credentialPassword": "нууц үг",
+    "credentialEmail": "имэйл хаяг",
+    "credentialPhone": "утасны дугаар"
+  },
   "emailRequired": {
     "addEmail": "Имэйл нэмэх",
     "description": "Deriv P2P дээр худалдан авах эсвэл зарахын тулд Deriv дансадаа имэйл хаяг шаардлагатай.",

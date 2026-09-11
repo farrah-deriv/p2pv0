@@ -408,6 +408,15 @@
     "lostMessage": "連線可能不穩定。",
     "refreshCta": "重新整理"
   },
+  "cooldown": {
+    "sellUnavailableTitle": "P2P 賣出暫時無法使用",
+    "sellUnavailableDescription": "您最近變更了{credential}。為了您的安全，您可以繼續在 P2P 買入，但在 {date} {time} 之前無法賣出。",
+    "buyUnavailableTitle": "P2P 買入暫時無法使用",
+    "buyUnavailableDescription": "您最近變更了{credential}。為了您的安全，您可以繼續在 P2P 賣出，但在 {date} {time} 之前無法買入。",
+    "credentialPassword": "密碼",
+    "credentialEmail": "電子郵件地址",
+    "credentialPhone": "電話號碼"
+  },
   "emailRequired": {
     "addEmail": "新增電子郵件",
     "description": "您需要在 Deriv 帳戶中新增電子郵件地址，才能在 Deriv P2P 上買賣。",

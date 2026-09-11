@@ -729,6 +729,58 @@ export async function getOnboardingStatus(): Promise<OnboardingStatusResponse> {
 }
 
 /**
+ * A single active/expired cooldown entry from the identity permissions API.
+ * `action_lock` describes what the cooldown blocks (e.g. `withdraw_lock`,
+ * `deposit_lock`); `cooldown_type_code` describes why it was triggered
+ * (e.g. `password_change`, `email_change`, `phone_change`). `expires_at` is an
+ * ISO-8601 timestamp. Unknown enum values are kept as raw strings on purpose so
+ * a new backend lock/type never silently drops the whole cooldown.
+ */
+export interface PermissionCooldown {
+  cooldown_type_code: string
+  cooldown_type_description?: string | null
+  action_lock: string | null
+  action_lock_description?: string | null
+  expires_at: string
+  status: string
+  created_at?: string
+}
+
+export interface PermissionsResponse {
+  context: {
+    cooldowns: PermissionCooldown[]
+  }
+}
+
+/**
+ * Get the client's identity permissions, including active cooldowns and their
+ * action locks (withdraw/deposit). Used to surface the P2P cooldown alert.
+ */
+export async function getPermissions(): Promise<PermissionsResponse> {
+  try {
+    const response = await p2pFetch(`${getCoreUrl()}/v2/identity/permissions`, {
+      method: "GET",
+      credentials: "include",
+      // Cooldowns expire on a wall-clock deadline; always read a fresh value so
+      // the alert disappears promptly once the lock lifts.
+      cache: "no-store",
+      headers: getAuthHeader(),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch permissions: ${response.statusText}`)
+    }
+
+    const result = await response.json()
+    const context = result?.data?.context ?? {}
+    return { context: { cooldowns: Array.isArray(context.cooldowns) ? context.cooldowns : [] } }
+  } catch (error) {
+    console.error("Error fetching permissions:", error)
+    throw error
+  }
+}
+
+/**
  * Get total balance for the user
  */
 const TOTAL_BALANCE_ENDPOINT = "v1/client/total-balance"

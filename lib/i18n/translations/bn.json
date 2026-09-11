@@ -417,6 +417,15 @@
     "lostMessage": "সংযোগ অস্থির হতে পারে।",
     "refreshCta": "রিফ্রেশ"
   },
+  "cooldown": {
+    "sellUnavailableTitle": "P2P-তে বিক্রি সাময়িকভাবে অনুপলব্ধ",
+    "sellUnavailableDescription": "আপনি সম্প্রতি আপনার {credential} পরিবর্তন করেছেন। আপনার নিরাপত্তার জন্য, আপনি P2P-তে কেনা চালিয়ে যেতে পারেন, কিন্তু {date}, {time} পর্যন্ত বিক্রি করতে পারবেন না।",
+    "buyUnavailableTitle": "P2P-তে কেনা সাময়িকভাবে অনুপলব্ধ",
+    "buyUnavailableDescription": "আপনি সম্প্রতি আপনার {credential} পরিবর্তন করেছেন। আপনার নিরাপত্তার জন্য, আপনি P2P-তে বিক্রি চালিয়ে যেতে পারেন, কিন্তু {date}, {time} পর্যন্ত কিনতে পারবেন না।",
+    "credentialPassword": "পাসওয়ার্ড",
+    "credentialEmail": "ইমেল ঠিকানা",
+    "credentialPhone": "ফোন নম্বর"
+  },
   "emailRequired": {
     "addEmail": "ইমেল যোগ করুন",
     "description": "Deriv P2P-এ কেনা বা বিক্রি করতে আপনার Deriv অ্যাকাউন্টে একটি ইমেল ঠিকানা প্রয়োজন।",
