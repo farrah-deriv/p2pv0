@@ -116,6 +116,12 @@ export function useAnalytics() {
         posthogOptions: {
           apiKey: posthogKey,
           api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+          // Registered as a PostHog super property via posthog.register({ app_version })
+          // right after posthog.init(), so app_version is stamped on ALL events —
+          // including auto-captured ones ($pageview, $autocapture) that never pass
+          // through useTrackEvent. Matches app-info.json version stamped by CI
+          // (NEXT_PUBLIC_APP_VERSION = github.sha on staging / production_* tag on prod).
+          app_version: process.env.NEXT_PUBLIC_APP_VERSION ?? "",
           config: {
             debug: false,
           },
