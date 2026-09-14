@@ -30,6 +30,35 @@ describe("useAnalytics", () => {
     expect(typeof result.current.backfillPersonProperties).toBe("function")
   })
 
+  it("passes app_version into posthogOptions so PostHog registers it on all events", () => {
+    process.env.NEXT_PUBLIC_POSTHOG_KEY = "ph-key"
+    process.env.NEXT_PUBLIC_APP_VERSION = "production_v20260818_0"
+
+    renderHook(() => useAnalytics())
+
+    expect(Analytics.initialise).toHaveBeenCalledWith(
+      expect.objectContaining({
+        posthogOptions: expect.objectContaining({
+          apiKey: "ph-key",
+          app_version: "production_v20260818_0",
+        }),
+      })
+    )
+  })
+
+  it("defaults posthogOptions.app_version to empty string when NEXT_PUBLIC_APP_VERSION is unset", () => {
+    process.env.NEXT_PUBLIC_POSTHOG_KEY = "ph-key"
+    delete process.env.NEXT_PUBLIC_APP_VERSION
+
+    renderHook(() => useAnalytics())
+
+    expect(Analytics.initialise).toHaveBeenCalledWith(
+      expect.objectContaining({
+        posthogOptions: expect.objectContaining({ app_version: "" }),
+      })
+    )
+  })
+
   it("does not expose backfillPersonProperties when PostHog key is absent", () => {
     process.env.NEXT_PUBLIC_RUDDERSTACK_KEY = "rs-key"
     delete process.env.NEXT_PUBLIC_POSTHOG_KEY

@@ -18,7 +18,7 @@
   "dependencies": {
     "@datadog/browser-logs": "7.0.0",
     "@datadog/browser-rum": "7.0.0",
-    "@deriv-com/analytics": "1.42.1",
+    "@deriv-com/analytics": "1.43.0",
     "@deriv-com/quill-ui-v2": "0.0.8",
     "@deriv-com/utils": "^0.0.42",
     "@deriv/quill-icons": "2.10.0",
