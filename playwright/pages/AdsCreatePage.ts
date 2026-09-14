@@ -73,6 +73,14 @@ export class AdsCreatePage {
         return this.page.getByTestId("ad-form-input-rate").filter({ visible: true });
     }
 
+    /**
+     * Payment-currency selector trigger on step 0 ("Pay with" for Buy ads,
+     * "Receive in" for Sell ads). Opens the shared CurrencyFilter dropdown.
+     */
+    get paymentCurrencyTrigger(): Locator {
+        return this.page.getByTestId("ad-form-select-payment-currency").filter({ visible: true });
+    }
+
     /** Total amount input (step 0) */
     get totalAmountInput(): Locator {
         return this.page.getByTestId("ad-form-input-total-amount").filter({ visible: true });
@@ -165,6 +173,29 @@ export class AdsCreatePage {
     async fillAdStep0Rate(rate: string): Promise<void> {
         await expect(this.rateInput, "Rate input should be visible on step 0").toBeVisible();
         await this.rateInput.fill(rate);
+    }
+
+    /**
+     * Select the payment currency on step 0 via the CurrencyFilter dropdown.
+     *
+     * The wizard defaults to the first currency in the list (e.g. BAM), so tests that
+     * need a specific market currency (e.g. IDR) must switch it before entering the rate.
+     * Rows display "{code} - {name}"; matching by code prefix stays locale-independent.
+     *
+     * @param currencyCode - 3-letter code (e.g. "IDR")
+     */
+    async selectPaymentCurrency(currencyCode: string): Promise<void> {
+        await expect(this.paymentCurrencyTrigger, "Payment currency trigger should be visible on step 0").toBeVisible();
+        await this.paymentCurrencyTrigger.click();
+        // Escape regex metacharacters so arbitrary caller input is matched literally —
+        // "US+" or "IDR." would otherwise silently become an invalid/greedy pattern.
+        const escapedCode = currencyCode.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const row = this.page
+            .locator(`[data-testid^="currency-filter-btn-"]`)
+            .filter({ hasText: new RegExp(`^${escapedCode}\\b`) })
+            .first();
+        await expect(row, `Currency "${currencyCode}" should be selectable in the payment currency dropdown`).toBeVisible();
+        await row.click();
     }
 
     /**

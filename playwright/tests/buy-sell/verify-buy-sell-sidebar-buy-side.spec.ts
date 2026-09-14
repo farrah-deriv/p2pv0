@@ -16,8 +16,85 @@ import { test, expect } from "../../fixtures/fixtures";
  * Prerequisites: At least one sell-type ad visible on the Buy tab; logged-in user is
  * KYC-verified and is NOT the advertiser of that ad.
  */
+// Serial mode: shares TEST_EMAIL_SELLER with verify-buy-sell-sidebar-sell-side; parallel
+// logins invalidate each other's session ("Notifications error" — Create ad then no-ops).
+test.describe.configure({ mode: "serial" });
 test.describe("Buy-sell — Buy-side order sidebar", { tag: ["@buy-sell", "@smoke", "@staging", "@desktop", "@mobile"] }, () => {
-    test.beforeEach(async ({ loginPage }) => {
+    test.beforeEach(async ({ page, loginPage, adsPage, adsCreatePage }, testInfo) => {
+        // The market's IDR Buy-tab inventory is shared, external staging state — a prior
+        // run's ad may have been deleted, or IDR may simply have no other seller's ad live
+        // at run time (this test was failing for exactly that reason). Guarantee a Sell-type
+        // IDR ad exists by creating one as the dedicated seller account first.
+        //
+        // The seller setup runs in the SAME page/context as the buyer flow — logging the
+        // seller in from a second concurrent context makes staging's notification service
+        // reject one of the two simultaneous sessions ("Notifications error" in the header,
+        // after which the Create ad click silently fails). Instead: login as seller →
+        // create the ad → clear cookies (the staging build has no in-app logout control —
+        // DevLogoutButton only renders under NODE_ENV=development) → login as buyer.
+        const sellerEmail = process.env.TEST_EMAIL_SELLER;
+        if (!sellerEmail) throw new Error("TEST_EMAIL_SELLER not set in playwright/.env.staging");
+
+        // Fixed IDR/USD rate for the seller's setup ad. Realistic relative to IDR's real
+        // market rate (~17,500) — the app rejects fixed rates too far from the live market
+        // price ("Check your fixed rate" dialog), so an arbitrary placeholder is rejected.
+        // Project-specific rates AND order-limit ranges (desktop vs mobile) avoid duplicate
+        // and overlapping-range collisions when chromium and chromium-mobile run this
+        // beforeEach in parallel against the same seller account (same pattern as
+        // ads/verify-create-sell-ad.spec.ts). Both ranges stay within the seller account's
+        // known P2P balance (1,000 USD) and don't overlap: desktop 10–100, mobile 101–250.
+        // Calibrated 2026-09 against IDR/USD ~17,500. Re-verify if IDR spot rate shifts > 500 pts
+        // (test will start failing at ad creation with the "Check your fixed rate" dialog).
+        const isMobile = testInfo.project.name.includes("mobile");
+        const setupAdRate = isMobile ? "17601.00" : "17600.00";
+        const setupMinOrder = isMobile ? "101" : "10";
+        const setupMaxOrder = isMobile ? "250" : "100";
+
+        // Seller session — create the setup ad
+        await loginPage.login(sellerEmail);
+
+        // Delete only this project's own rate first — avoids duplicate-rate rejection on
+        // rerun, and is scoped so the other project's IDR ad (different rate/range) is
+        // never touched when both projects run in parallel.
+        const apiBase = await adsPage.deleteAdsByRate(setupAdRate);
+        if (apiBase) {
+            await adsPage.ensureSellPaymentMethodExists(apiBase);
+        } else {
+            // deleteAdsByRate couldn't intercept the adverts response, so we can't confirm
+            // (or fix) the seller's payment methods here. If the account genuinely has none,
+            // selectFirstPaymentMethodSellAd() below will fail on a missing checkbox with a
+            // confusing locator error instead of a clear cause — this log gives that failure
+            // a starting point.
+            console.warn(
+                "[verify-buy-sell-sidebar-buy-side beforeEach] Could not intercept adverts " +
+                "response — ensureSellPaymentMethodExists skipped. If selectFirstPaymentMethodSellAd " +
+                "fails below, check TEST_EMAIL_SELLER has at least one saved payment method."
+            );
+        }
+
+        await adsPage.gotoAdsPage();
+        await adsPage.clickCreateAd();
+
+        await adsCreatePage.verifyStep0Visible();
+        await adsCreatePage.selectSellAdType();
+        await adsCreatePage.selectPaymentCurrency("IDR");
+        await adsCreatePage.fillAdStep0Rate(setupAdRate);
+        await adsCreatePage.proceedToStep1();
+
+        await adsCreatePage.verifyStep1Visible();
+        await adsCreatePage.fillAdStep1Amounts("500", setupMinOrder, setupMaxOrder);
+        await adsCreatePage.selectFirstPaymentMethodSellAd();
+        await adsCreatePage.proceedToStep2();
+
+        await adsCreatePage.verifyStep2Visible();
+        await adsCreatePage.submitCreateAd();
+        await adsCreatePage.verifySuccessScreen();
+
+        // "Logout" the seller — clear all session cookies in this context. Staging has no
+        // in-app logout control, and this is the same mechanism DevLogoutButton relies on
+        // server-side: without cookies, the next login() starts a fresh Kratos session.
+        await page.context().clearCookies();
+
         // loginPage.login() validates TEST_EMAIL / TEST_PASSWORD internally
         await loginPage.login();
     });
@@ -25,11 +102,9 @@ test.describe("Buy-sell — Buy-side order sidebar", { tag: ["@buy-sell", "@smok
     test("VERIFY buy-side order sidebar opens with correct content, place order is gated on amount entry, and sidebar closes", async ({
         marketPage,
     }) => {
-        // Navigate to the market page using IDR — this currency reliably has active
-        // Sell-type ads from other test accounts on staging. The Sell-type ads are the
-        // ones that appear on the Buy tab and allow the buyer to open the order sidebar.
-        // The seller's ad created by setup-sell-ad cannot be relied on here because sell
-        // ads are inactive (hidden from the market) when the seller has zero P2P balance.
+        // Navigate to the market page using IDR — the beforeEach above guarantees an active
+        // Sell-type IDR ad exists (created via TEST_EMAIL_SELLER), so the Buy tab always has
+        // at least one ad to open the order sidebar from, independent of other staging state.
         await marketPage.gotoMarketPage("IDR");
         await expect(marketPage.buyTab, "Buy tab should be active by default on the market page").toHaveAttribute("data-state", "active");
 

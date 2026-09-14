@@ -103,6 +103,20 @@ export class LoginPage {
     // These locators assert the home-app dashboard rendered correctly.
 
     /**
+     * "We've updated our Terms and Conditions" dialog — appears intermittently on the
+     * home-app dashboard for accounts with a pending ToS acceptance. Its backdrop covers
+     * the "Explore Deriv" section and intercepts clicks on `p2pButton` until dismissed.
+     */
+    get termsUpdatedDialog(): Locator {
+        return this.page.getByRole("dialog", { name: "We've updated our Terms and Conditions" });
+    }
+
+    /** "Accept" button inside `termsUpdatedDialog` */
+    get termsUpdatedAcceptButton(): Locator {
+        return this.termsUpdatedDialog.getByRole("button", { name: "Accept" });
+    }
+
+    /**
      * "P2P" button in the "Explore Deriv" section — viewport-aware.
      * - Desktop: `dashboard-btn-explore-p2p-desktop`
      * - Mobile: `dashboard-btn-explore-p2p-mobile`
@@ -176,11 +190,11 @@ export class LoginPage {
     /**
      * User profile link/button — viewport-aware.
      * - Desktop: sidebar link (`sidebar-link-profile`)
-     * - Mobile: "Go to profile" button in the header
+     * - Mobile: "Go to profile" link in the header
      */
     get userProfileLink(): Locator {
         if (this.isMobile) {
-            return this.page.getByRole("button", { name: "Go to profile" });
+            return this.page.getByRole("link", { name: "Go to profile" });
         }
         return this.page.getByTestId("sidebar-link-profile");
     }
@@ -199,8 +213,16 @@ export class LoginPage {
         await this.waitForLoginPageToLoad();
     }
 
-    /** Click the P2P button on the home-app dashboard to navigate to the P2P Markets page */
+    /**
+     * Click the P2P button on the home-app dashboard to navigate to the P2P Markets page.
+     * Dismisses the intermittent "Terms and Conditions" dialog first if present — its
+     * backdrop otherwise intercepts the click and the action hangs until it times out.
+     */
     async clickP2P(): Promise<void> {
+        if (await this.termsUpdatedDialog.isVisible().catch(() => false)) {
+            await this.termsUpdatedAcceptButton.click();
+            await expect(this.termsUpdatedDialog, "Terms and Conditions dialog should close after Accept").toBeHidden();
+        }
         await expect(this.p2pButton, '"P2P" button should be visible on the dashboard').toBeVisible();
         await this.p2pButton.click();
     }
@@ -238,7 +260,11 @@ export class LoginPage {
      * staging-home.deriv.com/dashboard/home → click P2P → staging-p2p.deriv.com/
      *
      * @param email - User email (falls back to TEST_EMAIL env var)
-     * @param password - User password (falls back to TEST_PASSWORD env var)
+     * @param password - User password (falls back to TEST_PASSWORD env var). All staging
+     *   test accounts (TEST_EMAIL, TEST_EMAIL_SELLER, ...) share the same TEST_PASSWORD by
+     *   convention — there is no per-account password env var. Passing a different account's
+     *   email without an explicit password relies on this and will fail with a generic
+     *   credential error if that account ever gets its own password.
      * @returns The email address used to log in
      */
     async login(email?: string, password?: string): Promise<string> {
@@ -272,6 +298,17 @@ export class LoginPage {
         // callers that immediately call page.goto("/") hit "Frame load interrupted" because
         // the router.replace redirect is still in flight.
         await this.page.waitForLoadState("load");
+        // WebKit can report "load" while the SSO redirect chain (home-app → dp2p → the
+        // router.replace that drops query params) is still in flight — a caller that
+        // immediately does page.goto("/") then races an in-progress navigation and WebKit
+        // throws "Frame load interrupted" (Chromium/Firefox tolerate the same race silently).
+        // Waiting for a stable market-page landmark closes that gap for every engine.
+        // The app renders both desktop and mobile layouts simultaneously, so filter to
+        // the visible instance (see MarketPage.firstBuyButton for the same pattern).
+        await expect(
+            this.page.getByTestId("markets-tab-buy").filter({ visible: true }).first(),
+            "Market page Buy tab should be visible after SSO redirect settles"
+        ).toBeVisible();
 
         return loginEmail;
     }
