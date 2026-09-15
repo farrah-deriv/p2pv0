@@ -268,7 +268,11 @@ export default function BuySellPage() {
   useEffect(() => {
     if (!hasMountedFilterResetRef.current) {
       hasMountedFilterResetRef.current = true
-      return
+      // Return a cleanup that resets the flag so React Strict Mode's dev-only
+      // double-invoke (mount → cleanup → mount) still treats the second run as
+      // the initial mount. Without this the ref would stay true on the second
+      // run and zero the scroll position we just restored.
+      return () => { hasMountedFilterResetRef.current = false }
     }
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0
