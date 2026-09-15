@@ -593,60 +593,18 @@ export async function createAd(
     }
 
     if (!response.ok) {
-      let errorMessage = responseData.error || `Error creating advertisement: ${response.statusText}`
-      let errorCode = null
-      let apiError: AdvertApiError | undefined
+      const apiError: AdvertApiError | undefined =
+        Array.isArray(responseData?.errors) && responseData.errors.length > 0
+          ? responseData.errors[0]
+          : undefined
 
-      if (responseData.errors && Array.isArray(responseData.errors) && responseData.errors.length > 0) {
-        apiError = responseData.errors[0]
-        if (responseData.errors[0].code) {
-          errorCode = responseData.errors[0].code
-
-          switch (errorCode) {
-            case "AdvertExchangeRateDuplicate":
-              errorMessage = "You already have an ad with this exchange rate. Please use a different rate."
-              break
-            case "AdvertLimitReached":
-              errorMessage = "You've reached the maximum number of ads allowed."
-              break
-            case "InvalidExchangeRate":
-              errorMessage = "The exchange rate you provided is invalid."
-              break
-            case "InvalidOrderAmount":
-              errorMessage = "The order amount limits are invalid."
-              break
-            case "InsufficientBalance":
-              errorMessage = "You don't have enough balance to create this ad."
-              break
-            case "AdvertTotalAmountExceeded":
-              errorMessage = "The total amount exceeds your available balance. Please enter a smaller amount."
-              break
-            case "AdvertActiveCountExceeded":
-              errorMessage =
-                "You can only have 3 active ads for this currency pair and order type. Delete an ad to create a new one."
-              break
-            case "AdvertFloatRateMaximum":
-              errorMessage =
-                "The floating rate you entered is higher than the allowed limit. Lower the rate to continue."
-              break
-            default:
-              errorMessage = `${errorCode}: Please try again or contact support.`
-          }
-        } else if (responseData.errors[0].message) {
-          errorMessage = responseData.errors[0].message
-        }
-      }
-
-      if (response.status === 400) {
-        if (errorMessage.includes("limit") || errorCode === "AdvertLimitReached") {
-          throw new Error("ad_limit_reached")
-        }
-      }
+      // Deliberately no English message map and no routing on message text: the UI
+      // localises from `code`, so anything invented here would either be shown
+      // untranslated or — as it used to — get matched on and destroy the real code.
+      const errorMessage =
+        apiError?.message || responseData?.error || `Error creating advertisement: ${response.statusText}`
 
       const error: CreateAdError = new Error(errorMessage)
-      if (errorCode) {
-        error.name = errorCode
-      }
       // Keep the raw entry so fields beyond `code`/`message` (e.g. existing_advert_id)
       // survive the catch below instead of being reduced away.
       error.apiError = apiError
@@ -667,11 +625,13 @@ export async function createAd(
         status: "inactive",
         created_at: new Date().toISOString(),
       },
+      // Mirrors updateAd: the backend entry passes through whole, and when there was
+      // none we emit a single technical entry with NO code, so the UI's generic
+      // (no-code) path engages instead of rendering a fabricated code to the user.
       errors: [
         {
           ...((error as CreateAdError)?.apiError ?? {}),
           message: error instanceof Error ? error.message : "An unexpected error occurred",
-          code: error instanceof Error ? error.name : "UnknownError",
         },
       ],
     }

@@ -25,6 +25,7 @@ import CountrySelection from "./country-selection"
 import { PaymentSelectionProvider, usePaymentSelection } from "../payment-selection-context"
 import { useToast } from "@/hooks/use-toast"
 import { type Country } from "@/services/api/api-auth"
+import { type AdvertApiError } from "@/services/api/api-my-ads"
 import { useTranslations } from "@/lib/i18n/use-translations"
 import { useUserDataStore } from "@/stores/user-data-store"
 import {
@@ -70,6 +71,12 @@ import {
   readExistingAdvertId,
   type ConflictingAdvertRange,
 } from "@/lib/ads/range-overlap-error"
+import {
+  AdErrorDestination,
+  ORDER_LIMITS_STEP_INDEX,
+  RATE_STEP_INDEX,
+} from "@/lib/ads/ad-error-actions"
+import { mapAdError } from "@/lib/ads/ad-error-mapper"
 import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 import { useWizardExchangeRate } from "@/app/ads/hooks/use-wizard-exchange-rate"
 import { useAccountCurrencies } from "@/hooks/use-account-currencies"
@@ -84,9 +91,6 @@ import {
   resolveStaleRateRecovery,
   type StaleEpisodeState,
 } from "@/lib/ads/exchange-rate-recovery"
-
-/** Step 2/3 "Set amount and payment" — where the min/max order limit inputs live. */
-const ORDER_LIMITS_STEP_INDEX = 1
 
 /**
  * Why the edit wizard is holding the rate section behind its skeleton.
@@ -121,10 +125,11 @@ interface MultiStepAdFormProps {
   initialType?: "buy" | "sell"
 }
 
-interface ApiErrorDetail {
-  code?: string
-  message?: string
-}
+/**
+ * Reuses the service's error shape so `status` and `detail` (e.g. the overlap
+ * rejection's `existing_advert_id`) survive typing instead of being narrowed away.
+ */
+type ApiErrorDetail = AdvertApiError
 
 interface ApiErrorShape {
   errors?: ApiErrorDetail[]
@@ -773,39 +778,6 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     }
   }
 
-  const formatErrorMessage = (errors: ApiErrorDetail[]): string => {
-    if (!errors || errors.length === 0) {
-      return t("adForm.genericProcessingErrorMessage")
-    }
-
-    if (errors[0].code) {
-      const errorCodeMap: Record<string, string> = {
-        AdvertLimitReached: t("adForm.adLimitReachedMessage"),
-        InvalidExchangeRate: t("adForm.invalidExchangeRateMessage"),
-        InvalidOrderAmount: t("adForm.invalidOrderAmountMessage"),
-        InsufficientBalance: t("adForm.insufficientBalanceMessage"),
-        AdvertTotalAmountExceeded: t("adForm.amountExceedsBalanceMessage"),
-        AdvertActiveCountExceeded: t("adForm.adLimitReachedMessage"),
-        AdvertFixedRateMinimum: t("adForm.advertFixedRateMinimumMessage"),
-        AdvertFixedRateMaximum: t("adForm.advertFixedRateMaximumMessage"),
-        AdvertFloatRateMaximum: t("adForm.advertFloatRateMaximumMessage"),
-        AdvertExchangeRateDuplicate: t("adForm.duplicateRateMessage"),
-        AdvertOrderRangeOverlap: t("adForm.rangeOverlapMessage"),
-        AdvertPaymentMethodDuplicate: t("adForm.duplicatePaymentMethodMessage"),
-        AdvertPaymentMethodRemoveOpenOrder: t("adForm.paymentMethodRemoveOpenOrderMessage"),
-        ...(mode === "create" && { AdvertPaymentMethodIDsRequired: t("adForm.paymentMethodIDsRequiredMessage") })
-      }
-
-      if (errorCodeMap[errors[0].code]) {
-        return errorCodeMap[errors[0].code]
-      }
-
-      return t("adForm.genericErrorCodeMessage", { code: errors[0].code })
-    }
-
-    return t("adForm.genericProcessingErrorMessage")
-  }
-
   const handleFinalSubmit = () => {
     const finalData = { ...formDataRef.current }
 
@@ -1010,19 +982,6 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     }
   }
 
-  const getErrorConfirmText = (errorName: string): string => {
-    const confirmTextMap: Record<string, string> = {
-      AdvertOrderRangeOverlap: t("adForm.editLimitsForRangeOverlap"),
-      AdvertFixedRateMinimum: t("adForm.updateRate"),
-      AdvertFixedRateMaximum: t("adForm.updateRate"),
-      AdvertFloatRateMaximum: t("adForm.updateRate"),
-      AdvertPaymentMethodDuplicate: t("adForm.updatePaymentMethods"),
-      AdvertPaymentMethodRemoveOpenOrder: t("common.gotIt"),
-      ...(mode === "create" && { AdvertPaymentMethodIDsRequired: t("adForm.addPaymentMethod") }),
-    }
-    return confirmTextMap[errorName] || t("adForm.updateAd")
-  }
-
   /**
    * Resolve the ad the backend named as the blocker. Returns null when the payload carries no
    * `existing_advert_id` or the ad can't be described, so the caller keeps the generic dialog
@@ -1045,122 +1004,73 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     }
   }
 
+  /**
+   * Maps a submit failure onto its recovery action. Destinations that only dismiss
+   * are deliberately absent: the alert provider auto-closes when no `onConfirm` is
+   * supplied, so omitting the handler is how "stay exactly where you are" is expressed.
+   */
+  const runAdErrorDestination = (destination: AdErrorDestination): (() => void) | undefined => {
+    switch (destination) {
+      case AdErrorDestination.RateStep:
+        return () => setCurrentStep(RATE_STEP_INDEX)
+      case AdErrorDestination.AmountAndPaymentStep:
+        return () => setCurrentStep(ORDER_LIMITS_STEP_INDEX)
+      case AdErrorDestination.MyAds:
+        return () => navigateToMyAdsList()
+      case AdErrorDestination.LiveChat:
+        return () => window.Intercom?.("show")
+      case AdErrorDestination.ViewProfile:
+        return () => router.push("/profile")
+      case AdErrorDestination.Visibility:
+      case AdErrorDestination.Dismiss:
+        return undefined
+    }
+  }
+
   const handleAdError = async (
     error: unknown,
-    mode: "create" | "update",
+    submitMode: "create" | "update",
     submittedPriceType?: "fixed" | "float",
   ) => {
-    let errorMessage = t("adForm.genericProcessingErrorMessage")
-    let errorName = "GenericError"
     const errors = extractApiErrors(error)
+    const errorCode = errors[0]?.code
 
-    if (errors.length > 0) {
-      errorMessage = formatErrorMessage(errors)
-      errorName = errors[0].code ?? errorName
-    }
-
-    if (
-      isFloatingRateRecoveryError(errorName, submittedPriceType)
-    ) {
+    // Must stay ahead of the mapper: a dead floating rate has its own recovery
+    // dialog, which is not a destination the mapper knows how to express.
+    if (isFloatingRateRecoveryError(errorCode ?? "", submittedPriceType)) {
       showStaleRateRecovery()
       return
     }
 
-    const errorInfoMap: Record<string, { title: string; type: "error" | "warning"; onConfirm?: () => void }> = {
-      AdvertExchangeRateDuplicate: {
-        title: t("adForm.duplicateRateTitle"),
-        type: "warning",
-      },
-      AdvertOrderRangeOverlap: {
-        title: t("adForm.rangeOverlapTitle"),
-        type: "warning",
-        // "Edit limits" must land on the step that holds the limit inputs, not step 1.
-        onConfirm: () => {
-          setCurrentStep(ORDER_LIMITS_STEP_INDEX)
-        },
-      },
-      AdvertLimitReached: {
-        title: t("adForm.adLimitReachedTitle"),
-        type: "error",
-      },
-      AdvertActiveCountExceeded: {
-        title: t("adForm.adLimitReachedTitle"),
-        type: "error",
-        onConfirm: () => {
-          navigateToMyAdsList()
-        },
-      },
-      InsufficientBalance: {
-        title: t("adForm.insufficientBalanceTitle"),
-        type: "error",
-      },
-      InvalidExchangeRate: {
-        title: t("adForm.invalidValuesTitle"),
-        type: "error",
-      },
-      InvalidOrderAmount: {
-        title: t("adForm.invalidValuesTitle"),
-        type: "error",
-      },
-      AdvertTotalAmountExceeded: {
-        title: t("adForm.amountExceedsBalanceTitle"),
-        type: "error",
-      },
-      AdvertFixedRateMinimum: {
-        title: t("adForm.advertFixedRateMinimumTitle"),
-        type: "error",
-      },
-      AdvertFixedRateMaximum: {
-        title: t("adForm.advertFixedRateMaximumTitle"),
-        type: "error",
-      },
-      AdvertFloatRateMaximum: {
-        title: t("adForm.advertFloatRateMaximumTitle"),
-        type: "error",
-      },
-      AdvertPaymentMethodDuplicate: {
-        title: t("adForm.duplicatePaymentMethodTitle"),
-        type: "error",
-        onConfirm: () => {
-          router.push("/profile?tab=payment")
-        },
-      },
-      AdvertPaymentMethodRemoveOpenOrder: {
-        title: t("adForm.paymentMethodRemoveOpenOrderTitle"),
-        type: "error",
-        onConfirm: () => { },
-      },
-      ...(mode === "create" && {
-        AdvertPaymentMethodIDsRequired: {
-          title: t("adForm.paymentMethodIDsRequiredTitle"),
-          type: "error" as const,
-          onConfirm: () => {
-            setCurrentStep(1)
-          },
-        },
-      }),
-    }
+    const mapped = mapAdError(errorCode, t, {
+      mode: submitMode === "create" ? "create" : "edit",
+    })
 
-    const errorInfo = errorInfoMap[errorName] || {
-      title: mode === "create" ? t("adForm.failedToCreateAd") : t("adForm.failedToUpdateAd"),
-      type: "error" as "error" | "warning",
-    }
+    // The real backend code, now that the service no longer flattens it to "Error".
+    // "GenericError" is reported only when the backend genuinely supplied no code.
+    track("ek_ad_submission_failed_create_ad_step_3", {
+      error_code: errorCode ?? "GenericError",
+      error_message: mapped.message,
+    })
 
-    track("ek_ad_submission_failed_create_ad_step_3", { error_code: errorName, error_message: errorMessage })
+    const onConfirm = runAdErrorDestination(mapped.primaryDestination)
+    const onCancel = mapped.secondaryDestination
+      ? runAdErrorDestination(mapped.secondaryDestination)
+      : undefined
 
-    if (errorName === RANGE_OVERLAP_ERROR_CODE) {
+    if (errorCode === RANGE_OVERLAP_ERROR_CODE) {
       const conflictingAdvert = await resolveConflictingAdvert(error)
 
+      // Only when the blocking ad could actually be described do we offer to open it.
+      // "Edit limits" goes to the limits step either way.
       if (conflictingAdvert) {
         showAlert({
-          title: errorInfo.title,
-          description: t("adForm.rangeOverlapMessage"),
-          confirmText: getErrorConfirmText(errorName),
+          title: mapped.title,
+          description: mapped.message,
+          confirmText: mapped.primaryCta,
           cancelText: t("adForm.viewConflictingAd"),
-          type: errorInfo.type,
-          onConfirm: () => {
-            setCurrentStep(ORDER_LIMITS_STEP_INDEX)
-          },
+          type: mapped.tone,
+          onConfirm,
           onCancel: () => {
             router.push(editAdPath(conflictingAdvert.id))
           },
@@ -1170,17 +1080,13 @@ function MultiStepAdFormInner({ mode, adId, initialType }: MultiStepAdFormProps)
     }
 
     showAlert({
-      title: errorInfo.title,
-      description: errorMessage,
-      confirmText: getErrorConfirmText(errorName),
-      type: errorInfo.type,
-      onConfirm: () => {
-        if (errorInfo.onConfirm) {
-          errorInfo.onConfirm()
-        } else {
-          setCurrentStep(0)
-        }
-      },
+      title: mapped.title,
+      description: mapped.message,
+      confirmText: mapped.primaryCta,
+      type: mapped.tone,
+      ...(mapped.secondaryCta ? { cancelText: mapped.secondaryCta } : {}),
+      ...(onConfirm ? { onConfirm } : {}),
+      ...(onCancel ? { onCancel } : {}),
     })
   }
 
