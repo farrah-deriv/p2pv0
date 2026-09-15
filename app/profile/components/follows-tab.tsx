@@ -10,6 +10,10 @@ import { createGenericMutationErrorAlertConfig, getApiErrorCode } from "@/lib/er
 import { toggleFavouriteAdvertiser } from "@/services/api/api-buy-sell"
 import Image from "next/image"
 import { useToast } from "@/hooks/use-toast"
+import { useUserDataStore } from "@/stores/user-data-store"
+import { isReadOnlyStatus, isUserReadOnlyResult } from "@/lib/is-read-only"
+import { createReadOnlyAlertConfig } from "@/lib/read-only-alert-config"
+import { ALERT_REOPEN_DELAY_MS } from "@/types/alert-dialog"
 import FollowUserList from "./follow-user-list"
 import { isRtlLocale } from "@/lib/i18n/config"
 import { useTranslations } from "@/lib/i18n/use-translations"
@@ -29,6 +33,7 @@ interface FollowUser {
 export default function FollowsTab() {
   const { t, locale } = useTranslations()
   const dir = isRtlLocale(locale) ? "rtl" : "ltr"
+  const isReadOnly = useUserDataStore((state) => isReadOnlyStatus(state.userData?.status))
   const router = useRouter()
   const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState("")
@@ -99,10 +104,14 @@ export default function FollowsTab() {
   const showMutationError = (error?: unknown) => {
     setTimeout(() => {
       showAlert(createGenericMutationErrorAlertConfig(t, { errorCode: getApiErrorCode(error), onConfirm: hideAlert }))
-    }, 500)
+    }, ALERT_REOPEN_DELAY_MS)
   }
 
   const handleFollowToggle = (user: FollowUser, isCurrentlyFollowing: boolean) => {
+    if (isReadOnly) {
+      showAlert(createReadOnlyAlertConfig(t))
+      return
+    }
     if (isCurrentlyFollowing) {
       showAlert({
         title: t("profile.unfollowUser", { nickname: user.nickname }),
@@ -126,6 +135,9 @@ export default function FollowsTab() {
                 duration: 2500,
               })
               queryClient.invalidateQueries({ queryKey: queryKeys.buySell.favouriteUsers() })
+            } else if (isUserReadOnlyResult(result)) {
+              // Re-open after the confirm dialog closes, else it's clobbered.
+              setTimeout(() => showAlert(createReadOnlyAlertConfig(t, { onClose: hideAlert })), ALERT_REOPEN_DELAY_MS)
             } else {
               showMutationError()
             }
@@ -150,6 +162,8 @@ export default function FollowsTab() {
               duration: 2500,
             })
             queryClient.invalidateQueries({ queryKey: queryKeys.buySell.favouriteUsers() })
+          } else if (isUserReadOnlyResult(result)) {
+            showAlert(createReadOnlyAlertConfig(t, { onClose: hideAlert }))
           } else {
             showAlert(createGenericMutationErrorAlertConfig(t, { onConfirm: hideAlert }))
           }
@@ -210,6 +224,7 @@ export default function FollowsTab() {
             searchEmptyTitle={t("profile.noMatchingName")}
             searchEmptyDescription={t("profile.noResultFor", { query: followsNickname ?? "" })}
             showFollowingButton={true}
+            disableActions={isReadOnly}
           />
         </TabsContent>
 
@@ -232,6 +247,7 @@ export default function FollowsTab() {
             searchEmptyTitle={t("profile.noMatchingName")}
             searchEmptyDescription={t("profile.noResultFor", { query: followersNickname ?? "" })}
             showFollowingButton={false}
+            disableActions={isReadOnly}
           />
         </TabsContent>
       </Tabs>

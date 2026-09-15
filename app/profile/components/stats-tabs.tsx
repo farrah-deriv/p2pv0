@@ -26,6 +26,8 @@ import { isPaymentMethodElevationCancelled, useAddPaymentMethod, type PaymentMet
 import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/create-payment-method-duplicate-alert-config"
 import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
 import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
+import { createReadOnlyAlertConfig } from "@/lib/read-only-alert-config"
+import { isReadOnlyStatus, USER_READ_ONLY_ERROR_CODE } from "@/lib/is-read-only"
 import { useTrackers } from "@/analytics/useTrackers"
 import { FeedbackDialog } from "@/components/feedback/feedback-dialog"
 import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
@@ -65,6 +67,7 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
   const [selectedMethodForDetails, setSelectedMethodForDetails] = useState<string | null>(null)
   const [showAddPaymentPanel, setShowAddPaymentPanel] = useState(false)
   const { userData } = useUserDataStore()
+  const isReadOnly = isReadOnlyStatus(userData?.status)
   const userId = useUserDataStore((state) => state.userId)
   const verificationStatus = useUserDataStore((state) => state.verificationStatus)
   const onboardingStatus = useUserDataStore((state) => state.onboardingStatus)
@@ -140,6 +143,18 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
       if (isPaymentMethodElevationCancelled(error)) return
       const errorCode = error?.errors?.[0]?.code
 
+      if (errorCode === USER_READ_ONLY_ERROR_CODE) {
+        showAlert(
+          createReadOnlyAlertConfig(t, {
+            onClose: () => {
+              hideAlert()
+              setShowAddPaymentPanel(false)
+            },
+          }),
+        )
+        return
+      }
+
       if (errorCode === "PaymentMethodDuplicate") {
         showAlert(
           createPaymentMethodDuplicateAlertConfig(t, {
@@ -204,6 +219,10 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
   }
 
   const handleShowAddPaymentMethod = () => {
+    if (isReadOnly) {
+      showAlert(createReadOnlyAlertConfig(t, { onClose: hideAlert }))
+      return
+    }
     runGatedAction(() => setShowAddPaymentPanel(true))
   }
 
@@ -293,6 +312,7 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
                   <div className="p-4">
                     <Button
                       data-testid="profile-btn-add-payment"
+                      disabled={isReadOnly}
                       onClick={handleShowAddPaymentMethod}
                       variant="secondary-outline"
                       className="w-full"
@@ -567,11 +587,8 @@ export default function StatsTabs({ stats, isLoading, activeTab, maintenanceActi
               <div className="relative h-full">
                 {paymentMethodsCount > 0 && (
                   <div className="flex justify-end mb-4">
-                    <Button data-testid="profile-btn-add-payment" variant="secondary-outline" size="sm" onClick={handleShowAddPaymentMethod}>
-                      <span className="flex items-center gap-1.5">
-                        <Image src="/icons/plus_icon.png" alt="" width={14} height={14} />
-                        {t("profile.addPaymentMethod")}
-                      </span>
+                    <Button data-testid="profile-btn-add-payment" variant="secondary-outline" size="sm" disabled={isReadOnly} onClick={handleShowAddPaymentMethod}>
+                      {t("profile.addPaymentMethod")}
                     </Button>
                   </div>
                 )}

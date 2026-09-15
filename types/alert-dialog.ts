@@ -1,5 +1,14 @@
 import type React from "react"
 
+/**
+ * The provider renders a single alert-dialog instance, so a `showAlert` fired
+ * from inside another dialog's `onConfirm`/close is clobbered when that dialog
+ * tears down. Re-open the follow-up alert after this delay so it lands once the
+ * previous one has finished closing. Matches the app's existing deferred-alert
+ * pattern (see orders, blocked/follows tabs).
+ */
+export const ALERT_REOPEN_DELAY_MS = 500
+
 export interface AlertDialogConfig {
   title?: string
   description?: string

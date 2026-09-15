@@ -17,6 +17,10 @@ import {
 import { toggleBlockAdvertiser } from "@/services/api/api-buy-sell"
 import type { TradePartner } from "@/services/api/api-profile"
 import { useTradePartners } from "@/hooks/use-api-queries"
+import { useUserDataStore } from "@/stores/user-data-store"
+import { isReadOnlyStatus, isUserReadOnlyResult } from "@/lib/is-read-only"
+import { createReadOnlyAlertConfig } from "@/lib/read-only-alert-config"
+import { ALERT_REOPEN_DELAY_MS } from "@/types/alert-dialog"
 import { useQueryClient } from "@tanstack/react-query"
 import { queryKeys } from "@/hooks/use-api-queries"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -44,7 +48,8 @@ export default function CounterpartiesTab() {
     refetch,
   } = useTradePartners(true, activeNickname)
 
-  const { showAlert } = useAlertDialog()
+  const { showAlert, hideAlert } = useAlertDialog()
+  const isReadOnly = useUserDataStore((state) => isReadOnlyStatus(state.userData?.status))
   const { toast } = useToast()
 
   // Flatten pages into single array
@@ -90,7 +95,26 @@ export default function CounterpartiesTab() {
     setSearchQuery("")
   }, [])
 
+  const showActionError = (messageKey: string) => {
+    toast({
+      description: (
+        <div className="flex items-center gap-2">
+          <span>{t(messageKey)}</span>
+        </div>
+      ),
+      className: TOAST_ERROR_CLASS,
+      duration: 3000,
+    })
+  }
+
+  const showBlockError = () => showActionError("profile.errorBlockingUser")
+  const showUnblockError = () => showActionError("profile.errorUnblockingUser")
+
   const handleBlock = (user: TradePartner) => {
+    if (isReadOnly) {
+      showAlert(createReadOnlyAlertConfig(t, { onClose: hideAlert }))
+      return
+    }
     showAlert({
       title: t("profile.blockUser", { nickname: user.nickname }),
       description: t("profile.blockDescription"),
@@ -114,24 +138,25 @@ export default function CounterpartiesTab() {
             })
             queryClient.invalidateQueries({ queryKey: queryKeys.auth.tradePartners() })
             queryClient.invalidateQueries({ queryKey: queryKeys.auth.blockedUsers() })
+          } else if (isUserReadOnlyResult(result)) {
+            // Re-open after the confirm dialog closes, else it's clobbered.
+            setTimeout(() => showAlert(createReadOnlyAlertConfig(t, { onClose: hideAlert })), ALERT_REOPEN_DELAY_MS)
+          } else {
+            showBlockError()
           }
         } catch (error) {
           console.error("Error blocking user:", error)
-          toast({
-            description: (
-              <div className="flex items-center gap-2">
-                <span>{t("profile.errorBlockingUser")}</span>
-              </div>
-            ),
-            className: TOAST_ERROR_CLASS,
-            duration: 3000,
-          })
+          showBlockError()
         }
       },
     })
   }
 
   const handleUnblock = (user: TradePartner) => {
+    if (isReadOnly) {
+      showAlert(createReadOnlyAlertConfig(t, { onClose: hideAlert }))
+      return
+    }
     showAlert({
       title: t("profile.unblockUser", { nickname: user.nickname }),
       description: t("profile.unblockDescription"),
@@ -155,18 +180,15 @@ export default function CounterpartiesTab() {
             })
             queryClient.invalidateQueries({ queryKey: queryKeys.auth.tradePartners() })
             queryClient.invalidateQueries({ queryKey: queryKeys.auth.blockedUsers() })
+          } else if (isUserReadOnlyResult(result)) {
+            // Re-open after the confirm dialog closes, else it's clobbered.
+            setTimeout(() => showAlert(createReadOnlyAlertConfig(t, { onClose: hideAlert })), ALERT_REOPEN_DELAY_MS)
+          } else {
+            showUnblockError()
           }
         } catch (error) {
           console.error("Error unblocking user:", error)
-          toast({
-            description: (
-              <div className="flex items-center gap-2">
-                <span>{t("profile.errorUnblockingUser")}</span>
-              </div>
-            ),
-            className: TOAST_ERROR_CLASS,
-            duration: 3000,
-          })
+          showUnblockError()
         }
       },
     })
@@ -205,6 +227,7 @@ export default function CounterpartiesTab() {
           variant="secondary-outline"
           size="sm"
           onClick={() => (user.is_blocked ? handleUnblock(user) : handleBlock(user))}
+          disabled={isReadOnly}
           className="shrink-0 whitespace-nowrap"
         >
           {user.is_blocked ? t("profile.unblock") : t("profile.block")}

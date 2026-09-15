@@ -390,10 +390,16 @@ export function useDeletePaymentMethod() {
     mutationFn: wrapWithP2PEmailMutationGate(async (id: string) => {
       return runPaymentMethodMutation("p2p_payment_method_delete", async () => {
         const result = await ProfileAPI.deletePaymentMethod(id)
-        if (!result.success && result.errors && result.errors.length > 0) {
+        // Always throw on failure — even when the response carries no error
+        // details — so the UI never treats a rejected delete as a success and
+        // leaves the user without feedback (e.g. a read-only account).
+        if (!result.success) {
+          const errors = result.errors && result.errors.length > 0
+            ? result.errors
+            : [{ code: 'api_error', message: 'Failed to delete payment method' }]
           const error: PaymentMethodError = Object.assign(
-            new Error(result.errors[0].message || 'Failed to delete payment method'),
-            { errors: result.errors },
+            new Error(errors[0].message || 'Failed to delete payment method'),
+            { errors },
           )
           throw error
         }

@@ -11,6 +11,10 @@ import { toggleBlockAdvertiser } from "@/services/api/api-buy-sell"
 import { useBlockedUsers } from "@/hooks/use-api-queries"
 import { useQueryClient } from "@tanstack/react-query"
 import { queryKeys } from "@/hooks/use-api-queries"
+import { useUserDataStore } from "@/stores/user-data-store"
+import { isReadOnlyStatus, isUserReadOnlyResult } from "@/lib/is-read-only"
+import { createReadOnlyAlertConfig } from "@/lib/read-only-alert-config"
+import { ALERT_REOPEN_DELAY_MS } from "@/types/alert-dialog"
 import Image from "next/image"
 import EmptyState from "@/components/empty-state"
 import { resolveListViewState } from "@/lib/errors/resolve-list-view-state"
@@ -36,6 +40,7 @@ interface BlockedUser {
 export default function BlockedTab() {
   const { t, locale } = useTranslations()
   const dir = isRtlLocale(locale) ? "rtl" : "ltr"
+  const isReadOnly = useUserDataStore((state) => isReadOnlyStatus(state.userData?.status))
   const router = useRouter()
   const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState("")
@@ -95,10 +100,14 @@ export default function BlockedTab() {
   const showMutationError = (error?: unknown) => {
     setTimeout(() => {
       showAlert(createGenericMutationErrorAlertConfig(t, { errorCode: getApiErrorCode(error), onConfirm: hideAlert }))
-    }, 500)
+    }, ALERT_REOPEN_DELAY_MS)
   }
 
   const handleUnblock = (user: BlockedUser) => {
+    if (isReadOnly) {
+      showAlert(createReadOnlyAlertConfig(t, { onClose: hideAlert }))
+      return
+    }
     showAlert({
       title: t("profile.unblockUser", { nickname: user.nickname }),
       description: t("profile.unblockDescription"),
@@ -122,6 +131,9 @@ export default function BlockedTab() {
             })
             queryClient.invalidateQueries({ queryKey: queryKeys.auth.blockedUsers() })
             queryClient.invalidateQueries({ queryKey: queryKeys.auth.tradePartners() })
+          } else if (isUserReadOnlyResult(result)) {
+            // Re-open after the confirm dialog closes, else it's clobbered.
+            setTimeout(() => showAlert(createReadOnlyAlertConfig(t, { onClose: hideAlert })), ALERT_REOPEN_DELAY_MS)
           } else {
             showMutationError()
           }
@@ -155,6 +167,7 @@ export default function BlockedTab() {
           variant="secondary-outline"
           size="sm"
           onClick={() => handleUnblock(user)}
+          disabled={isReadOnly}
           className="shrink-0 whitespace-nowrap"
         >
           {t("profile.unblock")}

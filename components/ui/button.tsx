@@ -56,9 +56,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         : variant === "icon-action"
           ? "!rounded-full !w-12 !h-12 !p-0 !min-w-0"
           : variant === "icon-action-outlined"
-            ? "!rounded-full !w-12 !h-12 !p-0 !min-w-0 !bg-transparent !border !border-slate-1200 hover:!bg-black/10"
+            ? disabled
+              ? "!rounded-full !w-12 !h-12 !p-0 !min-w-0 !bg-transparent !border !border-slate-300"
+              : "!rounded-full !w-12 !h-12 !p-0 !min-w-0 !bg-transparent !border !border-slate-1200 hover:!bg-black/10"
             : variant === "secondary-outline"
-            ? "!bg-transparent !border !border-solid !border-slate-1200 hover:!bg-black/5"
+            ? disabled
+              // Disabled outline: muted-but-legible border + no hover.
+              ? "!bg-transparent !border !border-solid !border-slate-300"
+              : "!bg-transparent !border !border-solid !border-slate-1200 hover:!bg-black/5"
             : variant === "buy"
               ? "!bg-success-text-secondary hover:!bg-success-text-secondary-hover !text-white !border-0"
               : variant === "outline-white"
@@ -71,7 +76,16 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                     ? "!rounded-full !border !border-neutral-200 !bg-transparent !text-neutral-600 !text-xs !font-medium !px-3 !py-2 !h-auto !min-h-0 !min-w-0"
                     : undefined
 
-    const disabledClass = disabled && RED_DISABLED_VARIANTS.has(variant) ? "!bg-brand-red/30 !opacity-100 !text-white" : undefined
+    const OUTLINE_DISABLED_VARIANTS = new Set(["secondary-outline", "icon-action-outlined"])
+
+    const disabledClass = disabled
+      ? RED_DISABLED_VARIANTS.has(variant)
+        ? "!bg-brand-red/30 !opacity-100 !text-white"
+        // Disabled outline: muted text that stays legible, with no hover.
+        : OUTLINE_DISABLED_VARIANTS.has(variant)
+          ? "!text-slate-500 hover:!bg-transparent"
+          : undefined
+      : undefined
 
     return (
       <QuillButton

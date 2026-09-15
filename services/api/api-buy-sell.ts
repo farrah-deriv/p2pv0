@@ -451,7 +451,7 @@ export async function toggleFavouriteAdvertiser(
 export async function toggleBlockAdvertiser(
   advertiserId: number,
   isBlocked: boolean,
-): Promise<{ success: boolean; message: string }> {
+): Promise<{ success: boolean; message: string; code?: string }> {
   try {
     const url = isBlocked
       ? `${API.baseUrl}${API.endpoints.userBlocks}`
@@ -479,9 +479,17 @@ export async function toggleBlockAdvertiser(
     if (!response.ok) {
       console.error("Error Response:", response.status, response.statusText)
       console.groupEnd()
+      const errorText = await response.text()
+      let errorData: any
+      try {
+        errorData = errorText ? JSON.parse(errorText) : {}
+      } catch {
+        errorData = {}
+      }
       return {
         success: false,
         message: `Failed to ${isBlocked ? "block" : "unblock"} advertiser: ${response.statusText}`,
+        code: errorData?.errors?.[0]?.code,
       }
     }
 

@@ -261,7 +261,11 @@ export async function hideMyAds(hide: boolean): Promise<{ success: boolean }> {
     }
 
     if (!response.ok) {
-      throw new Error(`Failed to ${hide ? "hide" : "show"} ads: ${response.statusText || responseText}`)
+      const error: any = new Error(`Failed to ${hide ? "hide" : "show"} ads: ${response.statusText || responseText}`)
+      // Preserve the backend error details so callers can react to specific
+      // codes (e.g. UserReadOnly) instead of only a generic failure.
+      error.errors = responseData?.errors
+      throw error
     }
 
     return { success: true }

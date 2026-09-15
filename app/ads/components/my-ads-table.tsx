@@ -30,6 +30,9 @@ import { useDeleteAd, useToggleAdActiveStatus } from "@/hooks/use-api-queries"
 import { useTrackers } from "@/analytics/useTrackers"
 import { editAdPath } from "@/lib/ads/my-ads-tab"
 import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
+import { USER_READ_ONLY_ERROR_CODE } from "@/lib/is-read-only"
+import { createReadOnlyAlertConfig } from "@/lib/read-only-alert-config"
+import { ALERT_REOPEN_DELAY_MS } from "@/types/alert-dialog"
 
 interface MyAdsTableProps {
   ads: Ad[]
@@ -202,9 +205,15 @@ export default function MyAdsTable({
         className: TOAST_SUCCESS_CLASS,
         duration: 2500,
       })
-    } catch (error: any) {
-      if (error?.errors?.length > 0) {
+    } catch (caught: unknown) {
+      const error = caught as { errors?: Array<{ code: string; message?: string }> }
+      if (error?.errors && error.errors.length > 0) {
         const firstError = error.errors[0]
+
+        if (firstError.code === USER_READ_ONLY_ERROR_CODE) {
+          showAlert(createReadOnlyAlertConfig(t))
+          return
+        }
 
         if (firstError.code === "AdvertPaymentMethodIDsRequired") {
           showAlert({
@@ -286,14 +295,20 @@ export default function MyAdsTable({
               duration: 2500,
             })
           },
-          onError: (error: any) => {
+          onError: (caught: unknown) => {
+            const error = caught as { errors?: Array<{ code?: string }> }
+            if (error?.errors?.[0]?.code === USER_READ_ONLY_ERROR_CODE) {
+              setTimeout(() => showAlert(createReadOnlyAlertConfig(t)), ALERT_REOPEN_DELAY_MS)
+              return
+            }
+
             let title = t("myAds.unableToDeleteAd")
             let description = t("myAds.deleteAdError")
             let confirmText = t("common.ok")
 
-            if (error?.errors?.length > 0) {
+            if (error?.errors && error.errors.length > 0) {
               const hasOpenOrdersError = error.errors.some(
-                (err: any) => err.code === "AdvertDeleteOpenOrders"
+                (err) => err.code === "AdvertDeleteOpenOrders"
               )
               if (hasOpenOrdersError) {
                 title = t("myAds.deleteAdOpenOrdersTitle")
@@ -309,7 +324,7 @@ export default function MyAdsTable({
                 confirmText,
                 type: "warning",
               })
-            }, 500)
+            }, ALERT_REOPEN_DELAY_MS)
           },
         })
       },

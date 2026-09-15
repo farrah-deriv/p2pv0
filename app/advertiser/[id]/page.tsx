@@ -43,6 +43,9 @@ import { PresenceLastSeen } from "@/components/presence-last-seen"
 import { ExchangeRateDisplay } from "@/components/exchange-rate-display"
 import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 import { useKycOverlay } from "@/hooks/use-kyc-overlay"
+import { isUserReadOnlyResult } from "@/lib/is-read-only"
+import { createReadOnlyAlertConfig } from "@/lib/read-only-alert-config"
+import { ALERT_REOPEN_DELAY_MS } from "@/types/alert-dialog"
 
 interface UsersOnlineUpdate {
   user_id: number
@@ -308,6 +311,8 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
           confirmText: t("common.gotIt"),
           type: "warning",
         })
+      } else if (isUserReadOnlyResult(result)) {
+        showAlert(createReadOnlyAlertConfig(t))
       } else {
         console.error("Failed to toggle follow status:", result.message)
       }
@@ -450,6 +455,10 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
                   className: TOAST_SUCCESS_CLASS,
                   duration: 2500,
                 })
+              } else if (isUserReadOnlyResult(result)) {
+                // Re-opening from inside the confirm dialog's onConfirm has to wait
+                // for that dialog to finish closing, otherwise the new alert is clobbered.
+                setTimeout(() => showAlert(createReadOnlyAlertConfig(t)), ALERT_REOPEN_DELAY_MS)
               } else {
                 console.error("Failed to toggle block status:", result.message)
               }
@@ -488,6 +497,8 @@ export default function AdvertiserProfilePage({ onBack }: AdvertiserProfilePageP
           className: TOAST_SUCCESS_CLASS,
           duration: 2500,
         })
+      } else if (isUserReadOnlyResult(result)) {
+        showAlert(createReadOnlyAlertConfig(t))
       } else {
         console.error("Failed to toggle block status:", result.message)
       }

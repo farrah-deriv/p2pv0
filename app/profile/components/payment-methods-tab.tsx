@@ -35,6 +35,8 @@ import { createPaymentMethodDuplicateAlertConfig } from "@/lib/payment-methods/c
 import { createPaymentMethodInvalidFieldValueAlertConfig } from "@/lib/payment-methods/create-payment-method-invalid-field-value-alert-config"
 import { resolvePaymentMethodAccountFieldValue } from "@/lib/payment-methods/resolve-payment-method-account-field-value"
 import { getPaymentMethodInUseRoute } from "@/lib/payment-methods/payment-method-error-routing"
+import { createReadOnlyAlertConfig } from "@/lib/read-only-alert-config"
+import { isReadOnlyStatus, USER_READ_ONLY_ERROR_CODE } from "@/lib/is-read-only"
 import { TOAST_SUCCESS_CLASS } from "@/lib/toast-utils"
 
 interface PaymentMethod {
@@ -58,6 +60,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
   const dir = isRtlLocale(locale) ? "rtl" : "ltr"
   const menuSide = isRtlLocale(locale) ? "right" : "left"
   const userId = useUserDataStore((state) => state.userId)
+  const isReadOnly = useUserDataStore((state) => isReadOnlyStatus(state.userData?.status))
   const { toast } = useToast()
   const { showDeleteDialog, showAlert, hideAlert } = useAlertDialog()
 
@@ -124,6 +127,11 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
   }, [paymentMethods.length, onPaymentMethodsCountChange])
 
   const handleEditPaymentMethod = (method: PaymentMethod) => {
+    if (isReadOnly) {
+      showAlert(createReadOnlyAlertConfig(t, { onClose: hideAlert }))
+      return
+    }
+
     const transformedDetails: Record<string, { display_name: string; required: boolean; value: string }> = {}
 
     if (method.details) {
@@ -179,13 +187,26 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
     } catch (err) {
       const error = err as PaymentMethodError
       if (isPaymentMethodElevationCancelled(error)) return
+
+      const errorCode = error?.errors?.[0]?.code
+
+      if (errorCode === USER_READ_ONLY_ERROR_CODE) {
+        showAlert(
+          createReadOnlyAlertConfig(t, {
+            onClose: () => {
+              hideAlert()
+              setEditPanel({ show: false, paymentMethod: null })
+            },
+          }),
+        )
+        return
+      }
+
       const errorMessages: Record<string, { title: string; description: string }> = {
         PaymentMethodInvalid: { title: t("paymentMethod.invalidMethod"), description: t("paymentMethod.invalidMethodDescription") },
         PaymentMethodInvalidField: { title: t("paymentMethod.invalidField"), description: t("paymentMethod.invalidFieldDescription") },
         PaymentMethodRequiredField: { title: t("paymentMethod.requiredField"), description: t("paymentMethod.requiredFieldDescription") },
       }
-
-      const errorCode = error?.errors?.[0]?.code
 
       const paymentMethodInUseRoute = getPaymentMethodInUseRoute(errorCode)
       if (paymentMethodInUseRoute) {
@@ -266,6 +287,11 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
   }
 
   const handleDeletePaymentMethod = (id: string) => {
+    if (isReadOnly) {
+      showAlert(createReadOnlyAlertConfig(t, { onClose: hideAlert }))
+      return
+    }
+
     showDeleteDialog({
       title: t("profile.deletePaymentMethodTitle"),
       description: t("profile.deletePaymentMethodDescription"),
@@ -296,6 +322,12 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
     } catch (caught) {
       const error = caught as PaymentMethodError
       if (isPaymentMethodElevationCancelled(error)) return
+
+      if (error.errors?.[0]?.code === USER_READ_ONLY_ERROR_CODE) {
+        showAlert(createReadOnlyAlertConfig(t, { onClose: hideAlert }))
+        return
+      }
+
       let errorMessage = t("profile.unableToDeletePaymentMethod")
 
       if (error.errors && error.errors.length > 0) {
@@ -433,6 +465,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
                       </DropdownMenuTrigger>
                       <DropdownMenuContent side={menuSide} align="center" className="w-[160px]">
                         <DropdownMenuItem
+                          disabled={isReadOnly}
                           className="flex items-center gap-2 text-gray-700 focus-visible:text-gray-700 px-[16px] py-[8px] cursor-pointer"
                           onSelect={() => handleEditPaymentMethod(method)}
                         >
@@ -440,6 +473,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
                           {t("profile.edit")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
+                          disabled={isReadOnly}
                           data-testid={`profile-btn-delete-payment-${method.id}`}
                           className="flex items-center gap-2 text-destructive focus-visible:text-destructive px-[16px] py-[8px]"
                           onSelect={() => handleDeletePaymentMethod(method.id)}
@@ -486,6 +520,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
                       </DropdownMenuTrigger>
                       <DropdownMenuContent side={menuSide} align="center" className="w-[160px]">
                         <DropdownMenuItem
+                          disabled={isReadOnly}
                           className="flex items-center gap-2 text-gray-700 focus-visible:text-gray-700 px-[16px] py-[8px]"
                           onSelect={() => handleEditPaymentMethod(method)}
                         >
@@ -493,6 +528,7 @@ export default function PaymentMethodsTab({ onAddPaymentMethod, onPaymentMethods
                           {t("profile.edit")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
+                          disabled={isReadOnly}
                           data-testid={`profile-btn-delete-payment-${method.id}`}
                           className="flex items-center gap-2 text-destructive focus-visible:text-destructive px-[16px] py-[8px]"
                           onSelect={() => handleDeletePaymentMethod(method.id)}

@@ -36,6 +36,8 @@ interface FollowUserListProps {
   searchEmptyTitle: string
   searchEmptyDescription: string
   showFollowingButton?: boolean
+  /** Disables the follow/unfollow button (e.g. read-only account). */
+  disableActions?: boolean
 }
 
 export default function FollowUserList({
@@ -56,6 +58,7 @@ export default function FollowUserList({
   searchEmptyTitle,
   searchEmptyDescription,
   showFollowingButton = false,
+  disableActions = false,
 }: FollowUserListProps) {
   const { t, locale } = useTranslations()
   const dir = isRtlLocale(locale) ? "rtl" : "ltr"
@@ -87,6 +90,7 @@ export default function FollowUserList({
             variant="secondary-outline"
             size="sm"
             onClick={() => onFollowToggle(user, showFollowingButton ? true : isFollowing)}
+            disabled={disableActions}
             className="shrink-0 whitespace-nowrap"
           >
             {showFollowingButton

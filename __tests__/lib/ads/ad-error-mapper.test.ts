@@ -187,11 +187,11 @@ describe("mapAdError", () => {
   describe("user status errors", () => {
     it("offers live chat, never 'Update ad', for UserReadOnly", () => {
       const result = mapAdError("UserReadOnly", t, create)
-      expect(result.title).toBe("order.userReadOnlyTitle")
-      expect(result.message).toBe("order.userReadOnlyDescription")
-      expect(result.primaryCta).toBe("order.userReadOnlyOpenChat")
+      expect(result.title).toBe("common.readOnlyTitle")
+      expect(result.message).toBe("common.readOnlyDescription")
+      expect(result.primaryCta).toBe("common.readOnlyOpenChat")
       expect(result.primaryDestination).toBe(AdErrorDestination.LiveChat)
-      expect(result.secondaryCta).toBe("order.userReadOnlyMaybeLater")
+      expect(result.secondaryCta).toBe("common.readOnlyMaybeLater")
       expect(result.secondaryDestination).toBe(AdErrorDestination.Dismiss)
       expect(result.primaryCta).not.toBe("adForm.updateAd")
       expect(result.secondaryCta).not.toBe("adForm.updateAd")

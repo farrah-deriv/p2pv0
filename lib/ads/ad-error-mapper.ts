@@ -205,11 +205,11 @@ export function mapAdError(
 
     case "UserReadOnly":
       return {
-        title: t("order.userReadOnlyTitle"),
-        message: t("order.userReadOnlyDescription"),
-        primaryCta: t("order.userReadOnlyOpenChat"),
+        title: t("common.readOnlyTitle"),
+        message: t("common.readOnlyDescription"),
+        primaryCta: t("common.readOnlyOpenChat"),
         primaryDestination: AdErrorDestination.LiveChat,
-        secondaryCta: t("order.userReadOnlyMaybeLater"),
+        secondaryCta: t("common.readOnlyMaybeLater"),
         secondaryDestination: AdErrorDestination.Dismiss,
         tone: "error",
       }

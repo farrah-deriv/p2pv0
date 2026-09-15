@@ -24,6 +24,8 @@ import { useKycOverlay } from "@/hooks/use-kyc-overlay"
 import { useTrackers } from "@/analytics/useTrackers"
 import { useP2PSystemMaintenance } from "@/hooks/use-p2p-system-maintenance"
 import { MY_ADS_TAB_QUERY, parseMyAdsTab, type MyAdsTab } from "@/lib/ads/my-ads-tab"
+import { isUserReadOnlyResult } from "@/lib/is-read-only"
+import { createReadOnlyAlertConfig } from "@/lib/read-only-alert-config"
 
 interface StatusData {
   success: "create" | "update"
@@ -185,6 +187,11 @@ export default function AdsPage() {
     } catch (error) {
       console.error("Failed to hide/show ads:", error)
       setHiddenAdverts(previousValue)
+
+      if (isUserReadOnlyResult(error)) {
+        showAlert(createReadOnlyAlertConfig(t))
+        return
+      }
 
       showAlert({
         title: value ? t("myAds.unableToHideAds") : t("myAds.unableToShowAds"),

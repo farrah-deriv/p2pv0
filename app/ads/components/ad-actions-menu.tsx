@@ -48,7 +48,7 @@ export function AdActionsMenu({
         variant="ghost"
         size="sm"
         className="w-full hover:!bg-transparent !font-normal !justify-start !text-grayscale-600 !my-1"
-        onClick={() => onShare(ad)}
+        onClick={() => onShare?.(ad)}
       >
         <span className="flex items-center gap-2">
           <Image src="/icons/share-icon.svg" alt={t("myAds.share")} width={14} height={16} />
