@@ -26,6 +26,7 @@ import { formatPaymentMethodName, IS_CLOSED_GROUP_ENABLED } from "@/lib/utils"
 import EmptyState from "@/components/empty-state"
 import PaymentMethodsFilter from "@/components/payment-methods-filter/payment-methods-filter"
 import { useMarketFilterStore } from "@/stores/market-filter-store"
+import { saveMarketScrollTop, getMarketScrollTop, clearMarketScrollTop } from "@/stores/market-scroll-store"
 import { useOrderSidebarStore } from "@/stores/order-sidebar-store"
 import { useUserDataStore } from "@/stores/user-data-store"
 import { BalanceSection } from "@/components/balance-section"
@@ -122,6 +123,9 @@ export default function BuySellPage() {
   const tableScrollRef = useRef<HTMLDivElement>(null)
   const isFetchingNextPageRef = useRef(false)
   const kycPopupHandledRef = useRef(false)
+  // Guards the one-time scroll restoration after returning from a profile so it
+  // does not re-run on later renders (e.g. when more pages load in).
+  const hasRestoredScrollRef = useRef(false)
 
   const { data: paymentMethods = [], isLoading: isLoadingPaymentMethods } = usePaymentMethods()
 
@@ -256,8 +260,16 @@ export default function BuySellPage() {
     [selectedPaymentMethods]
   )
 
-  // Reset scroll position when filters change so sentinel re-enters view and load more works
+  // Reset scroll position when filters change so sentinel re-enters view and load more works.
+  // Skip the initial mount: on first render the deps go from nothing to their
+  // initial values, which would fire this and clobber the scroll position we
+  // restore after returning from an advertiser profile.
+  const hasMountedFilterResetRef = useRef(false)
   useEffect(() => {
+    if (!hasMountedFilterResetRef.current) {
+      hasMountedFilterResetRef.current = true
+      return
+    }
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0
     }
@@ -265,6 +277,91 @@ export default function BuySellPage() {
       tableScrollRef.current.scrollTop = 0
     }
   }, [activeTab, currency, paymentMethodsString, sortBy, filterOptions.fromFollowing, selectedAccountCurrency])
+
+  // Restore the list scroll position after returning from an advertiser profile.
+  // BuySellPage unmounts on navigation, so the container mounts back at the top;
+  // once the cached rows have rendered we scroll it back to the saved offset.
+  //
+  // Two things make a single synchronous restore unreliable, so we retry:
+  //   - `useIsMobile()` returns `undefined` on the first render and only resolves
+  //     in a post-paint effect, so we can't trust it to pick the right container.
+  //     Instead we restore whichever container is actually scrollable.
+  //   - The list height may not be settled the moment the rows first render, so
+  //     the target offset isn't reachable yet. We poll a few animation frames
+  //     until the scroll actually takes hold, then stop.
+  useEffect(() => {
+    if (hasRestoredScrollRef.current) return
+    const savedScrollTop = getMarketScrollTop()
+    if (savedScrollTop <= 0) return
+    if (adverts.length === 0) return
+
+    let frame = 0
+    let attempts = 0
+    let userInterrupted = false
+    const MAX_ATTEMPTS = 30 // ~0.5s at 60fps — enough for late layout/images
+
+    // If the user scrolls before we finish restoring, stop trying so we never
+    // fight their input.
+    const candidatesForListener = [scrollContainerRef.current, tableScrollRef.current]
+    const onUserScroll = () => { userInterrupted = true }
+    candidatesForListener.forEach((el) =>
+      el?.addEventListener("wheel", onUserScroll, { passive: true, once: true }),
+    )
+    candidatesForListener.forEach((el) =>
+      el?.addEventListener("touchmove", onUserScroll, { passive: true, once: true }),
+    )
+
+    const finish = () => {
+      candidatesForListener.forEach((el) => {
+        el?.removeEventListener("wheel", onUserScroll)
+        el?.removeEventListener("touchmove", onUserScroll)
+      })
+      clearMarketScrollTop()
+    }
+
+    const tryRestore = () => {
+      if (userInterrupted) {
+        hasRestoredScrollRef.current = true
+        finish()
+        return
+      }
+      // Pick the container that can actually scroll right now, independent of the
+      // (possibly not-yet-resolved) isMobile flag.
+      const candidates = [scrollContainerRef.current, tableScrollRef.current]
+      const scrollEl = candidates.find(
+        (el) => el && el.scrollHeight - el.clientHeight > 1,
+      )
+
+      if (scrollEl) {
+        const maxScrollTop = scrollEl.scrollHeight - scrollEl.clientHeight
+        const target = Math.min(savedScrollTop, maxScrollTop)
+        scrollEl.scrollTop = target
+        // Consider it done once we've reached (near) the target, or we can't get
+        // any closer because the list is shorter than the saved offset.
+        if (Math.abs(scrollEl.scrollTop - target) <= 1) {
+          hasRestoredScrollRef.current = true
+          finish()
+          return
+        }
+      }
+
+      if (++attempts < MAX_ATTEMPTS) {
+        frame = requestAnimationFrame(tryRestore)
+      } else {
+        // Give up gracefully so a stale offset never lingers into a later visit.
+        finish()
+      }
+    }
+
+    frame = requestAnimationFrame(tryRestore)
+    return () => {
+      cancelAnimationFrame(frame)
+      candidatesForListener.forEach((el) => {
+        el?.removeEventListener("wheel", onUserScroll)
+        el?.removeEventListener("touchmove", onUserScroll)
+      })
+    }
+  }, [adverts.length])
 
   // Keep refs in sync so callbacks always read the latest values
   useEffect(() => {
@@ -307,7 +404,20 @@ export default function BuySellPage() {
   const handleAdvertiserClick = (advertiserId: number) => {
     if (isMaintenanceActive) return
     track("ek_advertiser_profile_markets")
-    runGatedAction(() => router.push(`/advertiser/${advertiserId}`))
+    runGatedAction(() => {
+      // Persist the current list scroll offset so we can restore it when the
+      // user returns from the advertiser profile. The page unmounts on
+      // navigation, so this must live outside component state. Read from
+      // whichever container is actually scrolled rather than relying on the
+      // isMobile flag, which keeps save/restore symmetric.
+      const candidates = [scrollContainerRef.current, tableScrollRef.current]
+      const scrollTop = candidates.reduce(
+        (max, el) => Math.max(max, el?.scrollTop ?? 0),
+        0,
+      )
+      saveMarketScrollTop(scrollTop)
+      router.push(`/advertiser/${advertiserId}`)
+    })
   }
 
   const handleRiskContinue = () => {
