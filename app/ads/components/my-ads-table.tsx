@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AdsAPI } from "@/services/api"
 import type { Ad } from "../types"
 import { cn } from "@/lib/utils"
-import { formatPaymentMethodName, getPaymentMethodColourByName, IS_CLOSED_GROUP_ENABLED } from "@/lib/utils"
+import { formatAmountWithDecimals, formatPaymentMethodName, getPaymentMethodColourByName, IS_CLOSED_GROUP_ENABLED } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { useAdvertAlertDialog } from "@/app/ads/hooks/use-advert-alert-dialog"
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -99,14 +99,14 @@ export default function MyAdsTable({
 
   const formatLimits = (ad: Ad) => {
     if (ad.minimum_order_amount && ad.maximum_order_amount) {
-      return `${ad.minimum_order_amount} - ${ad.maximum_order_amount} USD`
+      return `${formatAmountWithDecimals(ad.minimum_order_amount)} - ${formatAmountWithDecimals(ad.maximum_order_amount)} USD`
     }
 
     if (typeof ad.limits === "string") {
       return ad.limits
     }
     if (ad.limits && typeof ad.limits === "object") {
-      return `${ad.limits.min} - ${ad.limits.max} ${ad.limits.currency}`
+      return `${formatAmountWithDecimals(ad.limits.min)} - ${formatAmountWithDecimals(ad.limits.max)} ${ad.limits.currency}`
     }
     return "N/A"
   }
