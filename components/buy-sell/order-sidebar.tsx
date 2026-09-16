@@ -1151,7 +1151,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
                 </div>
 
                 {isBuy && (
-                  <div className="mx-4 mt-4 pb-6 border-b">
+                  <div className="mx-4 pb-6 border-b">
                     <Button
                       type="button"
                       variant="outline"
