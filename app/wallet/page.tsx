@@ -50,8 +50,13 @@ export default function WalletPage() {
   const isDisabled = userData?.status === "disabled"
   const { isActive: isMaintenanceActive } = useP2PSystemMaintenance()
   const { setIsTransactionListVisible } = useWalletViewStore()
-  const p2pBalanceAmount = userData?.balances?.amount ?? totalBalance
-  const p2pBalanceCurrency = userData?.balances?.currency ?? balanceCurrency
+  // The total P2P balance always follows `total_account_value` (from users/me,
+  // stored as `userData.balances`) — the same source the Market screen uses.
+  // We intentionally do NOT read the total off the slower `/wallet` API, so the
+  // two screens stay consistent. `total_account_value` is also what the users/me
+  // `balance_change` WebSocket pushes, so live updates keep it fresh.
+  const p2pBalanceAmount = userData?.balances?.amount ?? "0.00"
+  const p2pBalanceCurrency = userData?.balances?.currency ?? "USD"
 
   const processBalanceData = useCallback(
     (currencies: Record<string, any>, balance: any) => {
@@ -60,9 +65,10 @@ export default function WalletPage() {
         const mainWallet = balance?.wallets?.items?.find((wallet: any) => wallet.type === "main")
 
         if (p2pWallet) {
-          setTotalBalance(p2pWallet.total_balance?.approximate_total_balance ?? "0.00")
-          setBalanceCurrency(p2pWallet.total_balance?.converted_to ?? "USD")
-
+          // Note: the displayed total balance is driven by `total_account_value`
+          // (see `p2pBalanceAmount`), not by this wallets-API value. We only use
+          // this response for the per-currency balances list and the
+          // has-balance/empty-state derivation below.
           const hasP2pBalance =
             p2pWallet.balances?.some((wallet: any) => Number.parseFloat(wallet.balance || "0") > 0) ?? false
           const hasMainBalance = (mainWallet &&
@@ -83,7 +89,6 @@ export default function WalletPage() {
         }
       } catch (error) {
         console.error("Error processing P2P wallet balance:", error)
-        setTotalBalance("0.00")
         setHasBalance(false)
       }
     },
@@ -126,14 +131,9 @@ export default function WalletPage() {
     setSelectedCurrency(null)
     setSelectedTransaction(null)
     setIsTransactionListVisible(false)
-    // Restore the total balance from the p2p wallet
-    if (balanceData?.wallets?.items) {
-      const p2pWallet = balanceData.wallets.items.find((wallet: any) => wallet.type === "p2p")
-      if (p2pWallet?.total_balance?.approximate_total_balance) {
-        setTotalBalance(p2pWallet.total_balance.approximate_total_balance)
-        setBalanceCurrency(p2pWallet.total_balance.converted_to || "USD")
-      }
-    }
+    // The balances-view total is driven by `total_account_value`
+    // (`p2pBalanceAmount`), so there's nothing to restore from the wallets API
+    // here — we just leave the drill-down currency state behind.
   }
 
   if (isDisabled) {
@@ -153,12 +153,17 @@ export default function WalletPage() {
             isBalancesView={displayBalances || !!selectedTransaction}
             selectedCurrency={selectedCurrency}
             onBack={handleBackToBalances}
-            balance={isMaintenanceActive ? p2pBalanceAmount : (
+            balance={
+              // Per-currency drill-down shows that currency's own balance; the
+              // top-level balances view always shows the `total_account_value`
+              // total (never the slower/inconsistent wallets-API value).
               !displayBalances && selectedCurrency
                 ? (p2pBalances.find((b) => b.currency === selectedCurrency)?.amount ?? totalBalance)
-                : totalBalance
-            )}
-            currency={isMaintenanceActive ? p2pBalanceCurrency : balanceCurrency}
+                : p2pBalanceAmount
+            }
+            currency={
+              !displayBalances && selectedCurrency ? balanceCurrency : p2pBalanceCurrency
+            }
             isLoading={isMaintenanceActive ? false : isBalanceLoading}
             hasBalance={hasBalance}
             selectedTransaction={selectedTransaction}
