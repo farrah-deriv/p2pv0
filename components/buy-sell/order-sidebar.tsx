@@ -1201,7 +1201,6 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
                       rate={localAd.effective_rate_display}
                       paymentCurrency={localAd.payment_currency}
                       accountCurrency={localAd.account_currency}
-                      formatRate={false}
                     />
                   </div>
                   <div className="flex justify-between items-center gap-4 mb-2">
