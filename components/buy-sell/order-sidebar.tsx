@@ -1114,7 +1114,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
                 </div>
                 <h2 className="text-xl font-bold p-4 pb-0">{title}</h2>
                 <div className="p-4">
-                  <div className="mb-4">
+                  <div className={cn(validationError ? "mb-1" : "mb-4")}>
                     <Input
                       data-testid="order-sidebar-input-amount"
                       value={amount}
@@ -1137,7 +1137,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
                       label={t("order.amount")}
                     />
                   </div>
-                  {validationError && <p data-testid="order-sidebar-error-amount" className="text-sm text-error mb-2">{validationError}</p>}
+                  {validationError && <p data-testid="order-sidebar-error-amount" className="text-sm text-error mb-4">{validationError}</p>}
                   <div className="flex items-center">
                     <span className="text-grayscale-text-muted">{youSendText}:&nbsp;</span>
                     <span className="text-slate-1200 font-bold">
