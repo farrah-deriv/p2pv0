@@ -99,7 +99,7 @@ export default function MyAdsTable({
 
   const formatLimits = (ad: Ad) => {
     if (ad.minimum_order_amount && ad.maximum_order_amount) {
-      return `${formatAmountWithDecimals(ad.minimum_order_amount)} - ${formatAmountWithDecimals(ad.maximum_order_amount)} USD`
+      return `${formatAmountWithDecimals(ad.minimum_order_amount)} - ${formatAmountWithDecimals(ad.maximum_order_amount)} ${ad.account_currency ?? "USD"}`
     }
 
     if (typeof ad.limits === "string") {
