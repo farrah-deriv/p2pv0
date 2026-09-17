@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import type { Advertisement } from "@/services/api/api-buy-sell"
 import { createOrder } from "@/services/api/api-orders"
 import { ProfileAPI } from "@/services/api"
-import { formatPaymentMethodName, cn, getHomeUrl } from "@/lib/utils"
+import { formatAmountWithDecimals, formatPaymentMethodName, cn, getHomeUrl } from "@/lib/utils"
 import Image from "next/image"
 import { StandaloneChevronDownRegularIcon, StandaloneXmarkFillIcon } from "@deriv/quill-icons/Standalone"
 import AddPaymentMethodPanel from "@/app/profile/components/add-payment-method-panel"
@@ -1206,7 +1206,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
                   <div className="flex justify-between items-center gap-4 mb-2">
                     <span className="text-grayscale-text-muted shrink-0">{t("order.orderLimit")}</span>
                     <span className="text-slate-1200 shrink-0">
-                      {minLimit} - {maxLimit} {localAd.account_currency}
+                      {formatAmountWithDecimals(minLimit)} - {formatAmountWithDecimals(maxLimit)} {localAd.account_currency}
                     </span>
                   </div>
                   <div className="flex justify-between items-center gap-4 mb-2">
