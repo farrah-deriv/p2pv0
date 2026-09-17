@@ -568,7 +568,7 @@ export default function OrderSidebar({ isOpen, onClose, onStartClose, ad, orderT
       if (orderType === "buy" && numAmount > p2pBalance) {
         setValidationError(t("order.insufficientBalance"))
       } else if (numAmount < minLimit || numAmount > maxLimit) {
-        setValidationError(t("order.orderLimitError", { min: minLimit, max: maxLimit, currency: localAd.account_currency }))
+        setValidationError(t("order.orderLimitError", { min: formatAmountWithDecimals(minLimit), max: formatAmountWithDecimals(maxLimit), currency: localAd.account_currency }))
       } else {
         setValidationError(null)
       }
