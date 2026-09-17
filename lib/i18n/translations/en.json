@@ -166,7 +166,7 @@
     "selected": "Selected",
     "rateType": "Rate type",
     "exchangeRate": "Exchange rate",
-    "orderLimit": "Order limit",
+    "orderLimit": "Order limits",
     "paymentTime": "Payment time",
     "paymentTimeTooltip": "Complete your payment within {minutes} minutes after placing the order.",
     "buyer": "Buyer",
